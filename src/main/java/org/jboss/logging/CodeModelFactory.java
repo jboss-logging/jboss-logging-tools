@@ -20,13 +20,21 @@
  */
 package org.jboss.logging;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+
+import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JDocComment;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JVar;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -34,80 +42,131 @@ import com.sun.codemodel.internal.JMod;
  */
 public class CodeModelFactory {
 
-    /**
-     * 
-     * @author James R. Perkins Jr. (jrp)
-     * 
-     */
-    public static enum Implementation {
-        BUNDLE("$bundle"),
-        LOGGER("$logger");
-        protected final String extension;
+    static final class MessageLoggerCodeModel extends CodeModel {
+        private final Generator generator;
+        private JFieldVar log;
 
-        private Implementation(final String extension) {
-            this.extension = extension;
+        MessageLoggerCodeModel(final Generator generator,
+                final String interfaceName) throws JClassAlreadyExistsException {
+            super(interfaceName);
+            this.generator = generator;
+            init();
+        }
+
+        @Override
+        public Implementation type() {
+            return Implementation.LOGGER;
+        }
+
+        @Override
+        public void addMethod(final ExecutableElement method) {
+            // Create the method
+            final JMethod jMethod = definedClass().method(
+                    JMod.PUBLIC | JMod.FINAL, codeModel().VOID,
+                    method.getSimpleName().toString());
+            final Message message = method.getAnnotation(Message.class);
+            final LogMessage logMessage = method
+                    .getAnnotation(LogMessage.class);
+            final List<JVar> parameters = new ArrayList<JVar>();
+            Message.Format format = Message.Format.PRINTF;
+            Logger.Level logLevel = Logger.Level.INFO;
+            String msg = "";
+            if (logMessage != null) {
+                logLevel = logMessage.level();
+            }
+            StringBuilder sb = new StringBuilder();
+            if (message != null) {
+                format = message.format();
+                final int id = message.id();
+                msg = message.value();
+            }
+            sb.append(log.name());
+            sb.append(".");
+            sb.append(logLevel.name().toLowerCase());
+
+            switch (format) {
+                case MESSAGE_FORMAT:
+                    sb.append("v");
+                    break;
+                case PRINTF:
+                    sb.append("f");
+                    break;
+            }
+            sb.append("(");
+            // Create the parameters
+            for (VariableElement param : method.getParameters()) {
+                final JClass paramType = codeModel().ref(
+                        param.asType().toString());
+                final JVar var = jMethod.param(JMod.FINAL, paramType, param
+                        .getSimpleName().toString());
+                if (param.getAnnotation(Cause.class) != null) {
+                    sb.append(var.name());
+                    sb.append(", ");
+                } else {
+                    parameters.add(var);
+                }
+            }
+            sb.append("\"");
+            sb.append(msg);
+            sb.append("\"");
+            for (JVar var : parameters) {
+                sb.append(", ");
+                sb.append(var.name());
+            }
+            sb.append(");");
+            // Create the model
+            final JBlock body = jMethod.body();
+            body.directStatement(sb.toString());
+        }
+
+        private void init() {
+            log = definedClass().field(JMod.PROTECTED | JMod.FINAL,
+                    Logger.class, "log");
+            // Add default constructor
+            final JMethod constructor = definedClass().constructor(
+                    JMod.PROTECTED);
+            constructor.param(JMod.FINAL, Logger.class, "log");
+            final JBlock body = constructor.body();
+            body.directStatement("this.log = log;");
         }
     }
 
-    /**
-     * 
-     * @author James R. Perkins Jr. (jrp)
-     * 
-     */
-    public static final class CodeModel {
-
-        private final String className;
-        private final JCodeModel codeModel;
-        private JDefinedClass definedClass;
-        private final String interfaceName;
-        private final String packageName;
-        private final Implementation type;
-
-        private CodeModel(final Implementation type, final String interfaceName) {
-            codeModel = new JCodeModel();
-            this.interfaceName = interfaceName;
-            this.type = type;
-            className = interfaceName + type.extension;
-            packageName = TransformationUtil.toPackage(interfaceName);
+    static final class MessageBundleCodeModel extends CodeModel {
+        MessageBundleCodeModel(final String interfaceName)
+                throws JClassAlreadyExistsException {
+            super(interfaceName);
         }
 
-        /**
-         * Returns the code model.
-         * 
-         * @return
-         */
-        public JCodeModel codeModel() {
-            return codeModel;
-        }
-
-        /**
-         * Returns the main enclosing class.
-         * 
-         * @return the main enclosing class.
-         */
-        public JDefinedClass definedClass() {
-            return definedClass;
-        }
-
-        /**
-         * Returns the implementation type.
-         * 
-         * @return the implementation type.
-         */
+        @Override
         public Implementation type() {
-            return type;
+            return Implementation.BUNDLE;
         }
 
-        public String interfaceName() {
-            return interfaceName;
-        }
+        @Override
+        public void addMethod(final ExecutableElement method) {
+            final JClass returnType = codeModel().ref(
+                    method.getReturnType().toString());
+            final JMethod jMethod = definedClass().method(
+                    JMod.PUBLIC | JMod.FINAL, returnType,
+                    method.getSimpleName().toString());
+            final JBlock body = jMethod.body();
+            for (VariableElement param : method.getParameters()) {
+                final JClass paramType = codeModel().ref(
+                        param.asType().toString());
+                jMethod.param(JMod.FINAL, paramType, param.getSimpleName()
+                        .toString());
 
-        public String className() {
-            return className;
-        }
+            }
+            if (returnType.isPrimitive() || returnType.isReference()) {
+                if (!method.getReturnType().getKind().equals(TypeKind.VOID)) {
+                    final JClass returnField = codeModel().ref(
+                            returnType.fullName());
+                    JVar var = body.decl(returnField, "result");
+                    var.init(JExpr._null());
+                    body._return(var);
+                }
+            }
 
-        public String packageName() {
-            return packageName;
         }
     }
 
@@ -119,66 +178,13 @@ public class CodeModelFactory {
     }
 
     public static final CodeModel createMessageLogger(
-            final String qualifiedInterfaceName)
+            final Generator generator, final String interfaceName)
             throws JClassAlreadyExistsException {
-        final CodeModelFactory factory = new CodeModelFactory();
-        return factory.init(Implementation.LOGGER, qualifiedInterfaceName);
+        return new MessageLoggerCodeModel(generator, interfaceName);
     }
 
-    public static final CodeModel createMessageBundle(
-            final String qualifiedInterfaceName)
+    public static final CodeModel createMessageBundle(final String interfaceName)
             throws JClassAlreadyExistsException {
-        final CodeModelFactory factory = new CodeModelFactory();
-        return factory.init(Implementation.BUNDLE, qualifiedInterfaceName);
-    }
-
-    private CodeModel init(final Implementation impl, final String interfaceName)
-            throws JClassAlreadyExistsException {
-        final CodeModel result = new CodeModel(impl, interfaceName);
-        final JCodeModel jCodeModel = result.codeModel();
-        // Create the package
-        final String packageName = result.packageName();
-        if (packageName != null) {
-            jCodeModel._package(packageName);
-        }
-
-        // Define the class
-        final JDefinedClass definedClass = jCodeModel._class(TransformationUtil
-                .toSimpleClassName(result.className()));
-        definedClass.annotate(javax.annotation.Generated.class);
-        definedClass._extends(Object.class);
-        definedClass
-                ._implements(jCodeModel.directClass(result.interfaceName()));
-        definedClass._implements(java.io.Serializable.class);
-
-        // Create the default JavaDoc
-        final JDocComment docComment = definedClass.javadoc();
-        docComment.add("Warning this class consists of generated code.");
-
-        // Add the serializable UID
-        final JFieldVar serialVersionUID = definedClass
-                .field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
-                        jCodeModel.LONG, "serialVersionUID");
-        serialVersionUID.init(JExpr.lit(1L));
-        // Add default constructor
-        definedClass.constructor(JMod.PUBLIC);
-        result.definedClass = definedClass;
-        switch (result.type()) {
-            case BUNDLE:
-                initMessageBundle(result);
-                break;
-            case LOGGER:
-                initMessageLogger(result);
-                break;
-        }
-        return result;
-    }
-
-    private void initMessageLogger(final CodeModel codeModel)
-            throws JClassAlreadyExistsException {
-    }
-
-    private void initMessageBundle(final CodeModel codeModel)
-            throws JClassAlreadyExistsException {
+        return new MessageBundleCodeModel(interfaceName);
     }
 }

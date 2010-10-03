@@ -43,15 +43,19 @@ public abstract class Generator {
     
     public abstract void generate(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv);
     
-    public void printInfoMessage(final String message) {
+    public final ProcessingEnvironment processingEnvironment() {
+        return processingEnv;
+    }
+    
+    public final void printInfoMessage(final String message) {
         processingEnv.getMessager().printMessage(Kind.NOTE, message);
     }
     
-    public void printErrorMessage(final String message) {
+    public final void printErrorMessage(final String message) {
         processingEnv.getMessager().printMessage(Kind.ERROR, message);
     }
     
-    public void printWarningMessage(final String message) {
+    public final void printWarningMessage(final String message) {
         processingEnv.getMessager().printMessage(Kind.WARNING, message);
     }
 

@@ -32,22 +32,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 
-import org.jboss.logging.CodeModelFactory.CodeModel;
-
 import com.sun.codemodel.internal.CodeWriter;
-import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JVar;
 import com.sun.codemodel.internal.writer.SingleStreamCodeWriter;
 
 /**
@@ -105,7 +93,7 @@ public final class ClassGenerator extends Generator {
             try {
                 if (logger != null) {
                     createClass(
-                            CodeModelFactory.createMessageLogger(interfaceName),
+                            CodeModelFactory.createMessageLogger(this, interfaceName),
                             type);
                 }
                 if (bundle != null) {
@@ -126,7 +114,7 @@ public final class ClassGenerator extends Generator {
         // Create the methods
         for (ExecutableElement method : ElementFilter.methodsIn(type
                 .getEnclosedElements())) {
-            writeMethod(codeModel, method);
+            codeModel.addMethod(method);
         }
 
         // Write the source file
@@ -134,40 +122,5 @@ public final class ClassGenerator extends Generator {
         CodeWriter codeWriter = new SingleStreamCodeWriter(filer
                 .createSourceFile(codeModel.className()).openOutputStream());
         codeModel.codeModel().build(codeWriter);
-    }
-
-    /**
-     * Creates a method for the class.
-     * 
-     * @param codeModel
-     *            the base code model
-     * @param definedClass
-     *            the defined class
-     * @param method
-     *            the method to process and create
-     */
-    private void writeMethod(final CodeModel codeModel, ExecutableElement method) {
-        final JCodeModel jCodeModel = codeModel.codeModel();
-        final JDefinedClass definedClass = codeModel.definedClass();
-        final JClass returnType = jCodeModel.ref(method.getReturnType()
-                .toString());
-        final JMethod jMethod = definedClass.method(JMod.PUBLIC | JMod.FINAL,
-                returnType, method.getSimpleName().toString());
-        final JBlock body = jMethod.body();
-        for (VariableElement param : method.getParameters()) {
-            final JClass paramType = jCodeModel.ref(param.asType().toString());
-            jMethod.param(JMod.FINAL, paramType, param.getSimpleName()
-                    .toString());
-
-        }
-        if (returnType.isPrimitive() || returnType.isReference()) {
-            if (!method.getReturnType().getKind().equals(TypeKind.VOID)) {
-                final JClass returnField = jCodeModel
-                        .ref(returnType.fullName());
-                JVar var = body.decl(returnField, "result");
-                var.init(JExpr._null());
-                body._return(var);
-            }
-        }
     }
 }
