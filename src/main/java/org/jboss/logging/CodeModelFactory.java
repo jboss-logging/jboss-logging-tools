@@ -43,13 +43,11 @@ import com.sun.codemodel.internal.JVar;
 public class CodeModelFactory {
 
     static final class MessageLoggerCodeModel extends CodeModel {
-        private final Generator generator;
         private JFieldVar log;
 
-        MessageLoggerCodeModel(final Generator generator,
-                final String interfaceName) throws JClassAlreadyExistsException {
+        private MessageLoggerCodeModel(final String interfaceName)
+                throws JClassAlreadyExistsException {
             super(interfaceName);
-            this.generator = generator;
             init();
         }
 
@@ -60,10 +58,10 @@ public class CodeModelFactory {
 
         @Override
         public void addMethod(final ExecutableElement method) {
+            final String methodName = method.getSimpleName().toString();
             // Create the method
             final JMethod jMethod = definedClass().method(
-                    JMod.PUBLIC | JMod.FINAL, codeModel().VOID,
-                    method.getSimpleName().toString());
+                    JMod.PUBLIC | JMod.FINAL, codeModel().VOID, methodName);
             final Message message = method.getAnnotation(Message.class);
             final LogMessage logMessage = method
                     .getAnnotation(LogMessage.class);
@@ -74,25 +72,28 @@ public class CodeModelFactory {
             if (logMessage != null) {
                 logLevel = logMessage.level();
             }
-            StringBuilder sb = new StringBuilder();
             if (message != null) {
                 format = message.format();
                 final int id = message.id();
                 msg = message.value();
             }
-            sb.append(log.name());
-            sb.append(".");
-            sb.append(logLevel.name().toLowerCase());
+            final StringBuilder bodyText = new StringBuilder();
+
+            final JMethod msgMethod = addMessageMethod(methodName, msg);
+
+            bodyText.append(log.name());
+            bodyText.append(".");
+            bodyText.append(logLevel.name().toLowerCase());
 
             switch (format) {
                 case MESSAGE_FORMAT:
-                    sb.append("v");
+                    bodyText.append("v");
                     break;
                 case PRINTF:
-                    sb.append("f");
+                    bodyText.append("f");
                     break;
             }
-            sb.append("(");
+            bodyText.append("(");
             // Create the parameters
             for (VariableElement param : method.getParameters()) {
                 final JClass paramType = codeModel().ref(
@@ -100,23 +101,22 @@ public class CodeModelFactory {
                 final JVar var = jMethod.param(JMod.FINAL, paramType, param
                         .getSimpleName().toString());
                 if (param.getAnnotation(Cause.class) != null) {
-                    sb.append(var.name());
-                    sb.append(", ");
+                    bodyText.append(var.name());
+                    bodyText.append(", ");
                 } else {
                     parameters.add(var);
                 }
             }
-            sb.append("\"");
-            sb.append(msg);
-            sb.append("\"");
+            bodyText.append(msgMethod.name());
+            bodyText.append("()");
             for (JVar var : parameters) {
-                sb.append(", ");
-                sb.append(var.name());
+                bodyText.append(", ");
+                bodyText.append(var.name());
             }
-            sb.append(");");
+            bodyText.append(");");
             // Create the model
             final JBlock body = jMethod.body();
-            body.directStatement(sb.toString());
+            body.directStatement(bodyText.toString());
         }
 
         private void init() {
@@ -132,9 +132,10 @@ public class CodeModelFactory {
     }
 
     static final class MessageBundleCodeModel extends CodeModel {
-        MessageBundleCodeModel(final String interfaceName)
+        private MessageBundleCodeModel(final String interfaceName)
                 throws JClassAlreadyExistsException {
             super(interfaceName);
+            init();
         }
 
         @Override
@@ -144,11 +145,37 @@ public class CodeModelFactory {
 
         @Override
         public void addMethod(final ExecutableElement method) {
+            final String methodName = method.getSimpleName().toString();
             final JClass returnType = codeModel().ref(
                     method.getReturnType().toString());
             final JMethod jMethod = definedClass().method(
-                    JMod.PUBLIC | JMod.FINAL, returnType,
-                    method.getSimpleName().toString());
+                    JMod.PUBLIC | JMod.FINAL, returnType, methodName);
+            final Message message = method.getAnnotation(Message.class);
+            final LogMessage logMessage = method
+                    .getAnnotation(LogMessage.class);
+            final List<JVar> parameters = new ArrayList<JVar>();
+            final Message.Format format = message.format();
+            Logger.Level logLevel = Logger.Level.INFO;
+            final String msg = message.value();
+
+            final JMethod msgMethod = addMessageMethod(methodName, msg);
+
+            if (logMessage != null) {
+                logLevel = logMessage.level();
+            }
+            // Create the parameters
+            for (VariableElement param : method.getParameters()) {
+                final JClass paramType = codeModel().ref(
+                        param.asType().toString());
+                final JVar var = jMethod.param(JMod.FINAL, paramType, param
+                        .getSimpleName().toString());
+                if (param.getAnnotation(Cause.class) != null) {
+                    // TODO - Handle the cause element
+                } else {
+                    parameters.add(var);
+                }
+            }
+
             final JBlock body = jMethod.body();
             for (VariableElement param : method.getParameters()) {
                 final JClass paramType = codeModel().ref(
@@ -157,16 +184,22 @@ public class CodeModelFactory {
                         .toString());
 
             }
-            if (returnType.isPrimitive() || returnType.isReference()) {
-                if (!method.getReturnType().getKind().equals(TypeKind.VOID)) {
-                    final JClass returnField = codeModel().ref(
-                            returnType.fullName());
-                    JVar var = body.decl(returnField, "result");
-                    var.init(JExpr._null());
-                    body._return(var);
-                }
-            }
+            final JClass returnField = codeModel().ref(returnType.fullName());
+            JVar var = body.decl(returnField, "result");
+            var.init(JExpr.invoke(msgMethod));
+            body._return(var);
+        }
 
+        private void init() {
+            final JFieldVar instance = definedClass().field(
+                    JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
+                    "INSTANCE");
+            instance.init(JExpr._new(definedClass()));
+            // Add default constructor
+            definedClass().constructor(JMod.PROTECTED);
+            final JMethod readResolveMethod = definedClass().method(
+                    JMod.PROTECTED, definedClass(), "readResolve");
+            readResolveMethod.body()._return(instance);
         }
     }
 
@@ -177,10 +210,9 @@ public class CodeModelFactory {
 
     }
 
-    public static final CodeModel createMessageLogger(
-            final Generator generator, final String interfaceName)
+    public static final CodeModel createMessageLogger(final String interfaceName)
             throws JClassAlreadyExistsException {
-        return new MessageLoggerCodeModel(generator, interfaceName);
+        return new MessageLoggerCodeModel(interfaceName);
     }
 
     public static final CodeModel createMessageBundle(final String interfaceName)

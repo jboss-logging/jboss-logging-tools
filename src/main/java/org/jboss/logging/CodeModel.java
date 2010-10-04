@@ -22,13 +22,17 @@ package org.jboss.logging;
 
 import javax.lang.model.element.ExecutableElement;
 
+import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JDocComment;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JVar;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -99,6 +103,25 @@ public abstract class CodeModel {
 
     public final String packageName() {
         return TransformationUtil.toPackage(interfaceName());
+    }
+
+    protected final JVar addMessageVar(final String varName,
+            final String messageValue) {
+        final JFieldVar var = definedClass.field(JMod.PRIVATE | JMod.STATIC
+                | JMod.FINAL, String.class, varName);
+        var.init(JExpr.lit(messageValue));
+        return var;
+    }
+
+    protected final JMethod addMessageMethod(final String methodName,
+            final String returnValue) {
+        // Create the method
+        final JClass returnType = codeModel().ref(String.class);
+        final JMethod method = definedClass().method(JMod.PROTECTED,
+                returnType, methodName + "$str");
+        final JBlock body = method.body();
+        body._return(addMessageVar(methodName, returnValue));
+        return method;
     }
 
     private void init() throws JClassAlreadyExistsException {

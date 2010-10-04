@@ -20,6 +20,10 @@
  */
 package org.jboss.logging;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 /**
  * @author James R. Perkins Jr. (jrp)
  * 
@@ -63,6 +67,28 @@ final class TransformationUtil {
             result = qualifiedClassName.substring(index + 1);
         }
         return result;
+    }
+
+    /**
+     * Converts a stack trace to string output.
+     * 
+     * @param t
+     *            the stack trace to convert.
+     * @return a string version of the stack trace.
+     */
+    public static String stackTraceToString(final Throwable t) {
+        final StringWriter stringWriter = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        t.printStackTrace(printWriter);
+        printWriter.flush();
+        stringWriter.flush();
+        printWriter.close();
+        try {
+            stringWriter.close();
+        } catch (IOException e) {
+            // Do nothing
+        }
+        return stringWriter.toString();
     }
 
 }
