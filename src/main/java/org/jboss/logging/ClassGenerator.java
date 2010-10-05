@@ -108,6 +108,7 @@ public final class ClassGenerator extends Generator {
 
     private void createClass(final CodeModel codeModel, final TypeElement type)
             throws IOException {
+        // Process all extended interfaces.
         for (TypeMirror interfaceType : type.getInterfaces()) {
             for (ExecutableElement method : ElementFilter
                     .methodsIn(processingEnv().getTypeUtils()

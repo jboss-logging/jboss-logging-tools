@@ -38,6 +38,8 @@ import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JType;
+import com.sun.codemodel.internal.JTypeVar;
 import com.sun.codemodel.internal.JVar;
 
 /**
@@ -54,6 +56,8 @@ import com.sun.codemodel.internal.JVar;
  * 
  */
 public abstract class CodeModel {
+
+    public static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
     /**
      * The implementation types.
@@ -198,8 +202,11 @@ public abstract class CodeModel {
      */
     protected final JVar addMessageVar(final String varName,
             final String messageValue, int id) {
-        final JFieldVar var = definedClass.field(JMod.PRIVATE | JMod.STATIC
-                | JMod.FINAL, String.class, varName);
+        JFieldVar var = definedClass().fields().get(varName);
+        if (var == null) {
+            var = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
+                    String.class, varName);
+        }
         String value = messageValue;
         if (id > 0) {
             value = formatMessageId(id) + messageValue;
@@ -229,12 +236,17 @@ public abstract class CodeModel {
      */
     protected final JMethod addMessageMethod(final String methodName,
             final String returnValue, final int id) {
+        final String internalMethodName = methodName + "$str";
+        JMethod method = definedClass().getMethod(internalMethodName,
+                EMPTY_TYPE_ARRAY);
         // Create the method
-        final JClass returnType = codeModel().ref(String.class);
-        final JMethod method = definedClass().method(JMod.PROTECTED,
-                returnType, methodName + "$str");
-        final JBlock body = method.body();
-        body._return(addMessageVar(methodName, returnValue, id));
+        if (method == null) {
+            final JClass returnType = codeModel().ref(String.class);
+            method = definedClass().method(JMod.PROTECTED, returnType,
+                    methodName + "$str");
+            final JBlock body = method.body();
+            body._return(addMessageVar(methodName, returnValue, id));
+        }
         return method;
     }
 
