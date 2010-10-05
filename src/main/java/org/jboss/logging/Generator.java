@@ -32,42 +32,99 @@ import javax.tools.Diagnostic.Kind;
  * 
  */
 public abstract class Generator {
-    protected final ProcessingEnvironment processingEnv;
+    private final ProcessingEnvironment processingEnv;
 
+    /**
+     * Constructs a new generator.
+     * 
+     * @param processingEnv
+     *            the processing environment.
+     */
     public Generator(final ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
     }
 
+    /**
+     * Returns the name of the generator.
+     * 
+     * @return the name of the generator.
+     */
     public abstract String getName();
 
+    /**
+     * 
+     * 
+     * @param annotations
+     *            the to process.
+     * @param roundEnv
+     *            the round environment.
+     */
     public abstract void generate(final Set<? extends TypeElement> annotations,
             final RoundEnvironment roundEnv);
 
-    public final ProcessingEnvironment processingEnvironment() {
+    /**
+     * Returns the processing environment.
+     * 
+     * @return the processing environment being used.
+     */
+    public final ProcessingEnvironment processingEnv() {
         return processingEnv;
     }
 
+    /**
+     * Convenience method for printing informational messages.
+     * 
+     * @param message
+     *            the message to print.
+     */
     public final void printInfoMessage(final String message) {
         processingEnv.getMessager().printMessage(Kind.NOTE, message);
     }
 
+    /**
+     * Convenience method for printing an error messages.
+     * 
+     * @param message
+     *            the error message to print.
+     */
     public final void printErrorMessage(final String message) {
         processingEnv.getMessager().printMessage(Kind.ERROR, message);
     }
 
+    /**
+     * Convenience method for printing a warning message.
+     * 
+     * @param message
+     *            the warning message to print.
+     */
     public final void printWarningMessage(final String message) {
         processingEnv.getMessager().printMessage(Kind.WARNING, message);
     }
 
+    /**
+     * Prints the stack trace to error message.
+     * 
+     * @param throwable
+     *            the stack trace to print.
+     */
     public final void printErrorMessage(final Throwable throwable) {
         processingEnv.getMessager().printMessage(Kind.ERROR,
                 TransformationUtil.stackTraceToString(throwable));
     }
 
-    public final void printErrorMessage(final String initialMessage, final Throwable throwable) {
+    /**
+     * Prints the initial message as informational message then the stack trace
+     * as an error message.
+     * 
+     * @param initialMessage
+     *            the initial message to print.
+     * @param throwable
+     *            the stack trace to print.
+     */
+    public final void printErrorMessage(final String initialMessage,
+            final Throwable throwable) {
         printInfoMessage(initialMessage);
-        processingEnv.getMessager().printMessage(Kind.ERROR,
-                TransformationUtil.stackTraceToString(throwable));
+        printErrorMessage(throwable);
     }
 
 }

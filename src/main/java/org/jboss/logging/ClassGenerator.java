@@ -20,7 +20,6 @@
  */
 package org.jboss.logging;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
@@ -35,10 +34,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.JavaFileObject;
 
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.writer.SingleStreamCodeWriter;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -86,7 +83,7 @@ public final class ClassGenerator extends Generator {
                 continue;
             }
 
-            final String interfaceName = processingEnv.getElementUtils()
+            final String interfaceName = processingEnv().getElementUtils()
                     .getBinaryName(type).toString();
             final MessageLogger logger = type
                     .getAnnotation(MessageLogger.class);
@@ -94,14 +91,12 @@ public final class ClassGenerator extends Generator {
                     .getAnnotation(MessageBundle.class);
             try {
                 if (logger != null) {
-                    createClass(
-                            CodeModelFactory.createMessageLogger(interfaceName),
-                            type);
+                    createClass(CodeModelFactory.createMessageLogger(
+                            interfaceName, logger.projectCode()), type);
                 }
                 if (bundle != null) {
-                    createClass(
-                            CodeModelFactory.createMessageBundle(interfaceName),
-                            type);
+                    createClass(CodeModelFactory.createMessageBundle(
+                            interfaceName, bundle.projectCode()), type);
                 }
             } catch (IOException e) {
                 printErrorMessage(e);
@@ -115,7 +110,7 @@ public final class ClassGenerator extends Generator {
             throws IOException {
         for (TypeMirror interfaceType : type.getInterfaces()) {
             for (ExecutableElement method : ElementFilter
-                    .methodsIn(processingEnv.getTypeUtils()
+                    .methodsIn(processingEnv().getTypeUtils()
                             .asElement(interfaceType).getEnclosedElements())) {
                 codeModel.addMethod(method);
             }
@@ -127,15 +122,7 @@ public final class ClassGenerator extends Generator {
         }
 
         // Write the source file
-        final Filer filer = processingEnv.getFiler();
-        final JavaFileObject fileObject = filer.createSourceFile(
-                codeModel.className(), type);
-        // final File file = new File(fileObject.toUri());
-        // if (!file.exists()) {
-        //    file.createNewFile();
-        // }
-        // codeModel.codeModel().build(file);
-        final SingleStreamCodeWriter codeWriter = new SingleStreamCodeWriter(fileObject.openOutputStream());
-        codeModel.codeModel().build(codeWriter);
+        final Filer filer = processingEnv().getFiler();
+        codeModel.writeClass(filer.createSourceFile(codeModel.className()));
     }
 }

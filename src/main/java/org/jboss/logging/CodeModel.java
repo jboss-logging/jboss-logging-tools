@@ -20,8 +20,14 @@
  */
 package org.jboss.logging;
 
-import javax.lang.model.element.ExecutableElement;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.tools.JavaFileObject;
+
+import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
@@ -35,21 +41,46 @@ import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 
 /**
+ * An abstract code model to create the source file that implements the
+ * interface.
+ * 
+ * <p>
+ * Essentially this uses a com.sun.codemodel.internal.JCodeModel to generate the
+ * source files with. This class is for convenience in generating default source
+ * files.
+ * </p>
+ * 
  * @author James R. Perkins Jr. (jrp)
  * 
  */
 public abstract class CodeModel {
 
     /**
+     * The implementation types.
      * 
      * @author James R. Perkins Jr. (jrp)
      * 
      */
     public static enum Implementation {
+        /**
+         * Represents the {@code org.jboss.logging.MessageBundle}.
+         */
         BUNDLE("$bundle"),
+        /**
+         * Represents the {@code org.jboss.logging.MessageLogger}.
+         */
         LOGGER("$logger");
+        /**
+         * The extension to append the implementation with.
+         */
         protected final String extension;
 
+        /**
+         * Enum constructor.
+         * 
+         * @param extension
+         *            the extension to append the implementation with.
+         */
         private Implementation(final String extension) {
             this.extension = extension;
         }
@@ -58,18 +89,32 @@ public abstract class CodeModel {
     private final JCodeModel codeModel;
     private JDefinedClass definedClass;
     private final String interfaceName;
+    private final String packageName;
+    private final String projectCode;
 
-    protected CodeModel(final String interfaceName)
+    /**
+     * Class constructor.
+     * 
+     * @param interfaceName
+     *            the interface name to implement.
+     * @param projectCode
+     *            the project code to prepend messages with.
+     * @throws JClassAlreadyExistsException
+     *             When the specified class/interface was already created.
+     */
+    protected CodeModel(final String interfaceName, final String projectCode)
             throws JClassAlreadyExistsException {
         codeModel = new JCodeModel();
         this.interfaceName = interfaceName;
+        this.packageName = TransformationUtil.toPackage(interfaceName());
+        this.projectCode = projectCode;
         init();
     }
 
     /**
      * Returns the code model.
      * 
-     * @return
+     * @return the code model.
      */
     public final JCodeModel codeModel() {
         return codeModel;
@@ -91,50 +136,162 @@ public abstract class CodeModel {
      */
     public abstract Implementation type();
 
+    /**
+     * Adds a method to the class.
+     * 
+     * @param method
+     *            the method to add.
+     */
     public abstract void addMethod(final ExecutableElement method);
 
+    /**
+     * The interface name this generated class will be implementing.
+     * 
+     * @return the interface name.
+     */
     public final String interfaceName() {
         return interfaceName;
     }
 
+    /**
+     * Returns the fully qualified class name of the class.
+     * 
+     * @return the fully qualified class name.
+     */
     public final String className() {
         return interfaceName() + type().extension;
     }
 
+    /**
+     * Returns the package name for the class.
+     * 
+     * @return the package name.
+     */
     public final String packageName() {
-        return TransformationUtil.toPackage(interfaceName());
+        return packageName;
     }
 
+    /**
+     * Writes the class created to a generated class file.
+     * 
+     * @param fileObject
+     *            the file object where to write the source to.
+     * @throws IOException
+     *             if a write error occurs.
+     */
+    public void writeClass(final JavaFileObject fileObject) throws IOException {
+        final JavaFileObjectCodeWriter codeWriter = new JavaFileObjectCodeWriter(
+                fileObject);
+        codeModel().build(codeWriter);
+    }
+
+    /**
+     * Creates the variable that stores the message.
+     * 
+     * @param varName
+     *            the variable name.
+     * @param messageValue
+     *            the value for the message.
+     * @param id
+     *            the id to prepend the project code/message with.
+     * @return the newly created variable.
+     */
     protected final JVar addMessageVar(final String varName,
-            final String messageValue) {
+            final String messageValue, int id) {
         final JFieldVar var = definedClass.field(JMod.PRIVATE | JMod.STATIC
                 | JMod.FINAL, String.class, varName);
-        var.init(JExpr.lit(messageValue));
+        String value = messageValue;
+        if (id > 0) {
+            value = formatMessageId(id) + messageValue;
+        }
+        var.init(JExpr.lit(value));
         return var;
     }
 
+    /**
+     * Adds a method to return the message value. The method name should be the
+     * method name annotated {@code org.jboss.logging.Message}. This method will
+     * be appended with {@code $str}.
+     * 
+     * <p>
+     * Note this method invokes the
+     * {@code addMessageVar(varName, messageValue, id)} to add the variable.
+     * </p>
+     * 
+     * 
+     * @param methodName
+     *            the method name.
+     * @param returnValue
+     *            the message value.
+     * @param id
+     *            the id to prepend the project code/message with.
+     * @return the newly created method.
+     */
     protected final JMethod addMessageMethod(final String methodName,
-            final String returnValue) {
+            final String returnValue, final int id) {
         // Create the method
         final JClass returnType = codeModel().ref(String.class);
         final JMethod method = definedClass().method(JMod.PROTECTED,
                 returnType, methodName + "$str");
         final JBlock body = method.body();
-        body._return(addMessageVar(methodName, returnValue));
+        body._return(addMessageVar(methodName, returnValue, id));
         return method;
     }
 
-    private void init() throws JClassAlreadyExistsException {
-        // Create the package
-        final String packageName = packageName();
-        if (packageName != null) {
-            codeModel._package(packageName);
+    /**
+     * Formats the message id. The message id is comprised of the project code
+     * plus the id.
+     * 
+     * @param id
+     *            the id used to prepend the project code.
+     * @return the formatted message id.
+     */
+    protected final String formatMessageId(final int id) {
+        final StringBuilder result = new StringBuilder(projectCode);
+        if (result.length() > 0) {
+            result.append("-");
+            result.append(prepend("" + id, '0', 5));
+            result.append(": ");
         }
+        return result.toString();
+    }
 
+    /**
+     * Pads the initial value with the character. If the length is greater than
+     * or equal to the length of the initial value, the initial value will be
+     * returned.
+     * 
+     * @param initValue
+     *            the value to pad.
+     * @param padChar
+     *            the character to pad the value with.
+     * @param padLen
+     *            the total length the string should be.
+     * @return the padded value.
+     */
+    protected final String prepend(final String initValue, final char padChar,
+            final int padLen) {
+        final StringBuilder result = new StringBuilder();
+        for (int i = initValue.length(); i < padLen; i++) {
+            result.append(padChar);
+        }
+        result.append(initValue);
+        return result.toString();
+    }
+
+    /**
+     * Initializes the class to generate with defaults.
+     * 
+     * @throws JClassAlreadyExistsException
+     *             When the specified class/interface was already created.
+     */
+    private void init() throws JClassAlreadyExistsException {
         // Define the class
-        definedClass = codeModel._class(TransformationUtil
-                .toSimpleClassName(className()));
-        definedClass.annotate(javax.annotation.Generated.class);
+        definedClass = codeModel._class(className());
+        final JAnnotationUse anno = definedClass
+                .annotate(javax.annotation.Generated.class);
+        anno.param("value", getClass().getCanonicalName());
+        anno.param("date", generatedDateValue());
         definedClass._extends(Object.class);
         definedClass._implements(codeModel.directClass(interfaceName()));
         definedClass._implements(java.io.Serializable.class);
@@ -147,6 +304,17 @@ public abstract class CodeModel {
         final JFieldVar serialVersionUID = definedClass.field(JMod.PRIVATE
                 | JMod.STATIC | JMod.FINAL, codeModel.LONG, "serialVersionUID");
         serialVersionUID.init(JExpr.lit(1L));
+    }
+
+    /**
+     * Returns the current date formatted in the ISO 8601 format.
+     * 
+     * @return the current date formatted in ISO 8601.
+     */
+    protected static String generatedDateValue() {
+        final SimpleDateFormat sdf = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ssZ");
+        return sdf.format(new Date());
     }
 
 }
