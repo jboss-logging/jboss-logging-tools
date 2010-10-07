@@ -66,7 +66,8 @@ public final class ClassGenerator extends Generator {
             final RoundEnvironment roundEnv) {
         process(roundEnv.getRootElements());
     }
-
+    
+    
     private void process(Collection<? extends Element> elements) {
         Collection<? extends TypeElement> typeElements = ElementFilter
                 .typesIn(elements);
@@ -91,12 +92,12 @@ public final class ClassGenerator extends Generator {
                     .getAnnotation(MessageBundle.class);
             try {
                 if (logger != null) {
-                    createClass(CodeModelFactory.createMessageLogger(
-                            interfaceName, logger.projectCode()), type);
+                    createClass(new MessageLoggerCodeModel(interfaceName,
+                            logger.projectCode()), type);
                 }
                 if (bundle != null) {
-                    createClass(CodeModelFactory.createMessageBundle(
-                            interfaceName, bundle.projectCode()), type);
+                    createClass(new MessageBundleCodeModel(interfaceName,
+                            bundle.projectCode()), type);
                 }
             } catch (IOException e) {
                 printErrorMessage(e);
