@@ -1,4 +1,15 @@
+#ignore Maven target folder
 /target
+
+#ignore Eclipse files
+/.settings
 .classpath
 .project
-/.settings
+
+#ignore Intellij files
+*.iml
+*.iws
+*.ipr
+
+#ignore Mac files
+.DS_Store
