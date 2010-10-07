@@ -178,6 +178,13 @@ public abstract class CodeModel {
     /**
      * Writes the class created to a generated class file.
      * 
+     * <p>
+     * This method is designed to be extended if the class needs to be defined
+     * further before the class is built. Invoke this method ,
+     * {@code super#writeClass(JavaFileObject)}, at the end of the overridden
+     * method if no custom class creates is required.
+     * </p>
+     * 
      * @param fileObject
      *            the file object where to write the source to.
      * @throws IOException
@@ -191,6 +198,11 @@ public abstract class CodeModel {
 
     /**
      * Creates the variable that stores the message.
+     * 
+     * <p>
+     * If the message variable has already been defined the previously created
+     * variable is returned.
+     * </p>
      * 
      * @param varName
      *            the variable name.
@@ -206,12 +218,12 @@ public abstract class CodeModel {
         if (var == null) {
             var = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
                     String.class, varName);
+            String value = messageValue;
+            if (id > 0) {
+                value = formatMessageId(id) + messageValue;
+            }
+            var.init(JExpr.lit(value));
         }
-        String value = messageValue;
-        if (id > 0) {
-            value = formatMessageId(id) + messageValue;
-        }
-        var.init(JExpr.lit(value));
         return var;
     }
 
@@ -219,6 +231,11 @@ public abstract class CodeModel {
      * Adds a method to return the message value. The method name should be the
      * method name annotated {@code org.jboss.logging.Message}. This method will
      * be appended with {@code $str}.
+     * 
+     * <p>
+     * If the message method has already been defined the previously created
+     * method is returned.
+     * </p>
      * 
      * <p>
      * Note this method invokes the
@@ -243,7 +260,7 @@ public abstract class CodeModel {
         if (method == null) {
             final JClass returnType = codeModel().ref(String.class);
             method = definedClass().method(JMod.PROTECTED, returnType,
-                    methodName + "$str");
+                    internalMethodName);
             final JBlock body = method.body();
             body._return(addMessageVar(methodName, returnValue, id));
         }
@@ -262,7 +279,7 @@ public abstract class CodeModel {
         final StringBuilder result = new StringBuilder(projectCode);
         if (result.length() > 0) {
             result.append("-");
-            result.append(prepend("" + id, '0', 5));
+            result.append(padLeft("" + id, '0', 5));
             result.append(": ");
         }
         return result.toString();
@@ -281,7 +298,7 @@ public abstract class CodeModel {
      *            the total length the string should be.
      * @return the padded value.
      */
-    protected final String prepend(final String initValue, final char padChar,
+    protected final String padLeft(final String initValue, final char padChar,
             final int padLen) {
         final StringBuilder result = new StringBuilder();
         for (int i = initValue.length(); i < padLen; i++) {
