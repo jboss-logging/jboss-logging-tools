@@ -56,6 +56,7 @@ public class MessageBundleCodeModel extends CodeModel {
     public MessageBundleCodeModel(final String interfaceName,
             final String projectCode) throws JClassAlreadyExistsException {
         super(interfaceName, projectCode);
+        methodDescriptor = new MethodDescriptor();
         init();
     }
 
