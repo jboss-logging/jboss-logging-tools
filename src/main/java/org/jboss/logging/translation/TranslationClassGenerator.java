@@ -18,42 +18,52 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging.traduction;
+package org.jboss.logging.translation;
 
 import org.jboss.logging.Generator;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.MessageLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
+import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
  * @author Kevin Pollet
  */
-public final class PropertyClassGenerator extends Generator {
+public final class TranslationClassGenerator extends Generator {
 
     /**
      * The logger.
      */
-    private final Logger logger = LoggerFactory.getLogger(PropertyClassGenerator.class);
+    private final Logger logger = LoggerFactory.getLogger(TranslationClassGenerator.class);
 
-    public PropertyClassGenerator(ProcessingEnvironment processingEnv) {
+    /**
+     * The constructor.
+     *
+     * @param processingEnv the processing environment
+     */
+    public TranslationClassGenerator(ProcessingEnvironment processingEnv) {
         super(processingEnv);
     }
 
@@ -71,42 +81,49 @@ public final class PropertyClassGenerator extends Generator {
     @Override
     public void generate(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
+        //Get utils
         Filer filer = this.processingEnv().getFiler();
         Types typesUtils = this.processingEnv().getTypeUtils();
         Elements elementsUtils = this.processingEnv().getElementUtils();
 
-        if (!annotations.isEmpty()) {
+        Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.getRootElements());
 
-            logger.debug("Start traduction annotation processor");
+        for (TypeElement element : typesElement) {
 
-            for (TypeElement element : annotations) {
+            MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
+            MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
 
-                for (final Element e : roundEnv.getElementsAnnotatedWith(element)) {
+            if (bundleAnnotation != null || loggerAnnotation != null) {
 
-                    //Must be an interface and public
-                    if (e.getKind() == ElementKind.INTERFACE) {
+                //Must be an interface and public
+                if (element.getKind() == ElementKind.INTERFACE && element.getModifiers().contains(Modifier.PUBLIC)) {
 
-                        Name className = e.getSimpleName();
-                        PackageElement packageElement = elementsUtils.getPackageOf(e);
+                    Name className = element.getSimpleName();
+                    PackageElement packageElement = elementsUtils.getPackageOf(element);
 
-                        try {
-                            // Get package
+                    try {
+                        // Get package
 
-                            FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, "", packageElement.getQualifiedName());
+                        FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, "", packageElement.getQualifiedName());
 
-                            //Get properties file
-                            String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote("."), System.getProperty("file.separator"));
-                            File dir = new File(packagePath);
-                            File[] files = dir.listFiles(new PropertyClassGenerator.PropertyFileFilter(className.toString()));
+                        //Get properties file
+                        String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote("."), System.getProperty("file.separator"));
+                        File dir = new File(packagePath);
+                        String[] filesName = dir.list(new TranslationClassGenerator.PropertyFileFilter(className.toString()));
 
-                            for (File f : files) {
-                                logger.debug("Property file found for {} : {}", className, f.getName());
-                            }
+                        for (String fileName : filesName) {
+                            this.logger.debug("Generate property classes for {}.", fileName);
 
-                        } catch (IOException e1) {
-                            this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot read the package content.", packageElement);
+                            //Generate Java Code
+                            JavaFileObject object = filer.createSourceFile(packageElement.getQualifiedName() + "." + this.getClassNameForPropertyFile(fileName), packageElement);
+                            Writer writer = object.openWriter();
+                            writer.write("public static Toto() { }");
+                            writer.close();
+
                         }
 
+                    } catch (IOException e1) {
+                        this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot read the package content.", packageElement);
                     }
 
                 }
@@ -156,6 +173,18 @@ public final class PropertyClassGenerator extends Generator {
             return name.matches(Pattern.quote(this.className) + PROPS_EXTENSION_PATTERN);
         }
 
+    }
+
+
+    private String getClassNameForPropertyFile(String name) {
+        int first = name.indexOf(".");
+        int last = name.lastIndexOf(".");
+        int firstUnder = name.indexOf("_");
+
+        String clazz = name.substring(0, first);
+        String qualifier = name.substring(firstUnder, last);
+
+        return clazz.concat(qualifier.replaceAll("_", "\\$"));
     }
 
 }

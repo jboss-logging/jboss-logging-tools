@@ -20,7 +20,7 @@
  */
 package org.jboss.logging;
 
-import org.jboss.logging.traduction.PropertyClassGenerator;
+import org.jboss.logging.translation.TranslationClassGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         super.init(processingEnv);
         
         generators.add(new ClassGenerator(processingEnv));
-        generators.add(new PropertyClassGenerator(processingEnv));
+        generators.add(new TranslationClassGenerator(processingEnv));
     }
 
 }
