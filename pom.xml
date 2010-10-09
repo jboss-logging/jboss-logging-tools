@@ -1,10 +1,22 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    
 	<groupId>org.jboss.logging</groupId>
 	<artifactId>annotation-processor</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>logging-annotation-processor</name>
+
+    <repositories>
+		<repository>
+			<id>jboss-public-repository-group</id>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
@@ -12,19 +24,25 @@
 			<version>3.0.0.Beta4</version>
 		</dependency>
 	</dependencies>
+	
 
-	<repositories>
-		<repository>
-			<id>jboss-public-repository-group</id>
-			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
-			<layout>default</layout>
-		</repository>
-	</repositories>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgument>-proc:none</compilerArgument>
+                        </configuration>
+                    </execution>
+                </executions>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
@@ -32,4 +50,5 @@
 			</plugin>
 		</plugins>
 	</build>
+    
 </project>
