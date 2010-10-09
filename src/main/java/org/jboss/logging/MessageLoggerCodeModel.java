@@ -20,11 +20,8 @@
  */
 package org.jboss.logging;
 
-import java.io.IOException;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.tools.JavaFileObject;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
@@ -84,10 +81,10 @@ public final class MessageLoggerCodeModel extends CodeModel {
     /*
      * (non-Javadoc)
      * 
-     * @see org.jboss.logging.CodeModel#writeClass(javax.tools.JavaFileObject)
+     * @see org.jboss.logging.CodeModel#beforeWrite()
      */
     @Override
-    public void writeClass(final JavaFileObject fileObject) throws IOException {
+    public void beforeWrite() {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
@@ -146,7 +143,6 @@ public final class MessageLoggerCodeModel extends CodeModel {
             final JBlock body = jMethod.body();
             body.directStatement(bodyText.toString());
         }
-        super.writeClass(fileObject);
     }
 
     /**
