@@ -194,6 +194,8 @@ public abstract class CodeModel {
      *            the file object where to write the source to.
      * @throws IOException
      *             if a write error occurs.
+     * @throws ValidationException
+     *             if invalid.
      */
     public final void writeClass(final JavaFileObject fileObject)
             throws IOException {

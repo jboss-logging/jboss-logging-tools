@@ -26,7 +26,9 @@ import javax.lang.model.element.VariableElement;
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
@@ -101,47 +103,40 @@ public final class MessageLoggerCodeModel extends CodeModel {
             if (logMessage != null) {
                 logLevel = logMessage.level();
             }
-            // Create the body text for the method.
-            final StringBuilder bodyText = new StringBuilder();
             // Add the message method.
             final JMethod msgMethod = addMessageMethod(methodName,
                     message.value(), message.id());
-
-            bodyText.append(log.name());
-            bodyText.append(".");
-            bodyText.append(logLevel.name().toLowerCase());
-
+            // Determine the log method
+            final StringBuilder logMethod = new StringBuilder(logLevel.name()
+                    .toLowerCase());
             switch (methodDesc.message().format()) {
                 case MESSAGE_FORMAT:
-                    bodyText.append("v");
+                    logMethod.append("v");
                     break;
                 case PRINTF:
-                    bodyText.append("f");
+                    logMethod.append("f");
                     break;
             }
-            bodyText.append("(");
+            // Create the body of the method and add the text
+            final JBlock body = jMethod.body();
+            final JInvocation logInv = body.invoke(log, logMethod.toString());
             // The clause must be first if there is one.
             if (methodDesc.hasClause()) {
-                bodyText.append(methodDesc.cause().getSimpleName().toString());
-                bodyText.append(", ");
+                logInv.arg(JExpr.direct(methodDesc.causeVarName()));
             }
             // The next parameter is the message. Should be accessed via the
             // message retrieval method.
-            bodyText.append(msgMethod.name());
-            bodyText.append("()");
+            logInv.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel().ref(
                         param.asType().toString());
                 final JVar var = jMethod.param(JMod.FINAL, paramType, param
                         .getSimpleName().toString());
-                bodyText.append(", ");
-                bodyText.append(var.name());
+                if (!param.equals(methodDesc.cause())) {
+                    logInv.arg(var);
+                }
             }
-            bodyText.append(");");
-            // Create the body of the method and add the text
-            final JBlock body = jMethod.body();
-            body.directStatement(bodyText.toString());
         }
     }
 
@@ -153,9 +148,9 @@ public final class MessageLoggerCodeModel extends CodeModel {
                 "log");
         // Add default constructor
         final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
-        constructor.param(JMod.FINAL, Logger.class, "log");
+        final JVar param = constructor.param(JMod.FINAL, Logger.class, "log");
         final JBlock body = constructor.body();
-        body.directStatement("this.log = log;");
+        body.directStatement("this." + log.name() + " = " + param.name() + ";");
     }
 
 }

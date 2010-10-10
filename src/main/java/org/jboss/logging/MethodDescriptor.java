@@ -50,10 +50,21 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
     private final List<VariableElement> parameters;
     private TypeMirror returnType;
 
+    /**
+     * Class constructor.
+     */
     public MethodDescriptor() {
         this(null, null);
     }
 
+    /**
+     * Class constructor for singleton
+     * 
+     * @param methodDesc
+     *            the current method descriptor.
+     * @param method
+     *            the method to add.
+     */
     private MethodDescriptor(final MethodDescriptor methodDesc,
             final ExecutableElement method) {
         descriptors = new LinkedHashSet<MethodDescriptor>();
@@ -74,6 +85,11 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
         return message;
     }
 
+    /**
+     * Returns the method.
+     * 
+     * @return the method.
+     */
     public ExecutableElement method() {
         return method;
     }
@@ -107,6 +123,15 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
     }
 
     /**
+     * Returns the the cause variable name as a string.
+     * 
+     * @return the cause variable name.
+     */
+    public String causeVarName() {
+        return cause().getSimpleName().toString();
+    }
+
+    /**
      * Returns the LogMessage annotation associated with this method.
      * 
      * @return the log message annotation
@@ -115,14 +140,29 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
         return logMessage;
     }
 
-    public List<VariableElement> parameters() {
-        return parameters;
+    /**
+     * Returns a collections of the parameters.
+     * 
+     * @return a collection of the parameters.
+     */
+    public Collection<VariableElement> parameters() {
+        return Collections.unmodifiableCollection(parameters);
     }
 
+    /**
+     * Returns the return type for the method.
+     * 
+     * @return the return type for the method.
+     */
     public TypeMirror returnType() {
         return returnType;
     }
 
+    /**
+     * Returns the return type for the method in a string format.
+     * 
+     * @return the return type for the method.
+     */
     public String returnTypeAsString() {
         return returnType.toString();
     }

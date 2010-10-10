@@ -102,7 +102,7 @@ public class MessageBundleCodeModel extends CodeModel {
 
             final JBlock body = jMethod.body();
             final JClass returnField = codeModel().ref(returnType.fullName());
-            JVar var = body.decl(returnField, "result");
+            final JVar result = body.decl(returnField, "result");
             JClass formatter = null;
             // Determine the format type
             switch (message.format()) {
@@ -113,18 +113,28 @@ public class MessageBundleCodeModel extends CodeModel {
                     formatter = codeModel().ref(String.class);
                     break;
             }
-            final JInvocation formatterMethod = formatter.staticInvoke("format");
+            final JInvocation formatterMethod = formatter
+                    .staticInvoke("format");
             formatterMethod.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel().ref(
                         param.asType().toString());
-                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.getSimpleName()
-                        .toString());
+                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param
+                        .getSimpleName().toString());
                 formatterMethod.arg(paramVar);
             }
-            var.init(formatterMethod);
-            body._return(var);
+            // Setup the return type
+            if (methodDesc.hasClause()
+                    && codeModel().ref(Throwable.class).isAssignableFrom(
+                            returnField)) {
+                result.init(JExpr._new(returnField));
+                JInvocation inv = body.invoke(result, "initCause");
+                inv.arg(JExpr.ref(methodDesc.causeVarName()));
+            } else {
+                result.init(formatterMethod);
+            }
+            body._return(result);
         }
     }
 
