@@ -20,9 +20,13 @@
  */
 package org.jboss.logging.translation;
 
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import com.sun.codemodel.internal.JCodeModel;
 import org.jboss.logging.Generator;
+import org.jboss.logging.JavaFileObjectCodeWriter;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
+import org.jboss.logging.translation.model.TranslationClassModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +35,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -44,7 +47,6 @@ import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -90,40 +92,60 @@ public final class TranslationClassGenerator extends Generator {
 
         for (TypeElement element : typesElement) {
 
-            MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
-            MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
+            if (element.getKind() == ElementKind.INTERFACE && element.getModifiers().contains(Modifier.PUBLIC)) {
 
-            if (bundleAnnotation != null || loggerAnnotation != null) {
+                MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
+                MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
 
-                //Must be an interface and public
-                if (element.getKind() == ElementKind.INTERFACE && element.getModifiers().contains(Modifier.PUBLIC)) {
+                if (bundleAnnotation != null || loggerAnnotation != null) {
 
-                    Name className = element.getSimpleName();
                     PackageElement packageElement = elementsUtils.getPackageOf(element);
 
-                    try {
-                        // Get package
+                    String packageName = packageElement.getQualifiedName().toString();
+                    String interfaceName = element.getSimpleName().toString();
+                    String primaryClassName = interfaceName.concat(bundleAnnotation != null ? "$bundle" : "$logger");
 
+                    try {
+
+                        // Get package
                         FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, "", packageElement.getQualifiedName());
 
                         //Get properties file
                         String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote("."), System.getProperty("file.separator"));
                         File dir = new File(packagePath);
-                        String[] filesName = dir.list(new TranslationClassGenerator.PropertyFileFilter(className.toString()));
+
+                        PropertyFileFilter filter = new TranslationClassGenerator.PropertyFileFilter(interfaceName);
+                        String[] filesName = dir.list(filter);
 
                         for (String fileName : filesName) {
-                            this.logger.debug("Generate property classes for {}.", fileName);
+
+                            String propertyClassName = PropertyFileUtil.getClassNameFor(primaryClassName, fileName);
+                            String qualifiedPropertyClassName = packageName.concat("." + propertyClassName);
 
                             //Generate Java Code
-                            JavaFileObject object = filer.createSourceFile(packageElement.getQualifiedName() + "." + this.getClassNameForPropertyFile(fileName), packageElement);
-                            Writer writer = object.openWriter();
-                            writer.write("public static Toto() { }");
-                            writer.close();
+
+                            JCodeModel model = null;
+
+                            try {
+
+                                this.logger.debug("Generate property classes for {} with name {}", fileName, qualifiedPropertyClassName);
+
+                                JavaFileObject fileObject = filer.createSourceFile(qualifiedPropertyClassName, packageElement);
+
+                                TranslationClassModel classModel = new TranslationClassModel(packageName, propertyClassName);
+                                model = classModel.build();
+
+                                JavaFileObjectCodeWriter codeWriter = new JavaFileObjectCodeWriter(fileObject);
+                                model.build(codeWriter);
+
+                            } catch (JClassAlreadyExistsException e) {
+                                this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Class " + model.getClass().getSimpleName() + " already exist");
+                            }
 
                         }
 
                     } catch (IOException e1) {
-                        this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot read the package content.", packageElement);
+                        this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot read package content", packageElement);
                     }
 
                 }
@@ -173,18 +195,6 @@ public final class TranslationClassGenerator extends Generator {
             return name.matches(Pattern.quote(this.className) + PROPS_EXTENSION_PATTERN);
         }
 
-    }
-
-
-    private String getClassNameForPropertyFile(String name) {
-        int first = name.indexOf(".");
-        int last = name.lastIndexOf(".");
-        int firstUnder = name.indexOf("_");
-
-        String clazz = name.substring(0, first);
-        String qualifier = name.substring(firstUnder, last);
-
-        return clazz.concat(qualifier.replaceAll("_", "\\$"));
     }
 
 }
