@@ -27,6 +27,7 @@ import java.util.Date;
 import javax.lang.model.element.ExecutableElement;
 import javax.tools.JavaFileObject;
 
+import com.sun.codemodel.internal.CodeWriter;
 import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
@@ -176,23 +177,30 @@ public abstract class CodeModel {
     }
 
     /**
+     * This method is invoked before the class is written. There is no need to
+     * explicitly execute this method. Doing so could result in errors.
+     */
+    protected abstract void beforeWrite();
+
+    /**
      * Writes the class created to a generated class file.
      * 
      * <p>
-     * This method is designed to be extended if the class needs to be defined
-     * further before the class is built. Invoke this method ,
-     * {@code super#writeClass(JavaFileObject)}, at the end of the overridden
-     * method if no custom class creates is required.
+     * Invokes the {@code CodeModel#beforeWrite()} method before the class is
+     * written.
      * </p>
      * 
      * @param fileObject
      *            the file object where to write the source to.
      * @throws IOException
      *             if a write error occurs.
+     * @throws ValidationException
+     *             if invalid.
      */
-    public void writeClass(final JavaFileObject fileObject) throws IOException {
-        final JavaFileObjectCodeWriter codeWriter = new JavaFileObjectCodeWriter(
-                fileObject);
+    public final void writeClass(final JavaFileObject fileObject)
+            throws IOException {
+        beforeWrite();
+        final CodeWriter codeWriter = new JavaFileObjectCodeWriter(fileObject);
         codeModel().build(codeWriter);
     }
 

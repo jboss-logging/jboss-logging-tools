@@ -20,17 +20,15 @@
  */
 package org.jboss.logging;
 
-import java.io.IOException;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.tools.JavaFileObject;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
@@ -84,10 +82,10 @@ public class MessageBundleCodeModel extends CodeModel {
     /*
      * (non-Javadoc)
      * 
-     * @see org.jboss.logging.CodeModel#writeClass(javax.tools.JavaFileObject)
+     * @see org.jboss.logging.CodeModel#beforeWrite()
      */
     @Override
-    public void writeClass(final JavaFileObject fileObject) throws IOException {
+    public void beforeWrite() {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
@@ -101,21 +99,43 @@ public class MessageBundleCodeModel extends CodeModel {
 
             final JMethod msgMethod = addMessageMethod(methodName,
                     message.value(), message.id());
+
+            final JBlock body = jMethod.body();
+            final JClass returnField = codeModel().ref(returnType.fullName());
+            final JVar result = body.decl(returnField, "result");
+            JClass formatter = null;
+            // Determine the format type
+            switch (message.format()) {
+                case MESSAGE_FORMAT:
+                    formatter = codeModel().ref(java.text.MessageFormat.class);
+                    break;
+                case PRINTF:
+                    formatter = codeModel().ref(String.class);
+                    break;
+            }
+            final JInvocation formatterMethod = formatter
+                    .staticInvoke("format");
+            formatterMethod.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel().ref(
                         param.asType().toString());
-                jMethod.param(JMod.FINAL, paramType, param.getSimpleName()
-                        .toString());
+                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param
+                        .getSimpleName().toString());
+                formatterMethod.arg(paramVar);
             }
-
-            final JBlock body = jMethod.body();
-            final JClass returnField = codeModel().ref(returnType.fullName());
-            JVar var = body.decl(returnField, "result");
-            var.init(JExpr.invoke(msgMethod));
-            body._return(var);
+            // Setup the return type
+            if (methodDesc.hasClause()
+                    && codeModel().ref(Throwable.class).isAssignableFrom(
+                            returnField)) {
+                result.init(JExpr._new(returnField));
+                JInvocation inv = body.invoke(result, "initCause");
+                inv.arg(JExpr.ref(methodDesc.causeVarName()));
+            } else {
+                result.init(formatterMethod);
+            }
+            body._return(result);
         }
-        super.writeClass(fileObject);
     }
 
     /**
