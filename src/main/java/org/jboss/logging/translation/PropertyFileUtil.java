@@ -46,7 +46,7 @@ public final class PropertyFileUtil {
      * Get the language qualifier for the given
      * property file.
      *
-     * @param propertyFileName the property fiele name
+     * @param propertyFileName the property file name
      * @return the language qualifier or null if none
      */
     public static String getPropertyFileQualifier(final String propertyFileName, final Qualifier qualifier) {
@@ -105,7 +105,7 @@ public final class PropertyFileUtil {
         String localeQualifier = propertyFileName.substring(firstUnderScore, lastDot);
 
         StringBuilder builder = new StringBuilder(primaryClassName);
-        builder.append(localeQualifier);
+        builder.append(localeQualifier.replaceAll("_","\\$"));
 
         return builder.toString();
     }

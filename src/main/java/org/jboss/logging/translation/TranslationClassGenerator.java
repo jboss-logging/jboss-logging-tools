@@ -20,12 +20,11 @@
  */
 package org.jboss.logging.translation;
 
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.JCodeModel;
 import org.jboss.logging.Generator;
-import org.jboss.logging.JavaFileObjectCodeWriter;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
+import org.jboss.logging.translation.model.MessageBundleClassModel;
+import org.jboss.logging.translation.model.MessageLoggerClassModel;
 import org.jboss.logging.translation.model.TranslationClassModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +41,13 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
-import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -85,7 +86,6 @@ public final class TranslationClassGenerator extends Generator {
 
         //Get utils
         Filer filer = this.processingEnv().getFiler();
-        Types typesUtils = this.processingEnv().getTypeUtils();
         Elements elementsUtils = this.processingEnv().getElementUtils();
 
         Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.getRootElements());
@@ -107,39 +107,45 @@ public final class TranslationClassGenerator extends Generator {
 
                     try {
 
-                        // Get package
                         FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, "", packageElement.getQualifiedName());
-
-                        //Get properties file
                         String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote("."), System.getProperty("file.separator"));
                         File dir = new File(packagePath);
 
+                        //List properties file
                         PropertyFileFilter filter = new TranslationClassGenerator.PropertyFileFilter(interfaceName);
-                        String[] filesName = dir.list(filter);
+                        File[] files = dir.listFiles(filter);
 
-                        for (String fileName : filesName) {
+                        for (File file : files) {
 
-                            String propertyClassName = PropertyFileUtil.getClassNameFor(primaryClassName, fileName);
+                            String fileName = file.getName();
+                            String propertyClassName = PropertyFileUtil.getClassNameFor(primaryClassName, file.getName());
                             String qualifiedPropertyClassName = packageName.concat("." + propertyClassName);
 
-                            //Generate Java Code
 
-                            JCodeModel model = null;
+                            /*
+                             * Generate Java Code.
+                             */
+
+                            TranslationClassModel classModel = null;
 
                             try {
 
                                 this.logger.debug("Generate property classes for {} with name {}", fileName, qualifiedPropertyClassName);
 
-                                JavaFileObject fileObject = filer.createSourceFile(qualifiedPropertyClassName, packageElement);
+                                Properties translation = new Properties();
+                                translation.load(new FileReader(file));
 
-                                TranslationClassModel classModel = new TranslationClassModel(packageName, propertyClassName);
-                                model = classModel.build();
+                                if (bundleAnnotation != null) {
+                                    classModel = new MessageBundleClassModel(packageName, propertyClassName);
+                                } else if (loggerAnnotation != null) {
+                                    classModel = new MessageLoggerClassModel(packageName, propertyClassName);
+                                }
 
-                                JavaFileObjectCodeWriter codeWriter = new JavaFileObjectCodeWriter(fileObject);
-                                model.build(codeWriter);
+                                classModel.addAllTranslations((Map) translation);
+                                classModel.writeClass(filer);
 
-                            } catch (JClassAlreadyExistsException e) {
-                                this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Class " + model.getClass().getSimpleName() + " already exist");
+                            } catch (Exception e) {
+                                this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during generation of class " + propertyClassName + " already exist");
                             }
 
                         }
