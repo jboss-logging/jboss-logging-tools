@@ -18,7 +18,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging.translation;
+package org.jboss.logging.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
