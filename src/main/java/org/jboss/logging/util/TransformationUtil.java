@@ -26,9 +26,8 @@ import java.io.StringWriter;
 
 /**
  * @author James R. Perkins Jr. (jrp)
- * 
  */
-final class TransformationUtil {
+public final class TransformationUtil {
 
     /**
      * Constructor for singleton.
@@ -38,9 +37,8 @@ final class TransformationUtil {
 
     /**
      * Returns the package name from a qualified object name.
-     * 
-     * @param qualifiedName
-     *            the qualified object name.
+     *
+     * @param qualifiedName the qualified object name.
      * @return the package name.
      */
     public static String toPackage(final String qualifiedName) {
@@ -55,9 +53,8 @@ final class TransformationUtil {
     /**
      * Removes the package name from the qualified object name and returns the
      * class name.
-     * 
-     * @param qualifiedClassName
-     *            the qualified object name.
+     *
+     * @param qualifiedClassName the qualified object name.
      * @return the class name minus the package.
      */
     public static String toSimpleClassName(final String qualifiedClassName) {
@@ -71,9 +68,8 @@ final class TransformationUtil {
 
     /**
      * Converts a stack trace to string output.
-     * 
-     * @param t
-     *            the stack trace to convert.
+     *
+     * @param t the stack trace to convert.
      * @return a string version of the stack trace.
      */
     public static String stackTraceToString(final Throwable t) {

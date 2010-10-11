@@ -105,7 +105,7 @@ public final class PropertyFileUtil {
         String localeQualifier = propertyFileName.substring(firstUnderScore, lastDot);
 
         StringBuilder builder = new StringBuilder(primaryClassName);
-        builder.append(localeQualifier.replaceAll("_","\\$"));
+        builder.append(localeQualifier.replaceAll("_", "\\$"));
 
         return builder.toString();
     }

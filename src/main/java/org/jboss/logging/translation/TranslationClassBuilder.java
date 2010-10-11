@@ -18,44 +18,56 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging.translation.model;
+package org.jboss.logging.translation;
 
-import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
+import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import org.jboss.logging.model.ClassModel;
 
-import java.util.logging.Logger;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Kevin Pollet
  */
-public class MessageLoggerClassModel extends TranslationClassModel {
+public class TranslationClassBuilder {
 
-    private static final String LOGGER_PARAMETER_NAME = "logger";
+    private static final String METHOD_SUFFIX = "$str";
 
-    public MessageLoggerClassModel(final String packageName, final String className) {
-        super(packageName, className);
+    public ClassModel model;
+
+    public static TranslationClassBuilder from(final ClassModel model) {
+        return new TranslationClassBuilder(model);
     }
 
-    @Override
-    public JCodeModel generateCodeModel() throws Exception {
-        JCodeModel model = super.generateCodeModel();
+    public TranslationClassBuilder(final ClassModel model) {
+        this.model = model;
+    }
 
-        /*
-         * Add MessageLogger specific code
-         */
+    public TranslationClassBuilder withAllTranslations(final Map<String, String> translations) {
+        JCodeModel model = this.model.getClassModel();
+        JDefinedClass clazz = model._getClass(this.model.getClassName());
 
-        JDefinedClass definedClass = model._getClass(this.getQualifiedName());
+        Set<Map.Entry<String, String>> entries = translations.entrySet();
+        for (Map.Entry<String, String> entry : entries) {
 
-        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
-        constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
+            String key = entry.getKey();
+            String value = entry.getValue();
 
-        JBlock constructorBody = constructor.body();
-        constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
+            JMethod method = clazz.method(JMod.PROTECTED, String.class, key + METHOD_SUFFIX);
+            method.annotate(Override.class);
+            method.body()._return(JExpr.lit(value));
+        }
 
+
+        return this;
+    }
+
+    public ClassModel build() {
         return model;
     }
-    
+
 }

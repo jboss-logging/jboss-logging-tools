@@ -18,5 +18,5 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-//TODO add traduction tool documentation
+//TODO add translation tool documentation
 package org.jboss.logging.translation;

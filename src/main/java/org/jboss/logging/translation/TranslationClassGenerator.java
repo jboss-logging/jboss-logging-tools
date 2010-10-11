@@ -23,9 +23,10 @@ package org.jboss.logging.translation;
 import org.jboss.logging.Generator;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
-import org.jboss.logging.translation.model.MessageBundleClassModel;
-import org.jboss.logging.translation.model.MessageLoggerClassModel;
-import org.jboss.logging.translation.model.TranslationClassModel;
+import org.jboss.logging.model.ClassModel;
+import org.jboss.logging.model.MessageBundleClassModel;
+import org.jboss.logging.model.MessageLoggerClassModel;
+import org.jboss.logging.util.PropertyFileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,6 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -100,10 +100,11 @@ public final class TranslationClassGenerator extends Generator {
                 if (bundleAnnotation != null || loggerAnnotation != null) {
 
                     PackageElement packageElement = elementsUtils.getPackageOf(element);
-
                     String packageName = packageElement.getQualifiedName().toString();
+
                     String interfaceName = element.getSimpleName().toString();
                     String primaryClassName = interfaceName.concat(bundleAnnotation != null ? "$bundle" : "$logger");
+                    String qualifiedPrimaryClassName = packageName.concat("." + primaryClassName);
 
                     try {
 
@@ -118,15 +119,12 @@ public final class TranslationClassGenerator extends Generator {
                         for (File file : files) {
 
                             String fileName = file.getName();
-                            String propertyClassName = PropertyFileUtil.getClassNameFor(primaryClassName, file.getName());
+                            String propertyClassName = PropertyFileUtil.getClassNameFor(primaryClassName, fileName);
                             String qualifiedPropertyClassName = packageName.concat("." + propertyClassName);
-
 
                             /*
                              * Generate Java Code.
                              */
-
-                            TranslationClassModel classModel = null;
 
                             try {
 
@@ -135,17 +133,21 @@ public final class TranslationClassGenerator extends Generator {
                                 Properties translation = new Properties();
                                 translation.load(new FileReader(file));
 
+                                ClassModel classModel;
+
                                 if (bundleAnnotation != null) {
-                                    classModel = new MessageBundleClassModel(packageName, propertyClassName);
-                                } else if (loggerAnnotation != null) {
-                                    classModel = new MessageLoggerClassModel(packageName, propertyClassName);
+                                    classModel = new MessageBundleClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
+                                } else {
+                                    classModel = new MessageLoggerClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
                                 }
 
-                                classModel.addAllTranslations((Map) translation);
+                                classModel.initModel();
+                                classModel = TranslationClassBuilder.from(classModel).withAllTranslations((Map) translation).build();
                                 classModel.writeClass(filer);
 
                             } catch (Exception e) {
                                 this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during generation of class " + propertyClassName + " already exist");
+                                logger.error("Error :", e);
                             }
 
                         }
