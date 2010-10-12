@@ -143,7 +143,7 @@ public final class TranslationClassGenerator extends Generator {
 
                                 classModel.initModel();
                                 classModel = TranslationClassBuilder.from(classModel).withAllTranslations((Map) translation).build();
-                                classModel.writeClass(filer);
+                                classModel.writeClass(filer.createClassFile(classModel.getClassName()));
 
                             } catch (Exception e) {
                                 this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during generation of class " + propertyClassName + " already exist");

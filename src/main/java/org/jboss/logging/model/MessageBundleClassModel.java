@@ -20,17 +20,20 @@
  */
 package org.jboss.logging.model;
 
+import java.util.Date;
+
+import javax.annotation.Generated;
+
+import org.jboss.logging.MessageBundle;
+
 import com.sun.codemodel.internal.JAnnotationUse;
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.MessageBundle;
-
-import javax.annotation.Generated;
-import java.util.Date;
 
 /**
  * @author Kevin Pollet
@@ -41,21 +44,21 @@ public class MessageBundleClassModel extends ClassModel {
 
     private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
 
-    public MessageBundleClassModel(final String className, final String superClassName, final String... interfacesName) {
-        super(className, superClassName, interfacesName);
+    public MessageBundleClassModel(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(className, projectCode, superClassName, interfacesName);
     }
 
     @Override
-    public void initModel() throws Exception {
+    public void initModel() throws JClassAlreadyExistsException {
         super.initModel();
 
-        JCodeModel model = this.getClassModel();
+        JCodeModel model = this.codeModel();
 
         /*
          * Add MessageBundle specific code
          */
 
-        JDefinedClass definedClass = model._getClass(this.getClassName());
+        JDefinedClass definedClass = this.definedClass();
 
         //Add generated annotation
         JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
@@ -71,6 +74,12 @@ public class MessageBundleClassModel extends ClassModel {
         JMethod readResolve = definedClass.method(JMod.PROTECTED, definedClass, GET_INSTANCE_METHOD_NAME);
         readResolve.annotate(Override.class);
         readResolve.body()._return(JExpr.ref(INSTANCE_FIELD_NAME));
+    }
+
+    @Override
+    protected void beforeWrite() {
+        // TODO Auto-generated method stub
+        
     }
 
 

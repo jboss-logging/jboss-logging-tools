@@ -37,9 +37,14 @@ import com.sun.codemodel.internal.JVar;
 
 /**
  * @author James R. Perkins Jr. (jrp)
+ * @author Kevin Pollet
  * 
  */
-public class MessageBundleCodeModel extends MessageCodeModel {
+public class MessageBundleCodeModel extends ImplementationClassModel {
+
+    private static final String INSTANCE_FIELD_NAME = "INSTANCE";
+
+    private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
     private MethodDescriptor methodDescriptor;
 
     /**
@@ -52,18 +57,8 @@ public class MessageBundleCodeModel extends MessageCodeModel {
      */
     public MessageBundleCodeModel(final String interfaceName,
             final String projectCode) {
-        super(interfaceName, projectCode);
+        super(interfaceName, projectCode, Implementation.BUNDLE);
         methodDescriptor = new MethodDescriptor();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.jboss.logging.CodeModel#type()
-     */
-    @Override
-    public Implementation type() {
-        return Implementation.BUNDLE;
     }
 
     /*
@@ -146,12 +141,12 @@ public class MessageBundleCodeModel extends MessageCodeModel {
         super.initModel();
         final JFieldVar instance = definedClass().field(
                 JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
-                "INSTANCE");
+                INSTANCE_FIELD_NAME);
         instance.init(JExpr._new(definedClass()));
         // Add default constructor
         definedClass().constructor(JMod.PROTECTED);
         final JMethod readResolveMethod = definedClass().method(JMod.PROTECTED,
-                definedClass(), "readResolve");
+                definedClass(), GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return(instance);
     }
 

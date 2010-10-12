@@ -20,30 +20,16 @@
  */
 package org.jboss.logging.model;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.Serializable;
 
 import javax.lang.model.element.ExecutableElement;
-import javax.tools.JavaFileObject;
 
 import org.jboss.logging.util.TransformationUtil;
 
-import com.sun.codemodel.internal.CodeWriter;
-import com.sun.codemodel.internal.JAnnotationUse;
-import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JDocComment;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
-import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JType;
-import com.sun.codemodel.internal.JTypeVar;
-import com.sun.codemodel.internal.JVar;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -58,7 +44,42 @@ import com.sun.codemodel.internal.JVar;
  * @author James R. Perkins Jr. (jrp)
  * 
  */
-public abstract class MessageCodeModel extends CodeModel {
+public abstract class ImplementationClassModel extends ClassModel {
+
+    /**
+     * The implementation types.
+     * 
+     * @author James R. Perkins Jr. (jrp)
+     * 
+     */
+    public static enum Implementation {
+        /**
+         * Represents the {@code org.jboss.logging.MessageBundle}.
+         */
+        BUNDLE("$bundle"),
+        /**
+         * Represents the {@code org.jboss.logging.MessageLogger}.
+         */
+        LOGGER("$logger");
+        /**
+         * The extension to append the implementation with.
+         */
+        protected final String extension;
+
+        /**
+         * Enum constructor.
+         * 
+         * @param extension
+         *            the extension to append the implementation with.
+         */
+        private Implementation(final String extension) {
+            this.extension = extension;
+        }
+    }
+
+    private final String interfaceName;
+    private final String packageName;
+    private final Implementation type;
 
     /**
      * Class constructor.
@@ -67,9 +88,52 @@ public abstract class MessageCodeModel extends CodeModel {
      *            the interface name to implement.
      * @param projectCode
      *            the project code to prepend messages with.
+     * @param type
+     *            the type of the implementation.
      */
-    protected MessageCodeModel(final String interfaceName, final String projectCode) {
-        super(interfaceName, projectCode);
+    protected ImplementationClassModel(final String interfaceName,
+            final String projectCode, Implementation type) {
+        super(interfaceName + type.extension, projectCode, Object.class
+                .getName(), interfaceName, Serializable.class.getName());
+        this.interfaceName = interfaceName;
+        this.packageName = TransformationUtil.toPackage(interfaceName());
+        this.type = type;
+    }
+
+    /**
+     * Returns the implementation type.
+     * 
+     * @return the implementation type.
+     */
+    public final Implementation type() {
+        return type;
+    }
+
+    /**
+     * The interface name this generated class will be implementing.
+     * 
+     * @return the interface name.
+     */
+    public final String interfaceName() {
+        return interfaceName;
+    }
+
+    /**
+     * Returns the fully qualified class name of the class.
+     * 
+     * @return the fully qualified class name.
+     */
+    public final String getClassName() {
+        return interfaceName() + type().extension;
+    }
+
+    /**
+     * Returns the package name for the class.
+     * 
+     * @return the package name.
+     */
+    public final String packageName() {
+        return packageName;
     }
 
     /**
@@ -90,8 +154,9 @@ public abstract class MessageCodeModel extends CodeModel {
     public void initModel() throws JClassAlreadyExistsException {
         super.initModel();
         // Add the serializable UID
-        final JFieldVar serialVersionUID = definedClass().field(JMod.PRIVATE
-                | JMod.STATIC | JMod.FINAL, codeModel().LONG, "serialVersionUID");
+        final JFieldVar serialVersionUID = definedClass().field(
+                JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel().LONG,
+                "serialVersionUID");
         serialVersionUID.init(JExpr.lit(1L));
     }
 

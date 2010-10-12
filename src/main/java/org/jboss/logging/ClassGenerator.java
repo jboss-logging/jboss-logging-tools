@@ -35,8 +35,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
+import org.jboss.logging.model.ImplementationClassModel;
 import org.jboss.logging.model.MessageBundleCodeModel;
-import org.jboss.logging.model.MessageCodeModel;
 import org.jboss.logging.model.MessageLoggerCodeModel;
 
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
@@ -110,7 +110,7 @@ public final class ClassGenerator extends Generator {
         }
     }
 
-    private void createClass(final MessageCodeModel codeModel,
+    private void createClass(final ImplementationClassModel codeModel,
             final TypeElement type) throws IOException,
             JClassAlreadyExistsException {
         codeModel.initModel();
@@ -130,6 +130,6 @@ public final class ClassGenerator extends Generator {
 
         // Write the source file
         final Filer filer = processingEnv().getFiler();
-        codeModel.writeClass(filer.createSourceFile(codeModel.className()));
+        codeModel.writeClass(filer.createSourceFile(codeModel.getClassName()));
     }
 }

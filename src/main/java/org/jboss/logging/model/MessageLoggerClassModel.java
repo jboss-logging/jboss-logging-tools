@@ -20,17 +20,20 @@
  */
 package org.jboss.logging.model;
 
+import java.util.Date;
+
+import javax.annotation.Generated;
+
+import org.jboss.logging.Logger;
+import org.jboss.logging.MessageLogger;
+
 import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.Logger;
-import org.jboss.logging.MessageLogger;
-
-import javax.annotation.Generated;
-import java.util.Date;
 
 /**
  * @author Kevin Pollet
@@ -39,21 +42,21 @@ public class MessageLoggerClassModel extends ClassModel {
 
     private static final String LOGGER_PARAMETER_NAME = "logger";
 
-    public MessageLoggerClassModel(final String className, final String superClassName, final String... interfacesName) {
-        super(className, superClassName, interfacesName);
+    public MessageLoggerClassModel(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(className, projectCode, superClassName, interfacesName);
     }
 
     @Override
-    public void initModel() throws Exception {
+    public void initModel() throws JClassAlreadyExistsException {
         super.initModel();
 
-        JCodeModel model = this.getClassModel();
+        JCodeModel model = this.codeModel();
 
         /*
          * Add MessageLogger specific code
          */
 
-        JDefinedClass definedClass = model._getClass(this.getClassName());
+        JDefinedClass definedClass = this.definedClass();
 
         //Add generated annotation
         JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
@@ -65,6 +68,12 @@ public class MessageLoggerClassModel extends ClassModel {
 
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
+    }
+
+    @Override
+    protected void beforeWrite() {
+        // TODO Auto-generated method stub
+        
     }
 
 }

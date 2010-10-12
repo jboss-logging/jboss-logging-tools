@@ -48,7 +48,7 @@ public class TranslationClassBuilder {
     }
 
     public TranslationClassBuilder withAllTranslations(final Map<String, String> translations) {
-        JCodeModel model = this.model.getClassModel();
+        JCodeModel model = this.model.codeModel();
         JDefinedClass clazz = model._getClass(this.model.getClassName());
 
         Set<Map.Entry<String, String>> entries = translations.entrySet();

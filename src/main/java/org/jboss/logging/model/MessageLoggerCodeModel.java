@@ -26,7 +26,6 @@ import javax.lang.model.element.VariableElement;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
-import org.jboss.logging.Logger.Level;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
@@ -42,7 +41,8 @@ import com.sun.codemodel.internal.JVar;
  * @author James R. Perkins Jr. (jrp)
  * 
  */
-public final class MessageLoggerCodeModel extends MessageCodeModel {
+public final class MessageLoggerCodeModel extends ImplementationClassModel {
+    private static final String LOG_FIELD_NAME = "log";
     private JFieldVar log;
     private MethodDescriptor methodDescriptor;
 
@@ -56,18 +56,8 @@ public final class MessageLoggerCodeModel extends MessageCodeModel {
      */
     public MessageLoggerCodeModel(final String interfaceName,
             final String projectCode) {
-        super(interfaceName, projectCode);
+        super(interfaceName, projectCode, Implementation.LOGGER);
         methodDescriptor = new MethodDescriptor();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.jboss.logging.CodeModel#type()
-     */
-    @Override
-    public Implementation type() {
-        return Implementation.LOGGER;
     }
 
     /*
@@ -149,10 +139,10 @@ public final class MessageLoggerCodeModel extends MessageCodeModel {
     public void initModel() throws JClassAlreadyExistsException {
         super.initModel();
         log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
-                "log");
+                LOG_FIELD_NAME);
         // Add default constructor
         final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
-        final JVar param = constructor.param(JMod.FINAL, Logger.class, "log");
+        final JVar param = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + param.name() + ";");
     }
