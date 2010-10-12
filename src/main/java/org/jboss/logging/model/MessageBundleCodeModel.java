@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- * 
+ *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -37,14 +37,19 @@ import com.sun.codemodel.internal.JVar;
 
 /**
  * @author James R. Perkins Jr. (jrp)
- * 
+ * @author Kevin Pollet
+ *
  */
-public class MessageBundleCodeModel extends MessageCodeModel {
+public class MessageBundleCodeModel extends ImplementationClassModel {
+
+    private static final String INSTANCE_FIELD_NAME = "INSTANCE";
+
+    private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
     private MethodDescriptor methodDescriptor;
 
     /**
      * Creates a new message bundle code model.
-     * 
+     *
      * @param interfaceName
      *            the interface name.
      * @param projectCode
@@ -52,23 +57,13 @@ public class MessageBundleCodeModel extends MessageCodeModel {
      */
     public MessageBundleCodeModel(final String interfaceName,
             final String projectCode) {
-        super(interfaceName, projectCode);
+        super(interfaceName, projectCode, Implementation.BUNDLE);
         methodDescriptor = new MethodDescriptor();
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.jboss.logging.CodeModel#type()
-     */
-    @Override
-    public Implementation type() {
-        return Implementation.BUNDLE;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
+     *
      * @see org.jboss.logging.CodeModel#addMethod(javax.lang.model.element.
      * ExecutableElement)
      */
@@ -79,7 +74,7 @@ public class MessageBundleCodeModel extends MessageCodeModel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.jboss.logging.CodeModel#beforeWrite()
      */
     @Override
@@ -138,7 +133,7 @@ public class MessageBundleCodeModel extends MessageCodeModel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.jboss.logging.model.CodeModel#initModel()
      */
     @Override
@@ -146,12 +141,12 @@ public class MessageBundleCodeModel extends MessageCodeModel {
         super.initModel();
         final JFieldVar instance = definedClass().field(
                 JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
-                "INSTANCE");
+                INSTANCE_FIELD_NAME);
         instance.init(JExpr._new(definedClass()));
         // Add default constructor
         definedClass().constructor(JMod.PROTECTED);
         final JMethod readResolveMethod = definedClass().method(JMod.PROTECTED,
-                definedClass(), "readResolve");
+                definedClass(), GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return(instance);
     }
 

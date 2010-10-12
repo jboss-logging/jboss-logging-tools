@@ -20,12 +20,18 @@
  */
 package org.jboss.logging.model;
 
+import com.sun.codemodel.internal.JAnnotationUse;
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import org.jboss.logging.MessageBundle;
+
+import javax.annotation.Generated;
+import java.util.Date;
 
 /**
  * The java message bundle java
@@ -50,10 +56,13 @@ public class MessageBundleClassModel extends ClassModel {
      *
      * @param className      the qualified class name
      * @param superClassName the super class name
-     * @param interfacesName the qualified interfaces name
      */
-    public MessageBundleClassModel(final String className, final String superClassName, final String... interfacesName) {
-        super(className, superClassName, interfacesName);
+    public MessageBundleClassModel(final String className, final String superClassName) {
+        super(className, superClassName);
+    }
+
+    public MessageBundleClassModel(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(className, projectCode, superClassName, interfacesName);
     }
 
     /**
@@ -63,10 +72,6 @@ public class MessageBundleClassModel extends ClassModel {
     public JCodeModel generateModel() throws Exception {
         JCodeModel model = super.generateModel();
         JDefinedClass definedClass = model._getClass(this.getClassName());
-
-        /*
-        * Add MessageBundle specific code
-        */
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.body().invoke("super");
@@ -79,6 +84,40 @@ public class MessageBundleClassModel extends ClassModel {
         readResolve.body()._return(JExpr.ref(INSTANCE_FIELD_NAME));
 
         return model;
+    }
+
+
+    public void initModel() throws JClassAlreadyExistsException {
+        super.initModel();
+
+        JCodeModel model = this.codeModel();
+
+        /*
+        * Add MessageBundle specific code
+        */
+
+        JDefinedClass definedClass = this.definedClass();
+
+        //Add generated annotation
+        JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
+        generatedAnnotation.param("value", MessageBundle.class.getName());
+        generatedAnnotation.param("date", new Date().toString());
+
+        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
+        constructor.body().invoke("super");
+
+        JFieldVar field = definedClass.field(JMod.PUBLIC + JMod.STATIC + JMod.FINAL, definedClass, INSTANCE_FIELD_NAME);
+        field.init(JExpr._new(definedClass));
+
+        JMethod readResolve = definedClass.method(JMod.PROTECTED, definedClass, GET_INSTANCE_METHOD_NAME);
+        readResolve.annotate(Override.class);
+        readResolve.body()._return(JExpr.ref(INSTANCE_FIELD_NAME));
+    }
+
+    @Override
+    protected void beforeWrite() {
+        // TODO Auto-generated method stub
+
     }
 
 }

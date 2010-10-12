@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- * 
+ *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -39,15 +39,16 @@ import com.sun.codemodel.internal.JVar;
 
 /**
  * @author James R. Perkins Jr. (jrp)
- * 
+ *
  */
-public final class MessageLoggerCodeModel extends MessageCodeModel {
+public final class MessageLoggerCodeModel extends ImplementationClassModel {
+    private static final String LOG_FIELD_NAME = "log";
     private JFieldVar log;
     private MethodDescriptor methodDescriptor;
 
     /**
      * Creates a new message logger code model.
-     * 
+     *
      * @param interfaceName
      *            the interface name.
      * @param projectCode
@@ -55,23 +56,13 @@ public final class MessageLoggerCodeModel extends MessageCodeModel {
      */
     public MessageLoggerCodeModel(final String interfaceName,
             final String projectCode) {
-        super(interfaceName, projectCode);
+        super(interfaceName, projectCode, Implementation.LOGGER);
         methodDescriptor = new MethodDescriptor();
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.jboss.logging.CodeModel#type()
-     */
-    @Override
-    public CodeModel.Implementation type() {
-        return CodeModel.Implementation.LOGGER;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
+     *
      * @see org.jboss.logging.CodeModel#addMethod(javax.lang.model.element.
      * ExecutableElement)
      */
@@ -82,7 +73,7 @@ public final class MessageLoggerCodeModel extends MessageCodeModel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.jboss.logging.CodeModel#beforeWrite()
      */
     @Override
@@ -139,7 +130,7 @@ public final class MessageLoggerCodeModel extends MessageCodeModel {
             }
         }
     }
-    
+
     /*
      * (non-Javadoc)
      * @see org.jboss.logging.model.CodeModel#initModel()
@@ -148,10 +139,10 @@ public final class MessageLoggerCodeModel extends MessageCodeModel {
     public void initModel() throws JClassAlreadyExistsException {
         super.initModel();
         log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
-                "log");
+                LOG_FIELD_NAME);
         // Add default constructor
         final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
-        final JVar param = constructor.param(JMod.FINAL, Logger.class, "log");
+        final JVar param = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + param.name() + ";");
     }

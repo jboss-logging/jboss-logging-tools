@@ -24,7 +24,6 @@ import com.sun.codemodel.internal.JCodeModel;
 import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.JavaFileObjectCodeWriter;
 
-import javax.annotation.processing.Filer;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
@@ -45,6 +44,8 @@ public abstract class ClassModelDecorator extends ClassModel {
      * @param model the model to decorate
      */
     public ClassModelDecorator(final ClassModel model) {
+        super(null, null);
+
         this.model = model;
     }
 
@@ -52,24 +53,15 @@ public abstract class ClassModelDecorator extends ClassModel {
      * {@inheritDoc}
      */
     public JCodeModel generateModel() throws Exception {
-        return this.model.generateModel();   
+        return this.model.generateModel();
     }
 
     /**
      * {@inheritDoc}
      */
-    public void writeClass(final Filer filer) throws IOException {
-        JavaFileObject fileObject = filer.createSourceFile(this.getClassName());
+    @Override
+    public void writeClass(final JavaFileObject fileObject) throws IOException {
         this.getClassModel().build(new JavaFileObjectCodeWriter(fileObject));
-    }
-
-    /**
-     * Get the current model decorated.
-     *
-     * @return the current model
-     */
-    public ClassModel getModel() {
-        return this.model;
     }
 
     /**
@@ -86,6 +78,11 @@ public abstract class ClassModelDecorator extends ClassModel {
     @Override
     public String getClassName() {
         return this.model.getClassName();
+    }
+
+    @Override
+    protected void beforeWrite() {
+
     }
 }
 

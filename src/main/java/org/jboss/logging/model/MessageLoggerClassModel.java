@@ -20,12 +20,23 @@
  */
 package org.jboss.logging.model;
 
+import java.util.Date;
+
+import javax.annotation.Generated;
+
+import org.jboss.logging.Logger;
+import org.jboss.logging.MessageLogger;
+
+import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+
 import org.jboss.logging.Logger;
+
 
 /**
  * The java message logger java
@@ -45,10 +56,13 @@ public class MessageLoggerClassModel extends ClassModel {
      *
      * @param className      the qualified class name
      * @param superClassName the super class name
-     * @param interfacesName the qualified interfaces name
      */
-    public MessageLoggerClassModel(final String className, final String superClassName, final String... interfacesName) {
-        super(className, superClassName, interfacesName);
+    public MessageLoggerClassModel(final String className, final String superClassName) {
+        super(className, superClassName);
+    }
+
+    public MessageLoggerClassModel(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(className, projectCode, superClassName, interfacesName);
     }
 
     /**
@@ -56,12 +70,8 @@ public class MessageLoggerClassModel extends ClassModel {
      */
     @Override
     public JCodeModel generateModel() throws Exception {
-        super.generateModel();
-        JDefinedClass definedClass = this.getClassModel()._getClass(this.getClassName());
-
-        /*
-         * Add MessageLogger specific code
-         */
+        JCodeModel model = super.generateModel();
+        JDefinedClass definedClass = model._getClass(this.getClassName());
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
@@ -69,7 +79,40 @@ public class MessageLoggerClassModel extends ClassModel {
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
 
-        return this.getClassModel();
+        return model;
+    }
+        
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void initModel() throws JClassAlreadyExistsException {
+       super.initModel();
+
+        JCodeModel model = this.codeModel();
+
+        /*
+         * Add MessageLogger specific code
+         */
+
+        JDefinedClass definedClass = this.definedClass();
+
+        //Add generated annotation
+        JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
+        generatedAnnotation.param("value", MessageLogger.class.getName());
+        generatedAnnotation.param("date", new Date().toString());
+
+        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
+        constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
+
+        JBlock constructorBody = constructor.body();
+        constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
+    }
+
+    @Override
+    protected void beforeWrite() {
+        // TODO Auto-generated method stub
+        
     }
 
 }

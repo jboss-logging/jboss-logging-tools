@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- *
+ * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *
+ * 
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -20,25 +20,38 @@
  */
 package org.jboss.logging.model;
 
+import com.sun.codemodel.internal.JAnnotationUse;
+import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClass;
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JDocComment;
+import com.sun.codemodel.internal.JExpr;
+import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JMethod;
+import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JType;
+import com.sun.codemodel.internal.JTypeVar;
+import com.sun.codemodel.internal.JVar;
 
-import javax.annotation.processing.Filer;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * The basic java class model.
  *
  * @author Kevin Pollet
+ * @author James R. Perkins Jr. (jrp)
  */
 public abstract class ClassModel {
 
     /**
      * Qualified interface name.
      */
-    private String[] interfacesName;
+    private String[] interfaceNames;
 
     /**
      * Qualified super class name.
@@ -53,27 +66,64 @@ public abstract class ClassModel {
     /**
      * The corresponding model;
      */
-    private JCodeModel classModel;
+    private JCodeModel codeModel;
 
-    /**
-     * Default constructor.
-     */
-    protected ClassModel() {
-        this(null, null, null);
-    }
+
+    public static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
+
+    private JDefinedClass definedClass;
+
+    private String projectCode;
+
 
     /**
      * Construct a class model.
      *
      * @param className      the qualified class name
      * @param superClassName the qualified super class name
-     * @param interfacesName the qualified interfaces name
      */
-    public ClassModel(final String className, final String superClassName, final String... interfacesName) {
-        this.interfacesName = interfacesName;
+    public ClassModel(final String className, final String superClassName) {
+        this.interfaceNames = null;
         this.superClassName = superClassName;
         this.className = className;
-        this.classModel = null;
+        this.codeModel = null;
+    }
+
+    protected ClassModel(final String className, final String projectCode, final String superClassName, final String... interfaceNames) {
+        this.codeModel = new JCodeModel();
+        this.interfaceNames = interfaceNames;
+        this.superClassName = superClassName;
+        this.className = className;
+        this.projectCode = projectCode;
+    }
+
+
+    public void initModel() throws JClassAlreadyExistsException {
+        definedClass = codeModel._class(this.className);
+        final JAnnotationUse anno = definedClass
+                .annotate(javax.annotation.Generated.class);
+        anno.param("value", getClass().getCanonicalName());
+        anno.param("date", generatedDateValue());
+
+        // Create the default JavaDoc
+        final JDocComment docComment = definedClass.javadoc();
+        docComment.add("Warning this class consists of generated code.");
+
+        // Add extends
+        if (this.superClassName != null) {
+            JCodeModel superModel = new JCodeModel();
+            definedClass._extends(superModel._class(this.superClassName));
+        }
+
+        // Add implements
+        if (this.interfaceNames != null) {
+            for (String intf : this.interfaceNames) {
+                JCodeModel intfModel = new JCodeModel();
+                definedClass._implements(intfModel._class(intf));
+            }
+        }
+
+
     }
 
     /**
@@ -86,44 +136,48 @@ public abstract class ClassModel {
     public JCodeModel generateModel() throws Exception {
 
         //Generate only one times the code
-        if (this.classModel == null) {
+        // if (this.codeModel == null) {
 
-            this.classModel = new JCodeModel();
-            JDefinedClass clazz = this.classModel._class(this.className);
+        this.codeModel = new JCodeModel();
+        JDefinedClass clazz = this.codeModel._class(this.className);
 
-            //Add JavaDoc
-            JDocComment javadoc = clazz.javadoc();
-            javadoc.append("This class is generated by JBoss logging tool");
+        //Add JavaDoc
+        JDocComment javadoc = clazz.javadoc();
+        javadoc.append("This class is generated by JBoss logging tool");
 
-            //Add extends
-            if (this.superClassName != null) {
-                JCodeModel superModel = new JCodeModel();
-                clazz._extends(superModel._class(this.superClassName));
-            }
-
-            //Add implements
-            if (this.interfacesName != null) {
-                for (String intf : this.interfacesName) {
-                    JCodeModel intfModel = new JCodeModel();
-                    clazz._implements(intfModel._class(intf));
-                }
-            }
-
+        //Add extends
+        if (this.superClassName != null) {
+            JCodeModel superModel = new JCodeModel();
+            clazz._extends(superModel._class(this.superClassName));
         }
 
+        //Add implements
+        if (this.interfaceNames != null) {
+            for (String intf : this.interfaceNames) {
+                JCodeModel intfModel = new JCodeModel();
+                clazz._implements(intfModel._class(intf));
+            }
+        }
+        //}
 
-        return this.classModel;
+        return this.codeModel;
     }
+
+    /**
+     * This method is invoked before the class is written. There is no need to
+     * explicitly execute this method. Doing so could result in errors.
+     */
+    protected abstract void beforeWrite();
 
     /**
      * Write the class to a file.
      *
-     * @param filer the annotation processor filer
+     * @param fileObject the file object to write the code model too.
      * @throws IOException if error occurs when writing class
      */
-    public void writeClass(final Filer filer) throws IOException {
-        JavaFileObject fileObject = filer.createSourceFile(this.className);
-        this.classModel.build(new JavaFileObjectCodeWriter(fileObject));
+    public void writeClass(final JavaFileObject fileObject) throws IOException {
+        beforeWrite();
+        this.codeModel.build(new JavaFileObjectCodeWriter(fileObject));
     }
 
     /**
@@ -131,8 +185,17 @@ public abstract class ClassModel {
      *
      * @return the class model
      */
-    public JCodeModel getClassModel() {
-        return this.classModel;
+    public final JCodeModel codeModel() {
+        return this.codeModel;
+    }
+
+    /**
+     * Returns the main enclosing class.
+     *
+     * @return the main enclosing class.
+     */
+    public final JDefinedClass definedClass() {
+        return definedClass;
     }
 
     /**
@@ -144,5 +207,118 @@ public abstract class ClassModel {
         return this.className;
     }
 
+    /**
+     * Creates the variable that stores the message.
+     * <p/>
+     * <p>
+     * If the message variable has already been defined the previously created
+     * variable is returned.
+     * </p>
+     *
+     * @param varName      the variable name.
+     * @param messageValue the value for the message.
+     * @param id           the id to prepend the project code/message with.
+     * @return the newly created variable.
+     */
+    protected JVar addMessageVar(final String varName, final String messageValue, int id) {
+        JFieldVar var = definedClass().fields().get(varName);
+        if (var == null) {
+            var = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
+                    String.class, varName);
+            String value = messageValue;
+            if (id > 0) {
+                value = formatMessageId(id) + messageValue;
+            }
+            var.init(JExpr.lit(value));
+        }
+        return var;
+    }
+
+    /**
+     * Adds a method to return the message value. The method name should be the
+     * method name annotated {@code org.jboss.logging.Message}. This method will
+     * be appended with {@code $str}.
+     * <p/>
+     * <p>
+     * If the message method has already been defined the previously created
+     * method is returned.
+     * </p>
+     * <p/>
+     * <p>
+     * Note this method invokes the
+     * {@code addMessageVar(varName,messageValue,id)} to add the variable.
+     * </p>
+     *
+     * @param methodName  the method name.
+     * @param returnValue the message value.
+     * @param id          the id to prepend the project code/message with.
+     * @return the newly created method.
+     */
+    protected JMethod addMessageMethod(final String methodName, final String returnValue, final int id) {
+        final String internalMethodName = methodName + "$str";
+        JMethod method = definedClass().getMethod(internalMethodName,
+                EMPTY_TYPE_ARRAY);
+        // Create the method
+        if (method == null) {
+            final JClass returnType = codeModel().ref(String.class);
+            method = definedClass().method(JMod.PROTECTED, returnType,
+                    internalMethodName);
+            final JBlock body = method.body();
+            body._return(addMessageVar(methodName, returnValue, id));
+        }
+        return method;
+    }
+
+    /**
+     * Formats the message id. The message id is comprised of the project code
+     * plus the id.
+     *
+     * @param id the id used to prepend the project code.
+     * @return the formatted message id.
+     */
+    protected final String formatMessageId(final int id) {
+
+        final StringBuilder result = new StringBuilder(projectCode);
+        if (result.length() > 0) {
+            result.append("-");
+            result.append(padLeft("" + id, '0', 5));
+            result.append(": ");
+        }
+        return result.toString();
+    }
+
+    /**
+     * Pads the initial value with the character. If the length is greater than
+     * or equal to the length of the initial value, the initial value will be
+     * returned.
+     *
+     * @param initValue the value to pad.
+     * @param padChar   the character to pad the value with.
+     * @param padLen    the total length the string should be.
+     * @return the padded value.
+     */
+    protected final String padLeft(final String initValue, final char padChar, final int padLen) {
+
+        final StringBuilder result = new StringBuilder();
+        for (int i = initValue.length(); i < padLen; i++) {
+            result.append(padChar);
+        }
+        result.append(initValue);
+        return result.toString();
+    }
+
+    /**
+     * Returns the current date formatted in the ISO 8601 format.
+     *
+     * @return the current date formatted in ISO 8601.
+     */
+    protected static final String generatedDateValue() {
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        return sdf.format(new Date());
+    }
+
+    public JCodeModel getClassModel() {
+        return this.codeModel;
+    }
 
 }
