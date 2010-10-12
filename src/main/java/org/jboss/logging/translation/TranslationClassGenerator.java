@@ -136,9 +136,9 @@ public final class TranslationClassGenerator extends Generator {
                                 ClassModel classModel;
 
                                 if (bundleAnnotation != null) {
-                                    classModel = new MessageBundleClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
+                                    classModel = new MessageBundleClassModel(qualifiedPropertyClassName, bundleAnnotation.projectCode(), qualifiedPrimaryClassName);
                                 } else {
-                                    classModel = new MessageLoggerClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
+                                    classModel = new MessageLoggerClassModel(qualifiedPropertyClassName, loggerAnnotation.projectCode(), qualifiedPrimaryClassName);
                                 }
 
                                 classModel.initModel();

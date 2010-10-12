@@ -22,7 +22,6 @@ package org.jboss.logging.model;
 
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
-import org.jboss.logging.JavaFileObjectCodeWriter;
 
 import javax.annotation.processing.Filer;
 import javax.tools.JavaFileObject;

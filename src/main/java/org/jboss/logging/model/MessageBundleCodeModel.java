@@ -18,10 +18,12 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging;
+package org.jboss.logging.model;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+
+import org.jboss.logging.Message;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
@@ -37,26 +39,21 @@ import com.sun.codemodel.internal.JVar;
  * @author James R. Perkins Jr. (jrp)
  * 
  */
-public final class MessageLoggerCodeModel extends CodeModel {
-    private JFieldVar log;
+public class MessageBundleCodeModel extends MessageCodeModel {
     private MethodDescriptor methodDescriptor;
 
     /**
-     * Creates a new message logger code model.
+     * Creates a new message bundle code model.
      * 
      * @param interfaceName
      *            the interface name.
      * @param projectCode
      *            the project code from the annotation.
-     * @throws JClassAlreadyExistsException
-     *             should never happen, but could be thrown if the class has
-     *             already been defined
      */
-    public MessageLoggerCodeModel(final String interfaceName,
-            final String projectCode) throws JClassAlreadyExistsException {
+    public MessageBundleCodeModel(final String interfaceName,
+            final String projectCode) {
         super(interfaceName, projectCode);
         methodDescriptor = new MethodDescriptor();
-        init();
     }
 
     /*
@@ -66,7 +63,7 @@ public final class MessageLoggerCodeModel extends CodeModel {
      */
     @Override
     public Implementation type() {
-        return Implementation.LOGGER;
+        return Implementation.BUNDLE;
     }
 
     /*
@@ -91,66 +88,71 @@ public final class MessageLoggerCodeModel extends CodeModel {
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
             final String methodName = methodDesc.name();
-            // Create the method
+            final JClass returnType = codeModel().ref(
+                    methodDesc.returnTypeAsString());
             final JMethod jMethod = definedClass().method(
-                    JMod.PUBLIC | JMod.FINAL, codeModel().VOID, methodName);
+                    JMod.PUBLIC | JMod.FINAL, returnType, methodName);
             jMethod.annotate(Override.class);
-            // Find the annotations
             final Message message = methodDesc.message();
-            final LogMessage logMessage = methodDesc.logMessage();
-            // Set a default log level
-            Logger.Level logLevel = Logger.Level.INFO;
-            if (logMessage != null) {
-                logLevel = logMessage.level();
-            }
-            // Add the message method.
+
             final JMethod msgMethod = addMessageMethod(methodName,
                     message.value(), message.id());
-            // Determine the log method
-            final StringBuilder logMethod = new StringBuilder(logLevel.name()
-                    .toLowerCase());
-            switch (methodDesc.message().format()) {
+
+            final JBlock body = jMethod.body();
+            final JClass returnField = codeModel().ref(returnType.fullName());
+            final JVar result = body.decl(returnField, "result");
+            JClass formatter = null;
+            // Determine the format type
+            switch (message.format()) {
                 case MESSAGE_FORMAT:
-                    logMethod.append("v");
+                    formatter = codeModel().ref(java.text.MessageFormat.class);
                     break;
                 case PRINTF:
-                    logMethod.append("f");
+                    formatter = codeModel().ref(String.class);
                     break;
             }
-            // Create the body of the method and add the text
-            final JBlock body = jMethod.body();
-            final JInvocation logInv = body.invoke(log, logMethod.toString());
-            // The clause must be first if there is one.
-            if (methodDesc.hasClause()) {
-                logInv.arg(JExpr.direct(methodDesc.causeVarName()));
-            }
-            // The next parameter is the message. Should be accessed via the
-            // message retrieval method.
-            logInv.arg(JExpr.invoke(msgMethod));
+            final JInvocation formatterMethod = formatter
+                    .staticInvoke("format");
+            formatterMethod.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel().ref(
                         param.asType().toString());
-                final JVar var = jMethod.param(JMod.FINAL, paramType, param
+                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param
                         .getSimpleName().toString());
-                if (!param.equals(methodDesc.cause())) {
-                    logInv.arg(var);
-                }
+                formatterMethod.arg(paramVar);
             }
+            // Setup the return type
+            if (methodDesc.hasClause()
+                    && codeModel().ref(Throwable.class).isAssignableFrom(
+                            returnField)) {
+                result.init(JExpr._new(returnField));
+                JInvocation inv = body.invoke(result, "initCause");
+                inv.arg(JExpr.ref(methodDesc.causeVarName()));
+            } else {
+                result.init(formatterMethod);
+            }
+            body._return(result);
         }
     }
 
-    /**
-     * Initializes global variables for the class to be created.
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.jboss.logging.model.CodeModel#initModel()
      */
-    private void init() {
-        log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
-                "log");
+    @Override
+    public void initModel() throws JClassAlreadyExistsException {
+        super.initModel();
+        final JFieldVar instance = definedClass().field(
+                JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
+                "INSTANCE");
+        instance.init(JExpr._new(definedClass()));
         // Add default constructor
-        final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
-        final JVar param = constructor.param(JMod.FINAL, Logger.class, "log");
-        final JBlock body = constructor.body();
-        body.directStatement("this." + log.name() + " = " + param.name() + ";");
+        definedClass().constructor(JMod.PROTECTED);
+        final JMethod readResolveMethod = definedClass().method(JMod.PROTECTED,
+                definedClass(), "readResolve");
+        readResolveMethod.body()._return(instance);
     }
 
 }

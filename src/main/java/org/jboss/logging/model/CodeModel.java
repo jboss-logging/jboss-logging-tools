@@ -18,7 +18,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging;
+package org.jboss.logging.model;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -106,16 +106,12 @@ public abstract class CodeModel {
      *            the interface name to implement.
      * @param projectCode
      *            the project code to prepend messages with.
-     * @throws JClassAlreadyExistsException
-     *             When the specified class/interface was already created.
      */
-    protected CodeModel(final String interfaceName, final String projectCode)
-            throws JClassAlreadyExistsException {
+    protected CodeModel(final String interfaceName, final String projectCode) {
         codeModel = new JCodeModel();
         this.interfaceName = interfaceName;
         this.packageName = TransformationUtil.toPackage(interfaceName());
         this.projectCode = projectCode;
-        init();
     }
 
     /**
@@ -142,14 +138,6 @@ public abstract class CodeModel {
      * @return the implementation type.
      */
     public abstract Implementation type();
-
-    /**
-     * Adds a method to the class.
-     * 
-     * @param method
-     *            the method to add.
-     */
-    public abstract void addMethod(final ExecutableElement method);
 
     /**
      * The interface name this generated class will be implementing.
@@ -324,7 +312,7 @@ public abstract class CodeModel {
      * @throws JClassAlreadyExistsException
      *             When the specified class/interface was already created.
      */
-    private void init() throws JClassAlreadyExistsException {
+    public void initModel() throws JClassAlreadyExistsException {
         // Define the class
         definedClass = codeModel._class(className());
         final JAnnotationUse anno = definedClass
@@ -338,11 +326,6 @@ public abstract class CodeModel {
         // Create the default JavaDoc
         final JDocComment docComment = definedClass.javadoc();
         docComment.add("Warning this class consists of generated code.");
-
-        // Add the serializable UID
-        final JFieldVar serialVersionUID = definedClass.field(JMod.PRIVATE
-                | JMod.STATIC | JMod.FINAL, codeModel.LONG, "serialVersionUID");
-        serialVersionUID.init(JExpr.lit(1L));
     }
 
     /**

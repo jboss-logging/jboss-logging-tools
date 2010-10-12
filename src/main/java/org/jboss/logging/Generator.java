@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -94,16 +95,6 @@ public abstract class Generator {
     }
 
     /**
-     * Convenience method for printing a warning message.
-     * 
-     * @param message
-     *            the warning message to print.
-     */
-    public final void printWarningMessage(final String message) {
-        processingEnv.getMessager().printMessage(Kind.WARNING, message);
-    }
-
-    /**
      * Prints the stack trace to error message.
      * 
      * @param throwable
@@ -112,6 +103,43 @@ public abstract class Generator {
     public final void printErrorMessage(final Throwable throwable) {
         processingEnv.getMessager().printMessage(Kind.ERROR,
                 TransformationUtil.stackTraceToString(throwable));
+    }
+
+    /**
+     * Convenience method for printing an error messages.
+     * 
+     * @param message
+     *            the error message to print.
+     * @param element
+     *            the element that caused the error.
+     */
+    public final void printErrorMessage(final String message,
+            final Element element) {
+        processingEnv.getMessager().printMessage(Kind.ERROR, message, element);
+    }
+
+    /**
+     * Prints the stack trace to error message.
+     * 
+     * @param throwable
+     *            the stack trace to print.
+     * @param element
+     *            the element that caused the error.
+     */
+    public final void printErrorMessage(final Throwable throwable,
+            final Element element) {
+        processingEnv.getMessager().printMessage(Kind.ERROR,
+                TransformationUtil.stackTraceToString(throwable), element);
+    }
+
+    /**
+     * Convenience method for printing a warning message.
+     * 
+     * @param message
+     *            the warning message to print.
+     */
+    public final void printWarningMessage(final String message) {
+        processingEnv.getMessager().printMessage(Kind.WARNING, message);
     }
 
     /**

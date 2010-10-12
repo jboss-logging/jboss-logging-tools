@@ -18,7 +18,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging;
+package org.jboss.logging.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +31,10 @@ import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Message;
 
 /**
  * Stores information about methods.

@@ -35,6 +35,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
+import org.jboss.logging.model.MessageBundleCodeModel;
+import org.jboss.logging.model.MessageCodeModel;
+import org.jboss.logging.model.MessageLoggerCodeModel;
+
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
 
 /**
@@ -66,8 +70,7 @@ public final class ClassGenerator extends Generator {
             final RoundEnvironment roundEnv) {
         process(roundEnv.getRootElements());
     }
-    
-    
+
     private void process(Collection<? extends Element> elements) {
         Collection<? extends TypeElement> typeElements = ElementFilter
                 .typesIn(elements);
@@ -100,15 +103,17 @@ public final class ClassGenerator extends Generator {
                             bundle.projectCode()), type);
                 }
             } catch (IOException e) {
-                printErrorMessage(e);
+                printErrorMessage(e, type);
             } catch (JClassAlreadyExistsException e) {
-                printErrorMessage(e);
+                printErrorMessage(e, type);
             }
         }
     }
 
-    private void createClass(final CodeModel codeModel, final TypeElement type)
-            throws IOException {
+    private void createClass(final MessageCodeModel codeModel,
+            final TypeElement type) throws IOException,
+            JClassAlreadyExistsException {
+        codeModel.initModel();
         // Process all extended interfaces.
         for (TypeMirror interfaceType : type.getInterfaces()) {
             for (ExecutableElement method : ElementFilter
