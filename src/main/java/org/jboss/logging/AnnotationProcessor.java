@@ -20,9 +20,7 @@
  */
 package org.jboss.logging;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import org.jboss.logging.translation.TranslationClassGenerator;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -31,38 +29,52 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
- * 
- * 
  * @author James R. Perkins Jr. (jrp)
- * 
  */
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class AnnotationProcessor extends AbstractProcessor {
+
+    /**
+     * The generators.
+     */
     private final List<Generator> generators = new ArrayList<Generator>();
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean process(Set<? extends TypeElement> annotations,
-            RoundEnvironment roundEnv) {
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
         for (Generator generator : generators) {
             // Catch all exceptions
             try {
+
                 generator.generate(annotations, roundEnv);
+
             } catch (Throwable t) {
-                processingEnv.getMessager().printMessage(Kind.ERROR,
-                        TransformationUtil.stackTraceToString(t));
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, TransformationUtil.stackTraceToString(t));
             }
         }
+
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void init(final ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+
         generators.add(new ClassGenerator(processingEnv));
+        generators.add(new TranslationClassGenerator(processingEnv));
     }
 
 }
