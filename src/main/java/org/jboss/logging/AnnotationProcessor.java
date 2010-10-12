@@ -21,6 +21,7 @@
 package org.jboss.logging;
 
 import org.jboss.logging.translation.TranslationClassGenerator;
+import org.jboss.logging.util.TransformationUtil;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;

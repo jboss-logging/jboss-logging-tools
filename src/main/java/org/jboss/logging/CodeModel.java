@@ -27,6 +27,8 @@ import java.util.Date;
 import javax.lang.model.element.ExecutableElement;
 import javax.tools.JavaFileObject;
 
+import org.jboss.logging.util.TransformationUtil;
+
 import com.sun.codemodel.internal.CodeWriter;
 import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;

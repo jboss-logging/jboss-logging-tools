@@ -27,6 +27,8 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
+import org.jboss.logging.util.TransformationUtil;
+
 /**
  * @author James R. Perkins Jr. (jrp)
  * 
