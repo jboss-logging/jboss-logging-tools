@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.tools.JavaFileObject;
 
+import org.jboss.logging.model.JavaFileObjectCodeWriter;
 import org.jboss.logging.util.TransformationUtil;
 
 import com.sun.codemodel.internal.CodeWriter;

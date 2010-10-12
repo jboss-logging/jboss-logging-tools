@@ -20,51 +20,56 @@
  */
 package org.jboss.logging.model;
 
-import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.Logger;
-import org.jboss.logging.MessageLogger;
-
-import javax.annotation.Generated;
-import java.util.Date;
 
 /**
+ * The java message logger java
+ * class model.
+ *
  * @author Kevin Pollet
  */
 public class MessageLoggerClassModel extends ClassModel {
 
+    /**
+     * The logger parameter name.
+     */
     private static final String LOGGER_PARAMETER_NAME = "logger";
 
+    /**
+     * Create a MessageBundle with super class and interface.
+     *
+     * @param className      the qualified class name
+     * @param superClassName the super class name
+     * @param interfacesName the qualified interfaces name
+     */
     public MessageLoggerClassModel(final String className, final String superClassName, final String... interfacesName) {
         super(className, superClassName, interfacesName);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void initModel() throws Exception {
-        super.initModel();
-
-        JCodeModel model = this.getClassModel();
+    public JCodeModel generateModel() throws Exception {
+        super.generateModel();
+        JDefinedClass definedClass = this.getClassModel()._getClass(this.getClassName());
 
         /*
          * Add MessageLogger specific code
          */
-
-        JDefinedClass definedClass = model._getClass(this.getClassName());
-
-        //Add generated annotation
-        JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
-        generatedAnnotation.param("value", MessageLogger.class.getName());
-        generatedAnnotation.param("date", new Date().toString());
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
 
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
+
+        return this.getClassModel();
     }
 
 }

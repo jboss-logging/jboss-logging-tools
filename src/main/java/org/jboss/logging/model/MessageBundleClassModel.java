@@ -20,47 +20,53 @@
  */
 package org.jboss.logging.model;
 
-import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.MessageBundle;
-
-import javax.annotation.Generated;
-import java.util.Date;
 
 /**
+ * The java message bundle java
+ * class model.
+ *
  * @author Kevin Pollet
  */
 public class MessageBundleClassModel extends ClassModel {
 
+    /**
+     * The instance field name.
+     */
     private static final String INSTANCE_FIELD_NAME = "INSTANCE";
 
+    /**
+     * The get instance method name.
+     */
     private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
 
+    /**
+     * Create a MessageBundle with super class and interface.
+     *
+     * @param className      the qualified class name
+     * @param superClassName the super class name
+     * @param interfacesName the qualified interfaces name
+     */
     public MessageBundleClassModel(final String className, final String superClassName, final String... interfacesName) {
         super(className, superClassName, interfacesName);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void initModel() throws Exception {
-        super.initModel();
-
-        JCodeModel model = this.getClassModel();
-
-        /*
-         * Add MessageBundle specific code
-         */
-
+    public JCodeModel generateModel() throws Exception {
+        JCodeModel model = super.generateModel();
         JDefinedClass definedClass = model._getClass(this.getClassName());
 
-        //Add generated annotation
-        JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
-        generatedAnnotation.param("value", MessageBundle.class.getName());
-        generatedAnnotation.param("date", new Date().toString());
+        /*
+        * Add MessageBundle specific code
+        */
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.body().invoke("super");
@@ -71,7 +77,8 @@ public class MessageBundleClassModel extends ClassModel {
         JMethod readResolve = definedClass.method(JMod.PROTECTED, definedClass, GET_INSTANCE_METHOD_NAME);
         readResolve.annotate(Override.class);
         readResolve.body()._return(JExpr.ref(INSTANCE_FIELD_NAME));
-    }
 
+        return model;
+    }
 
 }

@@ -20,30 +20,12 @@
  */
 package org.jboss.logging.model;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import javax.lang.model.element.ExecutableElement;
-import javax.tools.JavaFileObject;
 
-import org.jboss.logging.util.TransformationUtil;
-
-import com.sun.codemodel.internal.CodeWriter;
-import com.sun.codemodel.internal.JAnnotationUse;
-import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JDocComment;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
-import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JType;
-import com.sun.codemodel.internal.JTypeVar;
-import com.sun.codemodel.internal.JVar;
 
 /**
  * An abstract code model to create the source file that implements the

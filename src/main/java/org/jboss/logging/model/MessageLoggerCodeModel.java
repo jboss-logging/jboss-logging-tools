@@ -26,7 +26,6 @@ import javax.lang.model.element.VariableElement;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
-import org.jboss.logging.Logger.Level;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
@@ -66,8 +65,8 @@ public final class MessageLoggerCodeModel extends MessageCodeModel {
      * @see org.jboss.logging.CodeModel#type()
      */
     @Override
-    public Implementation type() {
-        return Implementation.LOGGER;
+    public CodeModel.Implementation type() {
+        return CodeModel.Implementation.LOGGER;
     }
 
     /*

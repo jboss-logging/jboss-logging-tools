@@ -18,14 +18,13 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging.translation;
+package org.jboss.logging;
 
-import org.jboss.logging.Generator;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.MessageBundleClassModel;
 import org.jboss.logging.model.MessageLoggerClassModel;
+import org.jboss.logging.model.decorator.GeneratedAnnotation;
+import org.jboss.logging.model.decorator.TranslationMethods;
 import org.jboss.logging.util.PropertyFileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,13 +135,15 @@ public final class TranslationClassGenerator extends Generator {
                                 ClassModel classModel;
 
                                 if (bundleAnnotation != null) {
-                                    classModel = new MessageBundleClassModel(qualifiedPropertyClassName, bundleAnnotation.projectCode(), qualifiedPrimaryClassName);
+                                    classModel = new MessageBundleClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
+                                    classModel = new GeneratedAnnotation(classModel, MessageBundle.class.getName());
                                 } else {
-                                    classModel = new MessageLoggerClassModel(qualifiedPropertyClassName, loggerAnnotation.projectCode(), qualifiedPrimaryClassName);
+                                    classModel = new MessageLoggerClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
+                                    classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
                                 }
 
-                                classModel.initModel();
-                                classModel = TranslationClassBuilder.from(classModel).withAllTranslations((Map) translation).build();
+                                classModel = new TranslationMethods(classModel, (Map) translation);
+                                classModel.generateModel();
                                 classModel.writeClass(filer);
 
                             } catch (Exception e) {
