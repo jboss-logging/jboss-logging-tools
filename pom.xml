@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -8,6 +9,10 @@
     <artifactId>jboss-logging-tools</artifactId>
     <version>0.1-SNAPSHOT</version>
     <name>jboss-logging-tools</name>
+
+    <properties>
+        <netbeans.hint.license>jboss</netbeans.hint.license>
+    </properties>
 
     <repositories>
         <repository>
