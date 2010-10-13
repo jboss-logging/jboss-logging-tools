@@ -118,7 +118,7 @@ public final class TranslationClassGenerator extends Generator {
                         for (File file : files) {
 
                             String fileName = file.getName();
-                            String propertyClassName = PropertyFileUtil.getClassNameFor(primaryClassName, fileName);
+                            String propertyClassName = primaryClassName + PropertyFileUtil.getClassNameSuffix(fileName);
                             String qualifiedPropertyClassName = packageName.concat("." + propertyClassName);
 
                             /*

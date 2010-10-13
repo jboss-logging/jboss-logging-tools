@@ -91,23 +91,22 @@ public final class PropertyFileUtil {
     }
 
     /**
-     * Get class name to be generated for the given
-     * property file name.
+     * Get the class name suffix to be added to the
+     * generated class for the given property file name.
      *
-     * @param primaryClassName the primary class name
      * @param propertyFileName the property file name
      * @return the class name corresponding to the given property filename
      */
-    public static String getClassNameFor(final String primaryClassName, final String propertyFileName) {
-        int firstUnderScore = propertyFileName.indexOf("_");
-        int lastDot = propertyFileName.lastIndexOf(".");
+    public static String getClassNameSuffix(final String propertyFileName) {
+        Pattern pattern = Pattern.compile("[^_]*((_[^_.]*){1,3}).*");
+        Matcher matcher = pattern.matcher(propertyFileName);
+        boolean found = matcher.find();
 
-        String localeQualifier = propertyFileName.substring(firstUnderScore, lastDot);
+        if (!found) {
+            throw new IllegalArgumentException("The given filename is not a valid property filename");
+        }
 
-        StringBuilder builder = new StringBuilder(primaryClassName);
-        builder.append(localeQualifier.replaceAll("_", "\\$"));
-
-        return builder.toString();
+        return matcher.group(1);
     }
 
 }
