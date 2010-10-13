@@ -35,7 +35,7 @@ import javax.lang.model.type.TypeMirror;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
-import org.jboss.logging.model.validation.MessageDescriptorValidator;
+import org.jboss.logging.model.validation.MethodParameterValidator;
 
 /**
  * Stores information about methods.
@@ -232,7 +232,6 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
         result.message = message;
         // The new method descriptor must be added to itself
         result.descriptors.add(result);
-        MessageDescriptorValidator.create(result).validate();
         return result;
     }
 
