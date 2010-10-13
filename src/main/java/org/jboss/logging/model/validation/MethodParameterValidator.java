@@ -11,18 +11,18 @@ import org.jboss.logging.model.MethodDescriptor;
  * @author James R. Perkins Jr. (jrp)
  * 
  */
-public class MessageDescriptorValidator implements Validator {
+public class MethodParameterValidator implements Validator {
     private final MethodDescriptor methodDescriptor;
 
     /**
      * 
      */
-    private MessageDescriptorValidator(final MethodDescriptor methodDescriptor) {
+    private MethodParameterValidator(final MethodDescriptor methodDescriptor) {
         this.methodDescriptor = methodDescriptor;
     }
     
-    public static MessageDescriptorValidator create(final MethodDescriptor methodDescriptor) {
-        return new MessageDescriptorValidator(methodDescriptor);
+    public static MethodParameterValidator create(final MethodDescriptor methodDescriptor) {
+        return new MethodParameterValidator(methodDescriptor);
     }
 
     /*

@@ -36,8 +36,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import org.jboss.logging.model.ImplementationClassModel;
-import org.jboss.logging.model.MessageBundleCodeModel;
-import org.jboss.logging.model.MessageLoggerCodeModel;
+import org.jboss.logging.model.MessageBundleImplementor;
+import org.jboss.logging.model.MessageLoggerImplementor;
 import org.jboss.logging.model.validation.ValidationException;
 
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
@@ -96,11 +96,11 @@ public final class ClassGenerator extends Generator {
                     .getAnnotation(MessageBundle.class);
             try {
                 if (logger != null) {
-                    createClass(new MessageLoggerCodeModel(interfaceName,
+                    createClass(new MessageLoggerImplementor(interfaceName,
                             logger.projectCode()), type);
                 }
                 if (bundle != null) {
-                    createClass(new MessageBundleCodeModel(interfaceName,
+                    createClass(new MessageBundleImplementor(interfaceName,
                             bundle.projectCode()), type);
                 }
             } catch (IOException e) {

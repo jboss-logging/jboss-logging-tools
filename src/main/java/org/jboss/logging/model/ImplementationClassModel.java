@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- *
+ * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *
+ * 
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 import javax.lang.model.element.ExecutableElement;
 
+import org.jboss.logging.model.validation.ValidationException;
 import org.jboss.logging.util.TransformationUtil;
 
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
@@ -34,23 +35,23 @@ import com.sun.codemodel.internal.JMod;
 /**
  * An abstract code model to create the source file that implements the
  * interface.
- *
+ * 
  * <p>
  * Essentially this uses a com.sun.codemodel.internal.JCodeModel to generate the
  * source files with. This class is for convenience in generating default source
  * files.
  * </p>
- *
+ * 
  * @author James R. Perkins Jr. (jrp)
- *
+ * 
  */
 public abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * The implementation types.
-     *
+     * 
      * @author James R. Perkins Jr. (jrp)
-     *
+     * 
      */
     public static enum Implementation {
         /**
@@ -68,7 +69,7 @@ public abstract class ImplementationClassModel extends ClassModel {
 
         /**
          * Enum constructor.
-         *
+         * 
          * @param extension
          *            the extension to append the implementation with.
          */
@@ -83,7 +84,7 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * Class constructor.
-     *
+     * 
      * @param interfaceName
      *            the interface name to implement.
      * @param projectCode
@@ -102,7 +103,7 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * Returns the implementation type.
-     *
+     * 
      * @return the implementation type.
      */
     public final Implementation type() {
@@ -111,7 +112,7 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * The interface name this generated class will be implementing.
-     *
+     * 
      * @return the interface name.
      */
     public final String interfaceName() {
@@ -120,7 +121,7 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * Returns the fully qualified class name of the class.
-     *
+     * 
      * @return the fully qualified class name.
      */
     public final String getClassName() {
@@ -129,7 +130,7 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * Returns the package name for the class.
-     *
+     * 
      * @return the package name.
      */
     public final String packageName() {
@@ -138,15 +139,18 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * Adds a method to the class.
-     *
+     * 
      * @param method
      *            the method to add.
+     * @throws ValidationException
+     *             if the method is invalid.
      */
-    public abstract void addMethod(final ExecutableElement method);
+    public abstract void addMethod(final ExecutableElement method)
+            throws ValidationException;
 
     /**
      * Initializes the class to generate with defaults.
-     *
+     * 
      * @throws JClassAlreadyExistsException
      *             When the specified class/interface was already created.
      */
