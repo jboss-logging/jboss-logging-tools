@@ -34,6 +34,7 @@ import java.util.Set;
 
 /**
  * @author James R. Perkins Jr. (jrp)
+ * @author Kevin Pollet
  */
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
@@ -77,8 +78,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 generator.generate(annotations, roundEnv);
 
             } catch (Exception e) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator");
-                e.printStackTrace();
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + e.getMessage());
             }
 
         }

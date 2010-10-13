@@ -24,82 +24,68 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Utility class to work with
+ * translation filename.
+ *
  * @author Kevin Pollet
  */
-public final class PropertyFileUtil {
+public final class TranslationUtil {
 
     /**
      * Private constructor to
      * disable instantiation.
      */
-    private PropertyFileUtil() {
+    private TranslationUtil() {
     }
 
-    /**
-     * File qualifier enum.
-     */
-    public static enum Qualifier {
-        LOCALE, COUNTRY, VARIANT;
-    }
 
-    /**
-     * Get the language qualifier for the given
-     * property file.
-     *
-     * @param propertyFileName the property file name
-     * @return the language qualifier or null if none
-     */
-    public static String getPropertyFileQualifier(final String propertyFileName, final Qualifier qualifier) {
-        Pattern pattern = Pattern.compile("[^_]*_([^_.]*)(_([^_.]*)(_([^_.]*))?)?.*");
-        Matcher matcher = pattern.matcher(propertyFileName);
+    public static String getTranslationFileLocale(final String translationFileName) {
+        Pattern pattern = Pattern.compile("[^_]*_([^_.]*)[^.]*.properties");
+        Matcher matcher = pattern.matcher(translationFileName);
         boolean found = matcher.find();
 
-        String fileQualifier = null;
-
         if (found) {
-
-            switch (qualifier) {
-
-                case LOCALE: {
-                    if (matcher.groupCount() >= 1) {
-                        fileQualifier = matcher.group(1);
-                    }
-
-                }
-                break;
-
-                case COUNTRY: {
-                    if (matcher.groupCount() >= 3) {
-                        fileQualifier = matcher.group(3);
-                    }
-
-                }
-                break;
-
-                case VARIANT: {
-                    if (matcher.groupCount() >= 5) {
-                        fileQualifier = matcher.group(5);
-                    }
-
-                }
-                break;
-            }
-
+            return matcher.group(1);
         }
 
-        return fileQualifier;
+        return null;
     }
+
+    public static String getTranslationFileCountry(final String translationFileName) {
+        Pattern pattern = Pattern.compile("[^_]*_[^_.]*_([^_.]*)[^.]*.properties");
+        Matcher matcher = pattern.matcher(translationFileName);
+        boolean found = matcher.find();
+
+        if (found) {
+            return matcher.group(1);
+        }
+
+        return null;
+    }
+
+    public static String getTranslationFileVariant(final String translationFileName) {
+        Pattern pattern = Pattern.compile("[^_]*_[^_.]*_[^_.]*_([^_.]*)[^.]*.properties");
+        Matcher matcher = pattern.matcher(translationFileName);
+        boolean found = matcher.find();
+
+        if (found) {
+            return matcher.group(1);
+        }
+
+        return null;
+    }
+
 
     /**
      * Get the class name suffix to be added to the
      * generated class for the given property file name.
      *
-     * @param propertyFileName the property file name
-     * @return the class name corresponding to the given property filename
+     * @param translationFileName the translation file name
+     * @return the class name suffix corresponding to the given translation filename
      */
-    public static String getClassNameSuffix(final String propertyFileName) {
+    public static String getTranslationClassNameSuffix(final String translationFileName) {
         Pattern pattern = Pattern.compile("[^_]*((_[^_.]*){1,3}).*");
-        Matcher matcher = pattern.matcher(propertyFileName);
+        Matcher matcher = pattern.matcher(translationFileName);
         boolean found = matcher.find();
 
         if (!found) {
@@ -107,6 +93,12 @@ public final class PropertyFileUtil {
         }
 
         return matcher.group(1);
+    }
+
+
+    public static String getEnclosingTranslationClassName(final String className) {
+        int lastUnderScore = className.lastIndexOf("_");
+        return className.substring(0, lastUnderScore);
     }
 
 }

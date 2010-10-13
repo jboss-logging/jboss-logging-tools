@@ -32,9 +32,13 @@ import org.jboss.logging.util.TransformationUtil;
 
 /**
  * @author James R. Perkins Jr. (jrp)
- *
+ * @author Kevin Pollet
  */
 public abstract class Generator {
+
+    /**
+     * The processing environment.
+     */
     private final ProcessingEnvironment processingEnv;
 
     /**
@@ -46,13 +50,6 @@ public abstract class Generator {
     public Generator(final ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
     }
-
-    /**
-     * Returns the name of the generator.
-     *
-     * @return the name of the generator.
-     */
-    public abstract String getName();
 
     /**
      *

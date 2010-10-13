@@ -31,6 +31,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * The generated annotation
+ * decorator.
+ * 
  * @author Kevin Pollet
  */
 public class GeneratedAnnotation extends ClassModelDecorator {
@@ -60,10 +63,11 @@ public class GeneratedAnnotation extends ClassModelDecorator {
         JCodeModel model = super.generateModel();
         JDefinedClass definedClass = model._getClass(this.getClassName());
 
-        //Add generated annotation
         JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
         generatedAnnotation.param("value", value);
-        generatedAnnotation.param("date", generatedDateValue());
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        generatedAnnotation.param("date", dateFormat.format(new Date()));
 
         return model;
     }

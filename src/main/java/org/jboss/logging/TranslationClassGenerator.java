@@ -25,14 +25,12 @@ import org.jboss.logging.model.MessageBundleClassModel;
 import org.jboss.logging.model.MessageLoggerClassModel;
 import org.jboss.logging.model.decorator.GeneratedAnnotation;
 import org.jboss.logging.model.decorator.TranslationMethods;
-import org.jboss.logging.util.PropertyFileUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jboss.logging.util.TranslationUtil;
 
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -42,9 +40,12 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -55,10 +56,12 @@ import java.util.regex.Pattern;
  */
 public final class TranslationClassGenerator extends Generator {
 
-    /**
-     * The logger.
-     */
-    private final Logger logger = LoggerFactory.getLogger(TranslationClassGenerator.class);
+    private final Filer filer;
+
+    private final Elements elementsUtils;
+
+    private final Messager messager;
+
 
     /**
      * The constructor.
@@ -67,14 +70,10 @@ public final class TranslationClassGenerator extends Generator {
      */
     public TranslationClassGenerator(ProcessingEnvironment processingEnv) {
         super(processingEnv);
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getName() {
-        return this.getClass().getSimpleName();
+        filer = processingEnv.getFiler();
+        elementsUtils = processingEnv.getElementUtils();
+        messager = processingEnv.getMessager();
     }
 
     /**
@@ -83,15 +82,12 @@ public final class TranslationClassGenerator extends Generator {
     @Override
     public void generate(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        //Get utils
-        Filer filer = this.processingEnv().getFiler();
-        Elements elementsUtils = this.processingEnv().getElementUtils();
-
+        //Do work only on @MessageLogger and @MessageBundle annotation
         Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.getRootElements());
-
         for (TypeElement element : typesElement) {
 
-            if (element.getKind() == ElementKind.INTERFACE && element.getModifiers().contains(Modifier.PUBLIC)) {
+            //Process only public interface
+            if (element.getKind().isInterface() && element.getModifiers().contains(Modifier.PUBLIC)) {
 
                 MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
                 MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
@@ -100,7 +96,6 @@ public final class TranslationClassGenerator extends Generator {
 
                     PackageElement packageElement = elementsUtils.getPackageOf(element);
                     String packageName = packageElement.getQualifiedName().toString();
-
                     String interfaceName = element.getSimpleName().toString();
                     String primaryClassName = interfaceName.concat(bundleAnnotation != null ? "$bundle" : "$logger");
                     String qualifiedPrimaryClassName = packageName.concat("." + primaryClassName);
@@ -111,50 +106,54 @@ public final class TranslationClassGenerator extends Generator {
                         String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote("."), System.getProperty("file.separator"));
                         File dir = new File(packagePath);
 
-                        //List properties file
-                        PropertyFileFilter filter = new TranslationClassGenerator.PropertyFileFilter(interfaceName);
-                        File[] files = dir.listFiles(filter);
+                        //List translations file corresponding to this MessageBundle or MessageLogger interface
+                        TranslationFileFilter filter = new TranslationFileFilter(interfaceName);
 
+                        //Last generated translation class
+                        Map<String, String> lastGeneratedClass = new HashMap<String, String>();
+
+
+                        File[] files = dir.listFiles(filter);
                         for (File file : files) {
 
                             String fileName = file.getName();
-                            String propertyClassName = primaryClassName + PropertyFileUtil.getClassNameSuffix(fileName);
-                            String qualifiedPropertyClassName = packageName.concat("." + propertyClassName);
+                            String locale = TranslationUtil.getTranslationFileLocale(fileName);
+
+                            String translationClassName = primaryClassName + TranslationUtil.getTranslationClassNameSuffix(fileName);
+                            String qualifiedPropertyClassName = packageName + "." + translationClassName;
+
 
                             /*
-                             * Generate Java Code.
+                             * Generate java code for the translation
+                             * properties file.
                              */
 
-                            try {
+                            messager.printMessage(Diagnostic.Kind.NOTE, String.format("Generating the %s translation file class", translationClassName));
 
-                                this.logger.debug("Generate property classes for {} with name {}", fileName, qualifiedPropertyClassName);
 
-                                Properties translation = new Properties();
-                                translation.load(new FileReader(file));
-
-                                ClassModel classModel;
-
-                                if (bundleAnnotation != null) {
-                                    classModel = new MessageBundleClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
-                                    classModel = new GeneratedAnnotation(classModel, MessageBundle.class.getName());
-                                } else {
-                                    classModel = new MessageLoggerClassModel(qualifiedPropertyClassName, qualifiedPrimaryClassName);
-                                    classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
-                                }
-
-                                classModel = new TranslationMethods(classModel, (Map) translation);
-                                classModel.generateModel();
-                                classModel.writeClass(filer.createSourceFile(classModel.getClassName()));
-
-                            } catch (Exception e) {
-                                this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during generation of class " + propertyClassName + " already exist");
-                                logger.error("Error :", e);
+                            String superClassName = lastGeneratedClass.get(TranslationUtil.getTranslationFileLocale(fileName));
+                            if (superClassName == null) {
+                                superClassName = primaryClassName;
                             }
+                            
+
+                            //Load translations
+                            Properties translations = new Properties();
+                            translations.load(new FileInputStream(file));
+
+                            //Generate
+                            Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
+                            this.generateClassFor(superClassName, qualifiedPropertyClassName, annotationClass, (Map) translations);
+
+                            //Memorize last generated class name
+                            lastGeneratedClass.put(locale, translationClassName);
+
 
                         }
 
-                    } catch (IOException e1) {
-                        this.processingEnv().getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot read package content", packageElement);
+
+                    } catch (IOException e) {
+                        messager.printMessage(Diagnostic.Kind.ERROR, String.format("Cannot read %s package files", packageName));
                     }
 
                 }
@@ -166,10 +165,37 @@ public final class TranslationClassGenerator extends Generator {
     }
 
 
+    private void generateClassFor(final String superClass, final String clazz, final Class<?> messageAnnotationClass, final Map<String, String> translations) {
+
+        try {
+
+            ClassModel classModel;
+
+            if (messageAnnotationClass.isAssignableFrom(MessageBundle.class)) {
+                classModel = new MessageBundleClassModel(clazz, superClass);
+                classModel = new GeneratedAnnotation(classModel, MessageBundle.class.getName());
+            } else {
+                classModel = new MessageLoggerClassModel(clazz, superClass);
+                classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
+            }
+
+            classModel = new TranslationMethods(classModel, translations);
+            classModel.generateModel();
+            classModel.writeClass(filer.createSourceFile(classModel.getClassName()));
+
+
+        } catch (Exception e) {
+            this.messager.printMessage(Diagnostic.Kind.ERROR, String.format("Cannot generate %s source file", clazz));
+        }
+
+
+    }
+
+
     /**
-     * The property file filter.
+     * The translation file filter.
      */
-    private static class PropertyFileFilter implements FilenameFilter {
+    private static class TranslationFileFilter implements FilenameFilter {
 
         /**
          * The properties file pattern. The property file must
@@ -192,7 +218,7 @@ public final class TranslationClassGenerator extends Generator {
          *
          * @param className the class that have i18n property file
          */
-        public PropertyFileFilter(final String className) {
+        public TranslationFileFilter(final String className) {
             this.className = className;
         }
 
@@ -205,5 +231,6 @@ public final class TranslationClassGenerator extends Generator {
         }
 
     }
+
 
 }

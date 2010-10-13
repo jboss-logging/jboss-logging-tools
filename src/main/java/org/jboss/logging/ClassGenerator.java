@@ -48,11 +48,6 @@ import com.sun.codemodel.internal.JClassAlreadyExistsException;
  */
 public final class ClassGenerator extends Generator {
 
-    @Override
-    public String getName() {
-        return "ClassGenerator";
-    }
-
     /**
      * @param processingEnv
      */
