@@ -75,22 +75,6 @@
                             <compilerArgument>-proc:none</compilerArgument>
                         </configuration>
                     </execution>
-                    <!--
-                        Enable Annotation processor only
-                        for test purpose.
-                    -->
-                    <execution>
-                        <id>default-testCompile</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                        <configuration>
-                            <annotationProcessors>
-                                <annotationProcessor>org.jboss.logging.LoggingToolsProcessor</annotationProcessor>
-                            </annotationProcessors>
-                        </configuration>
-                    </execution>
                 </executions>
                 <configuration>
                     <source>1.6</source>
