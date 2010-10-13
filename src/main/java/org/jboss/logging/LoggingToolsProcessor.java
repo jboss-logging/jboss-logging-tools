@@ -20,8 +20,6 @@
  */
 package org.jboss.logging;
 
-import org.jboss.logging.util.TransformationUtil;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -39,31 +37,18 @@ import java.util.Set;
  */
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class AnnotationProcessor extends AbstractProcessor {
+public class LoggingToolsProcessor extends AbstractProcessor {
 
     /**
      * The generators.
      */
-    private final List<Generator> generators = new ArrayList<Generator>();
+    private final List<Generator> generators;
 
     /**
-     * {@inheritDoc}
+     * Default constructor
      */
-    @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
-        for (Generator generator : generators) {
-            // Catch all exceptions
-            try {
-
-                generator.generate(annotations, roundEnv);
-
-            } catch (Throwable t) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, TransformationUtil.stackTraceToString(t));
-            }
-        }
-
-        return false;
+    public LoggingToolsProcessor() {
+        this.generators = new ArrayList<Generator>();
     }
 
     /**
@@ -73,8 +58,33 @@ public class AnnotationProcessor extends AbstractProcessor {
     public void init(final ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
 
+        //Tools generator
         generators.add(new ClassGenerator(processingEnv));
         generators.add(new TranslationClassGenerator(processingEnv));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
+        //Call generators
+        for (Generator generator : generators) {
+
+            try {
+
+                generator.generate(annotations, roundEnv);
+
+            } catch (Exception e) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator");
+                e.printStackTrace();
+            }
+
+        }
+
+
+        return false;
     }
 
 }

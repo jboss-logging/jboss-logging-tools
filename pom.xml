@@ -1,31 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    
-	<groupId>org.jboss.logging</groupId>
-	<artifactId>annotation-processor</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<name>logging-annotation-processor</name>
+
+    <groupId>org.jboss.logging</groupId>
+    <artifactId>annotation-processor</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>logging-annotation-processor</name>
 
     <repositories>
-		<repository>
-			<id>jboss-public-repository-group</id>
-			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
-			<layout>default</layout>
-		</repository>
-	</repositories>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
 
-	<dependencies>
+    <dependencies>
         <!--
             JBoss Logging
         -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>3.0.0.Beta4</version>
-		</dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>3.0.0.Beta4</version>
+        </dependency>
 
         <!--
             Log
@@ -52,14 +52,19 @@
             <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
-	</dependencies>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
                 <executions>
+                    <!--
+                        Disable Annotation processor
+                        on project compile
+                    -->
                     <execution>
                         <id>default-compile</id>
                         <phase>compile</phase>
@@ -70,13 +75,29 @@
                             <compilerArgument>-proc:none</compilerArgument>
                         </configuration>
                     </execution>
+                    <!--
+                        Enable Annotation processor only
+                        for test purpose.
+                    -->
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <annotationProcessors>
+                                <annotationProcessor>org.jboss.logging.LoggingToolsProcessor</annotationProcessor>
+                            </annotationProcessors>
+                        </configuration>
+                    </execution>
                 </executions>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-    
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
