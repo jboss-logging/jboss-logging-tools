@@ -35,59 +35,20 @@ import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 
-import org.jboss.logging.Logger;
-
-
 /**
- * The java message logger java
- * class model.
- *
  * @author Kevin Pollet
  */
 public class MessageLoggerClassModel extends ClassModel {
 
-    /**
-     * The logger parameter name.
-     */
     private static final String LOGGER_PARAMETER_NAME = "logger";
-
-    /**
-     * Create a MessageBundle with super class and interface.
-     *
-     * @param className      the qualified class name
-     * @param superClassName the super class name
-     */
-    public MessageLoggerClassModel(final String className, final String superClassName) {
-        super(className, superClassName);
-    }
 
     public MessageLoggerClassModel(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
         super(className, projectCode, superClassName, interfacesName);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public JCodeModel generateModel() throws Exception {
-        JCodeModel model = super.generateModel();
-        JDefinedClass definedClass = model._getClass(this.getClassName());
-
-        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
-        constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
-
-        JBlock constructorBody = constructor.body();
-        constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
-
-        return model;
-    }
-        
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void initModel() throws JClassAlreadyExistsException {
-       super.initModel();
+        super.initModel();
 
         JCodeModel model = this.codeModel();
 
