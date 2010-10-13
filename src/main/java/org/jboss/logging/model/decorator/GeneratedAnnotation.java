@@ -26,6 +26,8 @@ import com.sun.codemodel.internal.JDefinedClass;
 import org.jboss.logging.model.ClassModel;
 
 import javax.annotation.Generated;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -61,7 +63,7 @@ public class GeneratedAnnotation extends ClassModelDecorator {
         //Add generated annotation
         JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
         generatedAnnotation.param("value", value);
-        generatedAnnotation.param("date", new Date().toString());
+        generatedAnnotation.param("date", generatedDateValue());
 
         return model;
     }

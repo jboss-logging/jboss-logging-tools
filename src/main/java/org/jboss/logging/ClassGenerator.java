@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- *
+ * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *
+ * 
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -38,12 +38,13 @@ import javax.lang.model.util.ElementFilter;
 import org.jboss.logging.model.ImplementationClassModel;
 import org.jboss.logging.model.MessageBundleCodeModel;
 import org.jboss.logging.model.MessageLoggerCodeModel;
+import org.jboss.logging.model.validation.ValidationException;
 
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
 
 /**
  * @author James R. Perkins Jr. (jrp)
- *
+ * 
  */
 public final class ClassGenerator extends Generator {
 
@@ -61,7 +62,7 @@ public final class ClassGenerator extends Generator {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see
      * org.jboss.logging.Generator#generate(javax.lang.model.element.Element)
      */
@@ -104,15 +105,20 @@ public final class ClassGenerator extends Generator {
                 }
             } catch (IOException e) {
                 printErrorMessage(e, type);
+                break;
             } catch (JClassAlreadyExistsException e) {
                 printErrorMessage(e, type);
+                break;
+            } catch (ValidationException e) {
+                printErrorMessage(e.getMessage(), e.getElement());
+                break;
             }
         }
     }
 
     private void createClass(final ImplementationClassModel codeModel,
             final TypeElement type) throws IOException,
-            JClassAlreadyExistsException {
+            JClassAlreadyExistsException, ValidationException {
         codeModel.initModel();
         // Process all extended interfaces.
         for (TypeMirror interfaceType : type.getInterfaces()) {

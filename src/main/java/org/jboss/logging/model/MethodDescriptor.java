@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- *
+ * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- *
+ * 
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -35,14 +35,15 @@ import javax.lang.model.type.TypeMirror;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
+import org.jboss.logging.model.validation.MessageDescriptorValidator;
 
 /**
  * Stores information about methods.
- *
+ * 
  * @author James R. Perkins Jr. (jrp)
- *
+ * 
  */
-public class MethodDescriptor implements Comparable<MethodDescriptor>,
+public final class MethodDescriptor implements Comparable<MethodDescriptor>,
         Iterable<MethodDescriptor> {
 
     private final Set<MethodDescriptor> descriptors;
@@ -63,7 +64,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Class constructor for singleton
-     *
+     * 
      * @param methodDesc
      *            the current method descriptor.
      * @param method
@@ -82,7 +83,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the Message annotation associated with this method.
-     *
+     * 
      * @return the message annotation.
      */
     public Message message() {
@@ -91,7 +92,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the method.
-     *
+     * 
      * @return the method.
      */
     public ExecutableElement method() {
@@ -100,7 +101,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the method name.
-     *
+     * 
      * @return the method name.
      */
     public String name() {
@@ -110,7 +111,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
     /**
      * Returns {@code true} if there is a cause element, otherwise {@code false}
      * .
-     *
+     * 
      * @return {@code true} if there is a cause element, otherwise {@code false}
      */
     public boolean hasClause() {
@@ -119,7 +120,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the cause element if there is one, otherwise {@code null}.
-     *
+     * 
      * @return the cause element, otherwise {@code null}.
      */
     public VariableElement cause() {
@@ -128,7 +129,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the the cause variable name as a string.
-     *
+     * 
      * @return the cause variable name.
      */
     public String causeVarName() {
@@ -137,7 +138,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the LogMessage annotation associated with this method.
-     *
+     * 
      * @return the log message annotation
      */
     public LogMessage logMessage() {
@@ -146,7 +147,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns a collections of the parameters.
-     *
+     * 
      * @return a collection of the parameters.
      */
     public Collection<VariableElement> parameters() {
@@ -155,7 +156,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the return type for the method.
-     *
+     * 
      * @return the return type for the method.
      */
     public TypeMirror returnType() {
@@ -164,7 +165,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns the return type for the method in a string format.
-     *
+     * 
      * @return the return type for the method.
      */
     public String returnTypeAsString() {
@@ -174,7 +175,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
     /**
      * Transforms the {@code method} into a method descriptor and creates a new
      * method descriptor.
-     *
+     * 
      * @param method
      *            the method to process.
      * @return the method descriptor that was created.
@@ -231,12 +232,13 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
         result.message = message;
         // The new method descriptor must be added to itself
         result.descriptors.add(result);
+        MessageDescriptorValidator.create(result).validate();
         return result;
     }
 
     /**
      * Returns a collection of method descriptors that match the method name.
-     *
+     * 
      * @param methodName
      *            the method name to search for.
      * @return a collection of method descriptors that match the method name.
@@ -253,7 +255,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /**
      * Returns a collection of all method descriptors.
-     *
+     * 
      * @return a collections of all method descriptors.
      */
     public Collection<MethodDescriptor> allMethods() {
@@ -269,7 +271,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -282,7 +284,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -304,7 +306,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -323,7 +325,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Iterable#iterator()
      */
     @Override
@@ -333,7 +335,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor>,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     @Override
