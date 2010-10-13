@@ -11,7 +11,10 @@
     <name>jboss-logging-tools</name>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netbeans.hint.license>jboss</netbeans.hint.license>
+        <source.version>1.6</source.version>
+        <target.version>1.6</target.version>
     </properties>
 
     <repositories>
@@ -66,8 +69,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${source.version}</source>
+                    <target>${target.version}</target>
                 </configuration>
             </plugin>
         </plugins>

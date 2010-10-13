@@ -18,8 +18,11 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging;
+package org.jboss.logging.generator;
 
+import org.jboss.logging.Generator;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.MessageBundleClassModel;
 import org.jboss.logging.model.MessageLoggerClassModel;
@@ -41,19 +44,25 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
+ * The translation class generator.
+ * <p>
+ * The aim of this generator is to generate
+ * the classes corresponding to translation
+ * files of a MessageLogger or MessageBundle.
+ * </p>
+ *
  * @author Kevin Pollet
  */
+//TODO generate empty class
+//TODO warning if no method correspond to a translation
 public final class TranslationClassGenerator extends Generator {
 
     private final Filer filer;
@@ -98,57 +107,31 @@ public final class TranslationClassGenerator extends Generator {
                     String packageName = packageElement.getQualifiedName().toString();
                     String interfaceName = element.getSimpleName().toString();
                     String primaryClassName = interfaceName.concat(bundleAnnotation != null ? "$bundle" : "$logger");
-                    String qualifiedPrimaryClassName = packageName.concat("." + primaryClassName);
+                    Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
 
                     try {
 
-                        FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, "", packageElement.getQualifiedName());
+                        FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, "", packageName);
                         String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote("."), System.getProperty("file.separator"));
                         File dir = new File(packagePath);
 
                         //List translations file corresponding to this MessageBundle or MessageLogger interface
                         TranslationFileFilter filter = new TranslationFileFilter(interfaceName);
 
-                        //Last generated translation class
-                        Map<String, String> lastGeneratedClass = new HashMap<String, String>();
-
-
                         File[] files = dir.listFiles(filter);
                         for (File file : files) {
-
-                            String fileName = file.getName();
-                            String locale = TranslationUtil.getTranslationFileLocale(fileName);
-
-                            String translationClassName = primaryClassName + TranslationUtil.getTranslationClassNameSuffix(fileName);
-                            String qualifiedPropertyClassName = packageName + "." + translationClassName;
-
+                            String locale = TranslationUtil.getTranslationFileLocale(file.getName());
+                            String className = primaryClassName + TranslationUtil.getTranslationClassNameSuffix(file.getName());
+                            String qualifiedClassName = packageName + "." + className;
+                            String superClassName = TranslationUtil.getEnclosingTranslationClassName(qualifiedClassName);
 
                             /*
                              * Generate java code for the translation
                              * properties file.
                              */
 
-                            messager.printMessage(Diagnostic.Kind.NOTE, String.format("Generating the %s translation file class", translationClassName));
-
-
-                            String superClassName = lastGeneratedClass.get(TranslationUtil.getTranslationFileLocale(fileName));
-                            if (superClassName == null) {
-                                superClassName = primaryClassName;
-                            }
-                            
-
-                            //Load translations
-                            Properties translations = new Properties();
-                            translations.load(new FileInputStream(file));
-
-                            //Generate
-                            Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
-                            this.generateClassFor(superClassName, qualifiedPropertyClassName, annotationClass, (Map) translations);
-
-                            //Memorize last generated class name
-                            lastGeneratedClass.put(locale, translationClassName);
-
-
+                            messager.printMessage(Diagnostic.Kind.NOTE, String.format("Generating the %s translation file class", className));
+                            this.generateClassFor(superClassName, qualifiedClassName, annotationClass, file);
                         }
 
 
@@ -165,9 +148,21 @@ public final class TranslationClassGenerator extends Generator {
     }
 
 
-    private void generateClassFor(final String superClass, final String clazz, final Class<?> messageAnnotationClass, final Map<String, String> translations) {
+    /**
+     * Generate a class for the given translation file.
+     *
+     * @param superClass             the qualified super class name
+     * @param clazz                  the qualified class name
+     * @param messageAnnotationClass the annotation who trigger generation
+     * @param translationFile        the translation file
+     */
+    private void generateClassFor(final String superClass, final String clazz, final Class<?> messageAnnotationClass, final File translationFile) {
 
         try {
+
+            //Load translations
+            Properties translations = new Properties();
+            translations.load(new FileInputStream(translationFile));
 
             ClassModel classModel;
 
@@ -179,7 +174,7 @@ public final class TranslationClassGenerator extends Generator {
                 classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
             }
 
-            classModel = new TranslationMethods(classModel, translations);
+            classModel = new TranslationMethods(classModel, (Map) translations);
             classModel.generateModel();
             classModel.writeClass(filer.createSourceFile(classModel.getClassName()));
 

@@ -98,7 +98,7 @@ public final class TranslationUtil {
 
     public static String getEnclosingTranslationClassName(final String className) {
         int lastUnderScore = className.lastIndexOf("_");
-        return className.substring(0, lastUnderScore);
+        return lastUnderScore != -1 ? className.substring(0, lastUnderScore) : className;
     }
 
 }

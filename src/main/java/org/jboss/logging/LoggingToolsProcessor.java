@@ -20,6 +20,9 @@
  */
 package org.jboss.logging;
 
+import org.jboss.logging.generator.ClassGenerator;
+import org.jboss.logging.generator.TranslationClassGenerator;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -70,19 +73,15 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        //Call generators
-        for (Generator generator : generators) {
+        try {
 
-            try {
-
+            for (Generator generator : generators) {
                 generator.generate(annotations, roundEnv);
-
-            } catch (Exception e) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + e.getMessage());
             }
 
+        } catch (Exception e) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + e.getMessage());
         }
-
 
         return false;
     }

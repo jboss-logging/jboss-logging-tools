@@ -18,33 +18,31 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging;
+package org.jboss.logging.generator;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Set;
-
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import org.jboss.logging.Generator;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ImplementationClassModel;
 import org.jboss.logging.model.MessageBundleImplementor;
 import org.jboss.logging.model.MessageLoggerImplementor;
 import org.jboss.logging.model.validation.ValidationException;
 
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author James R. Perkins Jr. (jrp)
- * 
  */
 public final class ClassGenerator extends Generator {
 
@@ -61,58 +59,48 @@ public final class ClassGenerator extends Generator {
      * @see
      * org.jboss.logging.Generator#generate(javax.lang.model.element.Element)
      */
+
     @Override
-    public void generate(final Set<? extends TypeElement> annotations,
-            final RoundEnvironment roundEnv) {
-        process(roundEnv.getRootElements());
-    }
+    public void generate(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
-    private void process(Collection<? extends Element> elements) {
-        Collection<? extends TypeElement> typeElements = ElementFilter
-                .typesIn(elements);
+        Collection<? extends TypeElement> typeElements = ElementFilter.typesIn(roundEnv.getRootElements());
         for (TypeElement type : typeElements) {
-            process(type.getEnclosedElements());
 
-            // Must be an interface
-            if (type.getKind() != ElementKind.INTERFACE) {
-                continue;
-            }
+            if (type.getKind().isInterface() && type.getModifiers().contains(Modifier.PUBLIC)) {
 
-            // Must be public
-            if (!type.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
-            }
+                final String interfaceName = processingEnv().getElementUtils().getBinaryName(type).toString();
+                final MessageLogger logger = type.getAnnotation(MessageLogger.class);
+                final MessageBundle bundle = type.getAnnotation(MessageBundle.class);
 
-            final String interfaceName = processingEnv().getElementUtils()
-                    .getBinaryName(type).toString();
-            final MessageLogger logger = type
-                    .getAnnotation(MessageLogger.class);
-            final MessageBundle bundle = type
-                    .getAnnotation(MessageBundle.class);
-            try {
-                if (logger != null) {
-                    createClass(new MessageLoggerImplementor(interfaceName,
-                            logger.projectCode()), type);
+                try {
+                    if (logger != null) {
+                        createClass(new MessageLoggerImplementor(interfaceName,
+                                logger.projectCode()), type);
+                    }
+                    if (bundle != null) {
+                        createClass(new MessageBundleImplementor(interfaceName,
+                                bundle.projectCode()), type);
+                    }
+                } catch (IOException e) {
+                    printErrorMessage(e, type);
+                    break;
+                } catch (JClassAlreadyExistsException e) {
+                    printErrorMessage(e, type);
+                    break;
+                } catch (ValidationException e) {
+                    printErrorMessage(e.getMessage(), e.getElement());
+                    break;
                 }
-                if (bundle != null) {
-                    createClass(new MessageBundleImplementor(interfaceName,
-                            bundle.projectCode()), type);
-                }
-            } catch (IOException e) {
-                printErrorMessage(e, type);
-                break;
-            } catch (JClassAlreadyExistsException e) {
-                printErrorMessage(e, type);
-                break;
-            } catch (ValidationException e) {
-                printErrorMessage(e.getMessage(), e.getElement());
-                break;
+
             }
+
         }
+
+
     }
 
     private void createClass(final ImplementationClassModel codeModel,
-            final TypeElement type) throws IOException,
+                             final TypeElement type) throws IOException,
             JClassAlreadyExistsException, ValidationException {
         codeModel.initModel();
         // Process all extended interfaces.
