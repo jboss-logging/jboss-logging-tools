@@ -18,7 +18,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging.translation;
+package org.jboss.logging.model.decorator;
 
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
@@ -27,29 +27,46 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.model.ClassModel;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * The translation methods generator.
+ * 
  * @author Kevin Pollet
  */
-public class TranslationClassBuilder {
+public class TranslationMethods extends ClassModelDecorator  {
 
+    /**
+     * Translation method suffix.
+     */
     private static final String METHOD_SUFFIX = "$str";
 
-    public ClassModel model;
+    /**
+     * The translation map.
+     */
+    private final Map<String, String> translations;
 
-    public static TranslationClassBuilder from(final ClassModel model) {
-        return new TranslationClassBuilder(model);
+    /**
+     * Create a translation decorator who adds translation methods.
+     *
+     * @param model the model to decorate
+     * @param translations the translations to add
+     */
+    public TranslationMethods(final ClassModel model, final Map<String, String> translations) {
+        super(model);
+
+        this.translations = translations != null ? translations : new HashMap<String, String>();
     }
 
-    public TranslationClassBuilder(final ClassModel model) {
-        this.model = model;
-    }
-
-    public TranslationClassBuilder withAllTranslations(final Map<String, String> translations) {
-        JCodeModel model = this.model.codeModel();
-        JDefinedClass clazz = model._getClass(this.model.getClassName());
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public JCodeModel generateModel() throws Exception {
+        JCodeModel model = super.generateModel();
+        JDefinedClass clazz = model._getClass(this.getClassName());
 
         Set<Map.Entry<String, String>> entries = translations.entrySet();
         for (Map.Entry<String, String> entry : entries) {
@@ -62,12 +79,7 @@ public class TranslationClassBuilder {
             method.body()._return(JExpr.lit(value));
         }
 
-
-        return this;
-    }
-
-    public ClassModel build() {
         return model;
     }
-
+    
 }
