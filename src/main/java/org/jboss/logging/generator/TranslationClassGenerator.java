@@ -35,6 +35,7 @@ import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -124,10 +125,12 @@ public final class TranslationClassGenerator extends Generator {
                         File dir = new File(packagePath);
 
                         File[] files = dir.listFiles(new TranslationFileFilter(interfaceName));
-                        for (File file : files) {
-                            String qualifiedClassName = primaryClassName + TranslationUtil.getTranslationClassNameSuffix(file.getName());
-                            this.messager.printMessage(Diagnostic.Kind.NOTE, String.format("Generating the %s translation file class", qualifiedClassName, packageName));
-                            this.generateClassFor(primaryClassName, qualifiedClassName, annotationClass, file);
+                        if (files != null) {
+                            for (File file : files) {
+                                String qualifiedClassName = primaryClassName + TranslationUtil.getTranslationClassNameSuffix(file.getName());
+                                this.messager.printMessage(Diagnostic.Kind.NOTE, String.format("Generating the %s translation file class", qualifiedClassName, packageName));
+                                this.generateClassFor(primaryClassName, qualifiedClassName, annotationClass, file);
+                            }
                         }
 
                     } catch (IOException e) {
@@ -155,7 +158,7 @@ public final class TranslationClassGenerator extends Generator {
 
         try {
 
-            //TODO i think there is a best manner
+            //TODO I think there is a best manner
             //Check if super class have been generated
             String superClassName = TranslationUtil.getEnclosingTranslationClassName(generatedClassName);
             if (!superClassName.equals(primaryClassName)) {
@@ -171,10 +174,8 @@ public final class TranslationClassGenerator extends Generator {
 
             //Load translations
             Properties translations = new Properties();
-            System.out.println(translationFile.getName() + "/" + translationFile.exists());
             if (translationFile != null && translationFile.exists()) {
                 translations.load(new FileInputStream(translationFile));
-                System.out.println(translations.keySet());
             }
 
             ClassModel classModel;
@@ -197,7 +198,6 @@ public final class TranslationClassGenerator extends Generator {
 
 
     }
-
 
     /**
      * The translation file filter.
@@ -227,6 +227,7 @@ public final class TranslationClassGenerator extends Generator {
          */
         public TranslationFileFilter(final String className) {
             this.className = className;
+            System.out.println(className);
         }
 
         /**
