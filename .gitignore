@@ -1,8 +1,8 @@
 #ignore Maven target folder
-/target
+*/target
 
 #ignore Eclipse files
-/.settings
+*/.settings
 .classpath
 .project
 
