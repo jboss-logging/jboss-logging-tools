@@ -33,13 +33,14 @@ import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -66,21 +67,14 @@ public final class ClassGenerator extends Generator {
         Collection<? extends TypeElement> typeElements = ElementFilter.typesIn(roundEnv.getRootElements());
         for (TypeElement type : typeElements) {
 
-            if (type.getKind().isInterface() && type.getModifiers().contains(Modifier.PUBLIC)) {
-
-                final String interfaceName = processingEnv().getElementUtils().getBinaryName(type).toString();
-                final MessageLogger logger = type.getAnnotation(MessageLogger.class);
-                final MessageBundle bundle = type.getAnnotation(MessageBundle.class);
-
                 try {
-                    if (logger != null) {
-                        createClass(new MessageLoggerImplementor(interfaceName,
-                                logger.projectCode()), type);
-                    }
-                    if (bundle != null) {
-                        createClass(new MessageBundleImplementor(interfaceName,
-                                bundle.projectCode()), type);
-                    }
+                   generate(type);
+                   // Handle inner classes
+                   final List<? extends TypeElement> e = ElementFilter.typesIn(
+                           type.getEnclosedElements());
+                   for (TypeElement te : e) {
+                       generate(te);
+                   }
                 } catch (IOException e) {
                     printErrorMessage(e, type);
                     break;
@@ -92,10 +86,28 @@ public final class ClassGenerator extends Generator {
                     break;
                 }
 
-            }
-
         }
 
+
+    }
+
+    private void generate(TypeElement type) throws IOException, JClassAlreadyExistsException {
+
+            //if (type.getKind().isInterface() && type.getModifiers().contains(Modifier.PUBLIC)) {
+
+                final String interfaceName = processingEnv().getElementUtils().getBinaryName(type).toString();
+                final MessageLogger logger = type.getAnnotation(MessageLogger.class);
+                final MessageBundle bundle = type.getAnnotation(MessageBundle.class);
+                    if (logger != null) {
+                        createClass(new MessageLoggerImplementor(interfaceName,
+                                logger.projectCode()), type);
+                    }
+                    if (bundle != null) {
+                        createClass(new MessageBundleImplementor(interfaceName,
+                                bundle.projectCode()), type);
+                    }
+
+            //}
 
     }
 
