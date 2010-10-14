@@ -58,7 +58,7 @@ public class TranslationMethods extends ClassModelDecorator  {
     public TranslationMethods(final ClassModel model, final Map<String, String> translations) {
         super(model);
         
-        if (translations == null) {
+        if (translations != null) {
             this.translations = translations;
         } else {
             this.translations = Collections.EMPTY_MAP;

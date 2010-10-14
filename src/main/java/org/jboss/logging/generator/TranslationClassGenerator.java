@@ -171,8 +171,10 @@ public final class TranslationClassGenerator extends Generator {
 
             //Load translations
             Properties translations = new Properties();
+            System.out.println(translationFile.getName() + "/" + translationFile.exists());
             if (translationFile != null && translationFile.exists()) {
                 translations.load(new FileInputStream(translationFile));
+                System.out.println(translations.keySet());
             }
 
             ClassModel classModel;
