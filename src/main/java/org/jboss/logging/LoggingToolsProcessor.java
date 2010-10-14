@@ -34,6 +34,7 @@ import javax.tools.Diagnostic;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.jboss.logging.util.TransformationUtil;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -71,7 +72,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
      * {@inheritDoc}
      */
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public boolean process(Set<? extends TypeElement> annotations,
+            RoundEnvironment roundEnv) {
 
         try {
 
@@ -80,10 +82,10 @@ public class LoggingToolsProcessor extends AbstractProcessor {
             }
 
         } catch (Exception e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + e.getMessage());
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + TransformationUtil.
+                    stackTraceToString(e));
         }
 
         return false;
     }
-
 }

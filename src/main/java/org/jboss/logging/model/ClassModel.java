@@ -68,13 +68,11 @@ public abstract class ClassModel {
      */
     private JCodeModel codeModel;
 
-
     public static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
     private JDefinedClass definedClass;
 
     private String projectCode;
-
 
     /**
      * Construct a class model.
@@ -89,7 +87,8 @@ public abstract class ClassModel {
         this.codeModel = null;
     }
 
-    protected ClassModel(final String className, final String projectCode, final String superClassName, final String... interfaceNames) {
+    protected ClassModel(final String className, final String projectCode,
+            final String superClassName, final String... interfaceNames) {
         this.codeModel = new JCodeModel();
         this.interfaceNames = interfaceNames;
         this.superClassName = superClassName;
@@ -97,11 +96,10 @@ public abstract class ClassModel {
         this.projectCode = projectCode;
     }
 
-
     public void initModel() throws JClassAlreadyExistsException {
         definedClass = codeModel._class(this.className);
-        final JAnnotationUse anno = definedClass
-                .annotate(javax.annotation.Generated.class);
+        final JAnnotationUse anno = definedClass.annotate(
+                javax.annotation.Generated.class);
         anno.param("value", getClass().getCanonicalName());
         anno.param("date", generatedDateValue());
 
@@ -217,19 +215,14 @@ public abstract class ClassModel {
      *
      * @param varName      the variable name.
      * @param messageValue the value for the message.
-     * @param id           the id to prepend the project code/message with.
      * @return the newly created variable.
      */
-    protected JVar addMessageVar(final String varName, final String messageValue, int id) {
+    protected JVar addMessageVar(final String varName, final String messageValue) {
         JFieldVar var = definedClass().fields().get(varName);
         if (var == null) {
             var = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
                     String.class, varName);
-            String value = messageValue;
-            if (id > 0) {
-                value = formatMessageId(id) + messageValue;
-            }
-            var.init(JExpr.lit(value));
+            var.init(JExpr.lit(messageValue));
         }
         return var;
     }
@@ -254,7 +247,8 @@ public abstract class ClassModel {
      * @param id          the id to prepend the project code/message with.
      * @return the newly created method.
      */
-    protected JMethod addMessageMethod(final String methodName, final String returnValue, final int id) {
+    protected JMethod addMessageMethod(final String methodName,
+            final String returnValue, final int id) {
         final String internalMethodName = methodName + "$str";
         JMethod method = definedClass().getMethod(internalMethodName,
                 EMPTY_TYPE_ARRAY);
@@ -264,7 +258,13 @@ public abstract class ClassModel {
             method = definedClass().method(JMod.PROTECTED, returnType,
                     internalMethodName);
             final JBlock body = method.body();
-            body._return(addMessageVar(methodName, returnValue, id));
+            // Create the message id field
+            final JVar idVar = definedClass.field(
+                    JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
+                    String.class, methodName + "Id");
+            idVar.init(JExpr.lit(formatMessageId(id)));
+            body._return(
+                    idVar.plus(addMessageVar(methodName, returnValue)));
         }
         return method;
     }
@@ -297,7 +297,8 @@ public abstract class ClassModel {
      * @param padLen    the total length the string should be.
      * @return the padded value.
      */
-    protected final String padLeft(final String initValue, final char padChar, final int padLen) {
+    protected final String padLeft(final String initValue, final char padChar,
+            final int padLen) {
 
         final StringBuilder result = new StringBuilder();
         for (int i = initValue.length(); i < padLen; i++) {
@@ -313,12 +314,12 @@ public abstract class ClassModel {
      * @return the current date formatted in ISO 8601.
      */
     protected static final String generatedDateValue() {
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        final SimpleDateFormat sdf = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ssZ");
         return sdf.format(new Date());
     }
 
     public JCodeModel getClassModel() {
         return this.codeModel;
     }
-
 }
