@@ -1,4 +1,3 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -6,15 +5,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.jboss.logging</groupId>
-    <artifactId>jboss-logging-tools</artifactId>
+    <artifactId>jboss-logging-tools-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <name>jboss-logging-tools</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>tools-test</module>
+        <module>jboss-logging-tools</module>
+    </modules>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netbeans.hint.license>jboss</netbeans.hint.license>
-        <source.version>1.6</source.version>
-        <target.version>1.6</target.version>
+        <compiler.source.version>1.6</compiler.source.version>
+        <compiler.target.version>1.6</compiler.target.version>
     </properties>
 
     <repositories>
@@ -25,55 +27,42 @@
         </repository>
     </repositories>
 
-    <dependencies>
-        <!--
-            JBoss Logging
-        -->
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-            <version>3.0.0.Beta4</version>
-        </dependency>
+    <dependencyManagement>
+        <dependencies>
+            <!--
+                JBoss Logging
+            -->
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+                <version>3.0.0.Beta4</version>
+            </dependency>
 
-        <!--
-            Test
-        -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+            <!--
+                Test
+            -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.8.1</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <executions>
-                    <!--
-                        Disable Annotation processor
-                        on project compile
-                    -->
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <compilerArgument>-proc:none</compilerArgument>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>${source.version}</source>
-                    <target>${target.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.3.2</version>
+                    <configuration>
+                        <source>${compiler.source.version}</source>
+                        <target>${compiler.target.version}</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
-
 </project>
