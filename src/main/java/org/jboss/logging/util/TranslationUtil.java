@@ -37,8 +37,7 @@ public final class TranslationUtil {
      */
     private TranslationUtil() {
     }
-
-
+    
     public static String getTranslationFileLocale(final String translationFileName) {
         Pattern pattern = Pattern.compile("[^_]*_([^_.]*)[^.]*.properties");
         Matcher matcher = pattern.matcher(translationFileName);

@@ -26,6 +26,7 @@ import java.io.StringWriter;
 
 /**
  * @author James R. Perkins Jr. (jrp)
+ * @author Kevin Pollet
  */
 public final class TransformationUtil {
 
@@ -58,12 +59,32 @@ public final class TransformationUtil {
      * @return the class name minus the package.
      */
     public static String toSimpleClassName(final String qualifiedClassName) {
-        String result = null;
+        String result;
         int index = qualifiedClassName.lastIndexOf(".");
         if (index != -1) {
             result = qualifiedClassName.substring(index + 1);
+        } else {
+            result = null;
         }
         return result;
+    }
+
+    /**
+     * Get the qualified name of a class in the given
+     * package.
+     *
+     * @param packageName the package name
+     * @param className the class name
+     * @return the class qualified name
+     */
+    public static String toQualifiedClassName(final String packageName, final String className) {
+        String qualifiedClassName;
+        if (!packageName.isEmpty() && !packageName.endsWith(".")) {
+            qualifiedClassName = String.format("%s.%s",packageName,className);
+        } else {
+            qualifiedClassName = packageName.concat(className);
+        }
+        return qualifiedClassName;
     }
 
     /**

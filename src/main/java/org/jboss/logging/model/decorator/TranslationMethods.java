@@ -27,6 +27,7 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.model.ClassModel;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +48,7 @@ public class TranslationMethods extends ClassModelDecorator  {
      * The translation map.
      */
     private final Map<String, String> translations;
-
+    
     /**
      * Create a translation decorator who adds translation methods.
      *
@@ -56,8 +57,12 @@ public class TranslationMethods extends ClassModelDecorator  {
      */
     public TranslationMethods(final ClassModel model, final Map<String, String> translations) {
         super(model);
-
-        this.translations = translations != null ? translations : new HashMap<String, String>();
+        
+        if (translations == null) {
+            this.translations = translations;
+        } else {
+            this.translations = Collections.EMPTY_MAP;
+        }
     }
 
     /**
@@ -68,7 +73,7 @@ public class TranslationMethods extends ClassModelDecorator  {
         JCodeModel model = super.generateModel();
         JDefinedClass clazz = model._getClass(this.getClassName());
 
-        Set<Map.Entry<String, String>> entries = translations.entrySet();
+        Set<Map.Entry<String, String>> entries = this.translations.entrySet();
         for (Map.Entry<String, String> entry : entries) {
 
             String key = entry.getKey();
