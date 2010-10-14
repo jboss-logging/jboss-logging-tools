@@ -111,8 +111,8 @@ public final class TranslationClassGenerator extends Generator {
 
                     try {
 
-                        FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, "", packageName);
-                        String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote("."), System.getProperty("file.separator"));
+                        FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
+                        String packagePath = fObj.toUri().getPath().replaceAll(interfaceName, "");
                         File dir = new File(packagePath);
 
                         //List translations file corresponding to this MessageBundle or MessageLogger interface
@@ -120,9 +120,8 @@ public final class TranslationClassGenerator extends Generator {
 
                         File[] files = dir.listFiles(filter);
                         for (File file : files) {
-                            String locale = TranslationUtil.getTranslationFileLocale(file.getName());
                             String className = primaryClassName + TranslationUtil.getTranslationClassNameSuffix(file.getName());
-                            String qualifiedClassName = packageName + "." + className;
+                            String qualifiedClassName = packageName.isEmpty() ? className : packageName +  "." + className;
                             String superClassName = TranslationUtil.getEnclosingTranslationClassName(qualifiedClassName);
 
                             /*
@@ -130,7 +129,7 @@ public final class TranslationClassGenerator extends Generator {
                              * properties file.
                              */
 
-                            messager.printMessage(Diagnostic.Kind.NOTE, String.format("Generating the %s translation file class", className));
+                            messager.printMessage(Diagnostic.Kind.NOTE, String.format("Generating the %s translation file class in package %s", className, packageName));
                             this.generateClassFor(superClassName, qualifiedClassName, annotationClass, file);
                         }
 
@@ -159,6 +158,8 @@ public final class TranslationClassGenerator extends Generator {
     private void generateClassFor(final String superClass, final String clazz, final Class<?> messageAnnotationClass, final File translationFile) {
 
         try {
+
+
 
             //Load translations
             Properties translations = new Properties();
