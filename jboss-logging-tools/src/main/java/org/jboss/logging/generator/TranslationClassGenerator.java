@@ -227,7 +227,6 @@ public final class TranslationClassGenerator extends Generator {
          */
         public TranslationFileFilter(final String className) {
             this.className = className;
-            System.out.println(className);
         }
 
         /**
