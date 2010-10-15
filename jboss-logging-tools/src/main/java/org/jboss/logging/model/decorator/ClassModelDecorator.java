@@ -26,6 +26,7 @@ import org.jboss.logging.model.JavaFileObjectCodeWriter;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
+import org.jboss.logging.ToolLogger;
 
 /**
  * @author Kevin Pollet
@@ -44,8 +45,7 @@ public abstract class ClassModelDecorator extends ClassModel {
      * @param model the model to decorate
      */
     public ClassModelDecorator(final ClassModel model) {
-        super(null, null);
-
+        super(null, null, null);
         this.model = model;
     }
 

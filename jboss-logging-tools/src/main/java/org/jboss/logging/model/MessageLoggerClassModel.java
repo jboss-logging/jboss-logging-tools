@@ -24,7 +24,6 @@ import java.util.Date;
 
 import javax.annotation.Generated;
 
-import org.jboss.logging.Logger;
 import org.jboss.logging.MessageLogger;
 
 import com.sun.codemodel.internal.JAnnotationUse;
@@ -36,6 +35,7 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 
 import org.jboss.logging.Logger;
+import org.jboss.logging.ToolLogger;
 
 
 /**
@@ -57,12 +57,12 @@ public class MessageLoggerClassModel extends ClassModel {
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageLoggerClassModel(final String className, final String superClassName) {
-        super(className, superClassName);
+    public MessageLoggerClassModel(final ToolLogger logger, final String className, final String superClassName) {
+        super(logger, className, superClassName);
     }
 
-    public MessageLoggerClassModel(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
-        super(className, projectCode, superClassName, interfacesName);
+    public MessageLoggerClassModel(final ToolLogger logger, final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(logger, className, projectCode, superClassName, interfacesName);
     }
 
     /**

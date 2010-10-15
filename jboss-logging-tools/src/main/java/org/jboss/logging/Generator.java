@@ -24,17 +24,15 @@ import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic.Kind;
-
-import org.jboss.logging.util.TransformationUtil;
 
 /**
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  */
 public abstract class Generator {
+
+    private final ToolLogger logger;
 
     /**
      * The processing environment.
@@ -49,7 +47,24 @@ public abstract class Generator {
      */
     public Generator(final ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
+        this.logger = ToolLogger.getLogger(processingEnv.getMessager());
     }
+
+    /**
+     * Returns the logger to log messages with.
+     *
+     * @return the logger to log messages with.
+     */
+    public final ToolLogger logger() {
+        return logger;
+    }
+
+    /**
+     * Returns the name of the generator.
+     *
+     * @return the name of the generator.
+     */
+    public abstract String getName();
 
     /**
      *
@@ -70,88 +85,4 @@ public abstract class Generator {
     public final ProcessingEnvironment processingEnv() {
         return processingEnv;
     }
-
-    /**
-     * Convenience method for printing informational messages.
-     *
-     * @param message
-     *            the message to print.
-     */
-    public final void printInfoMessage(final String message) {
-        processingEnv.getMessager().printMessage(Kind.NOTE, message);
-    }
-
-    /**
-     * Convenience method for printing an error messages.
-     *
-     * @param message
-     *            the error message to print.
-     */
-    public final void printErrorMessage(final String message) {
-        processingEnv.getMessager().printMessage(Kind.ERROR, message);
-    }
-
-    /**
-     * Prints the stack trace to error message.
-     *
-     * @param throwable
-     *            the stack trace to print.
-     */
-    public final void printErrorMessage(final Throwable throwable) {
-        processingEnv.getMessager().printMessage(Kind.ERROR,
-                TransformationUtil.stackTraceToString(throwable));
-    }
-
-    /**
-     * Convenience method for printing an error messages.
-     *
-     * @param message
-     *            the error message to print.
-     * @param element
-     *            the element that caused the error.
-     */
-    public final void printErrorMessage(final String message,
-            final Element element) {
-        processingEnv.getMessager().printMessage(Kind.ERROR, message, element);
-    }
-
-    /**
-     * Prints the stack trace to error message.
-     *
-     * @param throwable
-     *            the stack trace to print.
-     * @param element
-     *            the element that caused the error.
-     */
-    public final void printErrorMessage(final Throwable throwable,
-            final Element element) {
-        processingEnv.getMessager().printMessage(Kind.ERROR,
-                TransformationUtil.stackTraceToString(throwable), element);
-    }
-
-    /**
-     * Convenience method for printing a warning message.
-     *
-     * @param message
-     *            the warning message to print.
-     */
-    public final void printWarningMessage(final String message) {
-        processingEnv.getMessager().printMessage(Kind.WARNING, message);
-    }
-
-    /**
-     * Prints the initial message as informational message then the stack trace
-     * as an error message.
-     *
-     * @param initialMessage
-     *            the initial message to print.
-     * @param throwable
-     *            the stack trace to print.
-     */
-    public final void printErrorMessage(final String initialMessage,
-            final Throwable throwable) {
-        printInfoMessage(initialMessage);
-        printErrorMessage(throwable);
-    }
-
 }

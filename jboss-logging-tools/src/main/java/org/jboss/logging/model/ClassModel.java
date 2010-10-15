@@ -39,6 +39,7 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.jboss.logging.ToolLogger;
 
 /**
  * The basic java class model.
@@ -68,10 +69,24 @@ public abstract class ClassModel {
      */
     private JCodeModel codeModel;
 
+    /**
+     * Empty type array.
+     */
     public static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
+    /**
+     * The defined class.
+     */
     private JDefinedClass definedClass;
 
+    /**
+     * The logger used for logging.
+     */
+    private final ToolLogger logger;
+
+    /**
+     * The project code from the annotation.
+     */
     private String projectCode;
 
     /**
@@ -80,18 +95,21 @@ public abstract class ClassModel {
      * @param className      the qualified class name
      * @param superClassName the qualified super class name
      */
-    public ClassModel(final String className, final String superClassName) {
+    public ClassModel(final ToolLogger logger, final String className, final String superClassName) {
         this.interfaceNames = null;
         this.superClassName = superClassName;
         this.className = className;
+        this.logger = logger;
     }
 
-    protected ClassModel(final String className, final String projectCode,
-            final String superClassName, final String... interfaceNames) {
+    protected ClassModel(final ToolLogger logger, final String className,
+            final String projectCode, final String superClassName,
+            final String... interfaceNames) {
         this.interfaceNames = interfaceNames;
         this.superClassName = superClassName;
         this.className = className;
         this.projectCode = projectCode;
+        this.logger = logger;
     }
 
     public void initModel() throws JClassAlreadyExistsException {
@@ -193,6 +211,15 @@ public abstract class ClassModel {
      */
     public final JDefinedClass definedClass() {
         return definedClass;
+    }
+
+    /**
+     * The logger for logging messages.
+     *
+     * @return the logger.
+     */
+    public final ToolLogger logger() {
+        return logger;
     }
 
     /**

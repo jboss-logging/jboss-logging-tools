@@ -53,6 +53,14 @@ public final class ClassGenerator extends Generator {
         super(processingEnv);
     }
 
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -80,13 +88,13 @@ public final class ClassGenerator extends Generator {
                 generate(ElementFilter.typesIn(type.getEnclosedElements()));
                 generate(type);
             } catch (IOException e) {
-                printErrorMessage(e, type);
+                logger().error(e, type);
                 break;
             } catch (JClassAlreadyExistsException e) {
-                printErrorMessage(e, type);
+                logger().error(e, type);
                 break;
             } catch (ValidationException e) {
-                printErrorMessage(e.getMessage(), e.getElement());
+                logger().error(e.getMessage(), e.getElement());
                 break;
             }
         }
@@ -101,23 +109,21 @@ public final class ClassGenerator extends Generator {
         if (logger != null) {
             if (type.getKind().isInterface() && !type.getModifiers().contains(
                     Modifier.PRIVATE)) {
-                createClass(new MessageLoggerImplementor(interfaceName,
+                createClass(new MessageLoggerImplementor(logger(), interfaceName,
                         logger.projectCode()), type);
             } else {
-                printWarningMessage(String.format(
-                        "Type %s must be an interface with at least package-private access. Skipping processing.",
-                        interfaceName));
+                logger().warn("Type %s must be an interface with at least package-private access. Skipping processing.",
+                        interfaceName);
             }
         }
         if (bundle != null) {
             if (type.getKind().isInterface() && !type.getModifiers().contains(
                     Modifier.PRIVATE)) {
-                createClass(new MessageBundleImplementor(interfaceName,
+                createClass(new MessageBundleImplementor(logger(), interfaceName,
                         bundle.projectCode()), type);
             } else {
-                printWarningMessage(String.format(
-                        "Type %s must be an interface with at least package-private access. Skipping processing.",
-                        interfaceName));
+                logger().warn("Type %s must be an interface with at least package-private access. Skipping processing.",
+                        interfaceName);
             }
         }
 

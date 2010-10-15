@@ -78,6 +78,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         try {
 
             for (Generator generator : generators) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
+                        "Executing " + generator.getName());
                 generator.generate(annotations, roundEnv);
             }
 

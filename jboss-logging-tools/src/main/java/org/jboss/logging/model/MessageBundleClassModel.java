@@ -32,6 +32,7 @@ import org.jboss.logging.MessageBundle;
 
 import javax.annotation.Generated;
 import java.util.Date;
+import org.jboss.logging.ToolLogger;
 
 /**
  * The java message bundle java
@@ -57,12 +58,12 @@ public class MessageBundleClassModel extends ClassModel {
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageBundleClassModel(final String className, final String superClassName) {
-        super(className, superClassName);
+    public MessageBundleClassModel(final ToolLogger logger, final String className, final String superClassName) {
+        super(logger, className, superClassName);
     }
 
-    public MessageBundleClassModel(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
-        super(className, projectCode, superClassName, interfacesName);
+    public MessageBundleClassModel(final ToolLogger logger, final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(logger, className, projectCode, superClassName, interfacesName);
     }
 
     /**

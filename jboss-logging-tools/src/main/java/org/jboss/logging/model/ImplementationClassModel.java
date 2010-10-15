@@ -31,6 +31,7 @@ import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
+import org.jboss.logging.ToolLogger;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -47,40 +48,9 @@ import com.sun.codemodel.internal.JMod;
  */
 public abstract class ImplementationClassModel extends ClassModel {
 
-    /**
-     * The implementation types.
-     * 
-     * @author James R. Perkins Jr. (jrp)
-     * 
-     */
-    public static enum Implementation {
-        /**
-         * Represents the {@code org.jboss.logging.MessageBundle}.
-         */
-        BUNDLE("$bundle"),
-        /**
-         * Represents the {@code org.jboss.logging.MessageLogger}.
-         */
-        LOGGER("$logger");
-        /**
-         * The extension to append the implementation with.
-         */
-        protected final String extension;
-
-        /**
-         * Enum constructor.
-         * 
-         * @param extension
-         *            the extension to append the implementation with.
-         */
-        private Implementation(final String extension) {
-            this.extension = extension;
-        }
-    }
-
     private final String interfaceName;
     private final String packageName;
-    private final Implementation type;
+    private final ImplementationType type;
 
     /**
      * Class constructor.
@@ -92,9 +62,9 @@ public abstract class ImplementationClassModel extends ClassModel {
      * @param type
      *            the type of the implementation.
      */
-    protected ImplementationClassModel(final String interfaceName,
-            final String projectCode, Implementation type) {
-        super(interfaceName + type.extension, projectCode, Object.class
+    protected ImplementationClassModel(final ToolLogger logger, final String interfaceName,
+            final String projectCode, ImplementationType type) {
+        super(logger, interfaceName + type.extension(), projectCode, Object.class
                 .getName(), interfaceName, Serializable.class.getName());
         this.interfaceName = interfaceName;
         this.packageName = TransformationUtil.toPackage(interfaceName());
@@ -106,7 +76,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      * 
      * @return the implementation type.
      */
-    public final Implementation type() {
+    public final ImplementationType type() {
         return type;
     }
 
@@ -125,7 +95,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      * @return the fully qualified class name.
      */
     public final String getClassName() {
-        return interfaceName() + type().extension;
+        return interfaceName() + type().extension();
     }
 
     /**

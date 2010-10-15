@@ -36,6 +36,7 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
+import org.jboss.logging.ToolLogger;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -57,9 +58,9 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * @param projectCode
      *            the project code from the annotation.
      */
-    public MessageBundleImplementor(final String interfaceName,
+    public MessageBundleImplementor(final ToolLogger logger, final String interfaceName,
             final String projectCode) {
-        super(interfaceName, projectCode, Implementation.BUNDLE);
+        super(logger, interfaceName, projectCode, ImplementationType.BUNDLE);
         methodDescriptor = new MethodDescriptor();
     }
 
