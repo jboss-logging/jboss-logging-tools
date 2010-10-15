@@ -13,9 +13,11 @@
 
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging-tools</artifactId>
+    <name>jboss-logging-tools</name>
     <version>0.1-SNAPSHOT</version>
 
     <properties>
+        <netbeans.hint.license>jboss</netbeans.hint.license>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

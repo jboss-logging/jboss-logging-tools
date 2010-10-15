@@ -84,12 +84,10 @@ public abstract class ClassModel {
         this.interfaceNames = null;
         this.superClassName = superClassName;
         this.className = className;
-        this.codeModel = null;
     }
 
     protected ClassModel(final String className, final String projectCode,
             final String superClassName, final String... interfaceNames) {
-        this.codeModel = new JCodeModel();
         this.interfaceNames = interfaceNames;
         this.superClassName = superClassName;
         this.className = className;
@@ -97,6 +95,7 @@ public abstract class ClassModel {
     }
 
     public void initModel() throws JClassAlreadyExistsException {
+        codeModel = new JCodeModel();
         definedClass = codeModel._class(this.className);
         final JAnnotationUse anno = definedClass.annotate(
                 javax.annotation.Generated.class);

@@ -38,9 +38,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -60,72 +59,86 @@ public final class ClassGenerator extends Generator {
      * @see
      * org.jboss.logging.Generator#generate(javax.lang.model.element.Element)
      */
-
     @Override
-    public void generate(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+    public void generate(final Set<? extends TypeElement> annotations,
+            final RoundEnvironment roundEnv) {
 
-        Collection<? extends TypeElement> typeElements = ElementFilter.typesIn(roundEnv.getRootElements());
-        for (TypeElement type : typeElements) {
-
-                try {
-                   generate(type);
-                   // Handle inner classes
-                   final List<? extends TypeElement> e = ElementFilter.typesIn(
-                           type.getEnclosedElements());
-                   for (TypeElement te : e) {
-                       generate(te);
-                   }
-                } catch (IOException e) {
-                    printErrorMessage(e, type);
-                    break;
-                } catch (JClassAlreadyExistsException e) {
-                    printErrorMessage(e, type);
-                    break;
-                } catch (ValidationException e) {
-                    printErrorMessage(e.getMessage(), e.getElement());
-                    break;
-                }
-
-        }
-
-
+        Collection<? extends TypeElement> typeElements = ElementFilter.typesIn(roundEnv.
+                getRootElements());
+        generate(typeElements);
     }
 
-    private void generate(TypeElement type) throws IOException, JClassAlreadyExistsException {
+    /**
+     * Processes the types including inner interfaces.
+     *
+     * @param types
+     *              the types to process.
+     */
+    private void generate(final Collection<? extends TypeElement> types) {
+        for (TypeElement type : types) {
+            try {
+                generate(ElementFilter.typesIn(type.getEnclosedElements()));
+                generate(type);
+            } catch (IOException e) {
+                printErrorMessage(e, type);
+                break;
+            } catch (JClassAlreadyExistsException e) {
+                printErrorMessage(e, type);
+                break;
+            } catch (ValidationException e) {
+                printErrorMessage(e.getMessage(), e.getElement());
+                break;
+            }
+        }
+    }
 
-            //if (type.getKind().isInterface() && type.getModifiers().contains(Modifier.PUBLIC)) {
-
-                final String interfaceName = processingEnv().getElementUtils().getBinaryName(type).toString();
-                final MessageLogger logger = type.getAnnotation(MessageLogger.class);
-                final MessageBundle bundle = type.getAnnotation(MessageBundle.class);
-                    if (logger != null) {
-                        createClass(new MessageLoggerImplementor(interfaceName,
-                                logger.projectCode()), type);
-                    }
-                    if (bundle != null) {
-                        createClass(new MessageBundleImplementor(interfaceName,
-                                bundle.projectCode()), type);
-                    }
-
-            //}
+    private void generate(TypeElement type) throws IOException,
+                                                   JClassAlreadyExistsException {
+        final String interfaceName = processingEnv().getElementUtils().
+                getBinaryName(type).toString();
+        final MessageLogger logger = type.getAnnotation(MessageLogger.class);
+        final MessageBundle bundle = type.getAnnotation(MessageBundle.class);
+        if (logger != null) {
+            if (type.getKind().isInterface() && !type.getModifiers().contains(
+                    Modifier.PRIVATE)) {
+                createClass(new MessageLoggerImplementor(interfaceName,
+                        logger.projectCode()), type);
+            } else {
+                printWarningMessage(String.format(
+                        "Type %s must be an interface with at least package-private access. Skipping processing.",
+                        interfaceName));
+            }
+        }
+        if (bundle != null) {
+            if (type.getKind().isInterface() && !type.getModifiers().contains(
+                    Modifier.PRIVATE)) {
+                createClass(new MessageBundleImplementor(interfaceName,
+                        bundle.projectCode()), type);
+            } else {
+                printWarningMessage(String.format(
+                        "Type %s must be an interface with at least package-private access. Skipping processing.",
+                        interfaceName));
+            }
+        }
 
     }
 
     private void createClass(final ImplementationClassModel codeModel,
-                             final TypeElement type) throws IOException,
-            JClassAlreadyExistsException, ValidationException {
+            final TypeElement type) throws IOException,
+                                           JClassAlreadyExistsException,
+                                           ValidationException {
         codeModel.initModel();
         // Process all extended interfaces.
         for (TypeMirror interfaceType : type.getInterfaces()) {
-            for (ExecutableElement method : ElementFilter
-                    .methodsIn(processingEnv().getTypeUtils()
-                            .asElement(interfaceType).getEnclosedElements())) {
+            for (ExecutableElement method : ElementFilter.methodsIn(
+                    processingEnv().getTypeUtils().asElement(interfaceType).
+                    getEnclosedElements())) {
                 codeModel.addMethod(method);
             }
         }
         // Create the methods
-        for (ExecutableElement method : ElementFilter.methodsIn(type
-                .getEnclosedElements())) {
+        for (ExecutableElement method : ElementFilter.methodsIn(type.
+                getEnclosedElements())) {
             codeModel.addMethod(method);
         }
 
