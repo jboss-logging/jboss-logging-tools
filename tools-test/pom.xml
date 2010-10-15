@@ -39,7 +39,7 @@
             <artifactId>jboss-logging</artifactId>
         </dependency>
     </dependencies>
-    <build>
+    <!-- <build>
         <plugins>
             <plugin>
                 <groupId>org.bsc.maven</groupId>
@@ -64,5 +64,5 @@
                 </dependencies>
             </plugin>
         </plugins>
-    </build>
+    </build> -->
 </project>
