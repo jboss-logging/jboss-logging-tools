@@ -34,13 +34,13 @@ import javax.lang.model.util.Types;
  */
 public abstract class Generator {
 
-	private final Elements elementsUtils;
+	private final Elements elementUtils;
 
 	private final Filer filer;
 
 	private final ToolLogger logger;
 
-	private final Types typesUtils;
+	private final Types typeUtils;
 
 	/**
 	 * The processing environment.
@@ -54,10 +54,10 @@ public abstract class Generator {
 	 */
 	public Generator(final ProcessingEnvironment processingEnv) {
 		this.processingEnv = processingEnv;
-		this.elementsUtils = processingEnv.getElementUtils();
+		this.elementUtils = processingEnv.getElementUtils();
 		this.filer = processingEnv.getFiler();
 		this.logger = ToolLogger.getLogger( processingEnv.getMessager() );
-		this.typesUtils = processingEnv.getTypeUtils();
+		this.typeUtils = processingEnv.getTypeUtils();
 	}
 
 	/**
@@ -82,7 +82,7 @@ public abstract class Generator {
 	 *
 	 * @return the filer
 	 */
-	public Filer getFiler() {
+	public Filer filer() {
 	    return this.filer;
 	}
 
@@ -91,8 +91,8 @@ public abstract class Generator {
 	 *
 	 * @return the utils
 	 */
-	public Elements getElementsUtils() {
-	    return this.elementsUtils;
+	public Elements elementUtils() {
+	    return this.elementUtils;
 	}
 
 	/**
@@ -100,8 +100,8 @@ public abstract class Generator {
 	 *
 	 * @return the utils
 	 */
-	public Types getTypesUtils() {
-	    return this.typesUtils;
+	public Types typeUtils() {
+	    return this.typeUtils;
 	}
 
 	/**
