@@ -20,6 +20,7 @@
  */
 package org.jboss.logging.model;
 
+import com.sun.codemodel.internal.JMethod;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

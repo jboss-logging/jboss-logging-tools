@@ -31,7 +31,7 @@ import org.jboss.logging.model.validation.ValidationException;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
@@ -140,8 +140,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @see org.jboss.logging.model.CodeModel#initModel()
      */
     @Override
-    public void initModel() throws JClassAlreadyExistsException {
-        super.initModel();
+    public JCodeModel generateModel() throws Exception {
+        final JCodeModel codeModel = super.generateModel();
         log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
                 LOG_FIELD_NAME);
         // Add default constructor
@@ -149,6 +149,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         final JVar param = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + param.name() + ";");
+        return codeModel;
     }
 
 }
