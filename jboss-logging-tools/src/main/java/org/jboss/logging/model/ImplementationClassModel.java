@@ -20,6 +20,7 @@
  */
 package org.jboss.logging.model;
 
+import com.sun.codemodel.internal.JCodeModel;
 import java.io.Serializable;
 
 import javax.lang.model.element.ExecutableElement;
@@ -27,7 +28,6 @@ import javax.lang.model.element.ExecutableElement;
 import org.jboss.logging.model.validation.ValidationException;
 import org.jboss.logging.util.TransformationUtil;
 
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
@@ -90,10 +90,9 @@ public abstract class ImplementationClassModel extends ClassModel {
     }
 
     /**
-     * Returns the fully qualified class name of the class.
-     * 
-     * @return the fully qualified class name.
+     * {@inheritDoc}
      */
+    @Override
     public final String getClassName() {
         return interfaceName() + type().extension();
     }
@@ -119,19 +118,17 @@ public abstract class ImplementationClassModel extends ClassModel {
             throws ValidationException;
 
     /**
-     * Initializes the class to generate with defaults.
-     * 
-     * @throws JClassAlreadyExistsException
-     *             When the specified class/interface was already created.
+     * {@inheritDoc}
      */
     @Override
-    public void initModel() throws JClassAlreadyExistsException {
-        super.initModel();
+    public JCodeModel generateModel() throws Exception {
+        final JCodeModel codeModel = super.generateModel();
         // Add the serializable UID
         final JFieldVar serialVersionUID = definedClass().field(
                 JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel().LONG,
                 "serialVersionUID");
         serialVersionUID.init(JExpr.lit(1L));
+        return codeModel;
     }
 
 }

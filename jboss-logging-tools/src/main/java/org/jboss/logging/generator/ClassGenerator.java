@@ -20,7 +20,6 @@
  */
 package org.jboss.logging.generator;
 
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import org.jboss.logging.Generator;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
@@ -29,7 +28,6 @@ import org.jboss.logging.model.MessageBundleImplementor;
 import org.jboss.logging.model.MessageLoggerImplementor;
 import org.jboss.logging.model.validation.ValidationException;
 
-import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.ExecutableElement;
@@ -90,39 +88,42 @@ public final class ClassGenerator extends Generator {
             } catch (IOException e) {
                 logger().error(e, type);
                 break;
-            } catch (JClassAlreadyExistsException e) {
-                logger().error(e, type);
-                break;
             } catch (ValidationException e) {
                 logger().error(e.getMessage(), e.getElement());
+                break;
+            } catch (Exception e) {
+                logger().error(e, type);
                 break;
             }
         }
     }
 
-    private void generate(TypeElement type) throws IOException,
-                                                   JClassAlreadyExistsException {
+    private void generate(TypeElement type) throws IOException, Exception {
         final String interfaceName = processingEnv().getElementUtils().
                 getBinaryName(type).toString();
-        final MessageLogger logger = type.getAnnotation(MessageLogger.class);
-        final MessageBundle bundle = type.getAnnotation(MessageBundle.class);
-        if (logger != null) {
+        final MessageLogger messageLogger = type.getAnnotation(
+                MessageLogger.class);
+        final MessageBundle messageBundle = type.getAnnotation(
+                MessageBundle.class);
+        if (messageLogger != null) {
             if (type.getKind().isInterface() && !type.getModifiers().contains(
                     Modifier.PRIVATE)) {
                 createClass(new MessageLoggerImplementor(logger(), interfaceName,
-                        logger.projectCode()), type);
+                        messageLogger.projectCode()), type);
             } else {
-                logger().warn("Type %s must be an interface with at least package-private access. Skipping processing.",
+                logger().warn(
+                        "Type %s must be an interface with at least package-private access. Skipping processing.",
                         interfaceName);
             }
         }
-        if (bundle != null) {
+        if (messageBundle != null) {
             if (type.getKind().isInterface() && !type.getModifiers().contains(
                     Modifier.PRIVATE)) {
                 createClass(new MessageBundleImplementor(logger(), interfaceName,
-                        bundle.projectCode()), type);
+                        messageBundle.projectCode()), type);
             } else {
-                logger().warn("Type %s must be an interface with at least package-private access. Skipping processing.",
+                logger().warn(
+                        "Type %s must be an interface with at least package-private access. Skipping processing.",
                         interfaceName);
             }
         }
@@ -130,10 +131,9 @@ public final class ClassGenerator extends Generator {
     }
 
     private void createClass(final ImplementationClassModel codeModel,
-            final TypeElement type) throws IOException,
-                                           JClassAlreadyExistsException,
+            final TypeElement type) throws IOException, Exception,
                                            ValidationException {
-        codeModel.initModel();
+        codeModel.generateModel();
         // Process all extended interfaces.
         for (TypeMirror interfaceType : type.getInterfaces()) {
             for (ExecutableElement method : ElementFilter.methodsIn(
@@ -149,7 +149,6 @@ public final class ClassGenerator extends Generator {
         }
 
         // Write the source file
-        final Filer filer = processingEnv().getFiler();
-        codeModel.writeClass(filer.createSourceFile(codeModel.getClassName()));
+        codeModel.writeClass(filer().createSourceFile(codeModel.getClassName()));
     }
 }

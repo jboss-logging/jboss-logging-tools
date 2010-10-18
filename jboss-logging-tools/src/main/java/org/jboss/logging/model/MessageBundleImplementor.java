@@ -29,7 +29,7 @@ import org.jboss.logging.model.validation.ValidationException;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
@@ -141,8 +141,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * @see org.jboss.logging.model.CodeModel#initModel()
      */
     @Override
-    public void initModel() throws JClassAlreadyExistsException {
-        super.initModel();
+    public JCodeModel generateModel() throws Exception {
+        final JCodeModel codeModel = super.generateModel();
         final JFieldVar instance = definedClass().field(
                 JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
                 INSTANCE_FIELD_NAME);
@@ -152,6 +152,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         final JMethod readResolveMethod = definedClass().method(JMod.PROTECTED,
                 definedClass(), GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return(instance);
+        return codeModel;
     }
 
 }
