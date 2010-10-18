@@ -24,9 +24,8 @@ import org.jboss.logging.Generator;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ClassModel;
-import org.jboss.logging.model.MessageBundleClassModel;
-import org.jboss.logging.model.MessageLoggerClassModel;
-import org.jboss.logging.model.decorator.GeneratedAnnotation;
+import org.jboss.logging.model.MessageBundleTranslator;
+import org.jboss.logging.model.MessageLoggerTranslator;
 import org.jboss.logging.model.decorator.TranslationMethods;
 import org.jboss.logging.util.TransformationUtil;
 import org.jboss.logging.util.TranslationUtil;
@@ -39,18 +38,18 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.jboss.logging.ToolLogger;
+import org.jboss.logging.model.ImplementationType;
 
 /**
  * The translation class generator.
@@ -102,11 +101,16 @@ public final class TranslationClassGenerator extends Generator {
     public void generate(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
         //Do work only on @MessageLogger and @MessageBundle annotation
-        Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.getRootElements());
-        for (TypeElement element : typesElement) {
+        processResources(ElementFilter.typesIn(roundEnv.getRootElements()));
 
+    }
+
+    private void processResources(final Collection<? extends TypeElement> typesElement) {
+
+        for (TypeElement element : typesElement) {
+            processResources(ElementFilter.typesIn(element.getEnclosedElements()));
             //Process only public interface
-            if (element.getKind().isInterface() && element.getModifiers().contains(Modifier.PUBLIC)) {
+            if (element.getKind().isInterface() && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
                 MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
                 MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
@@ -116,7 +120,7 @@ public final class TranslationClassGenerator extends Generator {
                     PackageElement packageElement = elementUtils.getPackageOf(element);
                     String packageName = packageElement.getQualifiedName().toString();
                     String interfaceName = element.getSimpleName().toString();
-                    String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName.concat(bundleAnnotation != null ? "$bundle" : "$logger"));
+                    String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName.concat(bundleAnnotation != null ? ImplementationType.BUNDLE.extension() : ImplementationType.LOGGER.extension()));
                     Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
 
                     try {
@@ -143,7 +147,6 @@ public final class TranslationClassGenerator extends Generator {
             }
 
         }
-
     }
 
 
@@ -182,11 +185,9 @@ public final class TranslationClassGenerator extends Generator {
             ClassModel classModel;
 
             if (messageAnnotationClass.isAssignableFrom(MessageBundle.class)) {
-                classModel = new MessageBundleClassModel(logger(), generatedClassName, superClassName);
-                classModel = new GeneratedAnnotation(classModel, MessageBundle.class.getName());
+                classModel = new MessageBundleTranslator(logger(), generatedClassName, superClassName);
             } else {
-                classModel = new MessageLoggerClassModel(logger(), generatedClassName, superClassName);
-                classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
+                classModel = new MessageLoggerTranslator(logger(), generatedClassName, superClassName);
             }
 
             classModel = new TranslationMethods(classModel, (Map) translations);
