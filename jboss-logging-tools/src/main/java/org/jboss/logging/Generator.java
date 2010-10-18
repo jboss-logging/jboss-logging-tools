@@ -21,10 +21,12 @@
 package org.jboss.logging;
 
 import java.util.Set;
-
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -32,57 +34,90 @@ import javax.lang.model.element.TypeElement;
  */
 public abstract class Generator {
 
-    private final ToolLogger logger;
+	private final Elements elementsUtils;
 
-    /**
-     * The processing environment.
-     */
-    private final ProcessingEnvironment processingEnv;
+	private final Filer filer;
 
-    /**
-     * Constructs a new generator.
-     *
-     * @param processingEnv
-     *            the processing environment.
-     */
-    public Generator(final ProcessingEnvironment processingEnv) {
-        this.processingEnv = processingEnv;
-        this.logger = ToolLogger.getLogger(processingEnv.getMessager());
-    }
+	private final ToolLogger logger;
 
-    /**
-     * Returns the logger to log messages with.
-     *
-     * @return the logger to log messages with.
-     */
-    public final ToolLogger logger() {
-        return logger;
-    }
+	private final Types typesUtils;
 
-    /**
-     * Returns the name of the generator.
-     *
-     * @return the name of the generator.
-     */
-    public abstract String getName();
+	/**
+	 * The processing environment.
+	 */
+	private final ProcessingEnvironment processingEnv;
 
-    /**
-     *
-     *
-     * @param annotations
-     *            the to process.
-     * @param roundEnv
-     *            the round environment.
-     */
-    public abstract void generate(final Set<? extends TypeElement> annotations,
-            final RoundEnvironment roundEnv);
+	/**
+	 * Constructs a new generator.
+	 *
+	 * @param processingEnv the processing environment.
+	 */
+	public Generator(final ProcessingEnvironment processingEnv) {
+		this.processingEnv = processingEnv;
+		this.elementsUtils = processingEnv.getElementUtils();
+		this.filer = processingEnv.getFiler();
+		this.logger = ToolLogger.getLogger( processingEnv.getMessager() );
+		this.typesUtils = processingEnv.getTypeUtils();
+	}
 
-    /**
-     * Returns the processing environment.
-     *
-     * @return the processing environment being used.
-     */
-    public final ProcessingEnvironment processingEnv() {
-        return processingEnv;
-    }
+	/**
+	 * Generates classes.
+	 *
+	 * @param annotations the to process.
+	 * @param roundEnv the round environment.
+	 */
+	public abstract void generate(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv);
+
+	/**
+	 * Returns the logger to log messages with.
+	 *
+	 * @return the logger to log messages with.
+	 */
+	public final ToolLogger logger() {
+		return logger;
+	}
+
+	/**
+	 * Returns the filer.
+	 *
+	 * @return the filer
+	 */
+	public Filer getFiler() {
+	    return this.filer;
+	}
+
+	/**
+	 * Returns the element utils.
+	 *
+	 * @return the utils
+	 */
+	public Elements getElementsUtils() {
+	    return this.elementsUtils;
+	}
+
+	/**
+	 * Returns the type utils.
+	 *
+	 * @return the utils
+	 */
+	public Types getTypesUtils() {
+	    return this.typesUtils;
+	}
+
+	/**
+	 * Returns the processing environment.
+	 *
+	 * @return the processing environment being used.
+	 */
+	public final ProcessingEnvironment processingEnv() {
+		return processingEnv;
+	}
+
+	/**
+	 * Returns the name of the generator.
+	 *
+	 * @return the name of the generator.
+	 */
+	public abstract String getName();
+
 }
