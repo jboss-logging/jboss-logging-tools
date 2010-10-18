@@ -20,55 +20,67 @@
  */
 package org.jboss.logging.model;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import javax.tools.JavaFileObject;
-
 import com.sun.codemodel.internal.CodeWriter;
 import com.sun.codemodel.internal.JPackage;
 
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
- * A code writer based on the {@code OutputStream} from a {@code JavaFileObject}
- * .
- * 
+ * <p>
+ * A code writer based on the {@code OutputStream} from a {@code JavaFileObject}.
+ * <p/>
  * <p>
  * The main intent is to use this class with an annotation processor. You can
- * use the {@code Filer#createSourceFile()} to retrieve the
- * {@code JavaFileObject}.
+ * use the {@linkplain javax.annotation.processing.Filer#createSourceFile(CharSequence,
+ * javax.lang.model.element.Element...) Filer#createSourceFile} to retrieve the
+ * {@linkplain javax.tools.JavaFileObject JavaFileObject}.
  * </p>
- * 
+ *
  * @author James R. Perkins Jr. (jrp)
- * 
+ * @author Kevin Pollet
  */
 public class JavaFileObjectCodeWriter extends CodeWriter {
-    private final OutputStream out;
+
+    /**
+     * The java file object.
+     */
+    private final JavaFileObject fileObject;
+
+    /**
+     * The output stream.
+     */
+    private OutputStream out;
 
     /**
      * Class constructor.
-     * 
-     * @param jFileObject
-     *            the file object.
+     *
+     * @param fileObject the file object.
      * @throws IOException
      */
-    public JavaFileObjectCodeWriter(final JavaFileObject jFileObject)
-            throws IOException {
-        super();
-        out = jFileObject.openOutputStream();
-    }
-
-    @Override
-    public void close() throws IOException {
-        out.close();
+    public JavaFileObjectCodeWriter(final JavaFileObject fileObject) {
+        this.fileObject = fileObject;
     }
 
     /**
      * Note that none of the parameters are in this method are used.
+     * {@inheritDoc}
      */
     @Override
-    public OutputStream openBinary(final JPackage pkg, final String fileName)
-            throws IOException {
+    public OutputStream openBinary(final JPackage pkg, final String fileName) throws IOException {
+        this.out = fileObject.openOutputStream();
         return out;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() throws IOException {
+        if (out != null) {
+            out.close();
+        }
     }
 
 }
