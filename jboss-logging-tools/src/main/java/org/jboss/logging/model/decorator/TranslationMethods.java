@@ -24,11 +24,9 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.model.ClassModel;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,11 +36,6 @@ import java.util.Set;
  * @author Kevin Pollet
  */
 public class TranslationMethods extends ClassModelDecorator  {
-
-    /**
-     * Translation method suffix.
-     */
-    private static final String METHOD_SUFFIX = "$str";
 
     /**
      * The translation map.
@@ -79,7 +72,7 @@ public class TranslationMethods extends ClassModelDecorator  {
             String key = entry.getKey();
             String value = entry.getValue();
 
-            JMethod method = clazz.method(JMod.PROTECTED, String.class, key + METHOD_SUFFIX);
+            JMethod method = addMessageMethod(key, value, -1);
             method.annotate(Override.class);
             method.body()._return(JExpr.lit(value));
         }
