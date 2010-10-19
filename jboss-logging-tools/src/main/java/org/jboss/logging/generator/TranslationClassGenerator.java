@@ -26,6 +26,7 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.MessageBundleTranslator;
 import org.jboss.logging.model.MessageLoggerTranslator;
+import org.jboss.logging.model.decorator.GeneratedAnnotation;
 import org.jboss.logging.model.decorator.TranslationMethods;
 import org.jboss.logging.util.TransformationUtil;
 import org.jboss.logging.util.TranslationUtil;
@@ -38,18 +39,18 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.jboss.logging.model.ImplementationType;
+import org.jboss.logging.ToolLogger;
 
 /**
  * The translation class generator.
@@ -101,16 +102,11 @@ public final class TranslationClassGenerator extends Generator {
     public void generate(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
         //Do work only on @MessageLogger and @MessageBundle annotation
-        processResources(ElementFilter.typesIn(roundEnv.getRootElements()));
-
-    }
-
-    private void processResources(final Collection<? extends TypeElement> typesElement) {
-
+        Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.getRootElements());
         for (TypeElement element : typesElement) {
-            processResources(ElementFilter.typesIn(element.getEnclosedElements()));
+
             //Process only public interface
-            if (element.getKind().isInterface() && !element.getModifiers().contains(Modifier.PRIVATE)) {
+            if (element.getKind().isInterface() && element.getModifiers().contains(Modifier.PUBLIC)) {
 
                 MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
                 MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
@@ -120,7 +116,7 @@ public final class TranslationClassGenerator extends Generator {
                     PackageElement packageElement = elementUtils.getPackageOf(element);
                     String packageName = packageElement.getQualifiedName().toString();
                     String interfaceName = element.getSimpleName().toString();
-                    String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName.concat(bundleAnnotation != null ? ImplementationType.BUNDLE.extension() : ImplementationType.LOGGER.extension()));
+                    String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName.concat(bundleAnnotation != null ? "$bundle" : "$logger"));
                     Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
 
                     try {
@@ -147,6 +143,7 @@ public final class TranslationClassGenerator extends Generator {
             }
 
         }
+
     }
 
 
@@ -186,8 +183,10 @@ public final class TranslationClassGenerator extends Generator {
 
             if (messageAnnotationClass.isAssignableFrom(MessageBundle.class)) {
                 classModel = new MessageBundleTranslator(logger(), generatedClassName, superClassName);
+                classModel = new GeneratedAnnotation(classModel, MessageBundle.class.getName());
             } else {
                 classModel = new MessageLoggerTranslator(logger(), generatedClassName, superClassName);
+                classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
             }
 
             classModel = new TranslationMethods(classModel, (Map) translations);

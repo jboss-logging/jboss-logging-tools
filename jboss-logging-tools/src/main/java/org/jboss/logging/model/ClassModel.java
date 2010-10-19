@@ -23,6 +23,7 @@ package org.jboss.logging.model;
 import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
+import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JDocComment;
@@ -38,7 +39,6 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.annotation.Generated;
 import org.jboss.logging.ToolLogger;
 
 /**
@@ -95,8 +95,7 @@ public abstract class ClassModel {
      * @param className      the qualified class name
      * @param superClassName the qualified super class name
      */
-    public ClassModel(final ToolLogger logger, final String className,
-            final String superClassName) {
+    public ClassModel(final ToolLogger logger, final String className, final String superClassName) {
         this.interfaceNames = null;
         this.superClassName = superClassName;
         this.className = className;
@@ -111,6 +110,33 @@ public abstract class ClassModel {
         this.className = className;
         this.projectCode = projectCode;
         this.logger = logger;
+    }
+
+    public void initModel() throws JClassAlreadyExistsException {
+        codeModel = new JCodeModel();
+        definedClass = codeModel._class(this.className);
+        final JAnnotationUse anno = definedClass.annotate(
+                javax.annotation.Generated.class);
+        anno.param("value", getClass().getCanonicalName());
+        anno.param("date", generatedDateValue());
+
+        // Create the default JavaDoc
+        final JDocComment docComment = definedClass.javadoc();
+        docComment.add("Warning this class consists of generated code.");
+
+        // Add extends
+        if (this.superClassName != null) {
+            definedClass._extends(codeModel.ref(this.superClassName));
+        }
+
+        // Add implements
+        if (this.interfaceNames != null) {
+            for (String intf : this.interfaceNames) {
+                definedClass._implements(codeModel.ref(intf));
+            }
+        }
+
+
     }
 
     /**
@@ -132,21 +158,15 @@ public abstract class ClassModel {
         JDocComment javadoc = clazz.javadoc();
         javadoc.append("Warning this class consists of generated code.");
 
-        JAnnotationUse generatedAnnotation = definedClass.annotate(Generated.class);
-        generatedAnnotation.param("value", getClass().getName());
-        generatedAnnotation.param("date", generatedDateValue());
-
         //Add extends
         if (this.superClassName != null) {
-            JCodeModel superModel = new JCodeModel();
-            clazz._extends(superModel._class(this.superClassName));
+            clazz._extends(codeModel.ref(this.superClassName));
         }
 
         //Add implements
         if (this.interfaceNames != null) {
             for (String intf : this.interfaceNames) {
-                JCodeModel intfModel = new JCodeModel();
-                clazz._implements(intfModel._class(intf));
+                clazz._implements(codeModel.ref(intf));
             }
         }
         //}
@@ -260,17 +280,13 @@ public abstract class ClassModel {
             method = definedClass().method(JMod.PROTECTED, returnType,
                     internalMethodName);
             final JBlock body = method.body();
-            if (id > 0) {
-                // Create the message id field
-                final JVar idVar = definedClass.field(
-                        JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
-                        String.class, methodName + "Id");
-                idVar.init(JExpr.lit(formatMessageId(id)));
-                body._return(
-                        idVar.plus(addMessageVar(methodName, returnValue)));
-            } else {
-                body._return(addMessageVar(methodName, returnValue));
-            }
+            // Create the message id field
+            final JVar idVar = definedClass.field(
+                    JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
+                    String.class, methodName + "Id");
+            idVar.init(JExpr.lit(formatMessageId(id)));
+            body._return(
+                    idVar.plus(addMessageVar(methodName, returnValue)));
         }
         return method;
     }
@@ -283,6 +299,7 @@ public abstract class ClassModel {
      * @return the formatted message id.
      */
     protected final String formatMessageId(final int id) {
+
         final StringBuilder result = new StringBuilder(projectCode);
         if (result.length() > 0) {
             result.append("-");

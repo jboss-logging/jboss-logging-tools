@@ -133,7 +133,7 @@ public final class ClassGenerator extends Generator {
     private void createClass(final ImplementationClassModel codeModel,
             final TypeElement type) throws IOException, Exception,
                                            ValidationException {
-        codeModel.generateModel();
+        codeModel.initModel();
         // Process all extended interfaces.
         for (TypeMirror interfaceType : type.getInterfaces()) {
             for (ExecutableElement method : ElementFilter.methodsIn(
