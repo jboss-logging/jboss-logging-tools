@@ -71,9 +71,9 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * ExecutableElement)
      */
     @Override
-    public void addMethod(final ExecutableElement method) throws ValidationException {
+    public void addMethod(final ExecutableElement method) {
         methodDescriptor = methodDescriptor.add(method);
-        MethodParameterValidator.create(methodDescriptor).validate();
+        addValidator(MethodParameterValidator.create(methodDescriptor));
     }
 
     /*
@@ -141,7 +141,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * @see org.jboss.logging.model.CodeModel#initModel()
      */
     @Override
-    public void initModel() throws JClassAlreadyExistsException {
+    protected void initModel() throws JClassAlreadyExistsException {
         super.initModel();
         final JFieldVar instance = definedClass().field(
                 JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),

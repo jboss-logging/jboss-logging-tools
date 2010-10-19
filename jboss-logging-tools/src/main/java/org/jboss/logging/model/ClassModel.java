@@ -38,8 +38,11 @@ import com.sun.codemodel.internal.JVar;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import org.jboss.logging.ToolLogger;
+import org.jboss.logging.model.validation.Validator;
 
 /**
  * The basic java class model.
@@ -89,17 +92,21 @@ public abstract class ClassModel {
      */
     private String projectCode;
 
+    private final List<Validator> validators;
+
     /**
      * Construct a class model.
      *
      * @param className      the qualified class name
      * @param superClassName the qualified super class name
      */
-    public ClassModel(final ToolLogger logger, final String className, final String superClassName) {
+    public ClassModel(final ToolLogger logger, final String className,
+            final String superClassName) {
         this.interfaceNames = null;
         this.superClassName = superClassName;
         this.className = className;
         this.logger = logger;
+        this.validators = new ArrayList<Validator>();
     }
 
     protected ClassModel(final ToolLogger logger, final String className,
@@ -110,9 +117,43 @@ public abstract class ClassModel {
         this.className = className;
         this.projectCode = projectCode;
         this.logger = logger;
+        this.validators = new ArrayList<Validator>();
     }
 
-    public void initModel() throws JClassAlreadyExistsException {
+    /**
+     * Creates the source file.
+     *
+     * <p>
+     * Executes the following methods in the order listed.
+     * <ol>
+     * <li>@code ClassModel#initModel()}</li>
+     * <li>Runs validation for each validator.</li>
+     * <li>@code ClassModel#beforeWrite()}</li>
+     * <li>@code ClassModel#writeClass(JavaFileObject)}</li>
+     * </ol>
+     * </p>
+     *
+     * @param fileObject the files object to write the source to.
+     *
+     * @throws Exception if an error occurs creating the source file.
+     */
+    public final void create(final JavaFileObject fileObject) throws Exception {
+        initModel();
+        for (Validator validator : validators) {
+            validator.validate();
+        }
+        beforeWrite();
+        writeClass(fileObject);
+    }
+
+    /**
+     * Initializes the code model. Invoked as the first method in the
+     * {@code ClassModel#create(JavaFileObject)} method.
+     *
+     * @throws JClassAlreadyExistsException should be never happen, but if the
+     *              the class name was already defined.
+     */
+    protected void initModel() throws JClassAlreadyExistsException {
         codeModel = new JCodeModel();
         definedClass = codeModel._class(this.className);
         final JAnnotationUse anno = definedClass.annotate(
@@ -187,7 +228,6 @@ public abstract class ClassModel {
      * @throws IOException if error occurs when writing class
      */
     public void writeClass(final JavaFileObject fileObject) throws IOException {
-        beforeWrite();
         this.codeModel.build(new JavaFileObjectCodeWriter(fileObject));
     }
 
@@ -196,7 +236,7 @@ public abstract class ClassModel {
      *
      * @return the class model
      */
-    public final JCodeModel codeModel() {
+    protected final JCodeModel codeModel() {
         return this.codeModel;
     }
 
@@ -205,7 +245,7 @@ public abstract class ClassModel {
      *
      * @return the main enclosing class.
      */
-    public final JDefinedClass definedClass() {
+    protected final JDefinedClass definedClass() {
         return definedClass;
     }
 
@@ -216,6 +256,17 @@ public abstract class ClassModel {
      */
     public final ToolLogger logger() {
         return logger;
+    }
+
+    /**
+     * Adds a validator to be processed in the
+     * {@code ClassModel#create(JavaFileObject)} after the
+     * {@code ClassModel#initModel()}.
+     *
+     * @param validator the validator to add.
+     */
+    protected final void addValidator(final Validator validator) {
+        this.validators.add(validator);
     }
 
     /**
@@ -280,13 +331,17 @@ public abstract class ClassModel {
             method = definedClass().method(JMod.PROTECTED, returnType,
                     internalMethodName);
             final JBlock body = method.body();
-            // Create the message id field
-            final JVar idVar = definedClass.field(
-                    JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
-                    String.class, methodName + "Id");
-            idVar.init(JExpr.lit(formatMessageId(id)));
-            body._return(
-                    idVar.plus(addMessageVar(methodName, returnValue)));
+            if (id > 0) {
+                // Create the message id field
+                final JVar idVar = definedClass.field(
+                        JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
+                        String.class, methodName + "Id");
+                idVar.init(JExpr.lit(formatMessageId(id)));
+                body._return(
+                        idVar.plus(addMessageVar(methodName, returnValue)));
+            } else {
+                body._return(addMessageVar(methodName, returnValue));
+            }
         }
         return method;
     }
@@ -335,7 +390,7 @@ public abstract class ClassModel {
      *
      * @return the current date formatted in ISO 8601.
      */
-    protected static final String generatedDateValue() {
+    protected static String generatedDateValue() {
         final SimpleDateFormat sdf = new SimpleDateFormat(
                 "yyyy-MM-dd'T'HH:mm:ssZ");
         return sdf.format(new Date());

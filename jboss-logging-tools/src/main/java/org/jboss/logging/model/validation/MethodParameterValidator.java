@@ -43,7 +43,7 @@ public class MethodParameterValidator implements Validator {
             if (paramCount1 != paramCount2) {
                 throw new ValidationException(
                         "The number of parameters, minus the clause parameter, must match all methods with the same name.",
-                        methodDescriptor.method());
+                        methodDesc.method());
             }
         }
     }

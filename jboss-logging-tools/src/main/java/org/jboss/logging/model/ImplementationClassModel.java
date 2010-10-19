@@ -112,17 +112,14 @@ public abstract class ImplementationClassModel extends ClassModel {
      * 
      * @param method
      *            the method to add.
-     * @throws ValidationException
-     *             if the method is invalid.
      */
-    public abstract void addMethod(final ExecutableElement method)
-            throws ValidationException;
+    public abstract void addMethod(final ExecutableElement method);
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void initModel() throws JClassAlreadyExistsException {
+    protected void initModel() throws JClassAlreadyExistsException {
         super.initModel();
         // Add the serializable UID
         final JFieldVar serialVersionUID = definedClass().field(

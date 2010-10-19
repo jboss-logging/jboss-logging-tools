@@ -70,9 +70,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * ExecutableElement)
      */
     @Override
-    public void addMethod(final ExecutableElement method) throws ValidationException {
+    public void addMethod(final ExecutableElement method) {
         methodDescriptor = methodDescriptor.add(method);
-        MethodParameterValidator.create(methodDescriptor).validate();
+        addValidator(MethodParameterValidator.create(methodDescriptor));
     }
 
     /*
@@ -140,7 +140,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @see org.jboss.logging.model.CodeModel#initModel()
      */
     @Override
-    public void initModel() throws JClassAlreadyExistsException {
+    protected void initModel() throws JClassAlreadyExistsException {
         super.initModel();
         log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
                 LOG_FIELD_NAME);
