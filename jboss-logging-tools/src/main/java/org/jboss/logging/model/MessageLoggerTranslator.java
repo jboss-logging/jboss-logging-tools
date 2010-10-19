@@ -20,15 +20,10 @@
  */
 package org.jboss.logging.model;
 
-import java.util.Date;
 
-import javax.annotation.Generated;
 
-import org.jboss.logging.MessageLogger;
 
-import com.sun.codemodel.internal.JAnnotationUse;
 import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;

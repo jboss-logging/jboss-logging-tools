@@ -20,18 +20,13 @@
  */
 package org.jboss.logging.model;
 
-import com.sun.codemodel.internal.JAnnotationUse;
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.MessageBundle;
 
-import javax.annotation.Generated;
-import java.util.Date;
 import org.jboss.logging.ToolLogger;
 
 /**
