@@ -37,6 +37,7 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.ToolLogger;
+import org.jboss.logging.model.validation.BundleReturnTypeValidator;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -74,6 +75,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     public void addMethod(final ExecutableElement method) {
         methodDescriptor = methodDescriptor.add(method);
         addValidator(MethodParameterValidator.create(methodDescriptor));
+        addValidator(new BundleReturnTypeValidator(methodDescriptor));
     }
 
     /*
