@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.jboss.logging.model.validation;
+package org.jboss.logging.validation;
 
 /**
  * @author James R. Perkins Jr. (jrp)

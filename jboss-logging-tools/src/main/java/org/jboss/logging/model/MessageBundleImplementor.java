@@ -24,8 +24,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
 import org.jboss.logging.Message;
-import org.jboss.logging.model.validation.MethodParameterValidator;
-import org.jboss.logging.model.validation.ValidationException;
+import org.jboss.logging.validation.MethodParameterValidator;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
@@ -37,7 +36,8 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.ToolLogger;
-import org.jboss.logging.model.validation.BundleReturnTypeValidator;
+import org.jboss.logging.validation.BundleReturnTypeValidator;
+import org.jboss.logging.validation.MessageIdValidator;
 
 /**
  * @author James R. Perkins Jr. (jrp)
@@ -74,7 +74,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     @Override
     public void addMethod(final ExecutableElement method) {
         methodDescriptor = methodDescriptor.add(method);
-        addValidator(MethodParameterValidator.create(methodDescriptor));
+        addValidator(new MethodParameterValidator(methodDescriptor));
         addValidator(new BundleReturnTypeValidator(methodDescriptor));
     }
 
@@ -85,6 +85,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      */
     @Override
     public void beforeWrite() {
+        // Add message id validator
+        addValidator(new MessageIdValidator(methodDescriptor));
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {

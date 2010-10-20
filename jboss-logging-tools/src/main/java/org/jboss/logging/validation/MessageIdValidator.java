@@ -18,48 +18,42 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.model.validation;
+package org.jboss.logging.validation;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.jboss.logging.Message;
 import org.jboss.logging.model.MethodDescriptor;
 
 /**
  *
  * @author James R. Perkins (jrp)
  */
-public class BundleReturnTypeValidator implements Validator {
-
-    private static final Set<Class<?>> acceptedTypes = new HashSet<Class<?>>();
-
-    static {
-        acceptedTypes.add(String.class);
-        acceptedTypes.add(Throwable.class);
-    }
+public class MessageIdValidator implements Validator {
 
     private final MethodDescriptor methodDesc;
 
-    public BundleReturnTypeValidator(final MethodDescriptor methodDesc) {
+    public MessageIdValidator(final MethodDescriptor methodDesc) {
         this.methodDesc = methodDesc;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void validate() throws ValidationException {
-        boolean invalid = true;
-        for (Class<?> clazz : acceptedTypes) {
-            try {
-                if (clazz.isAssignableFrom(Class.forName(methodDesc.
-                        returnTypeAsString()))) {
-                    invalid = false;
+        final Set<Integer> messageIds = new HashSet<Integer>();
+        final Set<Message> messages = new HashSet<Message>();
+        // Process method descriptors
+        for (MethodDescriptor md : methodDesc) {
+            // Only process unique messages
+            if (messages.add(md.message())) {
+                // Check for duplicated id's
+                if (!messageIds.add(md.message().id())) {
+                    throw new ValidationException("Message id's must be unique.", md.
+                            method());
                 }
-            } catch (ClassNotFoundException e) {
-                throw new ValidationException("Invalid return type.", e,
-                        methodDesc.method());
             }
-        }
-        if (invalid) {
-            throw new ValidationException("Invalid return type.", methodDesc.
-                    method());
         }
     }
 }

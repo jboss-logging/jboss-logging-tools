@@ -20,7 +20,6 @@
  */
 package org.jboss.logging.model;
 
-import com.sun.codemodel.internal.JMethod;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +35,8 @@ import javax.lang.model.type.TypeMirror;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
+import org.jboss.logging.validation.ValidationException;
+import org.jboss.logging.validation.Validator;
 
 /**
  * Stores information about methods.
@@ -250,15 +251,6 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
             }
         }
         return result;
-    }
-
-    /**
-     * Returns a collection of all method descriptors.
-     * 
-     * @return a collections of all method descriptors.
-     */
-    public Collection<MethodDescriptor> allMethods() {
-        return Collections.unmodifiableCollection(descriptors);
     }
 
     /**

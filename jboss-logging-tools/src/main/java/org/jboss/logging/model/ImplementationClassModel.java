@@ -26,7 +26,7 @@ import java.io.Serializable;
 
 import javax.lang.model.element.ExecutableElement;
 
-import org.jboss.logging.model.validation.ValidationException;
+import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.util.TransformationUtil;
 
 import com.sun.codemodel.internal.JExpr;

@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.jboss.logging.ToolLogger;
-import org.jboss.logging.model.validation.Validator;
+import org.jboss.logging.validation.Validator;
 
 /**
  * The basic java class model.

@@ -26,7 +26,7 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ImplementationClassModel;
 import org.jboss.logging.model.MessageBundleImplementor;
 import org.jboss.logging.model.MessageLoggerImplementor;
-import org.jboss.logging.model.validation.ValidationException;
+import org.jboss.logging.validation.ValidationException;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
