@@ -30,7 +30,7 @@ import org.jboss.logging.validation.MethodParameterValidator;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
@@ -45,8 +45,11 @@ import org.jboss.logging.validation.MessageIdValidator;
  *
  */
 public final class MessageLoggerImplementor extends ImplementationClassModel {
+
     private static final String LOG_FIELD_NAME = "log";
+
     private JFieldVar log;
+
     private MethodDescriptor methodDescriptor;
 
     /**
@@ -78,11 +81,21 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
 
     /*
      * (non-Javadoc)
-     *
-     * @see org.jboss.logging.CodeModel#beforeWrite()
+     * @see org.jboss.logging.model.CodeModel#initModel()
      */
     @Override
-    public void beforeWrite() {
+    protected JCodeModel generateModel() throws Exception {
+        final JCodeModel codeModel = super.generateModel();
+        log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
+                LOG_FIELD_NAME);
+        // Add default constructor
+        final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
+        final JVar constructorParam = constructor.param(JMod.FINAL, Logger.class,
+                LOG_FIELD_NAME);
+        final JBlock body = constructor.body();
+        body.directStatement("this." + log.name() + " = " + constructorParam.
+                name() + ";");
+
         // Add message id validator
         addValidator(new MessageIdValidator(methodDescriptor));
         // Process the method descriptors and add to the model before
@@ -91,7 +104,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             final String methodName = methodDesc.name();
             // Create the method
             final JMethod jMethod = definedClass().method(
-                    JMod.PUBLIC | JMod.FINAL, codeModel().VOID, methodName);
+                    JMod.PUBLIC | JMod.FINAL, codeModel.VOID, methodName);
             jMethod.annotate(Override.class);
             // Find the annotations
             final Message message = methodDesc.message();
@@ -105,8 +118,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             final JMethod msgMethod = addMessageMethod(methodName,
                     message.value(), message.id());
             // Determine the log method
-            final StringBuilder logMethod = new StringBuilder(logLevel.name()
-                    .toLowerCase());
+            final StringBuilder logMethod = new StringBuilder(logLevel.name().
+                    toLowerCase());
             switch (methodDesc.message().format()) {
                 case MESSAGE_FORMAT:
                     logMethod.append("v");
@@ -116,8 +129,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
                     break;
             }
             // Create the body of the method and add the text
-            final JBlock body = jMethod.body();
-            final JInvocation logInv = body.invoke(log, logMethod.toString());
+            final JBlock methodBody = jMethod.body();
+            final JInvocation logInv = methodBody.invoke(log,
+                    logMethod.toString());
             // The clause must be first if there is one.
             if (methodDesc.hasClause()) {
                 logInv.arg(JExpr.direct(methodDesc.causeVarName()));
@@ -127,31 +141,15 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             logInv.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
-                final JClass paramType = codeModel().ref(
+                final JClass paramType = codeModel.ref(
                         param.asType().toString());
-                final JVar var = jMethod.param(JMod.FINAL, paramType, param
-                        .getSimpleName().toString());
+                final JVar var = jMethod.param(JMod.FINAL, paramType, param.
+                        getSimpleName().toString());
                 if (!param.equals(methodDesc.cause())) {
                     logInv.arg(var);
                 }
             }
         }
+        return codeModel;
     }
-
-    /*
-     * (non-Javadoc)
-     * @see org.jboss.logging.model.CodeModel#initModel()
-     */
-    @Override
-    protected void initModel() throws JClassAlreadyExistsException {
-        super.initModel();
-        log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
-                LOG_FIELD_NAME);
-        // Add default constructor
-        final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
-        final JVar param = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
-        final JBlock body = constructor.body();
-        body.directStatement("this." + log.name() + " = " + param.name() + ";");
-    }
-
 }

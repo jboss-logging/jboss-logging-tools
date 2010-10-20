@@ -21,6 +21,7 @@
 package org.jboss.logging.model;
 
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import com.sun.codemodel.internal.JCodeModel;
 import java.io.Serializable;
 
 import javax.lang.model.element.ExecutableElement;
@@ -116,13 +117,14 @@ public abstract class ImplementationClassModel extends ClassModel {
      * {@inheritDoc}
      */
     @Override
-    protected void initModel() throws JClassAlreadyExistsException {
-        super.initModel();
+    protected JCodeModel generateModel() throws Exception {
+        super.generateModel();
         // Add the serializable UID
         final JFieldVar serialVersionUID = definedClass().field(
                 JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel().LONG,
                 "serialVersionUID");
         serialVersionUID.init(JExpr.lit(1L));
+        return super.codeModel();
     }
 
 }

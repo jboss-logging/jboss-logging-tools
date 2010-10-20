@@ -26,8 +26,6 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.MessageBundleTranslator;
 import org.jboss.logging.model.MessageLoggerTranslator;
-import org.jboss.logging.model.decorator.GeneratedAnnotation;
-import org.jboss.logging.model.decorator.TranslationMethods;
 import org.jboss.logging.util.TransformationUtil;
 import org.jboss.logging.util.TranslationUtil;
 
@@ -39,7 +37,6 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
@@ -50,7 +47,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.jboss.logging.ToolLogger;
 
 /**
  * The translation class generator.
@@ -182,16 +178,11 @@ public final class TranslationClassGenerator extends Generator {
             ClassModel classModel;
 
             if (messageAnnotationClass.isAssignableFrom(MessageBundle.class)) {
-                classModel = new MessageBundleTranslator(generatedClassName, superClassName);
-                classModel = new GeneratedAnnotation(classModel, MessageBundle.class.getName());
+                classModel = new MessageBundleTranslator(generatedClassName, superClassName, (Map) translations);
             } else {
-                classModel = new MessageLoggerTranslator(generatedClassName, superClassName);
-                classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
+                classModel = new MessageLoggerTranslator(generatedClassName, superClassName, (Map) translations);
             }
-
-            classModel = new TranslationMethods(classModel, (Map) translations);
-            classModel.generateModel();
-            classModel.writeClass(filer.createSourceFile(classModel.getClassName()));
+            classModel.create(filer.createSourceFile(classModel.getClassName()));
 
         } catch (Exception e) {
             logger().error("Cannot generate %s source file", generatedClassName);

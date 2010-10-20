@@ -28,7 +28,7 @@ import org.jboss.logging.validation.MethodParameterValidator;
 
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
+import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
@@ -77,20 +77,28 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         addValidator(new BundleReturnTypeValidator(methodDescriptor));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.logging.CodeModel#beforeWrite()
+    /**
+     * {@inheritDoc}
      */
     @Override
-    public void beforeWrite() {
+    protected JCodeModel generateModel() throws Exception {
+        final JCodeModel codeModel = super.generateModel();
+        final JFieldVar instance = definedClass().field(
+                JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
+                INSTANCE_FIELD_NAME);
+        instance.init(JExpr._new(definedClass()));
+        // Add default constructor
+        definedClass().constructor(JMod.PROTECTED);
+        final JMethod readResolveMethod = definedClass().method(JMod.PROTECTED,
+                definedClass(), GET_INSTANCE_METHOD_NAME);
+        readResolveMethod.body()._return(instance);
         // Add message id validator
         addValidator(new MessageIdValidator(methodDescriptor));
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
             final String methodName = methodDesc.name();
-            final JClass returnType = codeModel().ref(
+            final JClass returnType = codeModel.ref(
                     methodDesc.returnTypeAsString());
             final JMethod jMethod = definedClass().method(
                     JMod.PUBLIC | JMod.FINAL, returnType, methodName);
@@ -101,16 +109,16 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                     message.value(), message.id());
 
             final JBlock body = jMethod.body();
-            final JClass returnField = codeModel().ref(returnType.fullName());
+            final JClass returnField = codeModel.ref(returnType.fullName());
             final JVar result = body.decl(returnField, "result");
             JClass formatter = null;
             // Determine the format type
             switch (message.format()) {
                 case MESSAGE_FORMAT:
-                    formatter = codeModel().ref(java.text.MessageFormat.class);
+                    formatter = codeModel.ref(java.text.MessageFormat.class);
                     break;
                 case PRINTF:
-                    formatter = codeModel().ref(String.class);
+                    formatter = codeModel.ref(String.class);
                     break;
             }
             final JInvocation formatterMethod = formatter
@@ -118,7 +126,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             formatterMethod.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
-                final JClass paramType = codeModel().ref(
+                final JClass paramType = codeModel.ref(
                         param.asType().toString());
                 JVar paramVar = jMethod.param(JMod.FINAL, paramType, param
                         .getSimpleName().toString());
@@ -126,7 +134,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             }
             // Setup the return type
             if (methodDesc.hasClause()
-                    && codeModel().ref(Throwable.class).isAssignableFrom(
+                    && codeModel.ref(Throwable.class).isAssignableFrom(
                             returnField)) {
                 result.init(JExpr._new(returnField));
                 JInvocation inv = body.invoke(result, "initCause");
@@ -136,25 +144,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             }
             body._return(result);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.logging.model.CodeModel#initModel()
-     */
-    @Override
-    protected void initModel() throws JClassAlreadyExistsException {
-        super.initModel();
-        final JFieldVar instance = definedClass().field(
-                JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
-                INSTANCE_FIELD_NAME);
-        instance.init(JExpr._new(definedClass()));
-        // Add default constructor
-        definedClass().constructor(JMod.PROTECTED);
-        final JMethod readResolveMethod = definedClass().method(JMod.PROTECTED,
-                definedClass(), GET_INSTANCE_METHOD_NAME);
-        readResolveMethod.body()._return(instance);
+        return codeModel;
     }
 
 }

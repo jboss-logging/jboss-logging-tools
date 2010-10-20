@@ -26,6 +26,9 @@ import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -47,17 +50,24 @@ public class MessageBundleTranslator extends ClassModel {
     private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
 
     /**
+     * The translation map.
+     */
+    private final Map<String, String> translations;
+
+    /**
      * Create a MessageBundle with super class and interface.
      *
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageBundleTranslator(final String className, final String superClassName) {
+    public MessageBundleTranslator(final String className, final String superClassName, final Map<String, String> translations) {
         super(className, superClassName);
-    }
 
-    public MessageBundleTranslator(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
-        super(className, projectCode, superClassName, interfacesName);
+        if (translations != null) {
+            this.translations = translations;
+        } else {
+            this.translations = Collections.EMPTY_MAP;
+        }
     }
 
     /**
@@ -66,7 +76,7 @@ public class MessageBundleTranslator extends ClassModel {
     @Override
     public JCodeModel generateModel() throws Exception {
         JCodeModel model = super.generateModel();
-        JDefinedClass definedClass = model._getClass(this.getClassName());
+        JDefinedClass definedClass = definedClass();
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.body().invoke("super");
@@ -78,13 +88,17 @@ public class MessageBundleTranslator extends ClassModel {
         readResolve.annotate(Override.class);
         readResolve.body()._return(JExpr.ref(INSTANCE_FIELD_NAME));
 
+        Set<Map.Entry<String, String>> entries = this.translations.entrySet();
+        for (Map.Entry<String, String> entry : entries) {
+
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            JMethod method = addMessageMethod(key, value, -1);
+            method.annotate(Override.class);
+        }
+
         return model;
-    }
-
-    @Override
-    protected void beforeWrite() {
-        // TODO Auto-generated method stub
-
     }
 
 }

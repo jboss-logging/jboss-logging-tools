@@ -41,7 +41,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.jboss.logging.ToolLogger;
 import org.jboss.logging.validation.Validator;
 
 /**
@@ -118,10 +117,8 @@ public abstract class ClassModel {
      * <p>
      * Executes the following methods in the order listed.
      * <ol>
-     * <li>@code ClassModel#initModel()}</li>
      * <li>Runs validation for each validator.</li>
-     * <li>@code ClassModel#beforeWrite()}</li>
-     * <li>@code ClassModel#writeClass(JavaFileObject)}</li>
+     * <li>{@code ClassModel#generateModel()}</li>
      * </ol>
      * </p>
      *
@@ -130,22 +127,20 @@ public abstract class ClassModel {
      * @throws Exception if an error occurs creating the source file.
      */
     public final void create(final JavaFileObject fileObject) throws Exception {
-        initModel();
         for (Validator validator : validators) {
             validator.validate();
         }
-        beforeWrite();
-        writeClass(fileObject);
+        generateModel().build(new JavaFileObjectCodeWriter(fileObject));
     }
 
     /**
-     * Initializes the code model. Invoked as the first method in the
-     * {@code ClassModel#create(JavaFileObject)} method.
+     * Generate the code corresponding to this
+     * class model
      *
-     * @throws JClassAlreadyExistsException should be never happen, but if the
-     *              the class name was already defined.
+     * @return the generated code
+     * @throws Exception if an error occurs during generation
      */
-    protected void initModel() throws JClassAlreadyExistsException {
+    protected JCodeModel generateModel() throws Exception {
         codeModel = new JCodeModel();
         definedClass = codeModel._class(this.className);
         final JAnnotationUse anno = definedClass.annotate(
@@ -168,59 +163,7 @@ public abstract class ClassModel {
                 definedClass._implements(codeModel.ref(intf));
             }
         }
-
-
-    }
-
-    /**
-     * Generate the code corresponding to this
-     * class model
-     *
-     * @return the generated code
-     * @throws Exception if an error occurs during generation
-     */
-    public JCodeModel generateModel() throws Exception {
-
-        //Generate only one times the code
-        // if (this.codeModel == null) {
-
-        this.codeModel = new JCodeModel();
-        JDefinedClass clazz = this.codeModel._class(this.className);
-
-        //Add JavaDoc
-        JDocComment javadoc = clazz.javadoc();
-        javadoc.append("Warning this class consists of generated code.");
-
-        //Add extends
-        if (this.superClassName != null) {
-            clazz._extends(codeModel.ref(this.superClassName));
-        }
-
-        //Add implements
-        if (this.interfaceNames != null) {
-            for (String intf : this.interfaceNames) {
-                clazz._implements(codeModel.ref(intf));
-            }
-        }
-        //}
-
         return this.codeModel;
-    }
-
-    /**
-     * This method is invoked before the class is written. There is no need to
-     * explicitly execute this method. Doing so could result in errors.
-     */
-    protected abstract void beforeWrite();
-
-    /**
-     * Write the class to a file.
-     *
-     * @param fileObject the file object to write the code model too.
-     * @throws IOException if error occurs when writing class
-     */
-    public void writeClass(final JavaFileObject fileObject) throws IOException {
-        this.codeModel.build(new JavaFileObjectCodeWriter(fileObject));
     }
 
     /**
@@ -377,9 +320,5 @@ public abstract class ClassModel {
         final SimpleDateFormat sdf = new SimpleDateFormat(
                 "yyyy-MM-dd'T'HH:mm:ssZ");
         return sdf.format(new Date());
-    }
-
-    public JCodeModel getClassModel() {
-        return this.codeModel;
     }
 }

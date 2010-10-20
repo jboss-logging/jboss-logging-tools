@@ -28,6 +28,9 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.logging.Logger;
 
@@ -46,17 +49,24 @@ public class MessageLoggerTranslator extends ClassModel {
     private static final String LOGGER_PARAMETER_NAME = "logger";
 
     /**
+     * The translation map.
+     */
+    private final Map<String, String> translations;
+
+    /**
      * Create a MessageBundle with super class and interface.
      *
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageLoggerTranslator(final String className, final String superClassName) {
+    public MessageLoggerTranslator(final String className, final String superClassName, final Map<String, String> translations) {
         super(className, superClassName);
-    }
 
-    public MessageLoggerTranslator(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
-        super(className, projectCode, superClassName, interfacesName);
+        if (translations != null) {
+            this.translations = translations;
+        } else {
+            this.translations = Collections.EMPTY_MAP;
+        }
     }
 
     /**
@@ -73,13 +83,17 @@ public class MessageLoggerTranslator extends ClassModel {
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
 
-        return model;
-    }
+        Set<Map.Entry<String, String>> entries = this.translations.entrySet();
+        for (Map.Entry<String, String> entry : entries) {
 
-    @Override
-    protected void beforeWrite() {
-        // TODO Auto-generated method stub
-        
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            JMethod method = addMessageMethod(key, value, -1);
+            method.annotate(Override.class);
+        }
+
+        return model;
     }
 
 }
