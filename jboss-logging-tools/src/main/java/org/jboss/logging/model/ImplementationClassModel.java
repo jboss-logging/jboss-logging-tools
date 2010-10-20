@@ -21,18 +21,15 @@
 package org.jboss.logging.model;
 
 import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.JCodeModel;
 import java.io.Serializable;
 
 import javax.lang.model.element.ExecutableElement;
 
-import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.util.TransformationUtil;
 
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.ToolLogger;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -63,9 +60,9 @@ public abstract class ImplementationClassModel extends ClassModel {
      * @param type
      *            the type of the implementation.
      */
-    protected ImplementationClassModel(final ToolLogger logger, final String interfaceName,
+    protected ImplementationClassModel(final String interfaceName,
             final String projectCode, ImplementationType type) {
-        super(logger, interfaceName + type.extension(), projectCode, Object.class
+        super(interfaceName + type.extension(), projectCode, Object.class
                 .getName(), interfaceName, Serializable.class.getName());
         this.interfaceName = interfaceName;
         this.packageName = TransformationUtil.toPackage(interfaceName());

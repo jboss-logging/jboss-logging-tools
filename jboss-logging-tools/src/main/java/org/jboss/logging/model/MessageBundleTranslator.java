@@ -27,7 +27,6 @@ import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 
-import org.jboss.logging.ToolLogger;
 
 /**
  * The java message bundle java
@@ -53,12 +52,12 @@ public class MessageBundleTranslator extends ClassModel {
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageBundleTranslator(final ToolLogger logger, final String className, final String superClassName) {
-        super(logger, className, superClassName);
+    public MessageBundleTranslator(final String className, final String superClassName) {
+        super(className, superClassName);
     }
 
-    public MessageBundleTranslator(final ToolLogger logger, final String className, final String projectCode, final String superClassName, final String... interfacesName) {
-        super(logger, className, projectCode, superClassName, interfacesName);
+    public MessageBundleTranslator(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(className, projectCode, superClassName, interfacesName);
     }
 
     /**

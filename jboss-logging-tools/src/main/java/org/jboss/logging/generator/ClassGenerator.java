@@ -108,7 +108,7 @@ public final class ClassGenerator extends Generator {
         if (messageLogger != null) {
             if (type.getKind().isInterface() && !type.getModifiers().contains(
                     Modifier.PRIVATE)) {
-                createClass(new MessageLoggerImplementor(logger(), interfaceName,
+                createClass(new MessageLoggerImplementor(interfaceName,
                         messageLogger.projectCode()), type);
             } else {
                 logger().warn(
@@ -119,7 +119,7 @@ public final class ClassGenerator extends Generator {
         if (messageBundle != null) {
             if (type.getKind().isInterface() && !type.getModifiers().contains(
                     Modifier.PRIVATE)) {
-                createClass(new MessageBundleImplementor(logger(), interfaceName,
+                createClass(new MessageBundleImplementor(interfaceName,
                         messageBundle.projectCode()), type);
             } else {
                 logger().warn(

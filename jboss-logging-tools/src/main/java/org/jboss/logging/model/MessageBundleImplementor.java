@@ -35,7 +35,6 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
-import org.jboss.logging.ToolLogger;
 import org.jboss.logging.validation.BundleReturnTypeValidator;
 import org.jboss.logging.validation.MessageIdValidator;
 
@@ -59,9 +58,9 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * @param projectCode
      *            the project code from the annotation.
      */
-    public MessageBundleImplementor(final ToolLogger logger, final String interfaceName,
+    public MessageBundleImplementor(final String interfaceName,
             final String projectCode) {
-        super(logger, interfaceName, projectCode, ImplementationType.BUNDLE);
+        super(interfaceName, projectCode, ImplementationType.BUNDLE);
         methodDescriptor = new MethodDescriptor();
     }
 

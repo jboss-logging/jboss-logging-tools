@@ -83,11 +83,6 @@ public abstract class ClassModel {
     private JDefinedClass definedClass;
 
     /**
-     * The logger used for logging.
-     */
-    private final ToolLogger logger;
-
-    /**
      * The project code from the annotation.
      */
     private String projectCode;
@@ -100,23 +95,20 @@ public abstract class ClassModel {
      * @param className      the qualified class name
      * @param superClassName the qualified super class name
      */
-    public ClassModel(final ToolLogger logger, final String className,
-            final String superClassName) {
+    public ClassModel(final String className, final String superClassName) {
         this.interfaceNames = null;
         this.superClassName = superClassName;
         this.className = className;
-        this.logger = logger;
         this.validators = new ArrayList<Validator>();
     }
 
-    protected ClassModel(final ToolLogger logger, final String className,
+    protected ClassModel(final String className,
             final String projectCode, final String superClassName,
             final String... interfaceNames) {
         this.interfaceNames = interfaceNames;
         this.superClassName = superClassName;
         this.className = className;
         this.projectCode = projectCode;
-        this.logger = logger;
         this.validators = new ArrayList<Validator>();
     }
 
@@ -247,15 +239,6 @@ public abstract class ClassModel {
      */
     protected final JDefinedClass definedClass() {
         return definedClass;
-    }
-
-    /**
-     * The logger for logging messages.
-     *
-     * @return the logger.
-     */
-    public final ToolLogger logger() {
-        return logger;
     }
 
     /**

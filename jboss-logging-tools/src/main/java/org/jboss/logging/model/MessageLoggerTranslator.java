@@ -30,7 +30,6 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 
 import org.jboss.logging.Logger;
-import org.jboss.logging.ToolLogger;
 
 
 /**
@@ -52,12 +51,12 @@ public class MessageLoggerTranslator extends ClassModel {
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageLoggerTranslator(final ToolLogger logger, final String className, final String superClassName) {
-        super(logger, className, superClassName);
+    public MessageLoggerTranslator(final String className, final String superClassName) {
+        super(className, superClassName);
     }
 
-    public MessageLoggerTranslator(final ToolLogger logger, final String className, final String projectCode, final String superClassName, final String... interfacesName) {
-        super(logger, className, projectCode, superClassName, interfacesName);
+    public MessageLoggerTranslator(final String className, final String projectCode, final String superClassName, final String... interfacesName) {
+        super(className, projectCode, superClassName, interfacesName);
     }
 
     /**

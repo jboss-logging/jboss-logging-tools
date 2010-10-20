@@ -182,10 +182,10 @@ public final class TranslationClassGenerator extends Generator {
             ClassModel classModel;
 
             if (messageAnnotationClass.isAssignableFrom(MessageBundle.class)) {
-                classModel = new MessageBundleTranslator(logger(), generatedClassName, superClassName);
+                classModel = new MessageBundleTranslator(generatedClassName, superClassName);
                 classModel = new GeneratedAnnotation(classModel, MessageBundle.class.getName());
             } else {
-                classModel = new MessageLoggerTranslator(logger(), generatedClassName, superClassName);
+                classModel = new MessageLoggerTranslator(generatedClassName, superClassName);
                 classModel = new GeneratedAnnotation(classModel, MessageLogger.class.getName());
             }
 
