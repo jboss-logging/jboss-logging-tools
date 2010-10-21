@@ -81,7 +81,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * {@inheritDoc}
      */
     @Override
-    protected JCodeModel generateModel() throws Exception {
+    protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
         final JFieldVar instance = definedClass().field(
                 JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),

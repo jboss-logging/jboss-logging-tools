@@ -117,7 +117,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      * {@inheritDoc}
      */
     @Override
-    protected JCodeModel generateModel() throws Exception {
+    protected JCodeModel generateModel() throws IllegalStateException {
         super.generateModel();
         // Add the serializable UID
         final JFieldVar serialVersionUID = definedClass().field(

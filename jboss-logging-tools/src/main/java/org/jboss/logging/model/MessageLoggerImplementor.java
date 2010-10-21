@@ -84,7 +84,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @see org.jboss.logging.model.CodeModel#initModel()
      */
     @Override
-    protected JCodeModel generateModel() throws Exception {
+    protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
         log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
                 LOG_FIELD_NAME);

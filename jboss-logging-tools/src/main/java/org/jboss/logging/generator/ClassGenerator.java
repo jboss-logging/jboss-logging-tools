@@ -91,14 +91,16 @@ public final class ClassGenerator extends Generator {
             } catch (ValidationException e) {
                 logger().error(e.getMessage(), e.getElement());
                 break;
-            } catch (Exception e) {
+            } catch (IllegalStateException e) {
                 logger().error(e, type);
                 break;
             }
         }
     }
 
-    private void generate(TypeElement type) throws IOException, Exception {
+    private void generate(TypeElement type) throws IOException,
+                                                   IllegalStateException,
+                                                   ValidationException {
         final String interfaceName = processingEnv().getElementUtils().
                 getBinaryName(type).toString();
         final MessageLogger messageLogger = type.getAnnotation(
@@ -131,7 +133,7 @@ public final class ClassGenerator extends Generator {
     }
 
     private void createClass(final ImplementationClassModel codeModel,
-            final TypeElement type) throws IOException, Exception,
+            final TypeElement type) throws IOException, IllegalStateException,
                                            ValidationException {
         // Process all extended interfaces.
         for (TypeMirror interfaceType : type.getInterfaces()) {

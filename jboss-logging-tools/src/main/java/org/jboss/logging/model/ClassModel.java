@@ -41,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.validation.Validator;
 
 /**
@@ -126,7 +127,9 @@ public abstract class ClassModel {
      *
      * @throws Exception if an error occurs creating the source file.
      */
-    public final void create(final JavaFileObject fileObject) throws Exception {
+    public final void create(final JavaFileObject fileObject) throws IOException,
+                                                                     IllegalStateException,
+                                                                     ValidationException {
         for (Validator validator : validators) {
             validator.validate();
         }
@@ -138,11 +141,17 @@ public abstract class ClassModel {
      * class model
      *
      * @return the generated code
-     * @throws Exception if an error occurs during generation
+     * @throws IllegalStateException if the class has already been defined.
      */
-    protected JCodeModel generateModel() throws Exception {
+    protected JCodeModel generateModel() throws IllegalStateException {
         codeModel = new JCodeModel();
-        definedClass = codeModel._class(this.className);
+        try {
+            definedClass = codeModel._class(this.className);
+        } catch (JClassAlreadyExistsException e) {
+            throw new IllegalStateException(
+                    "Class " + this.className
+                    + " has already been defined. Cannot generate the class.", e);
+        }
         final JAnnotationUse anno = definedClass.annotate(
                 javax.annotation.Generated.class);
         anno.param("value", getClass().getCanonicalName());

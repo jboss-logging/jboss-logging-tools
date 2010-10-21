@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.jboss.logging.validation.ValidationException;
 
 /**
  * The translation class generator.
@@ -95,43 +96,64 @@ public final class TranslationClassGenerator extends Generator {
      * {@inheritDoc}
      */
     @Override
-    public void generate(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public void generate(Set<? extends TypeElement> annotations,
+            RoundEnvironment roundEnv) {
 
         //Do work only on @MessageLogger and @MessageBundle annotation
-        Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.getRootElements());
+        Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.
+                getRootElements());
         for (TypeElement element : typesElement) {
 
             //Process only public interface
-            if (element.getKind().isInterface() && element.getModifiers().contains(Modifier.PUBLIC)) {
+            if (element.getKind().isInterface() && element.getModifiers().
+                    contains(Modifier.PUBLIC)) {
 
-                MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
-                MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
+                MessageBundle bundleAnnotation = element.getAnnotation(
+                        MessageBundle.class);
+                MessageLogger loggerAnnotation = element.getAnnotation(
+                        MessageLogger.class);
 
                 if (bundleAnnotation != null || loggerAnnotation != null) {
 
-                    PackageElement packageElement = elementUtils.getPackageOf(element);
-                    String packageName = packageElement.getQualifiedName().toString();
+                    PackageElement packageElement = elementUtils.getPackageOf(
+                            element);
+                    String packageName = packageElement.getQualifiedName().
+                            toString();
                     String interfaceName = element.getSimpleName().toString();
-                    String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName.concat(bundleAnnotation != null ? "$bundle" : "$logger"));
+                    String primaryClassName = TransformationUtil.
+                            toQualifiedClassName(packageName, interfaceName.
+                            concat(
+                            bundleAnnotation != null ? "$bundle" : "$logger"));
                     Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
 
                     try {
 
-                        FileObject fObj = filer.getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-                        String packagePath = fObj.toUri().getPath().replaceAll(interfaceName, "");
+                        FileObject fObj = filer.getResource(
+                                StandardLocation.CLASS_OUTPUT, packageName,
+                                interfaceName);
+                        String packagePath = fObj.toUri().getPath().replaceAll(
+                                interfaceName, "");
                         File dir = new File(packagePath);
 
-                        File[] files = dir.listFiles(new TranslationFileFilter(interfaceName));
+                        File[] files = dir.listFiles(new TranslationFileFilter(
+                                interfaceName));
                         if (files != null) {
                             for (File file : files) {
-                                String qualifiedClassName = primaryClassName + TranslationUtil.getTranslationClassNameSuffix(file.getName());
-                                logger().note("Generating the %s translation file class", qualifiedClassName, packageName);
-                                this.generateClassFor(primaryClassName, qualifiedClassName, annotationClass, file);
+                                String qualifiedClassName = primaryClassName + TranslationUtil.
+                                        getTranslationClassNameSuffix(file.
+                                        getName());
+                                logger().note(
+                                        "Generating the %s translation file class",
+                                        qualifiedClassName, packageName);
+                                this.generateClassFor(primaryClassName,
+                                        qualifiedClassName, annotationClass,
+                                        file);
                             }
                         }
 
                     } catch (IOException e) {
-                        logger().error("Cannot read %s package files", packageName);
+                        logger().error("Cannot read %s package files",
+                                packageName);
                     }
 
                 }
@@ -142,7 +164,6 @@ public final class TranslationClassGenerator extends Generator {
 
     }
 
-
     /**
      * Generate a class for the given translation file.
      *
@@ -151,21 +172,27 @@ public final class TranslationClassGenerator extends Generator {
      * @param messageAnnotationClass the annotation who trigger generation
      * @param translationFile        the translation file
      */
-    private void generateClassFor(final String primaryClassName, final String generatedClassName, final Class<?> messageAnnotationClass, final File translationFile) {
+    private void generateClassFor(final String primaryClassName,
+            final String generatedClassName,
+            final Class<?> messageAnnotationClass, final File translationFile) {
 
         try {
 
             //TODO I think there is a best manner
             //Check if super class have been generated
-            String superClassName = TranslationUtil.getEnclosingTranslationClassName(generatedClassName);
+            String superClassName = TranslationUtil.
+                    getEnclosingTranslationClassName(generatedClassName);
             if (!superClassName.equals(primaryClassName)) {
                 String name = translationFile.getName();
                 int lastUnder = name.lastIndexOf("_");
 
-                String enclosingTranslationFileName = name.substring(0, lastUnder) + ".properties";
-                File parent = new File(translationFile.getParent(), enclosingTranslationFileName);
+                String enclosingTranslationFileName = name.substring(0,
+                        lastUnder) + ".properties";
+                File parent = new File(translationFile.getParent(),
+                        enclosingTranslationFileName);
                 if (!parent.exists()) {
-                    this.generateClassFor(primaryClassName, superClassName, messageAnnotationClass, parent);
+                    this.generateClassFor(primaryClassName, superClassName,
+                            messageAnnotationClass, parent);
                 }
             }
 
@@ -178,13 +205,19 @@ public final class TranslationClassGenerator extends Generator {
             ClassModel classModel;
 
             if (messageAnnotationClass.isAssignableFrom(MessageBundle.class)) {
-                classModel = new MessageBundleTranslator(generatedClassName, superClassName, (Map) translations);
+                classModel = new MessageBundleTranslator(generatedClassName,
+                        superClassName, (Map) translations);
             } else {
-                classModel = new MessageLoggerTranslator(generatedClassName, superClassName, (Map) translations);
+                classModel = new MessageLoggerTranslator(generatedClassName,
+                        superClassName, (Map) translations);
             }
             classModel.create(filer.createSourceFile(classModel.getClassName()));
 
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
+            logger().error("Cannot generate %s source file", generatedClassName);
+        } catch (ValidationException e) {
+            logger().error("Cannot generate %s source file", generatedClassName);
+        } catch (IOException e) {
             logger().error("Cannot generate %s source file", generatedClassName);
         }
 
@@ -226,10 +259,8 @@ public final class TranslationClassGenerator extends Generator {
          */
         @Override
         public boolean accept(File dir, String name) {
-            return name.matches(Pattern.quote(this.className) + PROPS_EXTENSION_PATTERN);
+            return name.matches(
+                    Pattern.quote(this.className) + PROPS_EXTENSION_PATTERN);
         }
-
     }
-
-
 }

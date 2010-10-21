@@ -74,7 +74,7 @@ public class MessageBundleTranslator extends ClassModel {
      * {@inheritDoc}
      */
     @Override
-    public JCodeModel generateModel() throws Exception {
+    public JCodeModel generateModel() throws IllegalStateException {
         JCodeModel model = super.generateModel();
         JDefinedClass definedClass = definedClass();
 
