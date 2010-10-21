@@ -25,6 +25,12 @@ import java.util.Set;
 import org.jboss.logging.model.MethodDescriptor;
 
 /**
+ * Validates the return types for message bundle methods.
+ *
+ * <p>
+ * The return type must be either a {@link java.lang.String} or one of it's
+ * super types, or {@link java.lang.Throwable} or one of it's subtypes.
+ * </p>
  *
  * @author James R. Perkins (jrp)
  */
@@ -39,10 +45,18 @@ public class BundleReturnTypeValidator implements Validator {
 
     private final MethodDescriptor methodDesc;
 
+    /**
+     * Class constructor.
+     *
+     * @param methodDesc the method descriptor to process.
+     */
     public BundleReturnTypeValidator(final MethodDescriptor methodDesc) {
         this.methodDesc = methodDesc;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void validate() throws ValidationException {
         boolean invalid = true;

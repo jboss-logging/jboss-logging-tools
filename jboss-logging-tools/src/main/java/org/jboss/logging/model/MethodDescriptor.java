@@ -35,8 +35,6 @@ import javax.lang.model.type.TypeMirror;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
-import org.jboss.logging.validation.ValidationException;
-import org.jboss.logging.validation.Validator;
 
 /**
  * Stores information about methods.

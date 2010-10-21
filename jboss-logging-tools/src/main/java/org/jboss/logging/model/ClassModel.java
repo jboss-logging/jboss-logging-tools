@@ -37,9 +37,7 @@ import com.sun.codemodel.internal.JVar;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.validation.Validator;
@@ -92,8 +90,8 @@ public abstract class ClassModel {
     /**
      * Construct a class model.
      *
-     * @param className      the qualified class name
-     * @param superClassName the qualified super class name
+     * @param className      the qualified class name.
+     * @param superClassName the qualified super class name.
      */
     public ClassModel(final String className, final String superClassName) {
         this.interfaceNames = null;
@@ -102,6 +100,14 @@ public abstract class ClassModel {
         this.validators = new ArrayList<Validator>();
     }
 
+    /**
+     * Construct a class model.
+     *
+     * @param className      the qualified class name.
+     * @param projectCode    the project code.
+     * @param superClassName the super class name.
+     * @param interfaceNames an array of interfaces to implement.
+     */
     protected ClassModel(final String className,
             final String projectCode, final String superClassName,
             final String... interfaceNames) {
@@ -155,7 +161,7 @@ public abstract class ClassModel {
         final JAnnotationUse anno = definedClass.annotate(
                 javax.annotation.Generated.class);
         anno.param("value", getClass().getCanonicalName());
-        anno.param("date", generatedDateValue());
+        anno.param("date", ClassModelUtil.generatedDateValue());
 
         // Create the default JavaDoc
         final JDocComment docComment = definedClass.javadoc();
@@ -271,7 +277,8 @@ public abstract class ClassModel {
                 final JVar idVar = definedClass.field(
                         JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
                         String.class, methodName + "Id");
-                idVar.init(JExpr.lit(formatMessageId(id)));
+                idVar.init(JExpr.lit(ClassModelUtil.formatMessageId(projectCode,
+                        id)));
                 body._return(
                         idVar.plus(addMessageVar(methodName, returnValue)));
             } else {
@@ -279,55 +286,5 @@ public abstract class ClassModel {
             }
         }
         return method;
-    }
-
-    /**
-     * Formats the message id. The message id is comprised of the project code
-     * plus the id.
-     *
-     * @param id the id used to prepend the project code.
-     * @return the formatted message id.
-     */
-    protected final String formatMessageId(final int id) {
-
-        final StringBuilder result = new StringBuilder(projectCode);
-        if (result.length() > 0) {
-            result.append("-");
-            result.append(padLeft("" + id, '0', 5));
-            result.append(": ");
-        }
-        return result.toString();
-    }
-
-    /**
-     * Pads the initial value with the character. If the length is greater than
-     * or equal to the length of the initial value, the initial value will be
-     * returned.
-     *
-     * @param initValue the value to pad.
-     * @param padChar   the character to pad the value with.
-     * @param padLen    the total length the string should be.
-     * @return the padded value.
-     */
-    protected final String padLeft(final String initValue, final char padChar,
-            final int padLen) {
-
-        final StringBuilder result = new StringBuilder();
-        for (int i = initValue.length(); i < padLen; i++) {
-            result.append(padChar);
-        }
-        result.append(initValue);
-        return result.toString();
-    }
-
-    /**
-     * Returns the current date formatted in the ISO 8601 format.
-     *
-     * @return the current date formatted in ISO 8601.
-     */
-    protected static String generatedDateValue() {
-        final SimpleDateFormat sdf = new SimpleDateFormat(
-                "yyyy-MM-dd'T'HH:mm:ssZ");
-        return sdf.format(new Date());
     }
 }

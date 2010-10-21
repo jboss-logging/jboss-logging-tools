@@ -24,6 +24,11 @@ import javax.lang.model.type.TypeKind;
 import org.jboss.logging.model.MethodDescriptor;
 
 /**
+ * Validates the return type for logger methods.
+ *
+ * <p>
+ * Must have a return type of void.
+ * </p>
  *
  * @author James R. Perkins (jrp)
  */
@@ -31,10 +36,18 @@ public class LoggerReturnTypeValidator implements Validator {
 
     private final MethodDescriptor methodDesc;
 
+    /**
+     * Class constructor.
+     *
+     * @param methodDesc the method descriptor to validate.
+     */
     public LoggerReturnTypeValidator(final MethodDescriptor methodDesc) {
         this.methodDesc = methodDesc;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void validate() throws ValidationException {
         if (methodDesc.returnType().getKind() != TypeKind.VOID) {

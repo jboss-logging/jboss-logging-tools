@@ -41,6 +41,11 @@ import org.jboss.logging.validation.LoggerReturnTypeValidator;
 import org.jboss.logging.validation.MessageIdValidator;
 
 /**
+ * Used to generate a message logger implementation.
+ * <p>
+ * Creates an implementation of the interface passed in.
+ * </p>
+ *
  * @author James R. Perkins Jr. (jrp)
  *
  */
@@ -66,11 +71,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         methodDescriptor = new MethodDescriptor();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.logging.CodeModel#addMethod(javax.lang.model.element.
-     * ExecutableElement)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void addMethod(final ExecutableElement method) {
@@ -79,9 +81,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         addValidator(new LoggerReturnTypeValidator(methodDescriptor));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.jboss.logging.model.CodeModel#initModel()
+    /**
+     * {@inheritDoc}
      */
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {

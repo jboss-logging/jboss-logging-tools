@@ -20,13 +20,11 @@
  */
 package org.jboss.logging.model;
 
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
 import com.sun.codemodel.internal.JCodeModel;
 import java.io.Serializable;
 
 import javax.lang.model.element.ExecutableElement;
 
-import org.jboss.logging.util.TransformationUtil;
 
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
@@ -37,7 +35,7 @@ import com.sun.codemodel.internal.JMod;
  * interface.
  * 
  * <p>
- * Essentially this uses a com.sun.codemodel.internal.JCodeModel to generate the
+ * Essentially this uses the com.sun.codemodel.internal.JCodeModel to generate the
  * source files with. This class is for convenience in generating default source
  * files.
  * </p>
@@ -48,7 +46,6 @@ import com.sun.codemodel.internal.JMod;
 public abstract class ImplementationClassModel extends ClassModel {
 
     private final String interfaceName;
-    private final String packageName;
     private final ImplementationType type;
 
     /**
@@ -66,7 +63,6 @@ public abstract class ImplementationClassModel extends ClassModel {
         super(interfaceName + type.extension(), projectCode, Object.class
                 .getName(), interfaceName, Serializable.class.getName());
         this.interfaceName = interfaceName;
-        this.packageName = TransformationUtil.toPackage(interfaceName());
         this.type = type;
     }
 
@@ -80,29 +76,11 @@ public abstract class ImplementationClassModel extends ClassModel {
     }
 
     /**
-     * The interface name this generated class will be implementing.
-     * 
-     * @return the interface name.
-     */
-    public final String interfaceName() {
-        return interfaceName;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public final String getClassName() {
-        return interfaceName() + type().extension();
-    }
-
-    /**
-     * Returns the package name for the class.
-     * 
-     * @return the package name.
-     */
-    public final String packageName() {
-        return packageName;
+        return interfaceName + type().extension();
     }
 
     /**
@@ -118,13 +96,13 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
-        super.generateModel();
+        final JCodeModel codeModel = super.generateModel();
         // Add the serializable UID
         final JFieldVar serialVersionUID = definedClass().field(
-                JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel().LONG,
+                JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel.LONG,
                 "serialVersionUID");
         serialVersionUID.init(JExpr.lit(1L));
-        return super.codeModel();
+        return codeModel;
     }
 
 }

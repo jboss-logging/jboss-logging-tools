@@ -37,6 +37,8 @@ import java.util.Set;
 import org.jboss.logging.util.TransformationUtil;
 
 /**
+ * The main annotation processor for JBoss Logging Tooling.
+ *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  */

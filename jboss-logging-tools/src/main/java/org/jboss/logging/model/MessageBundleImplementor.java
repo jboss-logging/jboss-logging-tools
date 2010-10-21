@@ -30,7 +30,6 @@ import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
@@ -39,15 +38,17 @@ import org.jboss.logging.validation.BundleReturnTypeValidator;
 import org.jboss.logging.validation.MessageIdValidator;
 
 /**
+ * Used to generate a message bundle implementation.
+ * <p>
+ * Creates an implementation of the interface passed in.
+ * </p>
+ *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  *
  */
 public class MessageBundleImplementor extends ImplementationClassModel {
 
-    private static final String INSTANCE_FIELD_NAME = "INSTANCE";
-
-    private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
     private MethodDescriptor methodDescriptor;
 
     /**
@@ -64,11 +65,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         methodDescriptor = new MethodDescriptor();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.logging.CodeModel#addMethod(javax.lang.model.element.
-     * ExecutableElement)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void addMethod(final ExecutableElement method) {
@@ -83,31 +81,25 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        final JFieldVar instance = definedClass().field(
-                JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass(),
-                INSTANCE_FIELD_NAME);
-        instance.init(JExpr._new(definedClass()));
         // Add default constructor
         definedClass().constructor(JMod.PROTECTED);
-        final JMethod readResolveMethod = definedClass().method(JMod.PROTECTED,
-                definedClass(), GET_INSTANCE_METHOD_NAME);
-        readResolveMethod.body()._return(instance);
+        ClassModelUtil.createReadResolveMethod(definedClass());
         // Add message id validator
         addValidator(new MessageIdValidator(methodDescriptor));
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
-            final String methodName = methodDesc.name();
             final JClass returnType = codeModel.ref(
                     methodDesc.returnTypeAsString());
             final JMethod jMethod = definedClass().method(
-                    JMod.PUBLIC | JMod.FINAL, returnType, methodName);
+                    JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
             jMethod.annotate(Override.class);
+
             final Message message = methodDesc.message();
-
-            final JMethod msgMethod = addMessageMethod(methodName,
+            // Add the message method.
+            final JMethod msgMethod = addMessageMethod(methodDesc.name(),
                     message.value(), message.id());
-
+            // Create the method body
             final JBlock body = jMethod.body();
             final JClass returnField = codeModel.ref(returnType.fullName());
             final JVar result = body.decl(returnField, "result");
@@ -121,21 +113,20 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                     formatter = codeModel.ref(String.class);
                     break;
             }
-            final JInvocation formatterMethod = formatter
-                    .staticInvoke("format");
+            final JInvocation formatterMethod = formatter.staticInvoke("format");
             formatterMethod.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel.ref(
                         param.asType().toString());
-                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param
-                        .getSimpleName().toString());
+                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.
+                        getSimpleName().toString());
                 formatterMethod.arg(paramVar);
             }
             // Setup the return type
             if (methodDesc.hasClause()
                     && codeModel.ref(Throwable.class).isAssignableFrom(
-                            returnField)) {
+                    returnField)) {
                 result.init(JExpr._new(returnField));
                 JInvocation inv = body.invoke(result, "initCause");
                 inv.arg(JExpr.ref(methodDesc.causeVarName()));
@@ -146,5 +137,4 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         }
         return codeModel;
     }
-
 }

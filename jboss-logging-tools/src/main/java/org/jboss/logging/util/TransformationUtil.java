@@ -25,6 +25,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
+ * Various transformation utilities.
+ * 
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  */

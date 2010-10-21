@@ -22,14 +22,11 @@ package org.jboss.logging.model;
 
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
 
 /**
  * The java message bundle java
@@ -38,17 +35,6 @@ import java.util.Set;
  * @author Kevin Pollet
  */
 public class MessageBundleTranslator extends ClassModel {
-
-    /**
-     * The instance field name.
-     */
-    private static final String INSTANCE_FIELD_NAME = "INSTANCE";
-
-    /**
-     * The get instance method name.
-     */
-    private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
-
     /**
      * The translation map.
      */
@@ -60,7 +46,8 @@ public class MessageBundleTranslator extends ClassModel {
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageBundleTranslator(final String className, final String superClassName, final Map<String, String> translations) {
+    public MessageBundleTranslator(final String className,
+            final String superClassName, final Map<String, String> translations) {
         super(className, superClassName);
 
         if (translations != null) {
@@ -81,12 +68,9 @@ public class MessageBundleTranslator extends ClassModel {
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.body().invoke("super");
 
-        JFieldVar field = definedClass.field(JMod.PUBLIC + JMod.STATIC + JMod.FINAL, definedClass, INSTANCE_FIELD_NAME);
-        field.init(JExpr._new(definedClass));
-
-        JMethod readResolve = definedClass.method(JMod.PROTECTED, definedClass, GET_INSTANCE_METHOD_NAME);
+        JMethod readResolve = ClassModelUtil.createReadResolveMethod(
+                definedClass);
         readResolve.annotate(Override.class);
-        readResolve.body()._return(JExpr.ref(INSTANCE_FIELD_NAME));
 
         Set<Map.Entry<String, String>> entries = this.translations.entrySet();
         for (Map.Entry<String, String> entry : entries) {
@@ -100,5 +84,4 @@ public class MessageBundleTranslator extends ClassModel {
 
         return model;
     }
-
 }

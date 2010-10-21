@@ -40,6 +40,9 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 
 /**
+ * A generator for creating implementations of message bundle and logging
+ * interfaces.
+ *
  * @author James R. Perkins Jr. (jrp)
  */
 public final class ClassGenerator extends Generator {
@@ -59,11 +62,8 @@ public final class ClassGenerator extends Generator {
         return getClass().getSimpleName();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.jboss.logging.Generator#generate(javax.lang.model.element.Element)
+    /**
+     * {@inheritDoc }
      */
     @Override
     public void generate(final Set<? extends TypeElement> annotations,
@@ -98,6 +98,15 @@ public final class ClassGenerator extends Generator {
         }
     }
 
+    /**
+     * Generate the implementation for the interface.
+     *
+     * @param type the interface to implement.
+     *
+     * @throws IOException           if there is an error writing the source file.
+     * @throws IllegalStateException if the class has already been defined.
+     * @throws ValidationException   if validation fails.
+     */
     private void generate(TypeElement type) throws IOException,
                                                    IllegalStateException,
                                                    ValidationException {
@@ -132,6 +141,16 @@ public final class ClassGenerator extends Generator {
 
     }
 
+    /**
+     * Creates the actual implementation.
+     *
+     * @param codeModel the code model used to generate the source.
+     * @param type      the interface to implement.
+     *
+     * @throws IOException           if there is an error writing the source file.
+     * @throws IllegalStateException if the class has already been defined.
+     * @throws ValidationException   if validation fails.
+     */
     private void createClass(final ImplementationClassModel codeModel,
             final TypeElement type) throws IOException, IllegalStateException,
                                            ValidationException {

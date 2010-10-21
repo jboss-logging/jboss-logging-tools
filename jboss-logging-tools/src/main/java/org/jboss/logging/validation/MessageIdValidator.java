@@ -26,6 +26,12 @@ import org.jboss.logging.Message;
 import org.jboss.logging.model.MethodDescriptor;
 
 /**
+ * Validates messages id's from the {@link org.jboss.logging.Message} annotation.
+ *
+ * <p>
+ * Message id's must be unique for each method unless the methods have the same
+ * name.
+ * </p>
  *
  * @author James R. Perkins (jrp)
  */

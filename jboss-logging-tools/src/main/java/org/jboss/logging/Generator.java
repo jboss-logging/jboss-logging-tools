@@ -29,6 +29,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 /**
+ * An abstract generator used process annotations.
+ * 
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  */
