@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.validation.ValidationException;
 
 /**
@@ -123,7 +124,7 @@ public final class TranslationClassGenerator extends Generator {
                     String primaryClassName = TransformationUtil.
                             toQualifiedClassName(packageName, interfaceName.
                             concat(
-                            bundleAnnotation != null ? "$bundle" : "$logger"));
+                            bundleAnnotation != null ? ImplementationType.BUNDLE.extension() : ImplementationType.LOGGER.extension()));
                     Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
 
                     try {
