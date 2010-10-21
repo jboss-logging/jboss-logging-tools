@@ -36,13 +36,6 @@ import org.jboss.logging.model.MethodDescriptor;
  */
 public class BundleReturnTypeValidator implements Validator {
 
-    private static final Set<Class<?>> acceptedTypes = new HashSet<Class<?>>();
-
-    static {
-        acceptedTypes.add(String.class);
-        acceptedTypes.add(Throwable.class);
-    }
-
     private final MethodDescriptor methodDesc;
 
     /**
@@ -60,16 +53,18 @@ public class BundleReturnTypeValidator implements Validator {
     @Override
     public void validate() throws ValidationException {
         boolean invalid = true;
-        for (Class<?> clazz : acceptedTypes) {
-            try {
-                if (clazz.isAssignableFrom(Class.forName(methodDesc.
-                        returnTypeAsString()))) {
-                    invalid = false;
-                }
-            } catch (ClassNotFoundException e) {
-                throw new ValidationException("Invalid return type.", e,
-                        methodDesc.method());
+        try {
+            if (Throwable.class.isAssignableFrom(Class.forName(methodDesc.
+                    returnTypeAsString()))) {
+                invalid = false;
             }
+            if (Class.forName(methodDesc.
+                    returnTypeAsString()).isAssignableFrom(String.class)) {
+                invalid = false;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new ValidationException("Invalid return type.", e,
+                    methodDesc.method());
         }
         if (invalid) {
             throw new ValidationException("Invalid return type.", methodDesc.

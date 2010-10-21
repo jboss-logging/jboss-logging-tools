@@ -29,6 +29,8 @@ import javax.lang.model.element.ExecutableElement;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JVar;
+import org.jboss.logging.Message;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -46,6 +48,7 @@ import com.sun.codemodel.internal.JMod;
 public abstract class ImplementationClassModel extends ClassModel {
 
     private final String interfaceName;
+
     private final ImplementationType type;
 
     /**
@@ -60,8 +63,8 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     protected ImplementationClassModel(final String interfaceName,
             final String projectCode, ImplementationType type) {
-        super(interfaceName + type.extension(), projectCode, Object.class
-                .getName(), interfaceName, Serializable.class.getName());
+        super(interfaceName + type.extension(), projectCode, Object.class.
+                getName(), interfaceName, Serializable.class.getName());
         this.interfaceName = interfaceName;
         this.type = type;
     }
@@ -92,6 +95,34 @@ public abstract class ImplementationClassModel extends ClassModel {
     public abstract void addMethod(final ExecutableElement method);
 
     /**
+     * Adds and id variable to the generated class if the id is greater than 0.
+     *
+     * <p>
+     * The variable name will be the method name with &quot;Id&quot; as the
+     * suffix.
+     * </p>
+     *
+     * @param methodName the method name to prefix the id with.
+     * @param id         the id of the message.
+     *
+     * @return the variable that was created or {@code null} if no variable was
+     *         created.
+     */
+    protected JVar addIdVar(final String methodName, final int id) {
+        final String idFieldName = methodName + "Id";
+        JVar idVar = definedClass().fields().get(idFieldName);
+        if (idVar == null && id > Message.NONE) {
+            // Create the message id field
+            idVar = definedClass().field(
+                    JMod.PROTECTED | JMod.STATIC | JMod.FINAL,
+                    String.class, idFieldName);
+            idVar.init(JExpr.lit(ClassModelUtil.formatMessageId(
+                    projectCode(), id)));
+        }
+        return idVar;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -104,5 +135,4 @@ public abstract class ImplementationClassModel extends ClassModel {
         serialVersionUID.init(JExpr.lit(1L));
         return codeModel;
     }
-
 }

@@ -79,6 +79,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         methodDescriptor = methodDescriptor.add(method);
         addValidator(new MethodParameterValidator(methodDescriptor));
         addValidator(new LoggerReturnTypeValidator(methodDescriptor));
+        addValidator(new MessageIdValidator(methodDescriptor));
     }
 
     /**
@@ -97,8 +98,6 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         body.directStatement("this." + log.name() + " = " + constructorParam.
                 name() + ";");
 
-        // Add message id validator
-        addValidator(new MessageIdValidator(methodDescriptor));
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
@@ -117,7 +116,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             // Add the message method.
             final JMethod msgMethod = addMessageMethod(methodName,
-                    message.value(), message.id());
+                    message.value());
+            final JVar messageIdVar = addIdVar(methodDesc.name(), message.id());
             // Determine the log method
             final StringBuilder logMethod = new StringBuilder(logLevel.name().
                     toLowerCase());
@@ -139,7 +139,12 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             // The next parameter is the message. Should be accessed via the
             // message retrieval method.
-            logInv.arg(JExpr.invoke(msgMethod));
+            if (messageIdVar == null) {
+                logInv.arg(JExpr.invoke(msgMethod));
+            } else {
+                logInv.arg(messageIdVar.plus(JExpr.invoke(msgMethod)));
+
+            }
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel.ref(

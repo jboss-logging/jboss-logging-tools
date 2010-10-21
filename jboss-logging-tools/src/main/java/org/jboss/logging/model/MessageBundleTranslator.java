@@ -78,7 +78,7 @@ public class MessageBundleTranslator extends ClassModel {
             String key = entry.getKey();
             String value = entry.getValue();
 
-            JMethod method = addMessageMethod(key, value, -1);
+            JMethod method = addMessageMethod(key, value);
             method.annotate(Override.class);
         }
 

@@ -73,6 +73,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         methodDescriptor = methodDescriptor.add(method);
         addValidator(new MethodParameterValidator(methodDescriptor));
         addValidator(new BundleReturnTypeValidator(methodDescriptor));
+        addValidator(new MessageIdValidator(methodDescriptor));
     }
 
     /**
@@ -84,8 +85,6 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         // Add default constructor
         definedClass().constructor(JMod.PROTECTED);
         ClassModelUtil.createReadResolveMethod(definedClass());
-        // Add message id validator
-        addValidator(new MessageIdValidator(methodDescriptor));
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
@@ -98,7 +97,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             final Message message = methodDesc.message();
             // Add the message method.
             final JMethod msgMethod = addMessageMethod(methodDesc.name(),
-                    message.value(), message.id());
+                    message.value());
+            final JVar messageIdVar = addIdVar(methodDesc.name(), message.id());
             // Create the method body
             final JBlock body = jMethod.body();
             final JClass returnField = codeModel.ref(returnType.fullName());
@@ -114,7 +114,11 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                     break;
             }
             final JInvocation formatterMethod = formatter.staticInvoke("format");
-            formatterMethod.arg(JExpr.invoke(msgMethod));
+            if (messageIdVar == null) {
+                formatterMethod.arg(JExpr.invoke(msgMethod));
+            } else {
+                formatterMethod.arg(messageIdVar.plus(JExpr.invoke(msgMethod)));
+            }
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel.ref(

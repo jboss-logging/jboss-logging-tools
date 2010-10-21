@@ -54,8 +54,9 @@ public class MessageIdValidator implements Validator {
         for (MethodDescriptor md : methodDesc) {
             // Only process unique messages
             if (messages.add(md.message())) {
+                final int id = md.message().id();
                 // Check for duplicated id's
-                if (!messageIds.add(md.message().id())) {
+                if (id > Message.NONE && !messageIds.add(id)) {
                     throw new ValidationException("Message id's must be unique.", md.
                             method());
                 }

@@ -220,6 +220,15 @@ public abstract class ClassModel {
     }
 
     /**
+     * Get the project code from the annotation.
+     *
+     * @return the project code or {@code null} if one was not specified.
+     */
+    public String projectCode() {
+        return projectCode;
+    }
+
+    /**
      * Creates the variable that stores the message.
      * <p/>
      * <p>
@@ -258,11 +267,10 @@ public abstract class ClassModel {
      *
      * @param methodName  the method name.
      * @param returnValue the message value.
-     * @param id          the id to prepend the project code/message with.
      * @return the newly created method.
      */
     protected JMethod addMessageMethod(final String methodName,
-            final String returnValue, final int id) {
+            final String returnValue) {
         final String internalMethodName = methodName + "$str";
         JMethod method = definedClass().getMethod(internalMethodName,
                 EMPTY_TYPE_ARRAY);
@@ -272,18 +280,7 @@ public abstract class ClassModel {
             method = definedClass().method(JMod.PROTECTED, returnType,
                     internalMethodName);
             final JBlock body = method.body();
-            if (id > 0) {
-                // Create the message id field
-                final JVar idVar = definedClass.field(
-                        JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
-                        String.class, methodName + "Id");
-                idVar.init(JExpr.lit(ClassModelUtil.formatMessageId(projectCode,
-                        id)));
-                body._return(
-                        idVar.plus(addMessageVar(methodName, returnValue)));
-            } else {
-                body._return(addMessageVar(methodName, returnValue));
-            }
+            body._return(addMessageVar(methodName, returnValue));
         }
         return method;
     }
