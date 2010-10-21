@@ -49,11 +49,11 @@ public class MessageIdValidator implements Validator {
     @Override
     public void validate() throws ValidationException {
         final Set<Integer> messageIds = new HashSet<Integer>();
-        final Set<Message> messages = new HashSet<Message>();
+        final Set<String> messages = new HashSet<String>();
         // Process method descriptors
         for (MethodDescriptor md : methodDesc) {
             // Only process unique messages
-            if (messages.add(md.message())) {
+            if (messages.add(md.name())) {
                 final int id = md.message().id();
                 // Check for duplicated id's
                 if (id > Message.NONE && !messageIds.add(id)) {
