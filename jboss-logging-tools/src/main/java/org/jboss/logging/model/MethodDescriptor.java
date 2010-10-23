@@ -179,7 +179,7 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
      *            the method to process.
      * @return the method descriptor that was created.
      */
-    public MethodDescriptor add(final ExecutableElement method) {
+    protected MethodDescriptor add(final ExecutableElement method) {
         final MethodDescriptor result = new MethodDescriptor(this, method);
 
         // Find the annotations
@@ -206,11 +206,11 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
         // message or log messages
         for (MethodDescriptor methodDesc : methodDescriptors) {
             boolean changed = false;
-            if (methodDesc.logMessage() == null) {
+            if (methodDesc.logMessage == null) {
                 methodDesc.logMessage = logMessage;
                 changed = true;
             }
-            if (methodDesc.message() == null) {
+            if (methodDesc.message == null) {
                 methodDesc.message = message;
                 changed = true;
             }

@@ -124,8 +124,9 @@ public abstract class ClassModel {
      * <p>
      * Executes the following methods in the order listed.
      * <ol>
-     * <li>Runs validation for each validator.</li>
-     * <li>{@code ClassModel#generateModel()}</li>
+     *   <li>{@link ClassModel#preValidation()}</li>
+     *   <li>Runs validation for each validator.</li>
+     *   <li>{@link ClassModel#generateModel()}</li>
      * </ol>
      * </p>
      *
@@ -136,10 +137,18 @@ public abstract class ClassModel {
     public final void create(final JavaFileObject fileObject) throws IOException,
                                                                      IllegalStateException,
                                                                      ValidationException {
+        preValidation();
         for (Validator validator : validators) {
             validator.validate();
         }
         generateModel().build(new JavaFileObjectCodeWriter(fileObject));
+    }
+
+    /**
+     * Performs any actions that need to happen before validation occurs.
+     */
+    protected void preValidation() {
+        
     }
 
     /**

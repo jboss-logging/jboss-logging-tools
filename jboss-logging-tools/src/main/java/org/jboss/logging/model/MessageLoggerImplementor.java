@@ -38,6 +38,7 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.validation.LoggerReturnTypeValidator;
+import org.jboss.logging.validation.MessageAnnotationValidator;
 import org.jboss.logging.validation.MessageIdValidator;
 
 /**
@@ -55,8 +56,6 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
 
     private JFieldVar log;
 
-    private MethodDescriptor methodDescriptor;
-
     /**
      * Creates a new message logger code model.
      *
@@ -68,7 +67,6 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     public MessageLoggerImplementor(final String interfaceName,
             final String projectCode) {
         super(interfaceName, projectCode, ImplementationType.LOGGER);
-        methodDescriptor = new MethodDescriptor();
     }
 
     /**
@@ -76,10 +74,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      */
     @Override
     public void addMethod(final ExecutableElement method) {
-        methodDescriptor = methodDescriptor.add(method);
-        addValidator(new MethodParameterValidator(methodDescriptor));
+        super.addMethod(method);
         addValidator(new LoggerReturnTypeValidator(methodDescriptor));
-        addValidator(new MessageIdValidator(methodDescriptor));
     }
 
     /**

@@ -31,6 +31,10 @@ import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.Message;
+import org.jboss.logging.validation.LoggerReturnTypeValidator;
+import org.jboss.logging.validation.MessageAnnotationValidator;
+import org.jboss.logging.validation.MessageIdValidator;
+import org.jboss.logging.validation.MethodParameterValidator;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -51,6 +55,10 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     private final ImplementationType type;
 
+    protected MethodDescriptor methodDescriptor;
+
+    private final MessageAnnotationValidator messageAnnotationValidator;
+
     /**
      * Class constructor.
      * 
@@ -67,6 +75,8 @@ public abstract class ImplementationClassModel extends ClassModel {
                 getName(), interfaceName, Serializable.class.getName());
         this.interfaceName = interfaceName;
         this.type = type;
+        methodDescriptor = new MethodDescriptor();
+        messageAnnotationValidator = new MessageAnnotationValidator();
     }
 
     /**
@@ -92,7 +102,11 @@ public abstract class ImplementationClassModel extends ClassModel {
      * @param method
      *            the method to add.
      */
-    public abstract void addMethod(final ExecutableElement method);
+    public void addMethod(final ExecutableElement method) {
+        methodDescriptor = methodDescriptor.add(method);
+        messageAnnotationValidator.addMethod(method);
+        addValidator(new MethodParameterValidator(methodDescriptor));
+    }
 
     /**
      * Adds and id variable to the generated class if the id is greater than 0.
@@ -120,6 +134,16 @@ public abstract class ImplementationClassModel extends ClassModel {
                     projectCode(), id)));
         }
         return idVar;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void preValidation() {
+        super.preValidation();
+        addValidator(messageAnnotationValidator);
+        addValidator(new MessageIdValidator(methodDescriptor));
     }
 
     /**

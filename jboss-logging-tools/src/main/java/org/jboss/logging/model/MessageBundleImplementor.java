@@ -35,6 +35,7 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.validation.BundleReturnTypeValidator;
+import org.jboss.logging.validation.MessageAnnotationValidator;
 import org.jboss.logging.validation.MessageIdValidator;
 
 /**
@@ -49,8 +50,6 @@ import org.jboss.logging.validation.MessageIdValidator;
  */
 public class MessageBundleImplementor extends ImplementationClassModel {
 
-    private MethodDescriptor methodDescriptor;
-
     /**
      * Creates a new message bundle code model.
      *
@@ -62,7 +61,6 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     public MessageBundleImplementor(final String interfaceName,
             final String projectCode) {
         super(interfaceName, projectCode, ImplementationType.BUNDLE);
-        methodDescriptor = new MethodDescriptor();
     }
 
     /**
@@ -70,10 +68,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      */
     @Override
     public void addMethod(final ExecutableElement method) {
-        methodDescriptor = methodDescriptor.add(method);
-        addValidator(new MethodParameterValidator(methodDescriptor));
+        super.addMethod(method);
         addValidator(new BundleReturnTypeValidator(methodDescriptor));
-        addValidator(new MessageIdValidator(methodDescriptor));
     }
 
     /**
