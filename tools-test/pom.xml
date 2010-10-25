@@ -62,7 +62,7 @@
                         </goals>
                         <configuration>
                             <compilerArguments>
-                                -Atranslation.files.folder=${project.basedir}/src/main/resources/
+                                -Atranslation.files.path=${project.basedir}/src/main/resources/
                             </compilerArguments>
                         </configuration>
                     </execution>

@@ -71,7 +71,7 @@ public final class TranslationClassGenerator extends Generator {
 
     private static final String SOURCE_FILE_EXTENSION = ".java";
 
-    private static final String TRANSLATION_FILES_PATH_PROPERTY = "translation.files.folder";
+    private static final String TRANSLATION_FILES_PATH = "translation.files.path";
     
     /**
      * The properties file pattern. The property file must
@@ -96,7 +96,8 @@ public final class TranslationClassGenerator extends Generator {
         super(processingEnv);
 
         Map<String, String> options = processingEnv.getOptions();
-        this.translationFilesFolder = options.get(TRANSLATION_FILES_PATH_PROPERTY);
+        this.translationFilesFolder = options.get(TRANSLATION_FILES_PATH);
+        System.out.println(options.get(TRANSLATION_FILES_PATH));
     }
 
     /**
