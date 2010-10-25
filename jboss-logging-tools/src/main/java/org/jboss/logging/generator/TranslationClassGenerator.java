@@ -33,6 +33,7 @@ import org.jboss.logging.util.TranslationUtil;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -67,6 +68,7 @@ import java.util.regex.Pattern;
  */
 //TODO generate empty translation
 //TODO support inner class
+@SupportedOptions("translation.files.path")
 public final class TranslationClassGenerator extends Generator {
 
     private static final String SOURCE_FILE_EXTENSION = ".java";
@@ -94,10 +96,9 @@ public final class TranslationClassGenerator extends Generator {
      */
     public TranslationClassGenerator(final ProcessingEnvironment processingEnv) {
         super(processingEnv);
-
+        
         Map<String, String> options = processingEnv.getOptions();
         this.translationFilesFolder = options.get(TRANSLATION_FILES_PATH);
-        System.out.println(options.get(TRANSLATION_FILES_PATH));
     }
 
     /**

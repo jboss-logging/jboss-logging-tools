@@ -23,9 +23,13 @@ package org.jboss.logging;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -121,5 +125,19 @@ public abstract class Generator {
 	 * @return the name of the generator.
 	 */
 	public abstract String getName();
+
+    /**
+     * Returns the supported options set.
+     *
+     * @return the supported options set or empty set if none
+     */
+    public final Set<String> getSupportedOptions() {
+         SupportedOptions options = this.getClass().getAnnotation(SupportedOptions.class);
+        if (options != null) {
+            return new HashSet(Arrays.asList(options.value()));   
+        }
+
+        return Collections.EMPTY_SET;
+    }
 
 }

@@ -27,12 +27,12 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,16 +46,12 @@ import static org.jboss.logging.util.TransformationUtil.stackTraceToString;
  */
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedOptions("translation.files.path")
 public class LoggingToolsProcessor extends AbstractProcessor {
 
-    /**
-     * The generators.
-     */
     private final List<Generator> generators;
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public LoggingToolsProcessor() {
         this.generators = new ArrayList<Generator>();
@@ -77,8 +73,20 @@ public class LoggingToolsProcessor extends AbstractProcessor {
      * {@inheritDoc}
      */
     @Override
-    public boolean process(Set<? extends TypeElement> annotations,
-            RoundEnvironment roundEnv) {
+    public Set<String> getSupportedOptions() {
+        Set<String> supportedOptions = new HashSet<String>();
+        for (Generator generator : generators) {
+            supportedOptions.addAll(generator.getSupportedOptions());
+        }
+
+        return supportedOptions;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
         try {
 
@@ -93,4 +101,5 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         return false;
     }
+
 }
