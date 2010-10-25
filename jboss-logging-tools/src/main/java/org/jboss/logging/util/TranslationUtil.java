@@ -41,11 +41,11 @@ public final class TranslationUtil {
     /**
      * @param translationFileName the translation file name
      * @return the locale or null if none
-     * @throws IllegalArgumentException if translationFileName parameter is null
+     * @throws NullPointerException if translationFileName parameter is null
      */
     public static String getTranslationFileLocale(final String translationFileName) {
         if (translationFileName == null) {
-            throw new IllegalArgumentException("The translationFileName parameter cannot be null");
+            throw new NullPointerException("The translationFileName parameter cannot be null");
         }
 
         Pattern pattern = Pattern.compile("[^_]*_([^_.]*)[^.]*.properties");
@@ -62,11 +62,11 @@ public final class TranslationUtil {
     /**
      * @param translationFileName the translation file name
      * @return the county or null if none
-     * @throws IllegalArgumentException if translationFileName parameter is null
+     * @throws NullPointerException if translationFileName parameter is null
      */
     public static String getTranslationFileCountry(final String translationFileName) {
         if (translationFileName == null) {
-            throw new IllegalArgumentException("The translationFileName parameter cannot be null");
+            throw new NullPointerException("The translationFileName parameter cannot be null");
         }
 
         Pattern pattern = Pattern.compile("[^_]*_[^_.]*_([^_.]*)[^.]*.properties");
@@ -83,11 +83,11 @@ public final class TranslationUtil {
     /**
      * @param translationFileName the translation file name
      * @return the variant or null if none
-     * @throws IllegalArgumentException if translationFileName parameter is null
+     * @throws NullPointerException if translationFileName parameter is null
      */
     public static String getTranslationFileVariant(final String translationFileName) {
         if (translationFileName == null) {
-            throw new IllegalArgumentException("The translationFileName parameter cannot be null");
+            throw new NullPointerException("The translationFileName parameter cannot be null");
         }
 
         Pattern pattern = Pattern.compile("[^_]*_[^_.]*_[^_.]*_([^_.]*)[^.]*.properties");
@@ -107,11 +107,11 @@ public final class TranslationUtil {
      *
      * @param translationFileName the translation file name
      * @return the class name suffix corresponding to the given translation filename
-     * @throws IllegalArgumentException if translationFileName is null or not valid
+     * @throws NullPointerException if translationFileName is null or not valid
      */
     public static String getTranslationClassNameSuffix(final String translationFileName) {
         if (translationFileName == null) {
-            throw new IllegalArgumentException("The translationFileName parameter cannot be null");
+            throw new NullPointerException("The translationFileName parameter cannot be null");
         }
 
         Pattern pattern = Pattern.compile("[^_]*((_[^_.]*){1,3}).*");
@@ -133,11 +133,11 @@ public final class TranslationUtil {
      *
      * @param translationClassName the translation class name
      * @return the enclosing class name
-     * @throws IllegalArgumentException if translationClassName is null
+     * @throws NullPointerException if translationClassName is null
      */
     public static String getEnclosingTranslationClassName(final String translationClassName) {
         if (translationClassName == null) {
-            throw new IllegalArgumentException("The translationClassName parameter cannot be null");
+            throw new NullPointerException("The translationClassName parameter cannot be null");
         }
 
         int lastUnderScore = translationClassName.lastIndexOf("_");
