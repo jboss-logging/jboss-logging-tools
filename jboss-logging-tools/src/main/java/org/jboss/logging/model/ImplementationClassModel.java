@@ -21,20 +21,17 @@
 package org.jboss.logging.model;
 
 import com.sun.codemodel.internal.JCodeModel;
-import java.io.Serializable;
-
-import javax.lang.model.element.ExecutableElement;
-
-
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.Message;
-import org.jboss.logging.validation.LoggerReturnTypeValidator;
 import org.jboss.logging.validation.MessageAnnotationValidator;
 import org.jboss.logging.validation.MessageIdValidator;
 import org.jboss.logging.validation.MethodParameterValidator;
+
+import javax.lang.model.element.ExecutableElement;
+import java.io.Serializable;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -71,7 +68,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     protected ImplementationClassModel(final String interfaceName,
             final String projectCode, ImplementationType type) {
-        super(interfaceName + type.extension(), projectCode, Object.class.
+        super(interfaceName + type, projectCode, Object.class.
                 getName(), interfaceName, Serializable.class.getName());
         this.interfaceName = interfaceName;
         this.type = type;
@@ -93,7 +90,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     @Override
     public final String getClassName() {
-        return interfaceName + type().extension();
+        return interfaceName + type();
     }
 
     /**

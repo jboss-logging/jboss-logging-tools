@@ -20,12 +20,12 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.Collection;
-import javax.lang.model.element.VariableElement;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
-
 import org.jboss.logging.model.MethodDescriptor;
+
+import javax.lang.model.element.VariableElement;
+import java.util.Collection;
 
 /**
  * Validates the parameters of a method.

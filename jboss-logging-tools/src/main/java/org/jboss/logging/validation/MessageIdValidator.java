@@ -20,10 +20,11 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.jboss.logging.Message;
 import org.jboss.logging.model.MethodDescriptor;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Validates messages id's from the {@link org.jboss.logging.Message} annotation.

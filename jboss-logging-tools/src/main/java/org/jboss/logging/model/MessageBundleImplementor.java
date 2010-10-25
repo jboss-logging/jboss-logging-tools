@@ -20,12 +20,6 @@
  */
 package org.jboss.logging.model;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
-import org.jboss.logging.Message;
-import org.jboss.logging.validation.MethodParameterValidator;
-
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JCodeModel;
@@ -34,9 +28,11 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
+import org.jboss.logging.Message;
 import org.jboss.logging.validation.BundleReturnTypeValidator;
-import org.jboss.logging.validation.MessageAnnotationValidator;
-import org.jboss.logging.validation.MessageIdValidator;
+
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 /**
  * Used to generate a message bundle implementation.

@@ -34,13 +34,13 @@ import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JTypeVar;
 import com.sun.codemodel.internal.JVar;
+import org.jboss.logging.validation.ValidationException;
+import org.jboss.logging.validation.Validator;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.jboss.logging.validation.ValidationException;
-import org.jboss.logging.validation.Validator;
 
 /**
  * The basic java class model.

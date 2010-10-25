@@ -20,15 +20,16 @@
  */
 package org.jboss.logging.validation;
 
+import org.jboss.logging.Message;
+
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import org.jboss.logging.Message;
 
 /**
  * Checks to make sure that only one {@link org.jboss.logging.Message}

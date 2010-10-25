@@ -31,13 +31,13 @@ import org.jboss.logging.validation.ValidationException;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
-import javax.lang.model.element.Modifier;
 
 /**
  * A generator for creating implementations of message bundle and logging
@@ -45,12 +45,12 @@ import javax.lang.model.element.Modifier;
  *
  * @author James R. Perkins Jr. (jrp)
  */
-public final class ClassGenerator extends Generator {
+public final class ClassImplementorGenerator extends Generator {
 
     /**
      * @param processingEnv
      */
-    public ClassGenerator(ProcessingEnvironment processingEnv) {
+    public ClassImplementorGenerator(ProcessingEnvironment processingEnv) {
         super(processingEnv);
     }
 

@@ -52,7 +52,12 @@ public enum ImplementationType {
         this.extension = extension;
     }
 
-    public String extension() {
-        return extension;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return extension;    
     }
+
 }

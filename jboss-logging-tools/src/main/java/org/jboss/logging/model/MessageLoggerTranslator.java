@@ -21,18 +21,16 @@
 package org.jboss.logging.model;
 
 
-
-
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import org.jboss.logging.Logger;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
-import org.jboss.logging.Logger;
 
 
 /**
@@ -85,7 +83,6 @@ public class MessageLoggerTranslator extends ClassModel {
 
         Set<Map.Entry<String, String>> entries = this.translations.entrySet();
         for (Map.Entry<String, String> entry : entries) {
-
             String key = entry.getKey();
             String value = entry.getValue();
 

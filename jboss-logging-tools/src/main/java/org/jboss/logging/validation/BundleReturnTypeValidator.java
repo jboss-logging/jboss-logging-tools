@@ -20,8 +20,6 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.jboss.logging.model.MethodDescriptor;
 
 /**

@@ -37,8 +37,17 @@ public final class TranslationUtil {
      */
     private TranslationUtil() {
     }
-    
+
+    /**
+     * @param translationFileName the translation file name
+     * @return the locale or null if none
+     * @throws NullPointerException if translationFileName parameter is null
+     */
     public static String getTranslationFileLocale(final String translationFileName) {
+        if (translationFileName == null) {
+            throw new NullPointerException("The translationFileName parameter cannot be null");
+        }
+
         Pattern pattern = Pattern.compile("[^_]*_([^_.]*)[^.]*.properties");
         Matcher matcher = pattern.matcher(translationFileName);
         boolean found = matcher.find();
@@ -50,7 +59,16 @@ public final class TranslationUtil {
         return null;
     }
 
+    /**
+     * @param translationFileName the translation file name
+     * @return the county or null if none
+     * @throws NullPointerException if translationFileName parameter is null
+     */
     public static String getTranslationFileCountry(final String translationFileName) {
+        if (translationFileName == null) {
+            throw new NullPointerException("The translationFileName parameter cannot be null");
+        }
+
         Pattern pattern = Pattern.compile("[^_]*_[^_.]*_([^_.]*)[^.]*.properties");
         Matcher matcher = pattern.matcher(translationFileName);
         boolean found = matcher.find();
@@ -62,7 +80,16 @@ public final class TranslationUtil {
         return null;
     }
 
+    /**
+     * @param translationFileName the translation file name
+     * @return the variant or null if none
+     * @throws NullPointerException if translationFileName parameter is null
+     */
     public static String getTranslationFileVariant(final String translationFileName) {
+        if (translationFileName == null) {
+            throw new NullPointerException("The translationFileName parameter cannot be null");
+        }
+
         Pattern pattern = Pattern.compile("[^_]*_[^_.]*_[^_.]*_([^_.]*)[^.]*.properties");
         Matcher matcher = pattern.matcher(translationFileName);
         boolean found = matcher.find();
@@ -74,30 +101,47 @@ public final class TranslationUtil {
         return null;
     }
 
-
     /**
      * Get the class name suffix to be added to the
      * generated class for the given property file name.
      *
      * @param translationFileName the translation file name
      * @return the class name suffix corresponding to the given translation filename
+     * @throws NullPointerException if translationFileName is null or not valid
      */
     public static String getTranslationClassNameSuffix(final String translationFileName) {
+        if (translationFileName == null) {
+            throw new NullPointerException("The translationFileName parameter cannot be null");
+        }
+
         Pattern pattern = Pattern.compile("[^_]*((_[^_.]*){1,3}).*");
         Matcher matcher = pattern.matcher(translationFileName);
         boolean found = matcher.find();
 
         if (!found) {
-            throw new IllegalArgumentException("The given filename is not a valid property filename");
+            throw new NullPointerException("The given filename is not a valid property filename");
         }
 
         return matcher.group(1);
     }
 
+    /**
+     * Returns the enclosing translation class name for
+     * the given translation class name. If the given translation
+     * class name is the upper class name then the parameter class
+     * name is returned.
+     *
+     * @param translationClassName the translation class name
+     * @return the enclosing class name
+     * @throws NullPointerException if translationClassName is null
+     */
+    public static String getEnclosingTranslationClassName(final String translationClassName) {
+        if (translationClassName == null) {
+            throw new NullPointerException("The translationClassName parameter cannot be null");
+        }
 
-    public static String getEnclosingTranslationClassName(final String className) {
-        int lastUnderScore = className.lastIndexOf("_");
-        return lastUnderScore != -1 ? className.substring(0, lastUnderScore) : className;
+        int lastUnderScore = translationClassName.lastIndexOf("_");
+        return lastUnderScore != -1 ? translationClassName.substring(0, lastUnderScore) : translationClassName;
     }
 
 }

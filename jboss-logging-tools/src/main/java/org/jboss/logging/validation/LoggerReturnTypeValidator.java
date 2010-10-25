@@ -20,8 +20,9 @@
  */
 package org.jboss.logging.validation;
 
-import javax.lang.model.type.TypeKind;
 import org.jboss.logging.model.MethodDescriptor;
+
+import javax.lang.model.type.TypeKind;
 
 /**
  * Validates the return type for logger methods.
