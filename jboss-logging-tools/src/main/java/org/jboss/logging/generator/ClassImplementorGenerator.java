@@ -58,14 +58,6 @@ public final class ClassImplementorGenerator extends Generator {
      * {@inheritDoc }
      */
     @Override
-    public String getName() {
-        return getClass().getSimpleName();
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
     public void generate(final Set<? extends TypeElement> annotations,
             final RoundEnvironment roundEnv) {
 

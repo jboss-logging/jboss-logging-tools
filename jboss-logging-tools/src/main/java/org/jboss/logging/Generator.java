@@ -48,9 +48,6 @@ public abstract class Generator {
 
 	private final Types typeUtils;
 
-	/**
-	 * The processing environment.
-	 */
 	private final ProcessingEnvironment processingEnv;
 
 	/**
@@ -124,7 +121,9 @@ public abstract class Generator {
 	 *
 	 * @return the name of the generator.
 	 */
-	public abstract String getName();
+	public String getName() {
+        return this.getClass().getSimpleName();
+    }
 
     /**
      * Returns the supported options set.
