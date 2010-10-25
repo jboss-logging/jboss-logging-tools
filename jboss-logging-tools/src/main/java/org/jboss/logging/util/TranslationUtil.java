@@ -119,7 +119,7 @@ public final class TranslationUtil {
         boolean found = matcher.find();
 
         if (!found) {
-            throw new IllegalArgumentException("The given filename is not a valid property filename");
+            throw new NullPointerException("The given filename is not a valid property filename");
         }
 
         return matcher.group(1);

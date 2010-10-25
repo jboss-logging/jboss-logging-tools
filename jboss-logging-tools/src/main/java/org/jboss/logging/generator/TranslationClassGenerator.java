@@ -21,34 +21,37 @@
 package org.jboss.logging.generator;
 
 import org.jboss.logging.Generator;
+import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ClassModel;
+import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.model.MessageBundleTranslator;
 import org.jboss.logging.model.MessageLoggerTranslator;
 import org.jboss.logging.util.TransformationUtil;
 import org.jboss.logging.util.TranslationUtil;
 
-import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.jboss.logging.model.ImplementationType;
-import org.jboss.logging.validation.ValidationException;
 
 /**
  * The translation class generator.
@@ -60,29 +63,16 @@ import org.jboss.logging.validation.ValidationException;
  *
  * @author Kevin Pollet
  */
-//TODO warning if no method correspond to a translation
+// TODO support inner class
 public final class TranslationClassGenerator extends Generator {
-
-    /**
-     * The filer.
-     */
-    private final Filer filer;
-
-    /**
-     * Util to work with elements.
-     */
-    private final Elements elementUtils;
 
     /**
      * The constructor.
      *
      * @param processingEnv the processing environment
      */
-    public TranslationClassGenerator(ProcessingEnvironment processingEnv) {
+    public TranslationClassGenerator(final ProcessingEnvironment processingEnv) {
         super(processingEnv);
-
-        this.filer = processingEnv.getFiler();
-        this.elementUtils = processingEnv.getElementUtils();
     }
 
     /**
@@ -90,71 +80,54 @@ public final class TranslationClassGenerator extends Generator {
      */
     @Override
     public String getName() {
-        return getClass().getSimpleName();
+        return this.getClass().getSimpleName();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void generate(Set<? extends TypeElement> annotations,
-            RoundEnvironment roundEnv) {
+    public void generate(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
         //Do work only on @MessageLogger and @MessageBundle annotation
-        Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.
-                getRootElements());
+        Set<? extends TypeElement> typesElement = ElementFilter.typesIn(roundEnv.getRootElements());
         for (TypeElement element : typesElement) {
 
             //Process only public interface
-            if (element.getKind().isInterface() && element.getModifiers().
-                    contains(Modifier.PUBLIC)) {
+            if (element.getKind().isInterface() && element.getModifiers().contains(Modifier.PUBLIC)) {
 
-                MessageBundle bundleAnnotation = element.getAnnotation(
-                        MessageBundle.class);
-                MessageLogger loggerAnnotation = element.getAnnotation(
-                        MessageLogger.class);
+                MessageBundle bundleAnnotation = element.getAnnotation(MessageBundle.class);
+                MessageLogger loggerAnnotation = element.getAnnotation(MessageLogger.class);
 
                 if (bundleAnnotation != null || loggerAnnotation != null) {
 
-                    PackageElement packageElement = elementUtils.getPackageOf(
-                            element);
-                    String packageName = packageElement.getQualifiedName().
-                            toString();
+                    PackageElement packageElement = this.elementUtils().getPackageOf(element);
+                    String packageName = packageElement.getQualifiedName().toString();
                     String interfaceName = element.getSimpleName().toString();
-                    String primaryClassName = TransformationUtil.
-                            toQualifiedClassName(packageName, interfaceName.
-                            concat(
-                            bundleAnnotation != null ? ImplementationType.BUNDLE.extension() : ImplementationType.LOGGER.extension()));
+                    String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName);
+                    primaryClassName = primaryClassName.concat(bundleAnnotation != null ? ImplementationType.BUNDLE.extension() : ImplementationType.LOGGER.extension());
                     Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
 
                     try {
 
-                        FileObject fObj = filer.getResource(
-                                StandardLocation.CLASS_OUTPUT, packageName,
-                                interfaceName);
-                        String packagePath = fObj.toUri().getPath().replaceAll(
-                                interfaceName, "");
+                        FileObject fObj = this.filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
+                        String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
                         File dir = new File(packagePath);
 
-                        File[] files = dir.listFiles(new TranslationFileFilter(
-                                interfaceName));
+                        File[] files = dir.listFiles(new TranslationFileFilter(interfaceName));
                         if (files != null) {
                             for (File file : files) {
-                                String qualifiedClassName = primaryClassName + TranslationUtil.
-                                        getTranslationClassNameSuffix(file.
-                                        getName());
-                                logger().note(
-                                        "Generating the %s translation file class",
-                                        qualifiedClassName, packageName);
-                                this.generateClassFor(primaryClassName,
-                                        qualifiedClassName, annotationClass,
-                                        file);
+                                String classNameSuffix = TranslationUtil.getTranslationClassNameSuffix(file.getName());
+                                String qualifiedClassName = primaryClassName.concat(classNameSuffix);
+
+                                //Get translations messages
+                                Map<String, String> translations = this.getValidTranslationMessagesFor(element, file);
+                                this.generateClassFor(primaryClassName, qualifiedClassName, annotationClass, translations);
                             }
                         }
 
                     } catch (IOException e) {
-                        logger().error("Cannot read %s package files",
-                                packageName);
+                        this.logger().error("Cannot read %s package files", packageName);
                     }
 
                 }
@@ -168,67 +141,117 @@ public final class TranslationClassGenerator extends Generator {
     /**
      * Generate a class for the given translation file.
      *
-     * @param primaryClassName       the qualified super class name
-     * @param generatedClassName     the qualified class name
-     * @param messageAnnotationClass the annotation who trigger generation
-     * @param translationFile        the translation file
+     * @param primaryClassName   the qualified super class name
+     * @param generatedClassName the qualified class name
+     * @param annotationClass    the annotation who trigger generation
+     * @param translations    the translations message
      */
-    private void generateClassFor(final String primaryClassName,
-            final String generatedClassName,
-            final Class<?> messageAnnotationClass, final File translationFile) {
+    private void generateClassFor(final String primaryClassName, final String generatedClassName, final Class<?> annotationClass, final Map<String, String> translations) {
+
+        this.logger().note("Generating %s translation class", generatedClassName);
 
         try {
 
-            //TODO I think there is a best manner
-            //Check if super class have been generated
-            String superClassName = TranslationUtil.
-                    getEnclosingTranslationClassName(generatedClassName);
-            if (!superClassName.equals(primaryClassName)) {
-                String name = translationFile.getName();
-                int lastUnder = name.lastIndexOf("_");
+             //Generate super class if needed
+             String superClassName = TranslationUtil.getEnclosingTranslationClassName(generatedClassName);
+             String packageName = TransformationUtil.toPackage(superClassName);
+             String simpleClassName = TransformationUtil.toSimpleClassName(superClassName);
 
-                String enclosingTranslationFileName = name.substring(0,
-                        lastUnder) + ".properties";
-                File parent = new File(translationFile.getParent(),
-                        enclosingTranslationFileName);
-                if (!parent.exists()) {
-                    this.generateClassFor(primaryClassName, superClassName,
-                            messageAnnotationClass, parent);
+             if (!superClassName.equals(primaryClassName)) {
+                 FileObject fObject = this.filer().getResource(StandardLocation.SOURCE_OUTPUT, packageName, simpleClassName);
+                 String pathName = fObject.toUri().getPath().replaceAll(Pattern.quote(simpleClassName), "");
+                 File file = new File(pathName, simpleClassName + ".java");
+                 if (!file.exists()) {
+                    this.generateClassFor(primaryClassName, superClassName, annotationClass, Collections.EMPTY_MAP);
+                 }
+             }
+
+            
+            ClassModel classModel;
+
+            if (annotationClass.isAssignableFrom(MessageBundle.class)) {
+                classModel = new MessageBundleTranslator(generatedClassName, superClassName, translations);
+            } else {
+                classModel = new MessageLoggerTranslator(generatedClassName, superClassName, translations);
+            }
+            classModel.create(this.filer().createSourceFile(classModel.getClassName()));
+
+        }
+        catch (Exception e) {
+            this.logger().error("Cannot generate %s source file", generatedClassName);
+        }
+    }
+
+
+    /**
+     * Returns only the valid translations message
+     * @param element
+     * @param file
+     * @return
+     */
+    private Map<String, String> getValidTranslationMessagesFor(final TypeElement element, final File file) {
+
+        Map<String, String> validTranslations = new HashMap<String, String>();
+
+        try {
+
+            Properties translations = new Properties();
+            Map<String, String> elementMessages = this.getElementTranslationMessages(element);
+
+            //Load translations
+            translations.load(new FileInputStream(file));
+            for (String key : translations.stringPropertyNames()) {
+                if (elementMessages.containsKey(key)) {
+                    validTranslations.put(key, translations.getProperty(key));
                 }
             }
 
-            //Load translations
-            Properties translations = new Properties();
-            if (translationFile != null && translationFile.exists()) {
-                translations.load(new FileInputStream(translationFile));
-            }
-
-            ClassModel classModel;
-
-            if (messageAnnotationClass.isAssignableFrom(MessageBundle.class)) {
-                classModel = new MessageBundleTranslator(generatedClassName,
-                        superClassName, (Map) translations);
-            } else {
-                classModel = new MessageLoggerTranslator(generatedClassName,
-                        superClassName, (Map) translations);
-            }
-            classModel.create(filer.createSourceFile(classModel.getClassName()));
-
-        } catch (IllegalStateException e) {
-            logger().error("Cannot generate %s source file", generatedClassName);
-        } catch (ValidationException e) {
-            logger().error("Cannot generate %s source file", generatedClassName);
         } catch (IOException e) {
-            logger().error("Cannot generate %s source file", generatedClassName);
+            this.logger().error("Cannot read the % translation file", file.getName());
         }
 
-
+        return validTranslations;
     }
 
     /**
-     * The translation file filter.
+     * Returns all the translations messages for
+     * the given type element. A translation message value is
+     * defined by the {@link org.jboss.logging.Message} annotation
+     * value and the annotated method is the translation key.
+     *
+     * @param element the element
+     * @return all the translations messages
      */
-    private static class TranslationFileFilter implements FilenameFilter {
+    private Map<String, String> getElementTranslationMessages(final TypeElement element) {
+
+        Map<String, String> translationsMessage = new HashMap<String, String>();
+        
+        if (element.getKind().isInterface()) {
+
+            //Get super interfaces class translations messages
+            List<? extends TypeMirror> superInterfaces = element.getInterfaces();
+            for (TypeMirror intf : superInterfaces) {
+                translationsMessage.putAll(this.getElementTranslationMessages((TypeElement) this.typeUtils().asElement(intf)));
+            }
+
+            //Get current class translation message
+            List<ExecutableElement> methods = ElementFilter.methodsIn(element.getEnclosedElements());
+            for (ExecutableElement method : methods) {
+                Message annotation = method.getAnnotation(Message.class);
+                if (annotation != null) {
+                    translationsMessage.put(method.getSimpleName().toString(), annotation.value());
+                }
+            }
+
+        }
+
+        return translationsMessage;
+    }
+
+    /**
+     * Translation file filter.
+     */
+    private class TranslationFileFilter implements FilenameFilter {
 
         /**
          * The properties file pattern. The property file must

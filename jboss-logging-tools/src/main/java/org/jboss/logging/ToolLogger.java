@@ -20,10 +20,11 @@
  */
 package org.jboss.logging;
 
+import org.jboss.logging.util.TransformationUtil;
+
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic.Kind;
-import org.jboss.logging.util.TransformationUtil;
 
 /**
  * A logger for logging messages for annotation processors.

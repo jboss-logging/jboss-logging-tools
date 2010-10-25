@@ -18,13 +18,14 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.util;
+package org.jboss.logging.model;
 
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 

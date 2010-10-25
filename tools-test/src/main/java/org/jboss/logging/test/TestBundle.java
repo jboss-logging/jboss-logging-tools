@@ -3,14 +3,14 @@
  */
 package org.jboss.logging.test;
 
-import java.io.IOException;
-
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger.Level;
 import org.jboss.logging.Message;
 import org.jboss.logging.Message.Format;
 import org.jboss.logging.MessageBundle;
+
+import java.io.IOException;
 
 /**
  * @author James R. Perkins Jr. (jrp)
