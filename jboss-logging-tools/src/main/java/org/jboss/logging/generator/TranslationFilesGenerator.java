@@ -13,6 +13,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,9 +70,22 @@ public final class TranslationFilesGenerator extends Generator {
 
             for (TypeElement element : elementsToProcess) {
 
-                
+                if (element.getKind().isInterface()) {
+                    String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
+                    String className = element.getSimpleName().toString();
+                    String path = packageName.replaceAll("\\.", System.getProperty("file.separator"));
+                    String fileName = className + GENERATED_FILE_EXTENSION;
 
-                
+                    //Check if it's an inner bundle
+                    Element enclosingElement = element.getEnclosingElement();
+                    while (enclosingElement != null && enclosingElement instanceof TypeElement) {
+                        fileName = enclosingElement.getSimpleName().toString() + "$" + fileName;
+                        enclosingElement = enclosingElement.getEnclosingElement();
+                    }
+
+                    this.generateSkeletalTranslationFile(generatedFilesPath + path, fileName, this.getTranslationMessages(element));
+                }
+
             }
 
         }
@@ -117,12 +134,45 @@ public final class TranslationFilesGenerator extends Generator {
      * @param fileName the file name
      * @param translations the translations
      */
-    public void generateSkeletalTranslationFile(final String fileName, final Map<String, String> translations) {
+    public void generateSkeletalTranslationFile(final String path, final String fileName, final Map<String, String> translations) {
+        if (translations == null) {
+            throw new NullPointerException("The translations parameter cannot be null");
+        }
+
+        File pathFile = new File(path);
+        if (!pathFile.exists()) {
+            pathFile.mkdirs();
+        }
+
+        File file = new File(path, fileName);
+        BufferedWriter writer = null;
+
+        try {
+
+            writer = new BufferedWriter(new FileWriter(file));
+
+            for (String key : translations.keySet()) {
+                String property = translations.get(key);
+                writer.write("#" + property);
+                writer.newLine();
+                writer.write(key + "=");
+                writer.newLine();
+            }
+
+        }
+        catch (IOException e) {
+            logger().error("Cannot write generated skeletal translation file %s", fileName);
+        } finally {
+            try {
+
+                writer.close();
+
+            } catch (IOException e) {
+               logger().error("Cannot close generated skeletal translation file %s", fileName);
+            }
+        }
 
 
-
-
-        
     }
 
 }

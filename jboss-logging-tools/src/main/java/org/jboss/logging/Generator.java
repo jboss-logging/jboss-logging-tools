@@ -48,9 +48,6 @@ public abstract class Generator {
 
 	private final Types typeUtils;
 
-	/**
-	 * The processing environment.
-	 */
 	private final ProcessingEnvironment processingEnv;
 
 	/**

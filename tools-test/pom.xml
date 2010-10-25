@@ -66,6 +66,18 @@
                             </compilerArguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>tools-process</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArguments>
+                                -Agenerated.translation.files.path=${project.basedir}/target/generated-resources/
+                            </compilerArguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
