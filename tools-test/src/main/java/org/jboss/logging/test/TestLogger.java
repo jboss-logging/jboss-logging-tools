@@ -19,14 +19,15 @@ public interface TestLogger {
 
     void valueNotNull(Object value);
 
-    @LogMessage(level = Level.ERROR)
+    @LogMessage(level = Level.WARN)
     @Message(id = 1, value = "%s cannot be null.")
     void valueNotNull(String value);
 
+    @LogMessage(level = Level.ERROR)
     void valueNotNull(@Cause IllegalArgumentException cause, Object value);
 
     @LogMessage(level = Level.INFO)
-    @Message(value = "Version: %s")
+    @Message(id = 4, value = "Version: %s")
     void version(String version);
 
     @LogMessage(level = Level.FATAL)
@@ -34,6 +35,7 @@ public interface TestLogger {
     void meltDown(@Cause Throwable cause, String value);
 
     @LogMessage(level = Level.WARN)
-    @Message(id = 3, value = "Value {0} could not be added to {1}", format = Format.MESSAGE_FORMAT)
+    @Message(id = 3, value = "Value {0} could not be added to {1}",
+             format = Format.MESSAGE_FORMAT)
     void invalidValue(@Cause Throwable cause, String value, String collection);
 }

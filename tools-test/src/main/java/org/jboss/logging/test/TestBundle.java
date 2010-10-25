@@ -20,9 +20,9 @@ import org.jboss.logging.MessageBundle;
 public interface TestBundle {
     @LogMessage(level = Level.ERROR)
     @Message("%s cannot be null.")
-    String valueNotNull(String value);
+    CharSequence valueNotNull(String value);
 
-    @LogMessage(level = Level.ERROR)
+    @LogMessage(level = Level.INFO)
     @Message(id = 1, value = "Version: %s")
     String version(String version);
 
@@ -32,5 +32,12 @@ public interface TestBundle {
 
     @LogMessage(level = Level.WARN)
     @Message(id = 3, value = "Value {0} could not be added to {1}", format = Format.MESSAGE_FORMAT)
-    String invalidValue(@Cause Throwable cause);
+    String invalidValue(@Cause Throwable cause, String value, String collectionName);
+
+    @LogMessage(level = Level.WARN)
+    @Message(id = 4, value = "Value {0} could not be added to {1}", format = Format.MESSAGE_FORMAT)
+    String error(String string);
+
+    @LogMessage(level = Level.FATAL)
+    String error(@Cause Throwable cause, String string);
 }

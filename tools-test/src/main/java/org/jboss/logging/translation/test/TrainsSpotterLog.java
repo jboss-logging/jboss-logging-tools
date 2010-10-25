@@ -7,11 +7,10 @@ import org.jboss.logging.MessageLogger;
 /**
  * @author Kevin Pollet
  */
-@MessageLogger
+@MessageLogger(projectCode = "TPS")
 public interface TrainsSpotterLog {
 
     @LogMessage
-    @Message("There is %s diesel trains")
+    @Message(id = 1, value = "There is %s diesel trains")
     void nbDieselTrains(int number);
-
 }
