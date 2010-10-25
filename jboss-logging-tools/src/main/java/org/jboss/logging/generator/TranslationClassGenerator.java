@@ -105,14 +105,6 @@ public final class TranslationClassGenerator extends Generator {
      * {@inheritDoc}
      */
     @Override
-    public String getName() {
-        return this.getClass().getSimpleName();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void generate(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
         Set<TypeElement> elementsToProcess = new HashSet<TypeElement>();

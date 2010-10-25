@@ -124,7 +124,9 @@ public abstract class Generator {
 	 *
 	 * @return the name of the generator.
 	 */
-	public abstract String getName();
+	public String getName() {
+        return this.getClass().getSimpleName();
+    }
 
     /**
      * Returns the supported options set.
