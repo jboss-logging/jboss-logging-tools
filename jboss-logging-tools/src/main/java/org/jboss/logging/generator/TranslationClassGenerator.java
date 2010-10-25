@@ -134,7 +134,7 @@ public final class TranslationClassGenerator extends Generator {
                 String packageName = packageElement.getQualifiedName().toString();
                 String interfaceName = element.getSimpleName().toString();
                 String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName);
-                primaryClassName = primaryClassName.concat(type.extension());
+                primaryClassName = primaryClassName.concat(type.toString());
 
                 Map<String, String> elementTranslations = this.getTranslationMessages(element);
 
@@ -196,7 +196,7 @@ public final class TranslationClassGenerator extends Generator {
             //Create source file
             ClassModel classModel;
 
-            if (primaryClassName.contains(ImplementationType.BUNDLE.extension())) {
+            if (primaryClassName.contains(ImplementationType.BUNDLE.toString())) {
                 classModel = new MessageBundleTranslator(generatedClassName, superClassName, translations);
             } else {
                 classModel = new MessageLoggerTranslator(generatedClassName, superClassName, translations);

@@ -68,7 +68,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     protected ImplementationClassModel(final String interfaceName,
             final String projectCode, ImplementationType type) {
-        super(interfaceName + type.extension(), projectCode, Object.class.
+        super(interfaceName + type, projectCode, Object.class.
                 getName(), interfaceName, Serializable.class.getName());
         this.interfaceName = interfaceName;
         this.type = type;
@@ -90,7 +90,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     @Override
     public final String getClassName() {
-        return interfaceName + type().extension();
+        return interfaceName + type();
     }
 
     /**
