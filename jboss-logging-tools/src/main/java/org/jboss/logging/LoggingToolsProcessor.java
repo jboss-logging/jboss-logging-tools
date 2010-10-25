@@ -20,8 +20,9 @@
  */
 package org.jboss.logging;
 
-import org.jboss.logging.generator.ClassGenerator;
+import org.jboss.logging.generator.ClassImplementorGenerator;
 import org.jboss.logging.generator.TranslationClassGenerator;
+import org.jboss.logging.generator.TranslationFilesGenerator;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -65,8 +66,9 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         super.init(processingEnv);
 
         //Tools generator
-        generators.add(new ClassGenerator(processingEnv));
+        generators.add(new ClassImplementorGenerator(processingEnv));
         generators.add(new TranslationClassGenerator(processingEnv));
+        generators.add(new TranslationFilesGenerator(processingEnv));
     }
 
     /**

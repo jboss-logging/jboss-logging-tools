@@ -45,12 +45,12 @@ import java.util.Set;
  *
  * @author James R. Perkins Jr. (jrp)
  */
-public final class ClassGenerator extends Generator {
+public final class ClassImplementorGenerator extends Generator {
 
     /**
      * @param processingEnv
      */
-    public ClassGenerator(ProcessingEnvironment processingEnv) {
+    public ClassImplementorGenerator(ProcessingEnvironment processingEnv) {
         super(processingEnv);
     }
 
