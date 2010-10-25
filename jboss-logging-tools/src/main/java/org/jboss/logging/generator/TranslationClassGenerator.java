@@ -71,6 +71,8 @@ public final class TranslationClassGenerator extends Generator {
 
     private static final String SOURCE_FILE_EXTENSION = ".java";
 
+    private static final String TRANSLATION_FILES_PATH_PROPERTY = "translation.files.folder";
+    
     /**
      * The properties file pattern. The property file must
      * match the given pattern <em>org.pkgname.InterfaceName.i18n_locale.properties</em> where locale is :
@@ -82,6 +84,8 @@ public final class TranslationClassGenerator extends Generator {
      */
     private static final String TRANSLATION_FILE_EXTENSION_PATTERN = ".i18n_[a-z]*(_[A-Z]*){0,2}\\.properties";
 
+    private final String translationFilesFolder;
+
     /**
      * Construct an instance of the Translation
      * Class Generator.
@@ -90,6 +94,9 @@ public final class TranslationClassGenerator extends Generator {
      */
     public TranslationClassGenerator(final ProcessingEnvironment processingEnv) {
         super(processingEnv);
+
+        Map<String, String> options = processingEnv.getOptions();
+        this.translationFilesFolder = options.get(TRANSLATION_FILES_PATH_PROPERTY);
     }
 
     /**
@@ -140,11 +147,22 @@ public final class TranslationClassGenerator extends Generator {
 
                 try {
 
-                    FileObject fObj = this.filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-                    String packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
-                    File dir = new File(packagePath);
+                    String packagePath;
 
+                     //User defined
+                    if (translationFilesFolder != null) {
+
+                        packagePath = translationFilesFolder + packageName.replaceAll("\\.", System.getProperty("file.separator"));
+
+                     //By default use the class output folder
+                    } else {
+                        FileObject fObj = this.filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
+                        packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
+                    }
+
+                    File dir = new File(packagePath);
                     File[] files = dir.listFiles(new TranslationFileFilter(interfaceName));
+
                     if (files != null) {
                         for (File file : files) {
                             String classNameSuffix = TranslationUtil.getTranslationClassNameSuffix(file.getName());
@@ -152,7 +170,7 @@ public final class TranslationClassGenerator extends Generator {
 
                             //Generate source file
                             Map<String, String> translations = this.validateTranslationMessages(elementTranslations, file);
-                            this.generateClassFor(primaryClassName, qualifiedClassName, translations);
+                            this.generateSourceFile(primaryClassName, qualifiedClassName, translations);
                         }
                     }
 
@@ -173,7 +191,7 @@ public final class TranslationClassGenerator extends Generator {
      * @param generatedClassName the qualified class name
      * @param translations    the translations message
      */
-    private void generateClassFor(final String primaryClassName, final String generatedClassName, final Map<String, String> translations) {
+    private void generateSourceFile(final String primaryClassName, final String generatedClassName, final Map<String, String> translations) {
 
         this.logger().note("Generating %s translation class", generatedClassName);
 
@@ -189,7 +207,7 @@ public final class TranslationClassGenerator extends Generator {
                 String pathName = fObject.toUri().getPath().replaceAll(Pattern.quote(simpleClassName), "");
                 File file = new File(pathName, simpleClassName.concat(SOURCE_FILE_EXTENSION));
                 if (!file.exists()) {
-                    this.generateClassFor(primaryClassName, superClassName, Collections.EMPTY_MAP);
+                    this.generateSourceFile(primaryClassName, superClassName, Collections.EMPTY_MAP);
                 }
             }
 
