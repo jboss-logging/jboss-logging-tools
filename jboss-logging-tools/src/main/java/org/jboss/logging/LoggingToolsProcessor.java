@@ -22,7 +22,6 @@ package org.jboss.logging;
 
 import org.jboss.logging.generator.ClassGenerator;
 import org.jboss.logging.generator.TranslationClassGenerator;
-import org.jboss.logging.util.TransformationUtil;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -35,6 +34,8 @@ import javax.tools.Diagnostic;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static org.jboss.logging.util.TransformationUtil.stackTraceToString;
 
 /**
  * The main annotation processor for JBoss Logging Tooling.
@@ -80,14 +81,12 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         try {
 
             for (Generator generator : generators) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-                        "Executing " + generator.getName());
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Executing " + generator.getName());
                 generator.generate(annotations, roundEnv);
             }
 
         } catch (Exception e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + TransformationUtil.
-                    stackTraceToString(e));
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + stackTraceToString(e));
         }
 
         return false;

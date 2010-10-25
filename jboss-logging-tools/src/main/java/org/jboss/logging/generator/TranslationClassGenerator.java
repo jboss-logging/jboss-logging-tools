@@ -63,6 +63,7 @@ import java.util.regex.Pattern;
  *
  * @author Kevin Pollet
  */
+//TODO generate empty translation
 // TODO support inner class
 public final class TranslationClassGenerator extends Generator {
 
@@ -108,6 +109,8 @@ public final class TranslationClassGenerator extends Generator {
                     primaryClassName = primaryClassName.concat(bundleAnnotation != null ? ImplementationType.BUNDLE.extension() : ImplementationType.LOGGER.extension());
                     Class<?> annotationClass = bundleAnnotation != null ? MessageBundle.class : MessageLogger.class;
 
+                    Map<String, String> elementTranslations = this.getElementTranslationMessages(element);
+
                     try {
 
                         FileObject fObj = this.filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
@@ -121,7 +124,7 @@ public final class TranslationClassGenerator extends Generator {
                                 String qualifiedClassName = primaryClassName.concat(classNameSuffix);
 
                                 //Get translations messages
-                                Map<String, String> translations = this.getValidTranslationMessagesFor(element, file);
+                                Map<String, String> translations = this.getValidTranslationMessagesFor(elementTranslations, file);
                                 this.generateClassFor(primaryClassName, qualifiedClassName, annotationClass, translations);
                             }
                         }
@@ -182,31 +185,34 @@ public final class TranslationClassGenerator extends Generator {
         }
     }
 
-
     /**
-     * Returns only the valid translations message
-     * @param element
-     * @param file
-     * @return
+     * Returns only the valid translations message corresponding
+     * to the declared {@link Message} methods in the
+     * {@link MessageBundle} or {@link MessageLogger} interface.
+     *
+     * @param elementTranslations the declared element translations
+     * @param file the translation file
+     * @return the valid translations messages
      */
-    private Map<String, String> getValidTranslationMessagesFor(final TypeElement element, final File file) {
-
+    private Map<String, String> getValidTranslationMessagesFor(final Map<String, String> elementTranslations, final File file) {
         Map<String, String> validTranslations = new HashMap<String, String>();
 
         try {
 
-            Properties translations = new Properties();
-            Map<String, String> elementMessages = this.getElementTranslationMessages(element);
-
             //Load translations
+            Properties translations = new Properties();
             translations.load(new FileInputStream(file));
+
             for (String key : translations.stringPropertyNames()) {
-                if (elementMessages.containsKey(key)) {
+                if (elementTranslations.containsKey(key)) {
                     validTranslations.put(key, translations.getProperty(key));
+                } else {
+                    this.logger().warn("The translation message with key %s have no corresponding method.", key);
                 }
             }
 
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             this.logger().error("Cannot read the % translation file", file.getName());
         }
 
