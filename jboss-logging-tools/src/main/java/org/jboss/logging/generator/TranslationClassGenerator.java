@@ -98,7 +98,7 @@ public final class TranslationClassGenerator extends AbstractToolProcessor {
      * {@inheritDoc}
      */
     @Override
-    public void processMethods(final TypeElement element,
+    public void processTypeElement(final TypeElement element,
             final Collection<ExecutableElement> methods) {
         ImplementationType type;
 

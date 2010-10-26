@@ -21,22 +21,34 @@
 package org.jboss.logging;
 
 import org.jboss.logging.generator.ImplementorClassGenerator;
-import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.generator.TranslationClassGenerator;
 import org.jboss.logging.generator.TranslationFilesGenerator;
+import org.jboss.logging.util.ElementUtil;
+import org.jboss.logging.validation.ValidationException;
+import org.jboss.logging.validation.ValidationProcessor;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jboss.logging.validation.ValidationProcessor;
+
+import static javax.lang.model.util.ElementFilter.typesIn;
+import static org.jboss.logging.util.ElementUtil.getAllMethodsOfInterface;
+
 
 /**
  * The main annotation processor for JBoss Logging Tooling.
@@ -44,9 +56,17 @@ import org.jboss.logging.validation.ValidationProcessor;
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  */
-@SupportedAnnotationTypes("*")
+@SupportedAnnotationTypes({
+        "org.jboss.logging.MessageBundle",
+        "org.jboss.logging.MessageLogger"
+})
+@SupportedOptions({
+        LoggingToolsProcessor.DEBUG_OPTION
+})
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class LoggingToolsProcessor extends AbstractProcessor {
+
+    public static final String DEBUG_OPTION = "debug";
 
     private final List<AbstractToolProcessor> processors;
 
@@ -65,8 +85,9 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     @Override
     public void init(final ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        logger = ToolLogger.getLogger(this.getClass(),
-                processingEnv.getMessager(), processingEnv.getOptions());
+
+        logger = ToolLogger.getLogger(this.getClass(), processingEnv.getMessager(), processingEnv.getOptions());
+
         // Process validation first.
         processors.add(new ValidationProcessor(processingEnv));
 
@@ -82,6 +103,14 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedOptions() {
         Set<String> supportedOptions = new HashSet<String>();
+
+        //Add global options
+        SupportedOptions globalOptions = this.getClass().getAnnotation(SupportedOptions.class);
+        if (globalOptions != null) {
+            supportedOptions.addAll(Arrays.asList(globalOptions.value()));            
+        }
+
+        //Add tool processors options
         for (AbstractToolProcessor generator : processors) {
             supportedOptions.addAll(generator.getSupportedOptions());
         }
@@ -93,22 +122,37 @@ public class LoggingToolsProcessor extends AbstractProcessor {
      * {@inheritDoc}
      */
     @Override
-    public boolean process(final Set<? extends TypeElement> annotations,
-            final RoundEnvironment roundEnv) {
+    public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+
+        Types typesUtil = processingEnv.getTypeUtils();
 
         try {
-            for (AbstractToolProcessor processor : processors) {
-                logger.debug("Executing %s", processor.getName());
-                processor.process(annotations, roundEnv);
+
+            //Call abstract processor to process type elements
+            for (TypeElement annotation : annotations) {
+
+                Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
+
+                for (TypeElement element : elements) {
+
+                   if (element.getKind().isInterface()
+                       && !element.getModifiers().contains(Modifier.PRIVATE)) {
+
+                       Collection<ExecutableElement> methods = getAllMethodsOfInterface(element, typesUtil);
+                       
+                       for (AbstractToolProcessor processor : processors) {
+                            logger.debug("Executing processor %s", processor.getName());
+                            processor.processTypeElement(element, methods);
+                       }
+                   }
+                }
             }
-        } catch (ValidationException e) {
-            logger.error(e.getMessage(), e.getElement());
-        } catch (Exception e) {
-            logger.error(e,
-                    "Error during invocation of LoggingToolsGenerator cause %s:", e.
-                    getMessage());
+            
+        }
+        catch (ValidationException e) {
+            logger.error(e, "Error during validation cause %s", e.getMessage());
         }
 
-        return false;
+        return true;
     }
 }

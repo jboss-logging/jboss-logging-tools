@@ -46,7 +46,7 @@ public final class TranslationFilesGenerator extends AbstractToolProcessor {
     }
 
     @Override
-    public void processMethods(final TypeElement element, final Collection<ExecutableElement> methods) {
+    public void processTypeElement(final TypeElement element, final Collection<ExecutableElement> methods) {
 
                 if (element.getKind().isInterface()) {
                     String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();

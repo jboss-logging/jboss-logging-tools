@@ -20,11 +20,10 @@
  */
 package org.jboss.logging;
 
-import java.util.ArrayList;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -32,12 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 
 /**
  * An abstract processor used process annotations.
@@ -72,6 +66,7 @@ public abstract class AbstractToolProcessor {
     }
 
     /**
+<<<<<<< HEAD
      * Processes classes annotated with the
      * {@link org.jboss.logging.MessageBundle} or
      * {@link org.jboss.logging.MessageLogger}/
@@ -117,11 +112,18 @@ public abstract class AbstractToolProcessor {
 
     /**
      * Processes the methods in the interface.
+=======
+     * Processes a type element.
+>>>>>>> Simplify process of type elements annotated with MessageBundle and MessageLogger.
      *
      * @param element the element that contains the methods.
-     * @param methods the methods in the interface.
+     * @param methods the declared and inherited methods in the interface.
      */
+<<<<<<< HEAD
     public abstract void processMethods(final TypeElement element, final Collection<ExecutableElement> methods);
+=======
+    public abstract void processTypeElement(final TypeElement element, final Collection<ExecutableElement> methods);
+>>>>>>> Simplify process of type elements annotated with MessageBundle and MessageLogger.
 
     /**
      * Returns the logger to log messages with.
