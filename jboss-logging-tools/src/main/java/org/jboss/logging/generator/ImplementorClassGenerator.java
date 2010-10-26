@@ -39,12 +39,12 @@ import java.util.Collection;
  *
  * @author James R. Perkins Jr. (jrp)
  */
-public final class ClassImplementorGenerator extends AbstractToolProcessor {
+public final class ImplementorClassGenerator extends AbstractToolProcessor {
 
     /**
      * @param processingEnv
      */
-    public ClassImplementorGenerator(ProcessingEnvironment processingEnv) {
+    public ImplementorClassGenerator(ProcessingEnvironment processingEnv) {
         super(processingEnv);
     }
 
