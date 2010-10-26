@@ -20,6 +20,7 @@
  */
 package org.jboss.logging;
 
+import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.generator.ClassImplementorGenerator;
 import org.jboss.logging.generator.TranslationClassGenerator;
 import org.jboss.logging.generator.TranslationFilesGenerator;
@@ -31,13 +32,11 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static org.jboss.logging.util.TransformationUtil.stackTraceToString;
+import org.jboss.logging.validation.ValidationProcessor;
 
 /**
  * The main annotation processor for JBoss Logging Tooling.
@@ -49,13 +48,15 @@ import static org.jboss.logging.util.TransformationUtil.stackTraceToString;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class LoggingToolsProcessor extends AbstractProcessor {
 
-    private final List<Generator> generators;
+    private final List<AbstractToolProcessor> processors;
+
+    private ToolLogger logger;
 
     /**
      * Default constructor.
      */
     public LoggingToolsProcessor() {
-        this.generators = new ArrayList<Generator>();
+        this.processors = new ArrayList<AbstractToolProcessor>();
     }
 
     /**
@@ -64,11 +65,15 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     @Override
     public void init(final ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+        logger = ToolLogger.getLogger(this.getClass(),
+                processingEnv.getMessager(), processingEnv.getOptions());
+        // Process validation first.
+        processors.add(new ValidationProcessor(processingEnv));
 
         //Tools generator
-        generators.add(new ClassImplementorGenerator(processingEnv));
-        generators.add(new TranslationClassGenerator(processingEnv));
-        generators.add(new TranslationFilesGenerator(processingEnv));
+        processors.add(new ClassImplementorGenerator(processingEnv));
+        processors.add(new TranslationClassGenerator(processingEnv));
+        processors.add(new TranslationFilesGenerator(processingEnv));
     }
 
     /**
@@ -77,7 +82,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedOptions() {
         Set<String> supportedOptions = new HashSet<String>();
-        for (Generator generator : generators) {
+        for (AbstractToolProcessor generator : processors) {
             supportedOptions.addAll(generator.getSupportedOptions());
         }
 
@@ -88,20 +93,22 @@ public class LoggingToolsProcessor extends AbstractProcessor {
      * {@inheritDoc}
      */
     @Override
-    public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+    public boolean process(final Set<? extends TypeElement> annotations,
+            final RoundEnvironment roundEnv) {
 
         try {
-
-            for (Generator generator : generators) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Executing " + generator.getName());
-                generator.generate(annotations, roundEnv);
+            for (AbstractToolProcessor processor : processors) {
+                logger.debug("Executing %s", processor.getName());
+                processor.process(annotations, roundEnv);
             }
-
+        } catch (ValidationException e) {
+            logger.error(e.getMessage(), e.getElement());
         } catch (Exception e) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Error during invocation of LoggingToolsGenerator cause :" + stackTraceToString(e));
+            logger.error(e,
+                    "Error during invocation of LoggingToolsGenerator cause %s:", e.
+                    getMessage());
         }
 
         return false;
     }
-
 }

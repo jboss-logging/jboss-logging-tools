@@ -140,7 +140,6 @@ public abstract class ImplementationClassModel extends ClassModel {
     protected void preValidation() {
         super.preValidation();
         addValidator(messageAnnotationValidator);
-        addValidator(new MessageIdValidator(methodDescriptor));
     }
 
     /**

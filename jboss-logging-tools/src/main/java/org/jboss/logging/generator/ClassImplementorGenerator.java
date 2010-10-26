@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.Generator;
+import org.jboss.logging.AbstractToolProcessor;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ImplementationClassModel;
@@ -45,7 +45,7 @@ import java.util.Set;
  *
  * @author James R. Perkins Jr. (jrp)
  */
-public final class ClassImplementorGenerator extends Generator {
+public final class ClassImplementorGenerator extends AbstractToolProcessor {
 
     /**
      * @param processingEnv
@@ -54,113 +54,49 @@ public final class ClassImplementorGenerator extends Generator {
         super(processingEnv);
     }
 
-    /**
-     * {@inheritDoc }
-     */
     @Override
-    public void generate(final Set<? extends TypeElement> annotations,
-            final RoundEnvironment roundEnv) {
-
-        Collection<? extends TypeElement> typeElements = ElementFilter.typesIn(roundEnv.
-                getRootElements());
-        generate(typeElements);
-    }
-
-    /**
-     * Processes the types including inner interfaces.
-     *
-     * @param types
-     *              the types to process.
-     */
-    private void generate(final Collection<? extends TypeElement> types) {
-        for (TypeElement type : types) {
-            try {
-                generate(ElementFilter.typesIn(type.getEnclosedElements()));
-                generate(type);
-            } catch (IOException e) {
-                logger().error(e, type);
-                break;
-            } catch (ValidationException e) {
-                logger().error(e.getMessage(), e.getElement());
-                break;
-            } catch (IllegalStateException e) {
-                logger().error(e, type);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Generate the implementation for the interface.
-     *
-     * @param type the interface to implement.
-     *
-     * @throws IOException           if there is an error writing the source file.
-     * @throws IllegalStateException if the class has already been defined.
-     * @throws ValidationException   if validation fails.
-     */
-    private void generate(TypeElement type) throws IOException,
-                                                   IllegalStateException,
-                                                   ValidationException {
-        final String interfaceName = processingEnv().getElementUtils().
-                getBinaryName(type).toString();
-        final MessageLogger messageLogger = type.getAnnotation(
-                MessageLogger.class);
-        final MessageBundle messageBundle = type.getAnnotation(
-                MessageBundle.class);
-        if (messageLogger != null) {
-            if (type.getKind().isInterface() && !type.getModifiers().contains(
-                    Modifier.PRIVATE)) {
+    public void processMethods(final TypeElement element,
+            final Collection<ExecutableElement> methods) {
+        try {
+            final String interfaceName = processingEnv().getElementUtils().
+                    getBinaryName(element).toString();
+            final MessageLogger messageLogger = element.getAnnotation(
+                    MessageLogger.class);
+            final MessageBundle messageBundle = element.getAnnotation(
+                    MessageBundle.class);
+            if (messageLogger != null) {
                 createClass(new MessageLoggerImplementor(interfaceName,
-                        messageLogger.projectCode()), type);
-            } else {
-                logger().warn(
-                        "Type %s must be an interface with at least package-private access. Skipping processing.",
-                        interfaceName);
+                        messageLogger.projectCode()), methods);
             }
-        }
-        if (messageBundle != null) {
-            if (type.getKind().isInterface() && !type.getModifiers().contains(
-                    Modifier.PRIVATE)) {
+            if (messageBundle != null) {
                 createClass(new MessageBundleImplementor(interfaceName,
-                        messageBundle.projectCode()), type);
-            } else {
-                logger().warn(
-                        "Type %s must be an interface with at least package-private access. Skipping processing.",
-                        interfaceName);
+                        messageBundle.projectCode()), methods);
             }
+        } catch (IOException e) {
+            logger().error(e, element);
+        } catch (IllegalStateException e) {
+            logger().error(e, element);
         }
-
     }
 
     /**
      * Creates the actual implementation.
      *
-     * @param codeModel the code model used to generate the source.
-     * @param type      the interface to implement.
+     * @param classModel the class model used to generate the source.
+     * @param methods   the methods to process.
      *
      * @throws IOException           if there is an error writing the source file.
      * @throws IllegalStateException if the class has already been defined.
-     * @throws ValidationException   if validation fails.
      */
-    private void createClass(final ImplementationClassModel codeModel,
-            final TypeElement type) throws IOException, IllegalStateException,
-                                           ValidationException {
-        // Process all extended interfaces.
-        for (TypeMirror interfaceType : type.getInterfaces()) {
-            for (ExecutableElement method : ElementFilter.methodsIn(
-                    processingEnv().getTypeUtils().asElement(interfaceType).
-                    getEnclosedElements())) {
-                codeModel.addMethod(method);
-            }
-        }
+    private void createClass(final ImplementationClassModel classModel,
+            final Collection<ExecutableElement> methods) throws IOException,
+                                                                IllegalStateException {
         // Create the methods
-        for (ExecutableElement method : ElementFilter.methodsIn(type.
-                getEnclosedElements())) {
-            codeModel.addMethod(method);
+        for (ExecutableElement method : methods) {
+            classModel.addMethod(method);
         }
 
         // Write the source file
-        codeModel.create(filer().createSourceFile(codeModel.getClassName()));
+        classModel.create(filer().createSourceFile(classModel.getClassName()));
     }
 }

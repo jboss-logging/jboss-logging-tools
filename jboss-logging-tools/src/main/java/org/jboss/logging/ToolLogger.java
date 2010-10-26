@@ -20,6 +20,9 @@
  */
 package org.jboss.logging;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.jboss.logging.util.TransformationUtil;
 
 import javax.annotation.processing.Messager;
@@ -33,21 +36,78 @@ import javax.tools.Diagnostic.Kind;
  */
 public class ToolLogger {
 
+    private static final ConcurrentMap<String, ToolLogger> LOGGERS = new ConcurrentHashMap<String, ToolLogger>();
+
+    private static final String DEBUG_SWITCH = "-debug";
+
     private final Messager messager;
 
-    private ToolLogger(final Messager messager) {
+    private final String className;
+
+    private final boolean debug;
+
+    private ToolLogger(final String className, final Messager messager,
+            final Map<String, String> options) {
         this.messager = messager;
+        this.className = className;
+        debug = (options.containsKey(DEBUG_SWITCH));
     }
 
     /**
      * Creates a new tool logger.
      *
-     * @param messager the messager used to log messages with.
+     * @param generator the generator to create the logger for.
      * 
      * @return a new tool logger.
      */
-    public static ToolLogger getLogger(final Messager messager) {
-        return new ToolLogger(messager);
+    public static ToolLogger getLogger(final Class<?> clazz,
+            final Messager messager, final Map<String, String> options) {
+        final String className = clazz.getName();
+        ToolLogger result = LOGGERS.get(className);
+        if (result == null) {
+            result = new ToolLogger(className, messager, options);
+            ToolLogger current = LOGGERS.putIfAbsent(className, result);
+            if (current != null) {
+                result = current;
+            }
+        }
+        return result;
+    }
+
+    private void log(final Kind kind, final Element element,
+            final String messageFormat, Object... args) {
+        final String message = className + ": " + String.format(messageFormat,
+                args);
+        if (element == null) {
+            messager.printMessage(kind, message);
+        } else {
+            messager.printMessage(kind, message, element);
+        }
+    }
+
+    private void log(final Kind kind, final Element element,
+            final Throwable cause) {
+        if (element == null) {
+            messager.printMessage(kind, TransformationUtil.stackTraceToString(
+                    cause));
+        } else {
+            messager.printMessage(kind, TransformationUtil.stackTraceToString(
+                    cause), element);
+        }
+    }
+
+    /**
+     * Returns {@code true} if debugging is enabled, otherwise {@code false}.
+     * <p>
+     * It is not necessary to invoke this method before invoking {@code debug}
+     * methods. The debug methods will only log messages if debugging is
+     * enabled.
+     * </p>
+     *
+     * @return {@code true} if debugging is enabled, otherwise {@code false}.
+     */
+    public boolean isDebugEnabled() {
+        return debug;
     }
 
     /**
@@ -56,7 +116,7 @@ public class ToolLogger {
      * @param message   the message to print.
      */
     public void note(final String message) {
-        messager.printMessage(Kind.NOTE, message);
+        log(Kind.NOTE, null, message);
     }
 
     /**
@@ -66,7 +126,7 @@ public class ToolLogger {
      * @param args          the format arguments.
      */
     public void note(final String messageFormat, Object... args) {
-        messager.printMessage(Kind.NOTE, String.format(messageFormat, args));
+        log(Kind.NOTE, null, messageFormat, args);
     }
 
     /**
@@ -78,8 +138,44 @@ public class ToolLogger {
      */
     public void note(final String messageFormat, final Element element,
             Object... args) {
-        messager.printMessage(Kind.NOTE, String.format(messageFormat, args),
-                element);
+        log(Kind.NOTE, element, messageFormat, args);
+    }
+
+    /**
+     * Prints a debug message if debugging is enabled.
+     *
+     * @param message   the message to print.
+     */
+    public void debug(final String message) {
+        if (debug) {
+            other(message);
+        }
+    }
+
+    /**
+     * Prints a formatted debug message if debugging is enabled.
+     *
+     * @param messageFormat the message format.
+     * @param args          the format arguments.
+     */
+    public void debug(final String messageFormat, Object... args) {
+        if (debug) {
+            other(messageFormat, args);
+        }
+    }
+
+    /**
+     * Prints a formatted debug message if debugging is enabled.
+     *
+     * @param messageFormat the message format.
+     * @param element       the element to print with the note.
+     * @param args          the format arguments.
+     */
+    public void debug(final String messageFormat, final Element element,
+            Object... args) {
+        if (debug) {
+            other(messageFormat, element, args);
+        }
     }
 
     /**
@@ -88,7 +184,7 @@ public class ToolLogger {
      * @param message   the message to print.
      */
     public void warn(final String message) {
-        messager.printMessage(Kind.WARNING, message);
+        log(Kind.WARNING, null, message);
     }
 
     /**
@@ -98,7 +194,7 @@ public class ToolLogger {
      * @param args          the format arguments.
      */
     public void warn(final String messageFormat, Object... args) {
-        messager.printMessage(Kind.WARNING, String.format(messageFormat, args));
+        log(Kind.WARNING, null, messageFormat, args);
     }
 
     /**
@@ -110,8 +206,7 @@ public class ToolLogger {
      */
     public void warn(final String messageFormat, final Element element,
             Object... args) {
-        messager.printMessage(Kind.WARNING, String.format(messageFormat, args),
-                element);
+        log(Kind.WARNING, element, messageFormat, args);
     }
 
     /**
@@ -120,7 +215,7 @@ public class ToolLogger {
      * @param message   the message to print.
      */
     public void mandatoryWarning(final String message) {
-        messager.printMessage(Kind.MANDATORY_WARNING, message);
+        log(Kind.MANDATORY_WARNING, null, message);
     }
 
     /**
@@ -130,8 +225,7 @@ public class ToolLogger {
      * @param args          the format arguments.
      */
     public void mandatoryWarning(final String messageFormat, Object... args) {
-        messager.printMessage(Kind.MANDATORY_WARNING, String.format(
-                messageFormat, args));
+        log(Kind.MANDATORY_WARNING, null, messageFormat, args);
     }
 
     /**
@@ -143,9 +237,7 @@ public class ToolLogger {
      */
     public void mandatoryWarning(final String messageFormat,
             final Element element, Object... args) {
-        messager.printMessage(Kind.MANDATORY_WARNING, String.format(
-                messageFormat, args),
-                element);
+        log(Kind.MANDATORY_WARNING, element, messageFormat, args);
     }
 
     /**
@@ -154,7 +246,7 @@ public class ToolLogger {
      * @param message   the message to print.
      */
     public void error(final String message) {
-        messager.printMessage(Kind.ERROR, message);
+        log(Kind.ERROR, null, message);
     }
 
     /**
@@ -164,7 +256,7 @@ public class ToolLogger {
      * @param args          the format arguments.
      */
     public void error(final String messageFormat, Object... args) {
-        messager.printMessage(Kind.ERROR, String.format(messageFormat, args));
+        log(Kind.ERROR, null, messageFormat, args);
     }
 
     /**
@@ -176,8 +268,7 @@ public class ToolLogger {
      */
     public void error(final String messageFormat, final Element element,
             Object... args) {
-        messager.printMessage(Kind.ERROR, String.format(messageFormat, args),
-                element);
+        log(Kind.ERROR, element, messageFormat, args);
     }
 
     /**
@@ -186,8 +277,7 @@ public class ToolLogger {
      * @param cause the cause of the error.
      */
     public void error(final Throwable cause) {
-        messager.printMessage(Kind.ERROR, TransformationUtil.stackTraceToString(
-                cause));
+        log(Kind.ERROR, null, cause);
     }
 
     /**
@@ -197,8 +287,7 @@ public class ToolLogger {
      * @param element the element that caused the error.
      */
     public void error(final Throwable cause, final Element element) {
-        messager.printMessage(Kind.ERROR, TransformationUtil.stackTraceToString(
-                cause), element);
+        log(Kind.ERROR, element, cause);
     }
 
     /**
@@ -211,8 +300,7 @@ public class ToolLogger {
     public void error(final Throwable cause, final String messageFormat,
             final Object... args) {
         warn(messageFormat, args);
-        messager.printMessage(Kind.ERROR, TransformationUtil.stackTraceToString(
-                cause));
+        log(Kind.ERROR, null, cause);
     }
 
     /**
@@ -226,8 +314,7 @@ public class ToolLogger {
     public void error(final Throwable cause, final String messageFormat,
             final Element element, final Object... args) {
         warn(messageFormat, args);
-        messager.printMessage(Kind.ERROR, TransformationUtil.stackTraceToString(
-                cause), element);
+        log(Kind.ERROR, element, cause);
     }
 
     /**
@@ -236,7 +323,7 @@ public class ToolLogger {
      * @param message   the message to print.
      */
     public void other(final String message) {
-        messager.printMessage(Kind.OTHER, message);
+        log(Kind.OTHER, null, message);
     }
 
     /**
@@ -246,7 +333,7 @@ public class ToolLogger {
      * @param args          the format arguments.
      */
     public void other(final String messageFormat, Object... args) {
-        messager.printMessage(Kind.OTHER, String.format(messageFormat, args));
+        log(Kind.OTHER, null, messageFormat, args);
     }
 
     /**
@@ -258,7 +345,6 @@ public class ToolLogger {
      */
     public void other(final String messageFormat, final Element element,
             Object... args) {
-        messager.printMessage(Kind.OTHER, String.format(messageFormat, args),
-                element);
+        log(Kind.OTHER, element, messageFormat, args);
     }
 }

@@ -20,11 +20,13 @@
  */
 package org.jboss.logging.validation;
 
+import java.util.Collection;
 import org.jboss.logging.Message;
-import org.jboss.logging.model.MethodDescriptor;
 
 import java.util.HashSet;
 import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 
 /**
  * Validates messages id's from the {@link org.jboss.logging.Message} annotation.
@@ -38,10 +40,10 @@ import java.util.Set;
  */
 public class MessageIdValidator implements Validator {
 
-    private final MethodDescriptor methodDesc;
+    private final Collection<ExecutableElement> methods;
 
-    public MessageIdValidator(final MethodDescriptor methodDesc) {
-        this.methodDesc = methodDesc;
+    public MessageIdValidator(final Collection<ExecutableElement> methods) {
+        this.methods = methods;
     }
 
     /**
@@ -50,16 +52,18 @@ public class MessageIdValidator implements Validator {
     @Override
     public void validate() throws ValidationException {
         final Set<Integer> messageIds = new HashSet<Integer>();
-        final Set<String> messages = new HashSet<String>();
+        final Set<String> methodNames = new HashSet<String>();
         // Process method descriptors
-        for (MethodDescriptor md : methodDesc) {
-            // Only process unique messages
-            if (messages.add(md.name())) {
-                final int id = md.message().id();
-                // Check for duplicated id's
-                if (id > Message.NONE && !messageIds.add(id)) {
-                    throw new ValidationException("Message id's must be unique.", md.
-                            method());
+        for (ExecutableElement method : methods) {
+            if (methodNames.add(method.getSimpleName().toString())) {
+                System.out.printf("Method %s added.%n", method.getSimpleName());
+                Message message = method.getAnnotation(Message.class);
+                if (message != null) {
+                    if (message.id() > Message.NONE && !messageIds.add(
+                            message.id())) {
+                        throw new ValidationException(
+                                "Message id's must be unique.", method);
+                    }
                 }
             }
         }

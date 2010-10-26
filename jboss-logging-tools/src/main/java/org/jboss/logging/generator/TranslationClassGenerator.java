@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.Generator;
+import org.jboss.logging.AbstractToolProcessor;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
@@ -32,28 +32,21 @@ import org.jboss.logging.util.TransformationUtil;
 import org.jboss.logging.util.TranslationUtil;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -69,12 +62,12 @@ import java.util.regex.Pattern;
 //TODO generate empty translation
 //TODO support inner class
 @SupportedOptions("translation.files.path")
-public final class TranslationClassGenerator extends Generator {
+public final class TranslationClassGenerator extends AbstractToolProcessor {
 
     private static final String SOURCE_FILE_EXTENSION = ".java";
 
     private static final String TRANSLATION_FILES_PATH = "translation.files.path";
-    
+
     /**
      * The properties file pattern. The property file must
      * match the given pattern <em>org.pkgname.InterfaceName.i18n_locale.properties</em> where locale is :
@@ -96,7 +89,7 @@ public final class TranslationClassGenerator extends Generator {
      */
     public TranslationClassGenerator(final ProcessingEnvironment processingEnv) {
         super(processingEnv);
-        
+
         Map<String, String> options = processingEnv.getOptions();
         this.translationFilesFolder = options.get(TRANSLATION_FILES_PATH);
     }
@@ -105,75 +98,67 @@ public final class TranslationClassGenerator extends Generator {
      * {@inheritDoc}
      */
     @Override
-    public void generate(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+    public void processMethods(final TypeElement element,
+            final Collection<ExecutableElement> methods) {
+        ImplementationType type;
 
-        Set<TypeElement> elementsToProcess = new HashSet<TypeElement>();
+        if (element.getAnnotation(MessageBundle.class) != null) {
+            type = ImplementationType.BUNDLE;
+        } else {
+            type = ImplementationType.LOGGER;
+        }
 
-        //Process @MessageBundle
-        Set<? extends Element> bundles = roundEnv.getElementsAnnotatedWith(MessageBundle.class);
-        elementsToProcess.addAll(ElementFilter.typesIn(bundles));
+        PackageElement packageElement = elementUtils().getPackageOf(element);
+        String packageName = packageElement.getQualifiedName().toString();
+        String interfaceName = element.getSimpleName().toString();
+        String primaryClassName = TransformationUtil.toQualifiedClassName(
+                packageName, interfaceName);
+        primaryClassName = primaryClassName.concat(type.toString());
 
-        //Process @MessageLogger
-        Set<? extends Element> loggers = roundEnv.getElementsAnnotatedWith(MessageLogger.class);
-        elementsToProcess.addAll(ElementFilter.typesIn(loggers));
+        Map<String, String> elementTranslations = this.getTranslationMessages(
+                methods);
 
-        //Process elements
-        for (TypeElement element : elementsToProcess) {
+        try {
 
-            //Process only public interface
-            if (element.getKind().isInterface() && element.getModifiers().contains(Modifier.PUBLIC)) {
+            String packagePath;
 
-                ImplementationType type;
+            //User defined
+            if (translationFilesFolder != null) {
 
-                if (element.getAnnotation(MessageBundle.class) != null) {
-                    type = ImplementationType.BUNDLE;
-                } else {
-                    type = ImplementationType.LOGGER;
-                }
+                packagePath = translationFilesFolder + packageName.replaceAll(
+                        "\\.", System.getProperty("file.separator"));
 
-                PackageElement packageElement = elementUtils().getPackageOf(element);
-                String packageName = packageElement.getQualifiedName().toString();
-                String interfaceName = element.getSimpleName().toString();
-                String primaryClassName = TransformationUtil.toQualifiedClassName(packageName, interfaceName);
-                primaryClassName = primaryClassName.concat(type.toString());
-
-                Map<String, String> elementTranslations = this.getTranslationMessages(element);
-
-                try {
-
-                    String packagePath;
-
-                     //User defined
-                    if (translationFilesFolder != null) {
-
-                        packagePath = translationFilesFolder + packageName.replaceAll("\\.", System.getProperty("file.separator"));
-
-                     //By default use the class output folder
-                    } else {
-                        FileObject fObj = this.filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-                        packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
-                    }
-
-                    File dir = new File(packagePath);
-                    File[] files = dir.listFiles(new TranslationFileFilter(interfaceName));
-
-                    if (files != null) {
-                        for (File file : files) {
-                            String classNameSuffix = TranslationUtil.getTranslationClassNameSuffix(file.getName());
-                            String qualifiedClassName = primaryClassName.concat(classNameSuffix);
-
-                            //Generate source file
-                            Map<String, String> translations = this.validateTranslationMessages(elementTranslations, file);
-                            this.generateSourceFile(primaryClassName, qualifiedClassName, translations);
-                        }
-                    }
-
-                } catch (IOException e) {
-                    this.logger().error("Cannot read %s package files", packageName);
-                }
-
+                //By default use the class output folder
+            } else {
+                FileObject fObj = this.filer().getResource(
+                        StandardLocation.CLASS_OUTPUT, packageName,
+                        interfaceName);
+                packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(
+                        interfaceName), "");
             }
 
+            File dir = new File(packagePath);
+            File[] files = dir.listFiles(
+                    new TranslationFileFilter(interfaceName));
+
+            if (files != null) {
+                for (File file : files) {
+                    String classNameSuffix = TranslationUtil.
+                            getTranslationClassNameSuffix(file.getName());
+                    String qualifiedClassName = primaryClassName.concat(
+                            classNameSuffix);
+
+                    //Generate source file
+                    Map<String, String> translations = this.
+                            validateTranslationMessages(elementTranslations,
+                            file);
+                    this.generateSourceFile(primaryClassName, qualifiedClassName,
+                            translations);
+                }
+            }
+
+        } catch (IOException e) {
+            this.logger().error("Cannot read %s package files", packageName);
         }
 
     }
@@ -185,23 +170,32 @@ public final class TranslationClassGenerator extends Generator {
      * @param generatedClassName the qualified class name
      * @param translations    the translations message
      */
-    private void generateSourceFile(final String primaryClassName, final String generatedClassName, final Map<String, String> translations) {
+    private void generateSourceFile(final String primaryClassName,
+            final String generatedClassName,
+            final Map<String, String> translations) {
 
         this.logger().note("Generating %s translation class", generatedClassName);
 
         try {
 
             //Generate super class if needed
-            String superClassName = TranslationUtil.getEnclosingTranslationClassName(generatedClassName);
+            String superClassName = TranslationUtil.
+                    getEnclosingTranslationClassName(generatedClassName);
             String packageName = TransformationUtil.toPackage(superClassName);
-            String simpleClassName = TransformationUtil.toSimpleClassName(superClassName);
+            String simpleClassName = TransformationUtil.toSimpleClassName(
+                    superClassName);
 
             if (!superClassName.equals(primaryClassName)) {
-                FileObject fObject = this.filer().getResource(StandardLocation.SOURCE_OUTPUT, packageName, simpleClassName);
-                String pathName = fObject.toUri().getPath().replaceAll(Pattern.quote(simpleClassName), "");
-                File file = new File(pathName, simpleClassName.concat(SOURCE_FILE_EXTENSION));
+                FileObject fObject = this.filer().getResource(
+                        StandardLocation.SOURCE_OUTPUT, packageName,
+                        simpleClassName);
+                String pathName = fObject.toUri().getPath().replaceAll(Pattern.
+                        quote(simpleClassName), "");
+                File file = new File(pathName, simpleClassName.concat(
+                        SOURCE_FILE_EXTENSION));
                 if (!file.exists()) {
-                    this.generateSourceFile(primaryClassName, superClassName, Collections.EMPTY_MAP);
+                    this.generateSourceFile(primaryClassName, superClassName,
+                            Collections.EMPTY_MAP);
                 }
             }
 
@@ -209,16 +203,19 @@ public final class TranslationClassGenerator extends Generator {
             ClassModel classModel;
 
             if (primaryClassName.contains(ImplementationType.BUNDLE.toString())) {
-                classModel = new MessageBundleTranslator(generatedClassName, superClassName, translations);
+                classModel = new MessageBundleTranslator(generatedClassName,
+                        superClassName, translations);
             } else {
-                classModel = new MessageLoggerTranslator(generatedClassName, superClassName, translations);
+                classModel = new MessageLoggerTranslator(generatedClassName,
+                        superClassName, translations);
             }
 
-            classModel.create(this.filer().createSourceFile(classModel.getClassName()));
+            classModel.create(this.filer().createSourceFile(classModel.
+                    getClassName()));
 
-        }
-        catch (Exception e) {
-            this.logger().error("Cannot generate %s source file", generatedClassName);
+        } catch (Exception e) {
+            this.logger().error("Cannot generate %s source file",
+                    generatedClassName);
         }
     }
 
@@ -231,27 +228,16 @@ public final class TranslationClassGenerator extends Generator {
      * @param element the element
      * @return all the translations messages
      */
-    private Map<String, String> getTranslationMessages(final TypeElement element) {
+    private Map<String, String> getTranslationMessages(
+            final Collection<ExecutableElement> methods) {
 
         Map<String, String> translationsMessage = new HashMap<String, String>();
-
-        if (element.getKind().isInterface()) {
-
-            //Get super interfaces class translations messages
-            List<? extends TypeMirror> superInterfaces = element.getInterfaces();
-            for (TypeMirror intf : superInterfaces) {
-                translationsMessage.putAll(this.getTranslationMessages((TypeElement) this.typeUtils().asElement(intf)));
+        for (ExecutableElement method : methods) {
+            Message annotation = method.getAnnotation(Message.class);
+            if (annotation != null) {
+                translationsMessage.put(method.getSimpleName().toString(), annotation.
+                        value());
             }
-
-            //Get current class translation message
-            List<ExecutableElement> methods = ElementFilter.methodsIn(element.getEnclosedElements());
-            for (ExecutableElement method : methods) {
-                Message annotation = method.getAnnotation(Message.class);
-                if (annotation != null) {
-                    translationsMessage.put(method.getSimpleName().toString(), annotation.value());
-                }
-            }
-
         }
 
         return translationsMessage;
@@ -266,7 +252,8 @@ public final class TranslationClassGenerator extends Generator {
      * @param file the translation file
      * @return the valid translations messages
      */
-    private Map<String, String> validateTranslationMessages(final Map<String, String> elementTranslations, final File file) {
+    private Map<String, String> validateTranslationMessages(
+            final Map<String, String> elementTranslations, final File file) {
         Map<String, String> validTranslations = new HashMap<String, String>();
 
         try {
@@ -279,13 +266,15 @@ public final class TranslationClassGenerator extends Generator {
                 if (elementTranslations.containsKey(key)) {
                     validTranslations.put(key, translations.getProperty(key));
                 } else {
-                    this.logger().warn("The translation message with key %s have no corresponding method.", key);
+                    this.logger().warn(
+                            "The translation message with key %s have no corresponding method.",
+                            key);
                 }
             }
 
-        }
-        catch (IOException e) {
-            this.logger().error("Cannot read the % translation file", file.getName());
+        } catch (IOException e) {
+            this.logger().error("Cannot read the % translation file", file.
+                    getName());
         }
 
         return validTranslations;
@@ -313,7 +302,8 @@ public final class TranslationClassGenerator extends Generator {
          */
         @Override
         public boolean accept(final File dir, final String name) {
-            return name.matches(Pattern.quote(className) + TRANSLATION_FILE_EXTENSION_PATTERN);
+            return name.matches(
+                    Pattern.quote(className) + TRANSLATION_FILE_EXTENSION_PATTERN);
         }
     }
 }
