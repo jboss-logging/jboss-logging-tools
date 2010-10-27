@@ -41,22 +41,13 @@ public class MessageAnnotationValidator implements Validator {
 
     private static final Class<? extends Annotation> annotationClass = Message.class;
 
-    private final List<ExecutableElement> elements;
+    private final Collection<ExecutableElement> methods;
 
     /**
      * Class constructor for singleton.
      */
-    public MessageAnnotationValidator() {
-        elements = new ArrayList<ExecutableElement>();
-    }
-
-    /**
-     * Adds the method to be checked for duplicate annotations.
-     *
-     * @param method the method to check.
-     */
-    public void addMethod(final ExecutableElement method) {
-        elements.add(method);
+    public MessageAnnotationValidator(final Collection<ExecutableElement> methods) {
+        this.methods = methods;
     }
 
     /**
@@ -66,14 +57,14 @@ public class MessageAnnotationValidator implements Validator {
     public void validate() throws ValidationException {
         // Set for the method names that have been processed
         final Set<Name> methodNames = new HashSet<Name>();
-        for (ExecutableElement method : elements) {
+        for (ExecutableElement method : methods) {
             // Only adds methods which have not been processed
             if (methodNames.add(method.getSimpleName())) {
                 // Find all like named methods
-                final Collection<ExecutableElement> methods = findByName(method.
+                final Collection<ExecutableElement> likeMethods = findByName(method.
                         getSimpleName());
                 boolean foundFirst = false;
-                for (ExecutableElement m : methods) {
+                for (ExecutableElement m : likeMethods) {
                     boolean found = m.getAnnotation(annotationClass) != null;
                     if (foundFirst && found) {
                         throw new ValidationException("Only one method is allowed to be annotated with the " + annotationClass.
@@ -93,12 +84,12 @@ public class MessageAnnotationValidator implements Validator {
      * @return a collection of methods with the same name.
      */
     private Collection<ExecutableElement> findByName(final Name methodName) {
-        final List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-        for (ExecutableElement method : elements) {
+        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
+        for (ExecutableElement method : methods) {
             if (methodName.equals(method.getSimpleName())) {
-                methods.add(method);
+                result.add(method);
             }
         }
-        return methods;
+        return result;
     }
 }

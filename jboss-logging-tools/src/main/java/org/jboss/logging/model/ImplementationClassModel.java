@@ -54,8 +54,6 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     protected MethodDescriptor methodDescriptor;
 
-    private final MessageAnnotationValidator messageAnnotationValidator;
-
     /**
      * Class constructor.
      * 
@@ -73,7 +71,6 @@ public abstract class ImplementationClassModel extends ClassModel {
         this.interfaceName = interfaceName;
         this.type = type;
         methodDescriptor = new MethodDescriptor();
-        messageAnnotationValidator = new MessageAnnotationValidator();
     }
 
     /**
@@ -101,8 +98,6 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     public void addMethod(final ExecutableElement method) {
         methodDescriptor = methodDescriptor.add(method);
-        messageAnnotationValidator.addMethod(method);
-        addValidator(new MethodParameterValidator(methodDescriptor));
     }
 
     /**
@@ -131,15 +126,6 @@ public abstract class ImplementationClassModel extends ClassModel {
                     projectCode(), id)));
         }
         return idVar;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void preValidation() {
-        super.preValidation();
-        addValidator(messageAnnotationValidator);
     }
 
     /**

@@ -20,7 +20,8 @@
  */
 package org.jboss.logging.validation;
 
-import org.jboss.logging.model.MethodDescriptor;
+import java.util.Collection;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * Validates the return types for message bundle methods.
@@ -34,15 +35,15 @@ import org.jboss.logging.model.MethodDescriptor;
  */
 public class BundleReturnTypeValidator implements Validator {
 
-    private final MethodDescriptor methodDesc;
+    private final Collection<ExecutableElement> methods;
 
     /**
      * Class constructor.
      *
-     * @param methodDesc the method descriptor to process.
+     * @param methods the methods to process
      */
-    public BundleReturnTypeValidator(final MethodDescriptor methodDesc) {
-        this.methodDesc = methodDesc;
+    public BundleReturnTypeValidator(final Collection<ExecutableElement> methods) {
+        this.methods = methods;
     }
 
     /**
@@ -50,23 +51,23 @@ public class BundleReturnTypeValidator implements Validator {
      */
     @Override
     public void validate() throws ValidationException {
-        boolean invalid = true;
-        try {
-            if (Throwable.class.isAssignableFrom(Class.forName(methodDesc.
-                    returnTypeAsString()))) {
-                invalid = false;
+        for (ExecutableElement method : methods) {
+            boolean invalid = false;
+            try {
+                if (Throwable.class.isAssignableFrom(Class.forName(method.
+                        getReturnType().toString()))) {
+                    invalid = true;
+                }
+                if (Class.forName(method.getReturnType().toString()).
+                        isAssignableFrom(String.class)) {
+                    invalid = true;
+                }
+            } catch (ClassNotFoundException e) {
+                throw new ValidationException("Return type not found in classpath.", e, method);
             }
-            if (Class.forName(methodDesc.
-                    returnTypeAsString()).isAssignableFrom(String.class)) {
-                invalid = false;
+            if (invalid) {
+                throw new ValidationException("Invalid return type.", method);
             }
-        } catch (ClassNotFoundException e) {
-            throw new ValidationException("Invalid return type.", e,
-                    methodDesc.method());
-        }
-        if (invalid) {
-            throw new ValidationException("Invalid return type.", methodDesc.
-                    method());
         }
     }
 }

@@ -21,8 +21,6 @@
 package org.jboss.logging;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.jboss.logging.util.TransformationUtil;
 
 import javax.annotation.processing.Messager;
@@ -36,9 +34,9 @@ import javax.tools.Diagnostic.Kind;
  */
 public class ToolLogger {
 
-    private static final ConcurrentMap<String, ToolLogger> LOGGERS = new ConcurrentHashMap<String, ToolLogger>();
+    private static final String DEBUG_SWITCH_1 = "--debug";
 
-    private static final String DEBUG_SWITCH = "-debug";
+    private static final String DEBUG_SWITCH_2 = "-D";
 
     private final Messager messager;
 
@@ -50,7 +48,7 @@ public class ToolLogger {
             final Map<String, String> options) {
         this.messager = messager;
         this.className = className;
-        debug = (options.containsKey(DEBUG_SWITCH));
+        debug = (options.containsKey(DEBUG_SWITCH_1) || options.containsKey(DEBUG_SWITCH_2));
     }
 
     /**
@@ -63,14 +61,7 @@ public class ToolLogger {
     public static ToolLogger getLogger(final Class<?> clazz,
             final Messager messager, final Map<String, String> options) {
         final String className = clazz.getName();
-        ToolLogger result = LOGGERS.get(className);
-        if (result == null) {
-            result = new ToolLogger(className, messager, options);
-            ToolLogger current = LOGGERS.putIfAbsent(className, result);
-            if (current != null) {
-                result = current;
-            }
-        }
+        ToolLogger result = new ToolLogger(className, messager, options);
         return result;
     }
 

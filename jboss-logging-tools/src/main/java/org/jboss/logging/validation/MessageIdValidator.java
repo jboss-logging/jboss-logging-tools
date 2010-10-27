@@ -26,7 +26,6 @@ import org.jboss.logging.Message;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 
 /**
  * Validates messages id's from the {@link org.jboss.logging.Message} annotation.
@@ -56,7 +55,6 @@ public class MessageIdValidator implements Validator {
         // Process method descriptors
         for (ExecutableElement method : methods) {
             if (methodNames.add(method.getSimpleName().toString())) {
-                System.out.printf("Method %s added.%n", method.getSimpleName());
                 Message message = method.getAnnotation(Message.class);
                 if (message != null) {
                     if (message.id() > Message.NONE && !messageIds.add(

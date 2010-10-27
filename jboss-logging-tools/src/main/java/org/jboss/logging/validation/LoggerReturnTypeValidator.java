@@ -20,7 +20,8 @@
  */
 package org.jboss.logging.validation;
 
-import org.jboss.logging.model.MethodDescriptor;
+import java.util.Collection;
+import javax.lang.model.element.ExecutableElement;
 
 import javax.lang.model.type.TypeKind;
 
@@ -35,15 +36,15 @@ import javax.lang.model.type.TypeKind;
  */
 public class LoggerReturnTypeValidator implements Validator {
 
-    private final MethodDescriptor methodDesc;
+    private final Collection<ExecutableElement> methods;
 
     /**
      * Class constructor.
      *
-     * @param methodDesc the method descriptor to validate.
+     * @param methods the methods to process
      */
-    public LoggerReturnTypeValidator(final MethodDescriptor methodDesc) {
-        this.methodDesc = methodDesc;
+    public LoggerReturnTypeValidator(final Collection<ExecutableElement> methods) {
+        this.methods = methods;
     }
 
     /**
@@ -51,10 +52,11 @@ public class LoggerReturnTypeValidator implements Validator {
      */
     @Override
     public void validate() throws ValidationException {
-        if (methodDesc.returnType().getKind() != TypeKind.VOID) {
-            throw new ValidationException(
-                    "Logger methods must have void return types.", methodDesc.
-                    method());
+        for (ExecutableElement method : methods) {
+            if (method.getReturnType().getKind() != TypeKind.VOID) {
+                throw new ValidationException(
+                        "Logger methods must have void return types.", method);
+            }
         }
     }
 }

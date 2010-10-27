@@ -29,7 +29,6 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.Message;
-import org.jboss.logging.validation.BundleReturnTypeValidator;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -65,7 +64,6 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     @Override
     public void addMethod(final ExecutableElement method) {
         super.addMethod(method);
-        addValidator(new BundleReturnTypeValidator(methodDescriptor));
     }
 
     /**

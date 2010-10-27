@@ -32,7 +32,6 @@ import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
-import org.jboss.logging.validation.LoggerReturnTypeValidator;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -71,7 +70,6 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     public void addMethod(final ExecutableElement method) {
         super.addMethod(method);
-        addValidator(new LoggerReturnTypeValidator(methodDescriptor));
     }
 
     /**

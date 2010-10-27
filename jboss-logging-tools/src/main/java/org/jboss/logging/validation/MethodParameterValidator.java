@@ -20,12 +20,16 @@
  */
 package org.jboss.logging.validation;
 
+import java.util.ArrayList;
 import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.model.MethodDescriptor;
 
 import javax.lang.model.element.VariableElement;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 
 /**
  * Validates the parameters of a method.
@@ -46,15 +50,15 @@ import java.util.Collection;
  */
 public class MethodParameterValidator implements Validator {
 
-    private final MethodDescriptor methodDescriptor;
+    private final Collection<ExecutableElement> methods;
 
     /**
      * Class constructor.
      *
      * @param methodDescriptor the method descriptor to process.
      */
-    public MethodParameterValidator(final MethodDescriptor methodDescriptor) {
-        this.methodDescriptor = methodDescriptor;
+    public MethodParameterValidator(final Collection<ExecutableElement> methods) {
+        this.methods = methods;
     }
 
     /**
@@ -62,31 +66,31 @@ public class MethodParameterValidator implements Validator {
      */
     @Override
     public void validate() throws ValidationException {
-        final Collection<MethodDescriptor> methodDescriptors = methodDescriptor.
-                find(methodDescriptor.name());
-        final int paramCount1 = methodDescriptor.parameters().size()
-                - ((methodDescriptor.hasClause()) ? 1 : 0);
-        // Validate the parameters
-        for (MethodDescriptor methodDesc : methodDescriptors) {
-            final int paramCount2 = methodDesc.parameters().size()
-                    - ((methodDesc.hasClause()) ? 1 : 0);
-            if (paramCount1 != paramCount2) {
-                throw new ValidationException(
-                        "The number of parameters, minus the clause parameter, must match all methods with the same name.",
-                        methodDesc.method());
-            }
-            // The method must also have a message annotation
-            if (methodDesc.message() == null) {
-                throw new ValidationException(
-                        "All defined methods must have a @" + Message.class.
-                        getName() + " annotation unless a method with the same name has the annotation present.", methodDesc.
-                        method());
+        // Set for the method names that have been processed
+        final Set<Name> methodNames = new HashSet<Name>();
+        for (ExecutableElement method : methods) {
+            // Only adds methods which have not been processed
+            if (methodNames.add(method.getSimpleName())) {
+                // Find all like named methods
+                final Collection<ExecutableElement> likeMethods = findByName(method.
+                        getSimpleName());
+                final int paramCount1 = method.getParameters().size() - (hasCause(method.
+                        getParameters()) ? 1 : 0);
+                for (ExecutableElement m : likeMethods) {
+                    int paramCount2 = m.getParameters().size() - (hasCause(m.
+                            getParameters()) ? 1 : 0);
+                    if (paramCount1 != paramCount2) {
+                        throw new ValidationException(
+                                "The number of parameters, minus the clause parameter, must match all methods with the same name.",
+                                m);
+                    }
+                }
             }
 
             // Finally the method is only allowed one cause parameter
             boolean invalid = false;
             Cause ogCause = null;
-            for (VariableElement varElem : methodDesc.method().getParameters()) {
+            for (VariableElement varElem : method.getParameters()) {
                 final Cause cause = varElem.getAnnotation(Cause.class);
                 invalid = (ogCause != null && cause != null);
                 if (invalid) {
@@ -97,5 +101,32 @@ public class MethodParameterValidator implements Validator {
                 ogCause = cause;
             }
         }
+    }
+
+    /**
+     * Returns a collection of methods with the same name.
+     *
+     * @param methodName the method name to find.
+     *
+     * @return a collection of methods with the same name.
+     */
+    private Collection<ExecutableElement> findByName(final Name methodName) {
+        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
+        for (ExecutableElement method : methods) {
+            if (methodName.equals(method.getSimpleName())) {
+                result.add(method);
+            }
+        }
+        return result;
+    }
+
+    private boolean hasCause(Collection<? extends VariableElement> params) {
+        // Look for cause
+        for (VariableElement param : params) {
+            if (param.getAnnotation(Cause.class) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }

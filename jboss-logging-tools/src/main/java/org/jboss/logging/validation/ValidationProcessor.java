@@ -27,6 +27,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.jboss.logging.AbstractToolProcessor;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.MessageLogger;
 
 /**
  * Runs validation processes.
@@ -49,5 +51,16 @@ public class ValidationProcessor extends AbstractToolProcessor {
     public void processMethods(final TypeElement element,
             final Collection<ExecutableElement> methods) {
         validators.add(new MessageIdValidator(methods));
+        validators.add(new MessageAnnotationValidator(methods));
+        validators.add(new MethodParameterValidator(methods));
+        if (element.getAnnotation(MessageLogger.class) != null) {
+            validators.add(new LoggerReturnTypeValidator(methods));
+        }
+        if (element.getAnnotation(MessageBundle.class) != null) {
+            validators.add(new BundleReturnTypeValidator(methods));
+        }
+        for (Validator validator : validators) {
+            validator.validate();
+        }
     }
 }

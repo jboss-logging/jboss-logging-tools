@@ -34,13 +34,9 @@ import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JTypeVar;
 import com.sun.codemodel.internal.JVar;
-import org.jboss.logging.validation.ValidationException;
-import org.jboss.logging.validation.Validator;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The basic java class model.
@@ -85,8 +81,6 @@ public abstract class ClassModel {
      */
     private String projectCode;
 
-    private final List<Validator> validators;
-
     /**
      * Construct a class model.
      *
@@ -97,7 +91,6 @@ public abstract class ClassModel {
         this.interfaceNames = null;
         this.superClassName = superClassName;
         this.className = className;
-        this.validators = new ArrayList<Validator>();
     }
 
     /**
@@ -115,40 +108,18 @@ public abstract class ClassModel {
         this.superClassName = superClassName;
         this.className = className;
         this.projectCode = projectCode;
-        this.validators = new ArrayList<Validator>();
     }
 
     /**
      * Creates the source file.
-     *
-     * <p>
-     * Executes the following methods in the order listed.
-     * <ol>
-     *   <li>{@link ClassModel#preValidation()}</li>
-     *   <li>Runs validation for each validator.</li>
-     *   <li>{@link ClassModel#generateModel()}</li>
-     * </ol>
-     * </p>
      *
      * @param fileObject the files object to write the source to.
      *
      * @throws Exception if an error occurs creating the source file.
      */
     public final void create(final JavaFileObject fileObject) throws IOException,
-                                                                     IllegalStateException,
-                                                                     ValidationException {
-        preValidation();
-        for (Validator validator : validators) {
-            validator.validate();
-        }
+                                                                     IllegalStateException {
         generateModel().build(new JavaFileObjectCodeWriter(fileObject));
-    }
-
-    /**
-     * Performs any actions that need to happen before validation occurs.
-     */
-    protected void preValidation() {
-        
     }
 
     /**
@@ -206,17 +177,6 @@ public abstract class ClassModel {
      */
     protected final JDefinedClass definedClass() {
         return definedClass;
-    }
-
-    /**
-     * Adds a validator to be processed in the
-     * {@code ClassModel#create(JavaFileObject)} after the
-     * {@code ClassModel#initModel()}.
-     *
-     * @param validator the validator to add.
-     */
-    protected final void addValidator(final Validator validator) {
-        this.validators.add(validator);
     }
 
     /**

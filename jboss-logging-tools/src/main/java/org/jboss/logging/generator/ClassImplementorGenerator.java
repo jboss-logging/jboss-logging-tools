@@ -26,18 +26,12 @@ import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ImplementationClassModel;
 import org.jboss.logging.model.MessageBundleImplementor;
 import org.jboss.logging.model.MessageLoggerImplementor;
-import org.jboss.logging.validation.ValidationException;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * A generator for creating implementations of message bundle and logging

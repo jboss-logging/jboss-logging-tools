@@ -94,18 +94,18 @@ public abstract class AbstractToolProcessor {
      */
     public void process(
             final Collection<? extends TypeElement> elementsToProcess) {
+        // Process all elements
         for (TypeElement element : elementsToProcess) {
-            process(ElementFilter.typesIn(element.getEnclosedElements()));
+            // Create a collection of methods
             final List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-            if (element.getKind().isInterface() && !element.getModifiers().
-                    contains(
-                    Modifier.PRIVATE)) {
+            // Must be an interface and have at least package level access
+            if (element.getKind().isInterface() && !element.getModifiers().contains(Modifier.PRIVATE)) {
+                // Process all extended interfaces.
                 for (TypeMirror interfaceType : element.getInterfaces()) {
-                    methods.addAll(ElementFilter.methodsIn(typeUtils.asElement(
-                            interfaceType).getEnclosedElements()));
+                    methods.addAll(ElementFilter.methodsIn(typeUtils.asElement(interfaceType).getEnclosedElements()));
                 }
-                methods.addAll(ElementFilter.methodsIn(
-                        element.getEnclosedElements()));
+                methods.addAll(ElementFilter.methodsIn(element.getEnclosedElements()));
+                // Process the methods
                 processMethods(element, methods);
             } else {
                 logger().warn(
@@ -121,8 +121,7 @@ public abstract class AbstractToolProcessor {
      * @param element the element that contains the methods.
      * @param methods the methods in the interface.
      */
-    public abstract void processMethods(final TypeElement element,
-            final Collection<ExecutableElement> methods);
+    public abstract void processMethods(final TypeElement element, final Collection<ExecutableElement> methods);
 
     /**
      * Returns the logger to log messages with.
@@ -138,7 +137,7 @@ public abstract class AbstractToolProcessor {
      *
      * @return the filer
      */
-    public Filer filer() {
+    public final Filer filer() {
         return this.filer;
     }
 
@@ -147,7 +146,7 @@ public abstract class AbstractToolProcessor {
      *
      * @return the utils
      */
-    public Elements elementUtils() {
+    public final Elements elementUtils() {
         return this.elementUtils;
     }
 
@@ -156,7 +155,7 @@ public abstract class AbstractToolProcessor {
      *
      * @return the utils
      */
-    public Types typeUtils() {
+    public final Types typeUtils() {
         return this.typeUtils;
     }
 
