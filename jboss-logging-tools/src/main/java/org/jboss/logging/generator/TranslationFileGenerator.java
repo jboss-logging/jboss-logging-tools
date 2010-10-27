@@ -1,11 +1,9 @@
 package org.jboss.logging.generator;
 
 import org.jboss.logging.AbstractTool;
-import org.jboss.logging.util.ElementHelper;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.io.BufferedWriter;
@@ -14,6 +12,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+
+import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
+import static org.jboss.logging.util.ElementHelper.getTranslationFileNamePrefix;
 
 /**
  * The generator of skeletal
@@ -27,6 +28,8 @@ public final class TranslationFileGenerator extends AbstractTool {
     public static final String GENERATED_FILES_PATH_OPTION = "generatedTranslationFilesPath";
 
     public static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
+
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     private final String generatedFilesPath;
 
@@ -52,19 +55,11 @@ public final class TranslationFileGenerator extends AbstractTool {
 
             if (element.getKind().isInterface()) {
                 String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
-                String className = element.getSimpleName().toString();
-                String path = packageName.replaceAll("\\.", System.getProperty("file.separator"));
-                String fileName = className + GENERATED_FILE_EXTENSION;
+                String relativePath = packageName.replaceAll("\\.", FILE_SEPARATOR);
+                String fileName = getTranslationFileNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
-                //Check if it's an inner bundle
-                Element enclosingElement = element.getEnclosingElement();
-                while (enclosingElement != null && enclosingElement instanceof TypeElement) {
-                    fileName = enclosingElement.getSimpleName().toString() + "$" + fileName;
-                    enclosingElement = enclosingElement.getEnclosingElement();
-                }
-
-                Map<String, String> translationMessages = ElementHelper.getAllMessageMethods(methods);
-                this.generateSkeletalTranslationFile(path, fileName, translationMessages);
+                Map<String, String> translationMessages = getAllMessageMethods(methods);
+                this.generateSkeletalTranslationFile(relativePath, fileName, translationMessages);
             }
 
         }
@@ -78,12 +73,12 @@ public final class TranslationFileGenerator extends AbstractTool {
      * @param fileName     the file name
      * @param translations the translations
      */
-    public void generateSkeletalTranslationFile(final String path, final String fileName, final Map<String, String> translations) {
+    public void generateSkeletalTranslationFile(final String relativePath, final String fileName, final Map<String, String> translations) {
         if (translations == null) {
             throw new NullPointerException("The translations parameter cannot be null");
         }
 
-        File pathFile = new File(generatedFilesPath, path);
+        File pathFile = new File(generatedFilesPath, relativePath);
         pathFile.mkdirs();
 
         File file = new File(pathFile, fileName);
