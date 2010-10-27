@@ -23,7 +23,6 @@ package org.jboss.logging;
 import org.jboss.logging.generator.ImplementorClassGenerator;
 import org.jboss.logging.generator.TranslationClassGenerator;
 import org.jboss.logging.generator.TranslationFilesGenerator;
-import org.jboss.logging.util.ElementUtil;
 import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.validation.ValidationProcessor;
 
@@ -37,7 +36,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 import static javax.lang.model.util.ElementFilter.typesIn;
-import static org.jboss.logging.util.ElementUtil.getAllMethodsOfInterface;
+import static org.jboss.logging.util.ElementUtil.getInterfaceMethods;
 
 
 /**
@@ -138,7 +136,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                    if (element.getKind().isInterface()
                        && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
-                       Collection<ExecutableElement> methods = getAllMethodsOfInterface(element, typesUtil);
+                       Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
                        
                        for (AbstractToolProcessor processor : processors) {
                             logger.debug("Executing processor %s", processor.getName());

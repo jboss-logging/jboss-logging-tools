@@ -28,6 +28,7 @@ import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.model.MessageBundleTranslator;
 import org.jboss.logging.model.MessageLoggerTranslator;
+import org.jboss.logging.util.ElementUtil;
 import org.jboss.logging.util.TransformationUtil;
 import org.jboss.logging.util.TranslationUtil;
 
@@ -115,8 +116,7 @@ public final class TranslationClassGenerator extends AbstractToolProcessor {
                 packageName, interfaceName);
         primaryClassName = primaryClassName.concat(type.toString());
 
-        Map<String, String> elementTranslations = this.getTranslationMessages(
-                methods);
+        Map<String, String> elementTranslations = ElementUtil.getAllMessageMethods(methods);
 
         try {
 
@@ -217,30 +217,6 @@ public final class TranslationClassGenerator extends AbstractToolProcessor {
             this.logger().error("Cannot generate %s source file",
                     generatedClassName);
         }
-    }
-
-    /**
-     * Returns all the translations messages for
-     * the given type element. A translation message value is
-     * defined by the {@link org.jboss.logging.Message} annotation
-     * value and the annotated method is the translation key.
-     *
-     * @param element the element
-     * @return all the translations messages
-     */
-    private Map<String, String> getTranslationMessages(
-            final Collection<ExecutableElement> methods) {
-
-        Map<String, String> translationsMessage = new HashMap<String, String>();
-        for (ExecutableElement method : methods) {
-            Message annotation = method.getAnnotation(Message.class);
-            if (annotation != null) {
-                translationsMessage.put(method.getSimpleName().toString(), annotation.
-                        value());
-            }
-        }
-
-        return translationsMessage;
     }
 
     /**

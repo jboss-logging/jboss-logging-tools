@@ -63,7 +63,7 @@ public final class TranslationFilesGenerator extends AbstractToolProcessor {
                     enclosingElement = enclosingElement.getEnclosingElement();
                 }
 
-                Map<String, String> translationMessages = ElementUtil.getAllMethodsMessage(methods);
+                Map<String, String> translationMessages = ElementUtil.getAllMessageMethods(methods);
                 this.generateSkeletalTranslationFile(path, fileName, translationMessages);
             }
 
