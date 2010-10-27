@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
-import static org.jboss.logging.util.ElementHelper.getTranslationFileNamePrefix;
+import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
 
 /**
  * The generator of skeletal
@@ -56,7 +56,7 @@ public final class TranslationFileGenerator extends AbstractTool {
             if (element.getKind().isInterface()) {
                 String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
                 String relativePath = packageName.replaceAll("\\.", FILE_SEPARATOR);
-                String fileName = getTranslationFileNamePrefix(element) + GENERATED_FILE_EXTENSION;
+                String fileName = getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
                 Map<String, String> translationMessages = getAllMessageMethods(methods);
                 this.generateSkeletalTranslationFile(relativePath, fileName, translationMessages);

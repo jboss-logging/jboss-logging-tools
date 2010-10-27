@@ -1,6 +1,8 @@
 package org.jboss.logging.util;
 
 import org.jboss.logging.Message;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.MessageLogger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -15,7 +17,7 @@ import java.util.Map;
 
 /**
  * An util class to work with element.
- * 
+ *
  * @author Kevin Pollet
  */
 public final class ElementHelper {
@@ -28,15 +30,43 @@ public final class ElementHelper {
     }
 
     /**
-     * Returns the translation file name prefix for an element
+     * Returns the primary class simple name for an element
      * who represents a MessageBundle or MessageLogger interface.
      *
      * @param element the element
      * @return the translation file name prefix
-     * @throws NullPointerException if element is null
+     * @throws NullPointerException     if element is null
      * @throws IllegalArgumentException if element is not an interface
      */
-    public static String getTranslationFileNamePrefix(final TypeElement element) {
+    public static String getPrimaryClassName(final TypeElement element) {
+        if (element == null) {
+            throw new NullPointerException("The element parameter cannot be null");
+        }
+        if (!element.getKind().isInterface()) {
+            throw new IllegalArgumentException("The element parameter is not an interface");
+        }
+
+        String prefix = getPrimaryClassNamePrefix(element);
+
+        if (element.getAnnotation(MessageBundle.class) != null) {
+            return prefix + "$bundle";
+        } else if (element.getAnnotation(MessageLogger.class) != null) {
+            return prefix + "$logger";
+        }
+
+        return prefix;
+    }
+
+    /**
+     * Returns the primary class simple name prefix for an element
+     * who represents a MessageBundle or MessageLogger interface.
+     *
+     * @param element the element
+     * @return the translation file name prefix
+     * @throws NullPointerException     if element is null
+     * @throws IllegalArgumentException if element is not an interface
+     */
+    public static String getPrimaryClassNamePrefix(final TypeElement element) {
         if (element == null) {
             throw new NullPointerException("The element parameter cannot be null");
         }
@@ -61,7 +91,7 @@ public final class ElementHelper {
      * Include all declared and inherited methods.
      *
      * @param element the interface element
-     * @param types the type util
+     * @param types   the type util
      * @return the collection of all methods
      * @throws IllegalArgumentException if element is not an interface
      */

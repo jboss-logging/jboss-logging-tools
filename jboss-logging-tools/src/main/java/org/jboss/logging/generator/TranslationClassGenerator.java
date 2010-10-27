@@ -28,6 +28,7 @@ import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.model.MessageBundleTranslator;
 import org.jboss.logging.model.MessageLoggerTranslator;
+import org.jboss.logging.util.ElementHelper;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -48,6 +49,8 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
+import static org.jboss.logging.util.ElementHelper.getPrimaryClassName;
+import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
 import static org.jboss.logging.util.TransformationHelper.toPackage;
 import static org.jboss.logging.util.TransformationHelper.toQualifiedClassName;
 import static org.jboss.logging.util.TransformationHelper.toSimpleClassName;
@@ -64,13 +67,14 @@ import static org.jboss.logging.util.TranslationHelper.getTranslationClassNameSu
  *
  * @author Kevin Pollet
  */
-//TODO support inner class
 @SupportedOptions(TranslationClassGenerator.TRANSLATION_FILES_PATH_OPTION)
 public final class TranslationClassGenerator extends AbstractTool {
 
     public static final String TRANSLATION_FILES_PATH_OPTION = "translationFilesPath";
 
     private static final String SOURCE_FILE_EXTENSION = ".java";
+
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     /**
      * The properties file pattern. The property file must
@@ -103,19 +107,17 @@ public final class TranslationClassGenerator extends AbstractTool {
      */
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods) {
-        ImplementationType type;
-
-        if (element.getAnnotation(MessageBundle.class) != null) {
-            type = ImplementationType.BUNDLE;
-        } else {
-            type = ImplementationType.LOGGER;
-        }
+    
 
         PackageElement packageElement = elementUtils().getPackageOf(element);
         String packageName = packageElement.getQualifiedName().toString();
+
+        String primaryClassName = getPrimaryClassName(element);
+        primaryClassName = toQualifiedClassName(packageName, primaryClassName);
+
+        String primaryClassNamePrefix = getPrimaryClassNamePrefix(element);
+
         String interfaceName = element.getSimpleName().toString();
-        String primaryClassName = toQualifiedClassName(packageName, interfaceName);
-        primaryClassName = primaryClassName.concat(type.toString());
 
         Map<String, String> elementTranslations = getAllMessageMethods(methods);
 
@@ -125,16 +127,16 @@ public final class TranslationClassGenerator extends AbstractTool {
 
             //User defined
             if (translationFilesPath != null) {
-                packagePath = translationFilesPath + packageName.replaceAll("\\.", System.getProperty("file.separator"));
+                packagePath = translationFilesPath + packageName.replaceAll("\\.", FILE_SEPARATOR);
 
-                //By default use the class output folder
+            //By default use the class output folder
             } else {
                 FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-                packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
+                packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), FILE_SEPARATOR);
             }
 
             File dir = new File(packagePath);
-            File[] files = dir.listFiles(new TranslationFileFilter(interfaceName));
+            File[] files = dir.listFiles(new TranslationFileFilter(primaryClassNamePrefix));
 
             if (files != null) {
                 for (File file : files) {
@@ -197,7 +199,7 @@ public final class TranslationClassGenerator extends AbstractTool {
     /**
      * Generate a class for the given translation file.
      *
-     * @param primaryClassName   the qualified super class name
+     * @param primaryClassName   the qualified primary class name
      * @param generatedClassName the qualified class name
      * @param translations       the translations message
      */
