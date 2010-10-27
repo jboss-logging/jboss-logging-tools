@@ -22,7 +22,7 @@ package org.jboss.logging;
 
 import org.jboss.logging.generator.ImplementorClassGenerator;
 import org.jboss.logging.generator.TranslationClassGenerator;
-import org.jboss.logging.generator.TranslationFilesGenerator;
+import org.jboss.logging.generator.TranslationFileGenerator;
 import org.jboss.logging.validation.ValidationException;
 import org.jboss.logging.validation.ValidationProcessor;
 
@@ -92,7 +92,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         //Tools generator
         processors.add(new ImplementorClassGenerator(processingEnv));
         processors.add(new TranslationClassGenerator(processingEnv));
-        processors.add(new TranslationFilesGenerator(processingEnv));
+        processors.add(new TranslationFileGenerator(processingEnv));
     }
 
     /**

@@ -21,8 +21,8 @@ import java.util.Map;
  *
  * @author Kevin Pollet
  */
-@SupportedOptions(TranslationFilesGenerator.GENERATED_FILES_PATH)
-public final class TranslationFilesGenerator extends AbstractTool {
+@SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH)
+public final class TranslationFileGenerator extends AbstractTool {
 
     public static final String GENERATED_FILES_PATH = "generated.translation.files.path";
 
@@ -35,7 +35,7 @@ public final class TranslationFilesGenerator extends AbstractTool {
      *
      * @param processingEnv the processing env
      */
-    public TranslationFilesGenerator(final ProcessingEnvironment processingEnv) {
+    public TranslationFileGenerator(final ProcessingEnvironment processingEnv) {
         super(processingEnv);
 
         Map<String, String> options = processingEnv.getOptions();

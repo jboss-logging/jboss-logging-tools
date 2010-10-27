@@ -261,7 +261,7 @@ public final class TranslationClassGenerator extends AbstractTool {
         @Override
         public boolean accept(final File dir, final String name) {
 
-            boolean isGenerated = name.endsWith(TranslationFilesGenerator.GENERATED_FILE_EXTENSION);
+            boolean isGenerated = name.endsWith(TranslationFileGenerator.GENERATED_FILE_EXTENSION);
             boolean isTranslationFile = name.matches(Pattern.quote(className) + TRANSLATION_FILE_EXTENSION_PATTERN);
 
             return !isGenerated && isTranslationFile; 
