@@ -78,23 +78,19 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class,
-                LOG_FIELD_NAME);
+        log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         // Add default constructor
         final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
-        final JVar constructorParam = constructor.param(JMod.FINAL, Logger.class,
-                LOG_FIELD_NAME);
+        final JVar constructorParam = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock body = constructor.body();
-        body.directStatement("this." + log.name() + " = " + constructorParam.
-                name() + ";");
+        body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
 
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
             final String methodName = methodDesc.name();
             // Create the method
-            final JMethod jMethod = definedClass().method(
-                    JMod.PUBLIC | JMod.FINAL, codeModel.VOID, methodName);
+            final JMethod jMethod = definedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, methodName);
             jMethod.annotate(Override.class);
             // Find the annotations
             final Message message = methodDesc.message();
@@ -105,12 +101,10 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
                 logLevel = logMessage.level();
             }
             // Add the message method.
-            final JMethod msgMethod = addMessageMethod(methodName,
-                    message.value());
+            final JMethod msgMethod = addMessageMethod(methodName, message.value());
             final JVar messageIdVar = addIdVar(methodDesc.name(), message.id());
             // Determine the log method
-            final StringBuilder logMethod = new StringBuilder(logLevel.name().
-                    toLowerCase());
+            final StringBuilder logMethod = new StringBuilder(logLevel.name().toLowerCase());
             switch (methodDesc.message().format()) {
                 case MESSAGE_FORMAT:
                     logMethod.append("v");
@@ -121,8 +115,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             // Create the body of the method and add the text
             final JBlock methodBody = jMethod.body();
-            final JInvocation logInv = methodBody.invoke(log,
-                    logMethod.toString());
+            final JInvocation logInv = methodBody.invoke(log, logMethod.toString());
             // The clause must be first if there is one.
             if (methodDesc.hasClause()) {
                 logInv.arg(JExpr.direct(methodDesc.causeVarName()));
@@ -139,8 +132,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel.ref(
                         param.asType().toString());
-                final JVar var = jMethod.param(JMod.FINAL, paramType, param.
-                        getSimpleName().toString());
+                final JVar var = jMethod.param(JMod.FINAL, paramType, param.getSimpleName().toString());
                 if (!param.equals(methodDesc.cause())) {
                     logInv.arg(var);
                 }

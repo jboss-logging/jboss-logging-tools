@@ -78,10 +78,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
-            final JClass returnType = codeModel.ref(
-                    methodDesc.returnTypeAsString());
-            final JMethod jMethod = definedClass().method(
-                    JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
+            final JClass returnType = codeModel.ref(methodDesc.returnTypeAsString());
+            final JMethod jMethod = definedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
             jMethod.annotate(Override.class);
 
             final Message message = methodDesc.message();
@@ -111,16 +109,12 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             }
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {
-                final JClass paramType = codeModel.ref(
-                        param.asType().toString());
-                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.
-                        getSimpleName().toString());
+                final JClass paramType = codeModel.ref(param.asType().toString());
+                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.getSimpleName().toString());
                 formatterMethod.arg(paramVar);
             }
             // Setup the return type
-            if (methodDesc.hasClause()
-                    && codeModel.ref(Throwable.class).isAssignableFrom(
-                    returnField)) {
+            if (methodDesc.hasClause() && codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
                 result.init(JExpr._new(returnField));
                 JInvocation inv = body.invoke(result, "initCause");
                 inv.arg(JExpr.ref(methodDesc.causeVarName()));
