@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 import static javax.lang.model.util.ElementFilter.typesIn;
-import static org.jboss.logging.util.ElementUtil.getInterfaceMethods;
+import static org.jboss.logging.util.ElementHelper.getInterfaceMethods;
 
 
 /**

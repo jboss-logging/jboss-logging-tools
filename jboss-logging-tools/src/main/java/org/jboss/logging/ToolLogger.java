@@ -20,8 +20,7 @@
  */
 package org.jboss.logging;
 
-import java.util.Map;
-import org.jboss.logging.util.TransformationUtil;
+import org.jboss.logging.util.TransformationHelper;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -257,7 +256,7 @@ public final class ToolLogger {
 
     private void log(final Kind kind, final Element element, final Exception exception, final String messageFormat, final Object... args) {
 
-        String stringCause = TransformationUtil.stackTraceToString(exception);
+        String stringCause = TransformationHelper.stackTraceToString(exception);
 
         if (messageFormat == null) {
             log(kind, element, stringCause);

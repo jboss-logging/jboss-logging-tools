@@ -30,12 +30,12 @@ import java.io.StringWriter;
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  */
-public final class TransformationUtil {
+public final class TransformationHelper {
 
     /**
      * Constructor for singleton.
      */
-    private TransformationUtil() {
+    private TransformationHelper() {
     }
 
     /**

@@ -17,12 +17,12 @@ import java.util.Map;
  * 
  * @author Kevin Pollet
  */
-public final class ElementUtil {
+public final class ElementHelper {
 
     /**
      * Disable instantiation.
      */
-    private ElementUtil() {
+    private ElementHelper() {
 
     }
 

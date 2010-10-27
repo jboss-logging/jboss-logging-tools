@@ -29,13 +29,13 @@ import java.util.regex.Pattern;
  *
  * @author Kevin Pollet
  */
-public final class TranslationUtil {
+public final class TranslationHelper {
 
     /**
      * Private constructor to
      * disable instantiation.
      */
-    private TranslationUtil() {
+    private TranslationHelper() {
     }
 
     /**

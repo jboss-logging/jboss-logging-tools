@@ -28,9 +28,9 @@ import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.model.MessageBundleTranslator;
 import org.jboss.logging.model.MessageLoggerTranslator;
-import org.jboss.logging.util.ElementUtil;
-import org.jboss.logging.util.TransformationUtil;
-import org.jboss.logging.util.TranslationUtil;
+import org.jboss.logging.util.ElementHelper;
+import org.jboss.logging.util.TransformationHelper;
+import org.jboss.logging.util.TranslationHelper;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -112,11 +112,11 @@ public final class TranslationClassGenerator extends AbstractToolProcessor {
         PackageElement packageElement = elementUtils().getPackageOf(element);
         String packageName = packageElement.getQualifiedName().toString();
         String interfaceName = element.getSimpleName().toString();
-        String primaryClassName = TransformationUtil.toQualifiedClassName(
+        String primaryClassName = TransformationHelper.toQualifiedClassName(
                 packageName, interfaceName);
         primaryClassName = primaryClassName.concat(type.toString());
 
-        Map<String, String> elementTranslations = ElementUtil.getAllMessageMethods(methods);
+        Map<String, String> elementTranslations = ElementHelper.getAllMessageMethods(methods);
 
         try {
 
@@ -143,7 +143,7 @@ public final class TranslationClassGenerator extends AbstractToolProcessor {
 
             if (files != null) {
                 for (File file : files) {
-                    String classNameSuffix = TranslationUtil.
+                    String classNameSuffix = TranslationHelper.
                             getTranslationClassNameSuffix(file.getName());
                     String qualifiedClassName = primaryClassName.concat(
                             classNameSuffix);
@@ -179,10 +179,10 @@ public final class TranslationClassGenerator extends AbstractToolProcessor {
         try {
 
             //Generate super class if needed
-            String superClassName = TranslationUtil.
+            String superClassName = TranslationHelper.
                     getEnclosingTranslationClassName(generatedClassName);
-            String packageName = TransformationUtil.toPackage(superClassName);
-            String simpleClassName = TransformationUtil.toSimpleClassName(
+            String packageName = TransformationHelper.toPackage(superClassName);
+            String simpleClassName = TransformationHelper.toSimpleClassName(
                     superClassName);
 
             if (!superClassName.equals(primaryClassName)) {

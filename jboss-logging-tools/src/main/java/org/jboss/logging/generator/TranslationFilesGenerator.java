@@ -1,7 +1,7 @@
 package org.jboss.logging.generator;
 
 import org.jboss.logging.AbstractToolProcessor;
-import org.jboss.logging.util.ElementUtil;
+import org.jboss.logging.util.ElementHelper;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -63,7 +63,7 @@ public final class TranslationFilesGenerator extends AbstractToolProcessor {
                     enclosingElement = enclosingElement.getEnclosingElement();
                 }
 
-                Map<String, String> translationMessages = ElementUtil.getAllMessageMethods(methods);
+                Map<String, String> translationMessages = ElementHelper.getAllMessageMethods(methods);
                 this.generateSkeletalTranslationFile(path, fileName, translationMessages);
             }
 
