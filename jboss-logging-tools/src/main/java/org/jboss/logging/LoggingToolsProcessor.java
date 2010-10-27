@@ -66,7 +66,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
     public static final String DEBUG_OPTION = "debug";
 
-    private final List<AbstractToolProcessor> processors;
+    private final List<AbstractTool> processors;
 
     private ToolLogger logger;
 
@@ -74,7 +74,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
      * Default constructor.
      */
     public LoggingToolsProcessor() {
-        this.processors = new ArrayList<AbstractToolProcessor>();
+        this.processors = new ArrayList<AbstractTool>();
     }
 
     /**
@@ -109,7 +109,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         }
 
         //Add tool processors options
-        for (AbstractToolProcessor generator : processors) {
+        for (AbstractTool generator : processors) {
             supportedOptions.addAll(generator.getSupportedOptions());
         }
 
@@ -138,7 +138,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
                        Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
                        
-                       for (AbstractToolProcessor processor : processors) {
+                       for (AbstractTool processor : processors) {
                             logger.debug("Executing processor %s", processor.getName());
                             processor.processTypeElement(annotation, element, methods);
                        }

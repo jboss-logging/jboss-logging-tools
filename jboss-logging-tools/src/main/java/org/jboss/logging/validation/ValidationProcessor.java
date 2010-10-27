@@ -26,7 +26,8 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import org.jboss.logging.AbstractToolProcessor;
+
+import org.jboss.logging.AbstractTool;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
 
@@ -35,7 +36,7 @@ import org.jboss.logging.MessageLogger;
  * 
  * @author James R. Perkins (jrp)
  */
-public class ValidationProcessor extends AbstractToolProcessor {
+public class ValidationProcessor extends AbstractTool {
 
     private final List<Validator> validators;
 

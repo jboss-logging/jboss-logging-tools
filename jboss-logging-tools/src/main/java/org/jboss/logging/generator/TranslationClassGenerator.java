@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.AbstractToolProcessor;
+import org.jboss.logging.AbstractTool;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
@@ -63,7 +63,7 @@ import java.util.regex.Pattern;
 //TODO generate empty translation
 //TODO support inner class
 @SupportedOptions("translation.files.path")
-public final class TranslationClassGenerator extends AbstractToolProcessor {
+public final class TranslationClassGenerator extends AbstractTool {
 
     private static final String SOURCE_FILE_EXTENSION = ".java";
 

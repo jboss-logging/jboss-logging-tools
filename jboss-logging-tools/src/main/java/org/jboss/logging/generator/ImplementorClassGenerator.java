@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.AbstractToolProcessor;
+import org.jboss.logging.AbstractTool;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ImplementationClassModel;
@@ -39,7 +39,7 @@ import java.util.Collection;
  *
  * @author James R. Perkins Jr. (jrp)
  */
-public final class ImplementorClassGenerator extends AbstractToolProcessor {
+public final class ImplementorClassGenerator extends AbstractTool {
 
     /**
      * @param processingEnv

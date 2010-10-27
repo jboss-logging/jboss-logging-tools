@@ -1,6 +1,6 @@
 package org.jboss.logging.generator;
 
-import org.jboss.logging.AbstractToolProcessor;
+import org.jboss.logging.AbstractTool;
 import org.jboss.logging.util.ElementHelper;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -22,7 +22,7 @@ import java.util.Map;
  * @author Kevin Pollet
  */
 @SupportedOptions(TranslationFilesGenerator.GENERATED_FILES_PATH)
-public final class TranslationFilesGenerator extends AbstractToolProcessor {
+public final class TranslationFilesGenerator extends AbstractTool {
 
     public static final String GENERATED_FILES_PATH = "generated.translation.files.path";
 

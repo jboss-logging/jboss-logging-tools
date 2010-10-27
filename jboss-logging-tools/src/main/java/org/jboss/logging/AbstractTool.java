@@ -39,7 +39,7 @@ import java.util.Set;
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  */
-public abstract class AbstractToolProcessor {
+public abstract class AbstractTool {
 
     private final Elements elementUtils;
 
@@ -56,7 +56,7 @@ public abstract class AbstractToolProcessor {
      *
      * @param processingEnv the processing environment.
      */
-    public AbstractToolProcessor(final ProcessingEnvironment processingEnv) {
+    public AbstractTool(final ProcessingEnvironment processingEnv) {
         this.elementUtils = processingEnv.getElementUtils();
         this.filer = processingEnv.getFiler();
         this.logger = ToolLogger.getLogger(processingEnv);
