@@ -52,15 +52,15 @@ public class BundleReturnTypeValidator implements Validator {
     @Override
     public void validate() throws ValidationException {
         for (ExecutableElement method : methods) {
-            boolean invalid = false;
+            boolean invalid = true;
             try {
                 if (Throwable.class.isAssignableFrom(Class.forName(method.
                         getReturnType().toString()))) {
-                    invalid = true;
+                    invalid = false;
                 }
                 if (Class.forName(method.getReturnType().toString()).
                         isAssignableFrom(String.class)) {
-                    invalid = true;
+                    invalid = false;
                 }
             } catch (ClassNotFoundException e) {
                 throw new ValidationException("Return type not found in classpath.", e, method);
