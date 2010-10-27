@@ -65,64 +65,13 @@ public abstract class AbstractToolProcessor {
     }
 
     /**
-<<<<<<< HEAD
-     * Processes classes annotated with the
-     * {@link org.jboss.logging.MessageBundle} or
-     * {@link org.jboss.logging.MessageLogger}/
-     *
-     * @param annotations the to process.
-     * @param roundEnv    the round environment.
-     */
-    public void process(final Set<? extends TypeElement> annotations,
-            final RoundEnvironment roundEnv) {
-        process(ElementFilter.typesIn(roundEnv.getElementsAnnotatedWith(
-                MessageBundle.class)));
-        process(ElementFilter.typesIn(roundEnv.getElementsAnnotatedWith(
-                MessageLogger.class)));
-    }
-
-    /**
-     * Processes the types.
-     *
-     * @param annotations the to process.
-     */
-    public void process(
-            final Collection<? extends TypeElement> elementsToProcess) {
-        // Process all elements
-        for (TypeElement element : elementsToProcess) {
-            // Create a collection of methods
-            final List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-            // Must be an interface and have at least package level access
-            if (element.getKind().isInterface() && !element.getModifiers().contains(Modifier.PRIVATE)) {
-                // Process all extended interfaces.
-                for (TypeMirror interfaceType : element.getInterfaces()) {
-                    methods.addAll(ElementFilter.methodsIn(typeUtils.asElement(interfaceType).getEnclosedElements()));
-                }
-                methods.addAll(ElementFilter.methodsIn(element.getEnclosedElements()));
-                // Process the methods
-                processMethods(element, methods);
-            } else {
-                logger().warn(
-                        "Type %s must be an interface with at least package-private access. Skipping processing.",
-                        element, element.getQualifiedName().toString());
-            }
-        }
-    }
-
-    /**
-     * Processes the methods in the interface.
-=======
      * Processes a type element.
->>>>>>> Simplify process of type elements annotated with MessageBundle and MessageLogger.
      *
+     * @param annotation the annotation who trigger the processing
      * @param element the element that contains the methods.
      * @param methods the declared and inherited methods in the interface.
      */
-<<<<<<< HEAD
-    public abstract void processMethods(final TypeElement element, final Collection<ExecutableElement> methods);
-=======
-    public abstract void processTypeElement(final TypeElement element, final Collection<ExecutableElement> methods);
->>>>>>> Simplify process of type elements annotated with MessageBundle and MessageLogger.
+    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods);
 
     /**
      * Returns the logger to log messages with.

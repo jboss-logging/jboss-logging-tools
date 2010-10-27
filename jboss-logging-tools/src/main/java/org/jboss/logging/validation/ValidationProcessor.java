@@ -48,7 +48,7 @@ public class ValidationProcessor extends AbstractToolProcessor {
      * {@inheritDoc}
      */
     @Override
-    public void processTypeElement(final TypeElement element,
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
             final Collection<ExecutableElement> methods) {
         validators.add(new MessageIdValidator(methods));
         validators.add(new MessageAnnotationValidator(methods));

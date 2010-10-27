@@ -142,7 +142,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                        
                        for (AbstractToolProcessor processor : processors) {
                             logger.debug("Executing processor %s", processor.getName());
-                            processor.processTypeElement(element, methods);
+                            processor.processTypeElement(annotation, element, methods);
                        }
                    }
                 }
@@ -150,7 +150,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
             
         }
         catch (ValidationException e) {
-            logger.error(e, "Error during validation", e.getMessage());
+            logger.error(e, "Error during validation");
         }
 
         return true;

@@ -49,7 +49,7 @@ public final class ImplementorClassGenerator extends AbstractToolProcessor {
     }
 
     @Override
-    public void processTypeElement(final TypeElement element,
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
             final Collection<ExecutableElement> methods) {
         try {
             final String interfaceName = processingEnv().getElementUtils().
