@@ -20,10 +20,7 @@
  */
 package org.jboss.logging;
 
-<<<<<<< HEAD
 import java.util.Map;
-=======
->>>>>>> Rework ToolLogger.
 import org.jboss.logging.util.TransformationUtil;
 
 import javax.annotation.processing.Messager;
@@ -37,15 +34,7 @@ import javax.tools.Diagnostic.Kind;
  * @author James R. Perkins (jrp)
  * @author Kevin Pollet
  */
-<<<<<<< HEAD
-public class ToolLogger {
-
-    private static final String DEBUG_SWITCH_1 = "--debug";
-
-    private static final String DEBUG_SWITCH_2 = "-D";
-=======
 public final class ToolLogger {
->>>>>>> Rework ToolLogger.
 
     private final Messager messager;
 
@@ -53,12 +42,7 @@ public final class ToolLogger {
 
     private ToolLogger(final Messager messager, final boolean isDebugEnabled) {
         this.messager = messager;
-<<<<<<< HEAD
-        this.className = className;
-        debug = (options.containsKey(DEBUG_SWITCH_1) || options.containsKey(DEBUG_SWITCH_2));
-=======
         this.isDebugEnabled = isDebugEnabled;
->>>>>>> Rework ToolLogger.
     }
 
     /**
@@ -67,29 +51,9 @@ public final class ToolLogger {
      * @param processingEnv the processing environment
      * @return a new tool logger
      */
-<<<<<<< HEAD
-    public static ToolLogger getLogger(final Class<?> clazz,
-            final Messager messager, final Map<String, String> options) {
-        final String className = clazz.getName();
-        ToolLogger result = new ToolLogger(className, messager, options);
-        return result;
-    }
-
-    private void log(final Kind kind, final Element element,
-            final String messageFormat, Object... args) {
-        final String message = className + ": " + String.format(messageFormat,
-                args);
-        if (element == null) {
-            messager.printMessage(kind, message);
-        } else {
-            messager.printMessage(kind, message, element);
-        }
-    }
-=======
     public static ToolLogger getLogger(final ProcessingEnvironment processingEnv) {
         String debug = processingEnv.getOptions().get(LoggingToolsProcessor.DEBUG_OPTION);
         boolean isDebugEnabled = Boolean.parseBoolean(debug);
->>>>>>> Rework ToolLogger.
 
         return new ToolLogger(processingEnv.getMessager(), isDebugEnabled);
     }
