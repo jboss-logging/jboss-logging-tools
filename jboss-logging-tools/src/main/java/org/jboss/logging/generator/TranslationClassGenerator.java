@@ -65,10 +65,10 @@ import static org.jboss.logging.util.TranslationHelper.getTranslationClassNameSu
  * @author Kevin Pollet
  */
 //TODO support inner class
-@SupportedOptions("translation.files.path")
+@SupportedOptions(TranslationClassGenerator.TRANSLATION_FILES_PATH_OPTION)
 public final class TranslationClassGenerator extends AbstractTool {
 
-    public static final String TRANSLATION_FILES_PATH = "translation.files.path";
+    public static final String TRANSLATION_FILES_PATH_OPTION = "translationFilesPath";
 
     private static final String SOURCE_FILE_EXTENSION = ".java";
 
@@ -95,7 +95,7 @@ public final class TranslationClassGenerator extends AbstractTool {
         super(processingEnv);
 
         Map<String, String> options = processingEnv.getOptions();
-        this.translationFilesPath = options.get(TRANSLATION_FILES_PATH);
+        this.translationFilesPath = options.get(TRANSLATION_FILES_PATH_OPTION);
     }
 
     /**

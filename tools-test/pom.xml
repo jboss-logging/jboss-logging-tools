@@ -63,7 +63,7 @@
                         </goals>
                         <configuration>
                             <compilerArguments>
-                                -Atranslation.files.path=${project.basedir}/src/main/resources/
+                                -AtranslationFilesPath=${project.basedir}/src/main/resources/
                             </compilerArguments>
                         </configuration>
                     </execution>
@@ -75,7 +75,7 @@
                         </goals>
                         <configuration>
                             <compilerArguments>
-                                -Agenerated.translation.files.path=${project.basedir}/target/generated-resources/
+                                -AgeneratedTranslationFilesPath=${project.basedir}/target/generated-resources/
                             </compilerArguments>
                         </configuration>
                     </execution>

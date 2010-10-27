@@ -21,10 +21,10 @@ import java.util.Map;
  *
  * @author Kevin Pollet
  */
-@SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH)
+@SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
 public final class TranslationFileGenerator extends AbstractTool {
 
-    public static final String GENERATED_FILES_PATH = "generated.translation.files.path";
+    public static final String GENERATED_FILES_PATH_OPTION = "generatedTranslationFilesPath";
 
     public static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
 
@@ -39,7 +39,7 @@ public final class TranslationFileGenerator extends AbstractTool {
         super(processingEnv);
 
         Map<String, String> options = processingEnv.getOptions();
-        this.generatedFilesPath = options.get(GENERATED_FILES_PATH);
+        this.generatedFilesPath = options.get(GENERATED_FILES_PATH_OPTION);
     }
 
     /**
