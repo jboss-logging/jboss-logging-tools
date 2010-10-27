@@ -133,10 +133,9 @@ public abstract class AbstractToolProcessor {
      * @return the supported options set or empty set if none
      */
     public final Set<String> getSupportedOptions() {
-        SupportedOptions options = this.getClass().getAnnotation(
-                SupportedOptions.class);
+        SupportedOptions options = this.getClass().getAnnotation(SupportedOptions.class);
         if (options != null) {
-            return new HashSet(Arrays.asList(options.value()));
+            return new HashSet<String>(Arrays.asList(options.value()));
         }
 
         return Collections.EMPTY_SET;
