@@ -67,9 +67,9 @@ public final class ImplementorClassGenerator extends AbstractToolProcessor {
                         messageBundle.projectCode()), methods);
             }
         } catch (IOException e) {
-            logger().error(e, element);
+            logger().error(element, e);
         } catch (IllegalStateException e) {
-            logger().error(e, element);
+            logger().error(element, e);
         }
     }
 

@@ -48,6 +48,8 @@ public final class TranslationFilesGenerator extends AbstractToolProcessor {
     @Override
     public void processTypeElement(final TypeElement element, final Collection<ExecutableElement> methods) {
 
+        if (generatedFilesPath != null) {
+
                 if (element.getKind().isInterface()) {
                     String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
                     String className = element.getSimpleName().toString();
@@ -63,6 +65,7 @@ public final class TranslationFilesGenerator extends AbstractToolProcessor {
 
                     this.generateSkeletalTranslationFile(generatedFilesPath + path, fileName, this.getTranslationMessages(methods));
                 }
+        }
     }
 
     /**
@@ -71,7 +74,6 @@ public final class TranslationFilesGenerator extends AbstractToolProcessor {
      * defined by the {@link org.jboss.logging.Message} annotation
      * value and the annotated method is the translation key.
      *
-     * @param element the element
      * @return all the translations messages
      */
     private Map<String, String> getTranslationMessages(final Collection<ExecutableElement> methods) {
@@ -100,12 +102,14 @@ public final class TranslationFilesGenerator extends AbstractToolProcessor {
             throw new NullPointerException("The translations parameter cannot be null");
         }
 
+        System.out.println(path);
+
         File pathFile = new File(path);
         if (!pathFile.exists()) {
             pathFile.mkdirs();
         }
 
-        File file = new File(path, fileName);
+        File file = new File(pathFile, fileName);
         BufferedWriter writer = null;
 
         try {

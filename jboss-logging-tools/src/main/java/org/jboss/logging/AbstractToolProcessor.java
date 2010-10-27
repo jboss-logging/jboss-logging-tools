@@ -57,12 +57,11 @@ public abstract class AbstractToolProcessor {
      * @param processingEnv the processing environment.
      */
     public AbstractToolProcessor(final ProcessingEnvironment processingEnv) {
-        this.processingEnv = processingEnv;
         this.elementUtils = processingEnv.getElementUtils();
         this.filer = processingEnv.getFiler();
+        this.logger = ToolLogger.getLogger(processingEnv);
         this.typeUtils = processingEnv.getTypeUtils();
-        this.logger = ToolLogger.getLogger(this.getClass(), processingEnv.
-                getMessager(), processingEnv.getOptions());
+        this.processingEnv = processingEnv;
     }
 
     /**
@@ -175,7 +174,7 @@ public abstract class AbstractToolProcessor {
      *
      * @return the name of the processor.
      */
-    public String getName() {
+    public final String getName() {
         return this.getClass().getSimpleName();
     }
 
@@ -193,4 +192,5 @@ public abstract class AbstractToolProcessor {
 
         return Collections.EMPTY_SET;
     }
+
 }

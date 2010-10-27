@@ -86,7 +86,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     public void init(final ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
 
-        logger = ToolLogger.getLogger(this.getClass(), processingEnv.getMessager(), processingEnv.getOptions());
+        logger = ToolLogger.getLogger(processingEnv);
 
         // Process validation first.
         processors.add(new ValidationProcessor(processingEnv));
@@ -150,7 +150,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
             
         }
         catch (ValidationException e) {
-            logger.error(e, "Error during validation cause %s", e.getMessage());
+            logger.error(e, "Error during validation", e.getMessage());
         }
 
         return true;

@@ -20,10 +20,14 @@
  */
 package org.jboss.logging;
 
+<<<<<<< HEAD
 import java.util.Map;
+=======
+>>>>>>> Rework ToolLogger.
 import org.jboss.logging.util.TransformationUtil;
 
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic.Kind;
 
@@ -31,33 +35,39 @@ import javax.tools.Diagnostic.Kind;
  * A logger for logging messages for annotation processors.
  *
  * @author James R. Perkins (jrp)
+ * @author Kevin Pollet
  */
+<<<<<<< HEAD
 public class ToolLogger {
 
     private static final String DEBUG_SWITCH_1 = "--debug";
 
     private static final String DEBUG_SWITCH_2 = "-D";
+=======
+public final class ToolLogger {
+>>>>>>> Rework ToolLogger.
 
     private final Messager messager;
 
-    private final String className;
+    private final boolean isDebugEnabled;
 
-    private final boolean debug;
-
-    private ToolLogger(final String className, final Messager messager,
-            final Map<String, String> options) {
+    private ToolLogger(final Messager messager, final boolean isDebugEnabled) {
         this.messager = messager;
+<<<<<<< HEAD
         this.className = className;
         debug = (options.containsKey(DEBUG_SWITCH_1) || options.containsKey(DEBUG_SWITCH_2));
+=======
+        this.isDebugEnabled = isDebugEnabled;
+>>>>>>> Rework ToolLogger.
     }
 
     /**
      * Creates a new tool logger.
      *
-     * @param generator the generator to create the logger for.
-     * 
-     * @return a new tool logger.
+     * @param processingEnv the processing environment
+     * @return a new tool logger
      */
+<<<<<<< HEAD
     public static ToolLogger getLogger(final Class<?> clazz,
             final Messager messager, final Map<String, String> options) {
         final String className = clazz.getName();
@@ -75,16 +85,13 @@ public class ToolLogger {
             messager.printMessage(kind, message, element);
         }
     }
+=======
+    public static ToolLogger getLogger(final ProcessingEnvironment processingEnv) {
+        String debug = processingEnv.getOptions().get(LoggingToolsProcessor.DEBUG_OPTION);
+        boolean isDebugEnabled = Boolean.parseBoolean(debug);
+>>>>>>> Rework ToolLogger.
 
-    private void log(final Kind kind, final Element element,
-            final Throwable cause) {
-        if (element == null) {
-            messager.printMessage(kind, TransformationUtil.stackTraceToString(
-                    cause));
-        } else {
-            messager.printMessage(kind, TransformationUtil.stackTraceToString(
-                    cause), element);
-        }
+        return new ToolLogger(processingEnv.getMessager(), isDebugEnabled);
     }
 
     /**
@@ -98,16 +105,7 @@ public class ToolLogger {
      * @return {@code true} if debugging is enabled, otherwise {@code false}.
      */
     public boolean isDebugEnabled() {
-        return debug;
-    }
-
-    /**
-     * Prints a note message.
-     *
-     * @param message   the message to print.
-     */
-    public void note(final String message) {
-        log(Kind.NOTE, null, message);
+        return isDebugEnabled;
     }
 
     /**
@@ -116,128 +114,86 @@ public class ToolLogger {
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void note(final String messageFormat, Object... args) {
-        log(Kind.NOTE, null, messageFormat, args);
+    public void note(final String messageFormat, final Object... args) {
+        note(null, messageFormat, args);
     }
 
     /**
      * Prints a formatted note message.
      *
-     * @param messageFormat the message format.
      * @param element       the element to print with the note.
+     * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void note(final String messageFormat, final Element element,
-            Object... args) {
+    public void note(final Element element, final String messageFormat, final Object... args) {
         log(Kind.NOTE, element, messageFormat, args);
     }
 
     /**
-     * Prints a debug message if debugging is enabled.
-     *
-     * @param message   the message to print.
-     */
-    public void debug(final String message) {
-        if (debug) {
-            other(message);
-        }
-    }
-
-    /**
      * Prints a formatted debug message if debugging is enabled.
      *
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void debug(final String messageFormat, Object... args) {
-        if (debug) {
-            other(messageFormat, args);
+    public void debug(final String messageFormat, final Object... args) {
+        if (isDebugEnabled) {
+            debug(null, messageFormat, args);
         }
     }
 
     /**
      * Prints a formatted debug message if debugging is enabled.
      *
-     * @param messageFormat the message format.
      * @param element       the element to print with the note.
+     * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void debug(final String messageFormat, final Element element,
-            Object... args) {
-        if (debug) {
+    public void debug(final Element element, final String messageFormat, final Object... args) {
+        if (isDebugEnabled) {
             other(messageFormat, element, args);
         }
     }
 
     /**
-     * Prints a warning message.
-     *
-     * @param message   the message to print.
-     */
-    public void warn(final String message) {
-        log(Kind.WARNING, null, message);
-    }
-
-    /**
      * Prints a formatted warning message.
      *
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void warn(final String messageFormat, Object... args) {
-        log(Kind.WARNING, null, messageFormat, args);
+    public void warn(final String messageFormat, final Object... args) {
+        warn(null, messageFormat, args);
     }
 
     /**
      * Prints a formatted warning message.
      *
-     * @param messageFormat the message format.
      * @param element       the element that caused the warning.
+     * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void warn(final String messageFormat, final Element element,
-            Object... args) {
+    public void warn(final Element element, final String messageFormat, final Object... args) {
         log(Kind.WARNING, element, messageFormat, args);
     }
 
     /**
-     * Prints a warning message.
-     *
-     * @param message   the message to print.
-     */
-    public void mandatoryWarning(final String message) {
-        log(Kind.MANDATORY_WARNING, null, message);
-    }
-
-    /**
      * Prints a formatted warning message.
      *
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void mandatoryWarning(final String messageFormat, Object... args) {
-        log(Kind.MANDATORY_WARNING, null, messageFormat, args);
+    public void mandatoryWarning(final String messageFormat, final Object... args) {
+        mandatoryWarning(null, messageFormat, args);
     }
 
     /**
      * Prints a formatted warning message.
      *
-     * @param messageFormat the message format.
      * @param element       the element that caused the warning.
+     * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void mandatoryWarning(final String messageFormat,
-            final Element element, Object... args) {
+    public void mandatoryWarning(final Element element, final String messageFormat, final Object... args) {
         log(Kind.MANDATORY_WARNING, element, messageFormat, args);
-    }
-
-    /**
-     * Prints an error message.
-     *
-     * @param message   the message to print.
-     */
-    public void error(final String message) {
-        log(Kind.ERROR, null, message);
     }
 
     /**
@@ -246,7 +202,7 @@ public class ToolLogger {
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void error(final String messageFormat, Object... args) {
+    public void error(final String messageFormat, final Object... args) {
         log(Kind.ERROR, null, messageFormat, args);
     }
 
@@ -257,64 +213,50 @@ public class ToolLogger {
      * @param element       the element that caused the warning.
      * @param args          the format arguments.
      */
-    public void error(final String messageFormat, final Element element,
-            Object... args) {
+    public void error(final Element element, final String messageFormat, final Object... args) {
         log(Kind.ERROR, element, messageFormat, args);
     }
 
     /**
      * Prints an error message.
      *
-     * @param cause the cause of the error.
+     * @param exception the cause of the error.
      */
-    public void error(final Throwable cause) {
-        log(Kind.ERROR, null, cause);
+    public void error(final Exception exception) {
+        error(null, exception);
     }
 
     /**
      * Prints an error message.
      *
-     * @param cause   the cause of the error.
-     * @param element the element that caused the error.
-     */
-    public void error(final Throwable cause, final Element element) {
-        log(Kind.ERROR, element, cause);
-    }
-
-    /**
-     * Prints an error message.
-     *
-     * @param cause         the cause of the error.
+     * @param exception     the cause of the error.
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void error(final Throwable cause, final String messageFormat,
-            final Object... args) {
-        warn(messageFormat, args);
-        log(Kind.ERROR, null, cause);
+    public void error(final Exception exception, final String messageFormat, final Object... args) {
+        error(null, exception, messageFormat, args);
     }
 
     /**
      * Prints an error message.
      *
-     * @param cause         the cause of the error.
+     * @param exception the cause of the error.
+     * @param element   the element that caused the error.
+     */
+    public void error(final Element element, final Exception exception) {
+        log(Kind.ERROR, element, exception, null);
+    }
+
+    /**
+     * Prints an error message.
+     *
+     * @param exception     the cause of the error.
      * @param messageFormat the message format.
      * @param element       the element that caused the warning.
      * @param args          the format arguments.
      */
-    public void error(final Throwable cause, final String messageFormat,
-            final Element element, final Object... args) {
-        warn(messageFormat, args);
-        log(Kind.ERROR, element, cause);
-    }
-
-    /**
-     * Prints a message that does not fit the other types.
-     *
-     * @param message   the message to print.
-     */
-    public void other(final String message) {
-        log(Kind.OTHER, null, message);
+    public void error(final Element element, final Exception exception, final String messageFormat, final Object... args) {
+        log(Kind.ERROR, element, exception, messageFormat, args);
     }
 
     /**
@@ -323,19 +265,45 @@ public class ToolLogger {
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void other(final String messageFormat, Object... args) {
-        log(Kind.OTHER, null, messageFormat, args);
+    public void other(final String messageFormat, final Object... args) {
+        other(messageFormat, args);
     }
 
     /**
      * Prints a formatted message that does not fit the other types.
      *
-     * @param messageFormat the message format.
      * @param element       the element to print with the note.
+     * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void other(final String messageFormat, final Element element,
-            Object... args) {
+    public void other(final Element element, final String messageFormat, final Object... args) {
         log(Kind.OTHER, element, messageFormat, args);
     }
+
+    private void log(final Kind kind, final Element element, final String messageFormat, final Object... args) {
+
+        String message = String.format(messageFormat, args);
+
+        if (element == null) {
+            messager.printMessage(kind, message);
+        } else {
+            messager.printMessage(kind, message, element);
+        }
+    }
+
+    private void log(final Kind kind, final Element element, final Exception exception, final String messageFormat, final Object... args) {
+
+        String stringCause = TransformationUtil.stackTraceToString(exception);
+
+        if (messageFormat == null) {
+            log(kind, element, stringCause);
+        } else {
+            String messageWithCause = messageFormat.concat(", cause : %s");
+
+            //Add cause to error message logging
+            log(kind, element, messageFormat, args, stringCause);
+        }
+
+    }
+
 }
