@@ -2,6 +2,7 @@ package org.jboss.logging.util;
 
 import org.jboss.logging.Message;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -24,6 +25,35 @@ public final class ElementHelper {
      */
     private ElementHelper() {
 
+    }
+
+    /**
+     * Returns the translation file name prefix for an element
+     * who represents a MessageBundle or MessageLogger interface.
+     *
+     * @param element the element
+     * @return the translation file name prefix
+     * @throws NullPointerException if element is null
+     * @throws IllegalArgumentException if element is not an interface
+     */
+    public static String getTranslationFileNamePrefix(final TypeElement element) {
+        if (element == null) {
+            throw new NullPointerException("The element parameter cannot be null");
+        }
+        if (!element.getKind().isInterface()) {
+            throw new IllegalArgumentException("The element parameter is not an interface");
+        }
+
+        String translationFileName = element.getSimpleName().toString();
+
+        //Check if it's an inner interface
+        Element enclosingElt = element.getEnclosingElement();
+        while (enclosingElt != null && enclosingElt instanceof TypeElement) {
+            translationFileName = String.format("%s$%s", enclosingElt.getSimpleName().toString(), translationFileName);
+            enclosingElt = enclosingElt.getEnclosingElement();
+        }
+
+        return translationFileName;
     }
 
     /**
