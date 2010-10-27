@@ -26,7 +26,7 @@ public final class TranslationFilesGenerator extends AbstractTool {
 
     public static final String GENERATED_FILES_PATH = "generated.translation.files.path";
 
-    private static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
+    public static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
 
     private final String generatedFilesPath;
 
