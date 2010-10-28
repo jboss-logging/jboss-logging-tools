@@ -23,8 +23,8 @@ package org.jboss.logging;
 import org.jboss.logging.generator.ImplementorClassGenerator;
 import org.jboss.logging.generator.TranslationClassGenerator;
 import org.jboss.logging.generator.TranslationFileGenerator;
-import org.jboss.logging.validation.ValidationException;
-import org.jboss.logging.validation.ValidationProcessor;
+import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.Validator;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -88,9 +88,6 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         logger = ToolLogger.getLogger(processingEnv);
 
-        // Process validation first.
-        processors.add(new ValidationProcessor(processingEnv));
-
         //Tools generator
         processors.add(new ImplementorClassGenerator(processingEnv));
         processors.add(new TranslationClassGenerator(processingEnv));
@@ -107,7 +104,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         //Add global options
         SupportedOptions globalOptions = this.getClass().getAnnotation(SupportedOptions.class);
         if (globalOptions != null) {
-            supportedOptions.addAll(Arrays.asList(globalOptions.value()));            
+            supportedOptions.addAll(Arrays.asList(globalOptions.value()));
         }
 
         //Add tool processors options
@@ -126,31 +123,38 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         Types typesUtil = processingEnv.getTypeUtils();
 
-        try {
+        Validator validator = Validator.buildValidator(processingEnv);
+        Collection<ValidationErrorMessage> errorMessages = validator.validate(typesIn(roundEnv.getElementsAnnotatedWith(MessageBundle.class)));
+        errorMessages.addAll(validator.validate(typesIn(roundEnv.getElementsAnnotatedWith(MessageLogger.class))));
 
-            //Call abstract processor to process type elements
+        if (!errorMessages.isEmpty()) {
+
+            for (ValidationErrorMessage error : errorMessages) {
+                logger.error(error.getMessage());
+            }
+
+        } else {
+
+            //Call jboss logging tools
             for (TypeElement annotation : annotations) {
 
                 Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
 
                 for (TypeElement element : elements) {
 
-                   if (element.getKind().isInterface()
-                       && !element.getModifiers().contains(Modifier.PRIVATE)) {
+                    if (element.getKind().isInterface()
+                            && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
-                       Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
-                       
-                       for (AbstractTool processor : processors) {
+                        Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
+
+                        for (AbstractTool processor : processors) {
                             logger.debug("Executing processor %s", processor.getName());
                             processor.processTypeElement(annotation, element, methods);
-                       }
-                   }
+                        }
+                    }
                 }
             }
-            
-        }
-        catch (ValidationException e) {
-            logger.error(e, "Error during validation");
+
         }
 
         return ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS;

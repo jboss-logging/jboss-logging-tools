@@ -1,41 +1,65 @@
-/*
- *  JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
- *  individual contributors by the @authors tag. See the copyright.txt in the
- *  distribution for a full listing of individual contributors.
- *
- *  This is free software; you can redistribute it and/or modify it under the
- *  terms of the GNU Lesser General Public License as published by the Free
- *  Software Foundation; either version 2.1 of the License, or (at your option)
- *  any later version.
- *
- *  This software is distributed in the hope that it will be useful, but WITHOUT
- *  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- *  FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- *  details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this software; if not, write to the Free Software Foundation,
- *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- *  site: http://www.fsf.org.
- */
 package org.jboss.logging.validation;
 
-/**
- * Used to validate various aspects of an interface to make sure the classes can
- * be implemented my the code model.
- *
- * @author James R. Perkins Jr. (jrp)
- *
- */
-public interface Validator {
-    
-    /**
-     * Processes validation and throws a
-     * {@link org.jboss.logging.validation.Validator} exception if invalid data
-     * was found.
-     * 
-     * @throws ValidationException if invalid data was found.
-     */
-    void validate() throws ValidationException;
+import org.jboss.logging.util.ElementHelper;
+import org.jboss.logging.validation.validators.BundleReturnTypeValidator;
+import org.jboss.logging.validation.validators.LoggerReturnTypeValidator;
+import org.jboss.logging.validation.validators.MessageAnnotationValidator;
+import org.jboss.logging.validation.validators.MessageIdValidator;
+import org.jboss.logging.validation.validators.MethodParameterValidator;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * @author Kevin Pollet
+ */
+public class Validator {
+
+    private final Types typeUtils;
+
+    private final List<ElementValidator> validators;
+
+    private Validator(final Types typeUtils) {
+        this.validators = new ArrayList<ElementValidator>();
+        this.typeUtils = typeUtils;
+    }
+
+    public static Validator buildValidator(final ProcessingEnvironment pev) {
+
+        Validator validator = new Validator(pev.getTypeUtils());
+
+        //Add validators
+        validator.addElementValidator(new BundleReturnTypeValidator());
+        validator.addElementValidator(new LoggerReturnTypeValidator());
+        validator.addElementValidator(new MessageAnnotationValidator());
+        validator.addElementValidator(new MethodParameterValidator());
+        validator.addElementValidator(new MessageIdValidator());
+
+        return validator; 
+    }
+
+    public Collection<ValidationErrorMessage> validate(final Collection<TypeElement> typeElements) {
+
+        Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+
+        for (TypeElement element : typeElements) {
+
+            Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, null);
+
+            for (ElementValidator validator : validators) {
+                errorMessages.addAll(validator.validate(element, elementMethods));
+            }
+        }
+
+        return errorMessages;
+    }
+
+    public void addElementValidator(final ElementValidator elementValidator) {
+        this.validators.add(elementValidator);
+    }
 }

@@ -18,15 +18,19 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.validation;
+package org.jboss.logging.validation.validators;
 
 import org.jboss.logging.Message;
+import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ElementValidator;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,25 +41,20 @@ import java.util.Set;
  *
  * @author James R. Perkins (jrp)
  */
-public class MessageAnnotationValidator implements Validator {
+public class MessageAnnotationValidator implements ElementValidator {
 
     private static final Class<? extends Annotation> annotationClass = Message.class;
-
-    private final Collection<ExecutableElement> methods;
-
-    /**
-     * Class constructor for singleton.
-     */
-    public MessageAnnotationValidator(final Collection<ExecutableElement> methods) {
-        this.methods = methods;
-    }
 
     /**
      *{@inheritDoc}
      */
     @Override
-    public void validate() throws ValidationException {
-        // Set for the method names that have been processed
+    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
+
+
+
+        
+     /*   // Set for the method names that have been processed
         final Set<Name> methodNames = new HashSet<Name>();
         for (ExecutableElement method : methods) {
             // Only adds methods which have not been processed
@@ -67,13 +66,15 @@ public class MessageAnnotationValidator implements Validator {
                 for (ExecutableElement m : likeMethods) {
                     boolean found = m.getAnnotation(annotationClass) != null;
                     if (foundFirst && found) {
-                        throw new ValidationException("Only one method is allowed to be annotated with the " + annotationClass.
+                        throw new ("Only one method is allowed to be annotated with the " + annotationClass.
                                 getName() + " annotation.", m);
                     }
                     foundFirst = found;
                 }
             }
-        }
+        } */
+
+           return Collections.emptySet();
     }
 
     /**
@@ -83,7 +84,7 @@ public class MessageAnnotationValidator implements Validator {
      *
      * @return a collection of methods with the same name.
      */
-    private Collection<ExecutableElement> findByName(final Name methodName) {
+   /* private Collection<ExecutableElement> findByName(final Name methodName) {
         final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
         for (ExecutableElement method : methods) {
             if (methodName.equals(method.getSimpleName())) {
@@ -91,5 +92,6 @@ public class MessageAnnotationValidator implements Validator {
             }
         }
         return result;
-    }
+    }*/
+
 }

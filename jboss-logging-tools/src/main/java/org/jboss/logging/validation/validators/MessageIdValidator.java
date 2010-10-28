@@ -18,11 +18,15 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.validation;
+package org.jboss.logging.validation.validators;
 
 import org.jboss.logging.Message;
+import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ElementValidator;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,33 +41,32 @@ import java.util.Set;
  *
  * @author James R. Perkins (jrp)
  */
-public class MessageIdValidator implements Validator {
-
-    private final Collection<ExecutableElement> methods;
-
-    public MessageIdValidator(final Collection<ExecutableElement> methods) {
-        this.methods = methods;
-    }
+public class MessageIdValidator implements ElementValidator {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void validate() throws ValidationException {
-        final Set<Integer> messageIds = new HashSet<Integer>();
-        final Set<String> methodNames = new HashSet<String>();
+    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
+
+        Set<Integer> messageIds = new HashSet<Integer>();
+        Set<String> methodNames = new HashSet<String>();
+        Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+
         // Process method descriptors
-        for (ExecutableElement method : methods) {
-            if (methodNames.add(method.getSimpleName().toString())) {
+        for (ExecutableElement method : elementMethods) {
+            boolean exist = methodNames.add(method.getSimpleName().toString());
+            if (exist) {
                 Message message = method.getAnnotation(Message.class);
                 if (message != null) {
-                    if (message.id() > Message.NONE && !messageIds.add(
-                            message.id())) {
-                        throw new ValidationException(
-                                "Message id's must be unique.", method);
+                    if (message.id() > Message.NONE && !messageIds.add(message.id())) {
+                        errorMessages.add(new ValidationErrorMessage("Message id's must be unique for method " + method));
                     }
                 }
             }
         }
+
+        return errorMessages;
     }
+
 }

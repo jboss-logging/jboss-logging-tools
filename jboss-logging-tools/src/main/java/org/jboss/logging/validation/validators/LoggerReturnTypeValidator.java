@@ -18,50 +18,47 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.validation;
+package org.jboss.logging.validation.validators;
 
-import org.jboss.logging.AbstractTool;
-import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
+import org.jboss.logging.util.ElementHelper;
+import org.jboss.logging.validation.ElementValidator;
+import org.jboss.logging.validation.ValidationErrorMessage;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
- * Runs validation processes.
- * 
+ * Validates the return type for logger methods.
+ * <p/>
+ * <p>
+ * Must have a return type of void.
+ * </p>
+ *
  * @author James R. Perkins (jrp)
  */
-public class ValidationProcessor extends AbstractTool {
-
-    private final List<Validator> validators;
-
-    public ValidationProcessor(final ProcessingEnvironment processingEnv) {
-        super(processingEnv);
-        this.validators = new ArrayList<Validator>();
-    }
+public class LoggerReturnTypeValidator implements ElementValidator {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element,
-            final Collection<ExecutableElement> methods) {
-        validators.add(new MessageIdValidator(methods));
-        validators.add(new MessageAnnotationValidator(methods));
-        validators.add(new MethodParameterValidator(methods));
-        if (element.getAnnotation(MessageLogger.class) != null) {
-            validators.add(new LoggerReturnTypeValidator(methods));
+    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
+
+        Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+
+        if (ElementHelper.isAnnotatedWith(element, MessageLogger.class)) {
+            for (ExecutableElement method : elementMethods) {
+                if (method.getReturnType().getKind() != TypeKind.VOID) {
+                    String message = String.format("Logger methods must have void return types, method %s return type is %s", method, method.getReturnType());
+                    errorMessages.add(new ValidationErrorMessage(message));
+                }
+            }
         }
-        if (element.getAnnotation(MessageBundle.class) != null) {
-            validators.add(new BundleReturnTypeValidator(methods));
-        }
-        for (Validator validator : validators) {
-            validator.validate();
-        }
+
+        return errorMessages;
     }
 }

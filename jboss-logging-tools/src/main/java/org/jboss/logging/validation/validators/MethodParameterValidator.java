@@ -18,15 +18,19 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.validation;
+package org.jboss.logging.validation.validators;
 
 import org.jboss.logging.Cause;
+import org.jboss.logging.validation.ElementValidator;
+import org.jboss.logging.validation.ValidationErrorMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,25 +52,14 @@ import java.util.Set;
  * @author James R. Perkins Jr. (jrp)
  * 
  */
-public class MethodParameterValidator implements Validator {
-
-    private final Collection<ExecutableElement> methods;
-
-    /**
-     * Class constructor.
-     *
-     * @param methodDescriptor the method descriptor to process.
-     */
-    public MethodParameterValidator(final Collection<ExecutableElement> methods) {
-        this.methods = methods;
-    }
+public class MethodParameterValidator implements ElementValidator {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void validate() throws ValidationException {
-        // Set for the method names that have been processed
+    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
+       /* // Set for the method names that have been processed
         final Set<Name> methodNames = new HashSet<Name>();
         for (ExecutableElement method : methods) {
             // Only adds methods which have not been processed
@@ -100,7 +93,9 @@ public class MethodParameterValidator implements Validator {
                 }
                 ogCause = cause;
             }
-        }
+        } */
+
+           return Collections.emptySet();
     }
 
     /**
@@ -110,7 +105,7 @@ public class MethodParameterValidator implements Validator {
      *
      * @return a collection of methods with the same name.
      */
-    private Collection<ExecutableElement> findByName(final Name methodName) {
+    /*private Collection<ExecutableElement> findByName(final Name methodName) {
         final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
         for (ExecutableElement method : methods) {
             if (methodName.equals(method.getSimpleName())) {
@@ -128,5 +123,5 @@ public class MethodParameterValidator implements Validator {
             }
         }
         return false;
-    }
+    }*/
 }

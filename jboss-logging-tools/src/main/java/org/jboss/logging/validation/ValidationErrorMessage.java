@@ -5,7 +5,7 @@ package org.jboss.logging.validation;
  */
 public class ValidationErrorMessage {
 
-    private String message;
+    private final String message;
 
     public ValidationErrorMessage(final String message) {
         this.message = message;
