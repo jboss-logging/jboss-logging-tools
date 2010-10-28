@@ -138,7 +138,7 @@ public abstract class AbstractTool {
             return new HashSet<String>(Arrays.asList(options.value()));
         }
 
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
 }
