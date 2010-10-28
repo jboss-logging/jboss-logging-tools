@@ -66,6 +66,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
     public static final String DEBUG_OPTION = "debug";
 
+    private static final boolean ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS = false;
+
     private final List<AbstractTool> processors;
 
     private ToolLogger logger;
@@ -151,6 +153,6 @@ public class LoggingToolsProcessor extends AbstractProcessor {
             logger.error(e, "Error during validation");
         }
 
-        return true;
+        return ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS;
     }
 }
