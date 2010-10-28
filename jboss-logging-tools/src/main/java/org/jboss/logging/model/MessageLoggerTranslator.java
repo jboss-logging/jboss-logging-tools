@@ -63,7 +63,7 @@ public class MessageLoggerTranslator extends ClassModel {
         if (translations != null) {
             this.translations = translations;
         } else {
-            this.translations = Collections.EMPTY_MAP;
+            this.translations = Collections.emptyMap();
         }
     }
 
@@ -73,7 +73,7 @@ public class MessageLoggerTranslator extends ClassModel {
     @Override
     public JCodeModel generateModel() throws IllegalStateException {
         JCodeModel model = super.generateModel();
-        JDefinedClass definedClass = model._getClass(this.getClassName());
+        JDefinedClass definedClass = getDefinedClass();
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);

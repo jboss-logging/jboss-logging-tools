@@ -26,9 +26,6 @@ import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.Message;
-import org.jboss.logging.validation.MessageAnnotationValidator;
-import org.jboss.logging.validation.MessageIdValidator;
-import org.jboss.logging.validation.MethodParameterValidator;
 
 import javax.lang.model.element.ExecutableElement;
 import java.io.Serializable;
@@ -48,7 +45,7 @@ import java.io.Serializable;
  */
 public abstract class ImplementationClassModel extends ClassModel {
 
-    private final String interfaceName;
+    private static final String ID_FIELD_NAME_SUFFIX = "Id";
 
     private final ImplementationType type;
 
@@ -64,13 +61,11 @@ public abstract class ImplementationClassModel extends ClassModel {
      * @param type
      *            the type of the implementation.
      */
-    protected ImplementationClassModel(final String interfaceName,
-            final String projectCode, ImplementationType type) {
-        super(interfaceName + type, projectCode, Object.class.
-                getName(), interfaceName, Serializable.class.getName());
-        this.interfaceName = interfaceName;
+    protected ImplementationClassModel(final String interfaceName, final String projectCode, final ImplementationType type) {
+        super(interfaceName + type, projectCode, Object.class.getName(), interfaceName, Serializable.class.getName());
+
         this.type = type;
-        methodDescriptor = new MethodDescriptor();
+        this.methodDescriptor = new MethodDescriptor();
     }
 
     /**
@@ -78,16 +73,8 @@ public abstract class ImplementationClassModel extends ClassModel {
      * 
      * @return the implementation type.
      */
-    public final ImplementationType type() {
+    public final ImplementationType getType() {
         return type;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final String getClassName() {
-        return interfaceName + type();
     }
 
     /**
@@ -115,15 +102,15 @@ public abstract class ImplementationClassModel extends ClassModel {
      *         created.
      */
     protected JVar addIdVar(final String methodName, final int id) {
-        final String idFieldName = methodName + "Id";
-        JVar idVar = definedClass().fields().get(idFieldName);
+        final String idFieldName = methodName + ID_FIELD_NAME_SUFFIX;
+        JVar idVar = getDefinedClass().fields().get(idFieldName);
         if (idVar == null && id > Message.NONE) {
             // Create the message id field
-            idVar = definedClass().field(
+            idVar = getDefinedClass().field(
                     JMod.PROTECTED | JMod.STATIC | JMod.FINAL,
                     String.class, idFieldName);
             idVar.init(JExpr.lit(ClassModelUtil.formatMessageId(
-                    projectCode(), id)));
+                    getProjectCode(), id)));
         }
         return idVar;
     }
@@ -133,12 +120,12 @@ public abstract class ImplementationClassModel extends ClassModel {
      */
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
-        final JCodeModel codeModel = super.generateModel();
+        JCodeModel codeModel = super.generateModel();
+
         // Add the serializable UID
-        final JFieldVar serialVersionUID = definedClass().field(
-                JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel.LONG,
-                "serialVersionUID");
+        JFieldVar serialVersionUID = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel.LONG, "serialVersionUID");
         serialVersionUID.init(JExpr.lit(1L));
+
         return codeModel;
     }
 }

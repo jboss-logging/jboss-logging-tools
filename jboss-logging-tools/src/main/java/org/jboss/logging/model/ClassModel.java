@@ -33,7 +33,6 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JTypeVar;
-import com.sun.codemodel.internal.JVar;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -46,6 +45,10 @@ import java.io.IOException;
  */
 public abstract class ClassModel {
 
+    private static final String MESSAGE_METHOD_SUFFIX = "$str";
+
+    private static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
+
     /**
      * Qualified interface name.
      */
@@ -57,19 +60,14 @@ public abstract class ClassModel {
     private String superClassName;
 
     /**
-     * The class name.
+     * Qualified class name.
      */
     private String className;
 
     /**
-     * The corresponding model;
+     * The corresponding model.
      */
     private JCodeModel codeModel;
-
-    /**
-     * Empty type array.
-     */
-    public static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
     /**
      * The defined class.
@@ -88,9 +86,7 @@ public abstract class ClassModel {
      * @param superClassName the qualified super class name.
      */
     public ClassModel(final String className, final String superClassName) {
-        this.interfaceNames = null;
-        this.superClassName = superClassName;
-        this.className = className;
+        this(className, null, superClassName);
     }
 
     /**
@@ -101,9 +97,7 @@ public abstract class ClassModel {
      * @param superClassName the super class name.
      * @param interfaceNames an array of interfaces to implement.
      */
-    protected ClassModel(final String className,
-            final String projectCode, final String superClassName,
-            final String... interfaceNames) {
+    protected ClassModel(final String className, final String projectCode, final String superClassName, final String... interfaceNames) {
         this.interfaceNames = interfaceNames;
         this.superClassName = superClassName;
         this.className = className;
@@ -117,9 +111,13 @@ public abstract class ClassModel {
      *
      * @throws Exception if an error occurs creating the source file.
      */
-    public final void create(final JavaFileObject fileObject) throws IOException,
-                                                                     IllegalStateException {
-        generateModel().build(new JavaFileObjectCodeWriter(fileObject));
+    public final void create(final JavaFileObject fileObject) throws IOException, IllegalStateException {
+
+        //Generate the model class
+        JCodeModel model = this.generateModel();
+
+        //Write it to a file
+        model.build(new JavaFileObjectCodeWriter(fileObject));
     }
 
     /**
@@ -131,92 +129,35 @@ public abstract class ClassModel {
      */
     protected JCodeModel generateModel() throws IllegalStateException {
         codeModel = new JCodeModel();
-        try {
-            definedClass = codeModel._class(this.className);
-        } catch (JClassAlreadyExistsException e) {
-            throw new IllegalStateException(
-                    "Class " + this.className
-                    + " has already been defined. Cannot generate the class.", e);
-        }
-        final JAnnotationUse anno = definedClass.annotate(
-                javax.annotation.Generated.class);
-        anno.param("value", getClass().getCanonicalName());
-        anno.param("date", ClassModelUtil.generatedDateValue());
 
-        // Create the default JavaDoc
-        final JDocComment docComment = definedClass.javadoc();
+        try {
+            definedClass = codeModel._class(className);
+        } catch (JClassAlreadyExistsException e) {
+            throw new IllegalStateException("Class " + className + " has already been defined. Cannot generate the class.", e);
+        }
+
+        //Add generated annotation
+        JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
+        generatedAnnotation.param("value", getClass().getName());
+        generatedAnnotation.param("date", ClassModelUtil.generatedDateValue());
+
+        //Create the default JavaDoc
+        JDocComment docComment = definedClass.javadoc();
         docComment.add("Warning this class consists of generated code.");
 
-        // Add extends
-        if (this.superClassName != null) {
-            definedClass._extends(codeModel.ref(this.superClassName));
+        //Add extends
+        if (superClassName != null) {
+            definedClass._extends(codeModel.ref(superClassName));
         }
 
-        // Add implements
-        if (this.interfaceNames != null) {
-            for (String intf : this.interfaceNames) {
+        //Add implements
+        if (interfaceNames != null) {
+            for (String intf : interfaceNames) {
                 definedClass._implements(codeModel.ref(intf));
             }
         }
-        return this.codeModel;
-    }
-
-    /**
-     * Get the class model.
-     *
-     * @return the class model
-     */
-    protected final JCodeModel codeModel() {
-        return this.codeModel;
-    }
-
-    /**
-     * Returns the main enclosing class.
-     *
-     * @return the main enclosing class.
-     */
-    protected final JDefinedClass definedClass() {
-        return definedClass;
-    }
-
-    /**
-     * Get the class name.
-     *
-     * @return the class name
-     */
-    public String getClassName() {
-        return this.className;
-    }
-
-    /**
-     * Get the project code from the annotation.
-     *
-     * @return the project code or {@code null} if one was not specified.
-     */
-    public String projectCode() {
-        return projectCode;
-    }
-
-    /**
-     * Creates the variable that stores the message.
-     * <p/>
-     * <p>
-     * If the message variable has already been defined the previously created
-     * variable is returned.
-     * </p>
-     *
-     * @param varName      the variable name.
-     * @param messageValue the value for the message.
-     * @return the newly created variable.
-     */
-    protected JVar addMessageVar(final String varName, final String messageValue) {
-        JFieldVar var = definedClass().fields().get(varName);
-        if (var == null) {
-            var = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL,
-                    String.class, varName);
-            var.init(JExpr.lit(messageValue));
-        }
-        return var;
+        
+        return codeModel;
     }
 
     /**
@@ -229,28 +170,74 @@ public abstract class ClassModel {
      * method is returned.
      * </p>
      * <p/>
-     * <p>
-     * Note this method invokes the
-     * {@code addMessageVar(varName,messageValue,id)} to add the variable.
-     * </p>
      *
      * @param methodName  the method name.
      * @param returnValue the message value.
      * @return the newly created method.
+     * @throws IllegalStateException if this method is called before the generateModel method
      */
-    protected JMethod addMessageMethod(final String methodName,
-            final String returnValue) {
-        final String internalMethodName = methodName + "$str";
-        JMethod method = definedClass().getMethod(internalMethodName,
-                EMPTY_TYPE_ARRAY);
-        // Create the method
-        if (method == null) {
-            final JClass returnType = codeModel().ref(String.class);
-            method = definedClass().method(JMod.PROTECTED, returnType,
-                    internalMethodName);
-            final JBlock body = method.body();
-            body._return(addMessageVar(methodName, returnValue));
+    protected JMethod addMessageMethod(final String methodName, final String returnValue) {
+        if (codeModel == null || definedClass == null) {
+            throw new IllegalStateException("The code model or the corresponding defined class is null");
         }
+
+        String internalMethodName = methodName + MESSAGE_METHOD_SUFFIX;
+        JMethod method = definedClass.getMethod(internalMethodName, EMPTY_TYPE_ARRAY);
+
+        if (method == null) {
+
+            //Create method return field
+            JFieldVar methodField = definedClass.fields().get(methodName);
+            if (methodField == null) {
+                methodField = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName);
+                methodField.init(JExpr.lit(returnValue));
+            }
+
+            //Create method
+            JClass returnType = codeModel.ref(String.class);
+            method = definedClass.method(JMod.PROTECTED, returnType, internalMethodName);
+
+            JBlock body = method.body();
+            body._return(methodField);
+        }
+        
         return method;
     }
+
+    /**
+     * Get the class model.
+     *
+     * @return the class model
+     */
+    public final JCodeModel getCodeModel() {
+        return this.codeModel;
+    }
+
+    /**
+     * Returns the main enclosing class.
+     *
+     * @return the main enclosing class.
+     */
+    public final JDefinedClass getDefinedClass() {
+        return definedClass;
+    }
+
+    /**
+     * Get the class name.
+     *
+     * @return the class name
+     */
+    public final String getClassName() {
+        return this.className;
+    }
+
+    /**
+     * Get the project code from the annotation.
+     *
+     * @return the project code or {@code null} if one was not specified.
+     */
+    public String getProjectCode() {
+        return projectCode;
+    }
+    
 }

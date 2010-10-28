@@ -20,12 +20,12 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.Collection;
 import org.jboss.logging.Message;
 
+import javax.lang.model.element.ExecutableElement;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
 
 /**
  * Validates messages id's from the {@link org.jboss.logging.Message} annotation.

@@ -36,6 +36,7 @@ import java.util.Set;
  * @author Kevin Pollet
  */
 public class MessageBundleTranslator extends ClassModel {
+
     /**
      * The translation map.
      */
@@ -47,14 +48,13 @@ public class MessageBundleTranslator extends ClassModel {
      * @param className      the qualified class name
      * @param superClassName the super class name
      */
-    public MessageBundleTranslator(final String className,
-            final String superClassName, final Map<String, String> translations) {
+    public MessageBundleTranslator(final String className, final String superClassName, final Map<String, String> translations) {
         super(className, superClassName);
 
         if (translations != null) {
             this.translations = translations;
         } else {
-            this.translations = Collections.EMPTY_MAP;
+            this.translations = Collections.emptyMap();
         }
     }
 
@@ -64,16 +64,15 @@ public class MessageBundleTranslator extends ClassModel {
     @Override
     public JCodeModel generateModel() throws IllegalStateException {
         JCodeModel model = super.generateModel();
-        JDefinedClass definedClass = definedClass();
+        JDefinedClass definedClass = getDefinedClass();
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.body().invoke("super");
 
-        JMethod readResolve = ClassModelUtil.createReadResolveMethod(
-                definedClass);
+        JMethod readResolve = ClassModelUtil.createReadResolveMethod(definedClass);
         readResolve.annotate(Override.class);
 
-        Set<Map.Entry<String, String>> entries = this.translations.entrySet();
+        Set<Map.Entry<String, String>> entries = translations.entrySet();
         for (Map.Entry<String, String> entry : entries) {
 
             String key = entry.getKey();

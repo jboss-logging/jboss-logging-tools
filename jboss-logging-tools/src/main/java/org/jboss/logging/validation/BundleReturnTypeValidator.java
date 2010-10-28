@@ -20,8 +20,8 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.Collection;
 import javax.lang.model.element.ExecutableElement;
+import java.util.Collection;
 
 /**
  * Validates the return types for message bundle methods.

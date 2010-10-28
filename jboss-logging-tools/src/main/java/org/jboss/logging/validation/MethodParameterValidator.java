@@ -20,16 +20,16 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.ArrayList;
 import org.jboss.logging.Cause;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 
 /**
  * Validates the parameters of a method.

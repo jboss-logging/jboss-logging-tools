@@ -28,7 +28,6 @@ import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.model.MessageBundleTranslator;
 import org.jboss.logging.model.MessageLoggerTranslator;
-import org.jboss.logging.util.ElementHelper;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;

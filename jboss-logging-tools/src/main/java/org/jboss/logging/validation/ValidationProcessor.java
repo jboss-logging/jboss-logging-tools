@@ -20,16 +20,16 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-
 import org.jboss.logging.AbstractTool;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Runs validation processes.

@@ -20,10 +20,9 @@
  */
 package org.jboss.logging.validation;
 
-import java.util.Collection;
 import javax.lang.model.element.ExecutableElement;
-
 import javax.lang.model.type.TypeKind;
+import java.util.Collection;
 
 /**
  * Validates the return type for logger methods.

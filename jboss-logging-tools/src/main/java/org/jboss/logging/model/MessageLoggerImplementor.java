@@ -78,9 +78,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        log = definedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
+        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         // Add default constructor
-        final JMethod constructor = definedClass().constructor(JMod.PROTECTED);
+        final JMethod constructor = getDefinedClass().constructor(JMod.PROTECTED);
         final JVar constructorParam = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
@@ -90,7 +90,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         for (MethodDescriptor methodDesc : methodDescriptor) {
             final String methodName = methodDesc.name();
             // Create the method
-            final JMethod jMethod = definedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, methodName);
+            final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, methodName);
             jMethod.annotate(Override.class);
             // Find the annotations
             final Message message = methodDesc.message();
