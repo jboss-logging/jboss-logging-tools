@@ -43,7 +43,7 @@ public final class ElementHelper {
         }
         
         Annotation annotation = element.getAnnotation(clazz);
-        if (clazz != null) {
+        if (annotation != null) {
             return true;
         }
 
