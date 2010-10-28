@@ -10,6 +10,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,26 @@ public final class ElementHelper {
      */
     private ElementHelper() {
 
+    }
+
+    /**
+     * Check if an element is annotated with the given annotation.
+     *
+     * @param clazz the annotation class
+     * @return true if the element is annotated, false otherwise
+     * @throws NullPointerException if element parameter is null
+     */
+    public static boolean isAnnotatedWith(final Element element, final Class<? extends Annotation> clazz) {
+        if (element == null) {
+            throw new NullPointerException("The element parameter is null");
+        }
+        
+        Annotation annotation = element.getAnnotation(clazz);
+        if (clazz != null) {
+            return true;
+        }
+
+        return false;        
     }
 
     /**
