@@ -52,7 +52,7 @@ public final class ImplementorClassGenerator extends AbstractTool {
     public void processTypeElement(final TypeElement annotation, final TypeElement element,
             final Collection<ExecutableElement> methods) {
         try {
-            final String interfaceName = processingEnv().getElementUtils().getBinaryName(element).toString();
+            final String interfaceName = elementUtils().getBinaryName(element).toString();
             final MessageLogger messageLogger = element.getAnnotation(MessageLogger.class);
             final MessageBundle messageBundle = element.getAnnotation(MessageBundle.class);
             if (messageLogger != null) {

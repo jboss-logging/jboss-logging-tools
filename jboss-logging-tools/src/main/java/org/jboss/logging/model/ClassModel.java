@@ -153,7 +153,8 @@ public abstract class ClassModel {
         //Add implements
         if (interfaceNames != null) {
             for (String intf : interfaceNames) {
-                definedClass._implements(codeModel.ref(intf));
+                // TODO - Temporary fix for implementing nested interfaces.
+                definedClass._implements(codeModel.ref(intf.replace("$", ".")));
             }
         }
         
