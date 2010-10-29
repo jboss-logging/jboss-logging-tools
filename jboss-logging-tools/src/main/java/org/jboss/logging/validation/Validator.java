@@ -45,7 +45,7 @@ public class Validator {
         return validator;
     }
 
-    public Collection<ValidationErrorMessage> validate(final Collection<TypeElement> typeElements) {
+    public Collection<ValidationErrorMessage> validate(final Collection<? extends TypeElement> typeElements) {
 
         Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 

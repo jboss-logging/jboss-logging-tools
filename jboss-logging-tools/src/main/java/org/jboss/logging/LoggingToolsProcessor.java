@@ -122,28 +122,26 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
         Types typesUtil = processingEnv.getTypeUtils();
-
         Validator validator = Validator.buildValidator(processingEnv);
-        Collection<ValidationErrorMessage> errorMessages = validator.validate(typesIn(roundEnv.getElementsAnnotatedWith(MessageBundle.class)));
-        errorMessages.addAll(validator.validate(typesIn(roundEnv.getElementsAnnotatedWith(MessageLogger.class))));
 
-        if (!errorMessages.isEmpty()) {
+        //Call jboss logging tools
+        for (TypeElement annotation : annotations) {
 
-            for (ValidationErrorMessage error : errorMessages) {
-                logger.error(error.getElement(), error.getMessage());
-            }
+            Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
+            Collection<ValidationErrorMessage> errorMessages = validator.validate(elements);
 
-        } else {
+            if (!errorMessages.isEmpty()) {
 
-            //Call jboss logging tools
-            for (TypeElement annotation : annotations) {
+                for (ValidationErrorMessage error : errorMessages) {
+                    logger.error(error.getElement(), error.getMessage());
+                }
 
-                Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
+            } else {
 
                 for (TypeElement element : elements) {
 
                     if (element.getKind().isInterface()
-                            && !element.getModifiers().contains(Modifier.PRIVATE)) {
+                        && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
                         Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
 
@@ -153,8 +151,9 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                         }
                     }
                 }
-            }
 
+            }
+            
         }
 
         return ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS;
