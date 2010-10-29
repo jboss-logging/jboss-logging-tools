@@ -2,32 +2,32 @@
  *  JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  *  individual contributors by the @authors tag. See the copyright.txt in the
  *  distribution for a full listing of individual contributors.
- * 
+ *
  *  This is free software; you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
  *  Software Foundation; either version 2.1 of the License, or (at your option)
  *  any later version.
- * 
+ *
  *  This software is distributed in the hope that it will be useful, but WITHOUT
  *  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  *  details.
- * 
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this software; if not, write to the Free Software Foundation,
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.validation.validators;
+package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.Message;
-import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.Cause;
 import org.jboss.logging.validation.ElementValidator;
+import org.jboss.logging.validation.ValidationErrorMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import java.lang.annotation.Annotation;
+import javax.lang.model.element.VariableElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -35,19 +35,29 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Checks to make sure that only one {@link org.jboss.logging.Message}
- * annotation is present on like named methods.
+ * Validates the parameters of a method.
  *
- * @author James R. Perkins (jrp)
+ * <p>
+ * Multiple methods with the same name are permitted, as long as they meet all
+ * of the following criteria:
+ * <ul>
+ *   <li>They have the same number of non-{@link org.jboss.logging.Cause} parameters.</li>
+ *   <li>Only one of the methods may specify a {@link org.jboss..Message}
+ *       annotation.
+ *   </li>
+ * </ul>
+ * </p>
+ *
+ * @author James R. Perkins Jr. (jrp)
+ * 
  */
-public class MessageAnnotationValidator implements ElementValidator {
+public class MethodParameterValidator implements ElementValidator {
 
-    private static final Class<? extends Annotation> annotationClass = Message.class;
-
-    private static final String ERROR_MESSAGE = "Only one method with the same name is allowed to be annotated the %s annotation.";
+    private static final String ERROR_MESSAGE = "The number of parameters, minus the cause parameter, must match all match all methods with the same name. "
+            + "Method %s accepts %d parameters and method %s accepts %d parameters.";
 
     /**
-     *{@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
@@ -61,14 +71,26 @@ public class MessageAnnotationValidator implements ElementValidator {
             if (methodNames.add(method.getSimpleName())) {
                 // Find all like named methods
                 final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName());
-                boolean foundFirst = false;
+                final int paramCount1 = method.getParameters().size() - (hasCause(method.getParameters()) ? 1 : 0);
                 for (ExecutableElement m : likeMethods) {
-                    boolean found = m.getAnnotation(annotationClass) != null;
-                    if (foundFirst && found) {
-                        errorMessages.add(new ValidationErrorMessage(m, String.format(ERROR_MESSAGE, annotationClass.getName())));
+                    int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters()) ? 1 : 0);
+                    if (paramCount1 != paramCount2) {
+                        errorMessages.add(new ValidationErrorMessage(m,
+                                String.format(ERROR_MESSAGE, method.toString(), method.getParameters().size(), m.toString(), m.getParameters().size())));
                     }
-                    foundFirst = found;
                 }
+            }
+
+            // Finally the method is only allowed one cause parameter
+            boolean invalid = false;
+            Cause ogCause = null;
+            for (VariableElement varElem : method.getParameters()) {
+                final Cause cause = varElem.getAnnotation(Cause.class);
+                invalid = (ogCause != null && cause != null);
+                if (invalid) {
+                    errorMessages.add(new ValidationErrorMessage(varElem, "Only one cause parameter allowed per method."));
+                }
+                ogCause = cause;
             }
         }
 
@@ -91,5 +113,22 @@ public class MessageAnnotationValidator implements ElementValidator {
             }
         }
         return result;
+    }
+
+    /**
+     * Checks to see if there is a cause parameter.
+     *
+     * @param params the parameters to check.
+     *
+     * @return {@code true} if there is a cause, otherwise {@code false}.
+     */
+    private boolean hasCause(Collection<? extends VariableElement> params) {
+        // Look for cause
+        for (VariableElement param : params) {
+            if (param.getAnnotation(Cause.class) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }

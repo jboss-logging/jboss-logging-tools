@@ -1,11 +1,11 @@
 package org.jboss.logging.validation;
 
 import org.jboss.logging.util.ElementHelper;
-import org.jboss.logging.validation.validators.BundleReturnTypeValidator;
-import org.jboss.logging.validation.validators.LoggerReturnTypeValidator;
-import org.jboss.logging.validation.validators.MessageAnnotationValidator;
-import org.jboss.logging.validation.validators.MessageIdValidator;
-import org.jboss.logging.validation.validators.MethodParameterValidator;
+import org.jboss.logging.validation.validator.BundleReturnTypeValidator;
+import org.jboss.logging.validation.validator.LoggerReturnTypeValidator;
+import org.jboss.logging.validation.validator.MessageAnnotationValidator;
+import org.jboss.logging.validation.validator.MessageIdValidator;
+import org.jboss.logging.validation.validator.MethodParameterValidator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
@@ -14,7 +14,7 @@ import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.lang.model.util.ElementFilter;
+
 import org.jboss.logging.util.TransformationHelper;
 
 /**

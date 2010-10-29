@@ -18,29 +18,30 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.validation.validators;
+package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.util.ElementHelper;
-import org.jboss.logging.validation.ElementValidator;
+import org.jboss.logging.Message;
 import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ElementValidator;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Validates the return types for message bundle methods.
- * <p/>
+ * Validates messages id's from the {@link org.jboss.logging.Message} annotation.
+ *
  * <p>
- * The return type must be either a {@link java.lang.String} or one of it's
- * super types, or {@link java.lang.Throwable} or one of it's subtypes.
+ * Message id's must be unique for each method unless the methods have the same
+ * name.
  * </p>
  *
  * @author James R. Perkins (jrp)
  */
-public class BundleReturnTypeValidator implements ElementValidator {
+public class MessageIdValidator implements ElementValidator {
 
     /**
      * {@inheritDoc}
@@ -48,26 +49,20 @@ public class BundleReturnTypeValidator implements ElementValidator {
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
 
+        Set<Integer> messageIds = new HashSet<Integer>();
+        Set<String> methodNames = new HashSet<String>();
         Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
-        if (ElementHelper.isAnnotatedWith(element, MessageBundle.class)) {
-
-            for (ExecutableElement method : elementMethods) {
-
-                try {
-
-                    Class<?> returnClass = Class.forName(method.getReturnType().toString());
-
-                    if (!(Throwable.class.isAssignableFrom(returnClass) || returnClass.isAssignableFrom(String.class))) {
-                        String message = String.format("Message bundle %s has a method with invalid return type, method %s have return type of type %s", element, method, returnClass);
-                        errorMessages.add(new ValidationErrorMessage(method, message));
+        // Process method descriptors
+        for (ExecutableElement method : elementMethods) {
+            boolean exist = methodNames.add(method.getSimpleName().toString());
+            if (exist) {
+                Message message = method.getAnnotation(Message.class);
+                if (message != null) {
+                    if (message.id() > Message.NONE && !messageIds.add(message.id())) {
+                        errorMessages.add(new ValidationErrorMessage(method, "Message id's must be unique for method " + method));
                     }
-
-                } catch (ClassNotFoundException e) {
-                    String message = String.format("Return type %s for method %s is not in the classpath", method.getReturnType(), method);
-                    errorMessages.add(new ValidationErrorMessage(method, message));
                 }
-
             }
         }
 

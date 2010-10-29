@@ -18,28 +18,29 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-package org.jboss.logging.validation.validators;
+package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.MessageBundle;
 import org.jboss.logging.util.ElementHelper;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Validates the return type for logger methods.
+ * Validates the return types for message bundle methods.
+ * <p/>
  * <p>
- * Must have a return type of void.
+ * The return type must be either a {@link java.lang.String} or one of it's
+ * super types, or {@link java.lang.Throwable} or one of it's subtypes.
  * </p>
  *
  * @author James R. Perkins (jrp)
  */
-public class LoggerReturnTypeValidator implements ElementValidator {
+public class BundleReturnTypeValidator implements ElementValidator {
 
     /**
      * {@inheritDoc}
@@ -49,15 +50,28 @@ public class LoggerReturnTypeValidator implements ElementValidator {
 
         Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
-        if (ElementHelper.isAnnotatedWith(element, MessageLogger.class)) {
+        if (ElementHelper.isAnnotatedWith(element, MessageBundle.class)) {
+
             for (ExecutableElement method : elementMethods) {
-                if (method.getReturnType().getKind() != TypeKind.VOID) {
-                    String message = String.format("Logger methods must have void return types, method %s return type is %s", method, method.getReturnType());
+
+                try {
+
+                    Class<?> returnClass = Class.forName(method.getReturnType().toString());
+
+                    if (!(Throwable.class.isAssignableFrom(returnClass) || returnClass.isAssignableFrom(String.class))) {
+                        String message = String.format("Message bundle %s has a method with invalid return type, method %s have return type of type %s", element, method, returnClass);
+                        errorMessages.add(new ValidationErrorMessage(method, message));
+                    }
+
+                } catch (ClassNotFoundException e) {
+                    String message = String.format("Return type %s for method %s is not in the classpath", method.getReturnType(), method);
                     errorMessages.add(new ValidationErrorMessage(method, message));
                 }
+
             }
         }
 
         return errorMessages;
     }
+
 }
