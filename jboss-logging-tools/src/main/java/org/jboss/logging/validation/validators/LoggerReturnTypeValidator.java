@@ -54,7 +54,7 @@ public class LoggerReturnTypeValidator implements ElementValidator {
             for (ExecutableElement method : elementMethods) {
                 if (method.getReturnType().getKind() != TypeKind.VOID) {
                     String message = String.format("Logger methods must have void return types, method %s return type is %s", method, method.getReturnType());
-                    errorMessages.add(new ValidationErrorMessage(message));
+                    errorMessages.add(new ValidationErrorMessage(method, message));
                 }
             }
         }

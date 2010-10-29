@@ -130,7 +130,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         if (!errorMessages.isEmpty()) {
 
             for (ValidationErrorMessage error : errorMessages) {
-                logger.error(error.getMessage());
+                logger.error(error.getElement(), error.getMessage());
             }
 
         } else {

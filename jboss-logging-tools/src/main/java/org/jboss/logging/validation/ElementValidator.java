@@ -26,14 +26,21 @@ import java.util.Collection;
 
 /**
  * Used to validate various aspects of an interface to make sure the classes can
- * be implemented my the code model.
+ * be implemented the code model.
  *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet
  *
  */
 public interface ElementValidator {
-    
-   Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods);
 
+    /**
+     * Validates the collection of methods that were passed.
+     *
+     * @param element        the root element, generally the interface.
+     * @param elementMethods the methods of the interface.
+     *
+     * @return a collection of error messages or a an empty collection if no errors were found.
+     */
+    Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods);
 }

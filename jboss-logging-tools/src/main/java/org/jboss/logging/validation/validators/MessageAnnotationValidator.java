@@ -30,7 +30,6 @@ import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,46 +44,46 @@ public class MessageAnnotationValidator implements ElementValidator {
 
     private static final Class<? extends Annotation> annotationClass = Message.class;
 
+    private static final String ERROR_MESSAGE = "Only one method with the same name is allowed to be annotated the %s annotation.";
+
     /**
      *{@inheritDoc}
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
 
+        final List<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
-
-        
-     /*   // Set for the method names that have been processed
+        // Set for the method names that have been processed
         final Set<Name> methodNames = new HashSet<Name>();
-        for (ExecutableElement method : methods) {
+        for (ExecutableElement method : elementMethods) {
             // Only adds methods which have not been processed
             if (methodNames.add(method.getSimpleName())) {
                 // Find all like named methods
-                final Collection<ExecutableElement> likeMethods = findByName(method.
-                        getSimpleName());
+                final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName());
                 boolean foundFirst = false;
                 for (ExecutableElement m : likeMethods) {
                     boolean found = m.getAnnotation(annotationClass) != null;
                     if (foundFirst && found) {
-                        throw new ("Only one method is allowed to be annotated with the " + annotationClass.
-                                getName() + " annotation.", m);
+                        errorMessages.add(new ValidationErrorMessage(m, String.format(ERROR_MESSAGE, annotationClass.getName())));
                     }
                     foundFirst = found;
                 }
             }
-        } */
+        }
 
-           return Collections.emptySet();
+        return errorMessages;
     }
 
     /**
      * Returns a collection of methods with the same name.
      *
+     * @param methods    the methods to process.
      * @param methodName the method name to find.
      *
      * @return a collection of methods with the same name.
      */
-   /* private Collection<ExecutableElement> findByName(final Name methodName) {
+    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName) {
         final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
         for (ExecutableElement method : methods) {
             if (methodName.equals(method.getSimpleName())) {
@@ -92,6 +91,5 @@ public class MessageAnnotationValidator implements ElementValidator {
             }
         }
         return result;
-    }*/
-
+    }
 }

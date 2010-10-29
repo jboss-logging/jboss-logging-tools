@@ -14,6 +14,8 @@ import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.lang.model.util.ElementFilter;
+import org.jboss.logging.util.TransformationHelper;
 
 /**
  * @author Kevin Pollet
@@ -40,7 +42,7 @@ public class Validator {
         validator.addElementValidator(new MethodParameterValidator());
         validator.addElementValidator(new MessageIdValidator());
 
-        return validator; 
+        return validator;
     }
 
     public Collection<ValidationErrorMessage> validate(final Collection<TypeElement> typeElements) {
@@ -48,11 +50,15 @@ public class Validator {
         Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
         for (TypeElement element : typeElements) {
+            try {
 
-            Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, null);
+                Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, typeUtils);
 
-            for (ElementValidator validator : validators) {
-                errorMessages.addAll(validator.validate(element, elementMethods));
+                for (ElementValidator validator : validators) {
+                    errorMessages.addAll(validator.validate(element, elementMethods));
+                }
+            } catch (Exception e) {
+                errorMessages.add(new ValidationErrorMessage(element, TransformationHelper.stackTraceToString(e)));
             }
         }
 
