@@ -33,7 +33,6 @@ import java.util.Collection;
 
 /**
  * Validates the return type for logger methods.
- * <p/>
  * <p>
  * Must have a return type of void.
  * </p>

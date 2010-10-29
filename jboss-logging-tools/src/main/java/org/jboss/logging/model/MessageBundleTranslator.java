@@ -30,8 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The java message bundle java
- * class model.
+ * The java message bundle class model.
  *
  * @author Kevin Pollet
  */

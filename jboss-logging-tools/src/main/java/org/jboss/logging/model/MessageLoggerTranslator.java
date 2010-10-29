@@ -34,8 +34,7 @@ import java.util.Set;
 
 
 /**
- * The java message logger java
- * class model.
+ * The java message logger translation class model.
  *
  * @author Kevin Pollet
  */
@@ -52,7 +51,7 @@ public class MessageLoggerTranslator extends ClassModel {
     private final Map<String, String> translations;
 
     /**
-     * Create a MessageBundle with super class and interface.
+     * Create a MessageLogger with super class and interface.
      *
      * @param className      the qualified class name
      * @param superClassName the super class name

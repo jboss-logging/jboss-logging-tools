@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 /**
- * An util class to work with element.
+ * An utility class to work with element.
  *
  * @author Kevin Pollet
  */
