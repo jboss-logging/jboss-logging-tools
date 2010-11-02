@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import org.jboss.logging.LogMessage;
 
 /**
  * An utility class to work with element.
@@ -22,6 +23,11 @@ import java.util.Map;
  * @author Kevin Pollet
  */
 public final class ElementHelper {
+
+    public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
+    public static final Class<MessageLogger> MESSAGE_LOGGER_ANNOTATION = MessageLogger.class;
+    public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
+    public static final Class<Message> MESSAGE_ANNOTATION = Message.class;
 
     /**
      * Disable instantiation.
@@ -69,9 +75,9 @@ public final class ElementHelper {
 
         String prefix = getPrimaryClassNamePrefix(element);
 
-        if (element.getAnnotation(MessageBundle.class) != null) {
+        if (element.getAnnotation(MESSAGE_BUNDLE_ANNOTATION) != null) {
             return prefix + "$bundle";
-        } else if (element.getAnnotation(MessageLogger.class) != null) {
+        } else if (element.getAnnotation(MESSAGE_LOGGER_ANNOTATION) != null) {
             return prefix + "$logger";
         }
 
@@ -143,13 +149,32 @@ public final class ElementHelper {
         Map<String, String> messages = new HashMap<String, String>();
 
         for (ExecutableElement method : methods) {
-            Message annotation = method.getAnnotation(Message.class);
+            Message annotation = method.getAnnotation(MESSAGE_ANNOTATION);
             if (annotation != null) {
                 messages.put(method.getSimpleName().toString(), annotation.value());
             }
         }
 
         return messages;
+    }
+
+    /**
+     * Returns the project code from the annotation on the element.
+     *
+     * @param interfaceElement the interface element that contains the annotation,
+     * @return the project code from the annotation or {@code null}.
+     */
+    public static String getProjectCode(final TypeElement interfaceElement) {
+        String result = null;
+        final MessageBundle messageBundle = interfaceElement.getAnnotation(MESSAGE_BUNDLE_ANNOTATION);
+        final MessageLogger messageLogger = interfaceElement.getAnnotation(MESSAGE_LOGGER_ANNOTATION);
+        if (messageBundle != null) {
+            result = messageBundle.projectCode();
+        } else if (messageLogger != null) {
+            result = messageLogger.projectCode();
+        }
+
+        return result;
     }
 
 }
