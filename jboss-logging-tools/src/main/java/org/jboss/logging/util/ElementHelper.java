@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import org.jboss.logging.LogMessage;
+import org.jboss.logging.model.ImplementationType;
 
 /**
  * An utility class to work with element.
@@ -76,9 +77,9 @@ public final class ElementHelper {
         String prefix = getPrimaryClassNamePrefix(element);
 
         if (element.getAnnotation(MESSAGE_BUNDLE_ANNOTATION) != null) {
-            return prefix + "$bundle";
+            return prefix + ImplementationType.BUNDLE.toString();
         } else if (element.getAnnotation(MESSAGE_LOGGER_ANNOTATION) != null) {
-            return prefix + "$logger";
+            return prefix + ImplementationType.LOGGER.toString();
         }
 
         return prefix;

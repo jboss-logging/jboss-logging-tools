@@ -31,11 +31,11 @@ public enum ImplementationType {
     /**
      * Represents the {@code org.jboss.logging.MessageBundle}.
      */
-    BUNDLE("$bundle"),
+    BUNDLE("_$bundle"),
     /**
      * Represents the {@code org.jboss.logging.MessageLogger}.
      */
-    LOGGER("$logger");
+    LOGGER("_$logger");
 
     /**
      * The extension to append the implementation with.
