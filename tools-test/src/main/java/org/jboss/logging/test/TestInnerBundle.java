@@ -15,8 +15,8 @@ import org.jboss.logging.MessageBundle;
  */
 public class TestInnerBundle {
 
-    @MessageBundle
-    private interface InnerBundle {
+    @MessageBundle(projectCode="LOGB")
+    interface InnerBundle {
 
         @Message(id = 20, value = "ERROR: {0} Root cause: {1}",
                  format = Format.MESSAGE_FORMAT)
