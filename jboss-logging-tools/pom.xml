@@ -34,7 +34,7 @@
 
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging-tools</artifactId>
-    <name>jboss-logging-tools</name>
+    <name>JBoss Logging I18n Tools</name>
     <version>1.0.0.Beta1-SNAPSHOT</version>
 
     <properties>

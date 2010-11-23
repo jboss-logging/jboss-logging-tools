@@ -36,7 +36,7 @@
 
     <groupId>org.jboss.logging.test</groupId>
     <artifactId>tools-test</artifactId>
-    <name>tools-test</name>
+    <name>JBoss Logging I18n Tools Test Module</name>
     <version>1.0.0.Beta1-SNAPSHOT</version>
 
     <properties>
