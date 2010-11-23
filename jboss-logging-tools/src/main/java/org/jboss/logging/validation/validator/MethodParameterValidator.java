@@ -42,7 +42,7 @@ import java.util.Set;
  * of the following criteria:
  * <ul>
  *   <li>They have the same number of non-{@link org.jboss.logging.Cause} parameters.</li>
- *   <li>Only one of the methods may specify a {@link org.jboss..Message}
+ *   <li>Only one of the methods may specify a {@link org.jboss.logging.Message}
  *       annotation.
  *   </li>
  * </ul>
