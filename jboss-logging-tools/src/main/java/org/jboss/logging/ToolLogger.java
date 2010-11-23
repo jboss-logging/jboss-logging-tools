@@ -20,6 +20,9 @@
  */
 package org.jboss.logging;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.jboss.logging.util.TransformationHelper;
 
 import javax.annotation.processing.Messager;
@@ -262,9 +265,12 @@ public final class ToolLogger {
             log(kind, element, stringCause);
         } else {
             String messageWithCause = messageFormat.concat(", cause : %s");
+            List<Object> newArgs = new ArrayList<Object>();
+            newArgs.addAll(Arrays.asList(args));
+            newArgs.add(stringCause);
 
             //Add cause to error message logging
-            log(kind, element, messageWithCause, args, stringCause);
+            log(kind, element, messageWithCause, newArgs.toArray());
         }
 
     }
