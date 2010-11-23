@@ -131,7 +131,8 @@ public final class TranslationClassGenerator extends AbstractTool {
             //By default use the class output folder
             } else {
                 FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-                packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), FILE_SEPARATOR);
+                // packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), FILE_SEPARATOR);
+                packagePath = fObj.toUri().getPath();
             }
 
             File dir = new File(packagePath);
