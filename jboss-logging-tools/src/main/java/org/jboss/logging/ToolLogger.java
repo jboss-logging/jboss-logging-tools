@@ -264,7 +264,7 @@ public final class ToolLogger {
             String messageWithCause = messageFormat.concat(", cause : %s");
 
             //Add cause to error message logging
-            log(kind, element, messageFormat, args, stringCause);
+            log(kind, element, messageWithCause, args, stringCause);
         }
 
     }
