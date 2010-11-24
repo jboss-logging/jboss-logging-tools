@@ -74,7 +74,7 @@ public class MessageLoggerTranslator extends ClassModel {
         JCodeModel model = super.generateModel();
         JDefinedClass definedClass = getDefinedClass();
 
-        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
+        JMethod constructor = definedClass.constructor(JMod.PUBLIC);
         constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
 
         JBlock constructorBody = constructor.body();

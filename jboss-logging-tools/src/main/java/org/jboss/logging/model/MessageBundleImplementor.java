@@ -73,7 +73,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
         // Add default constructor
-        getDefinedClass().constructor(JMod.PROTECTED);
+        getDefinedClass().constructor(JMod.PUBLIC);
         ClassModelUtil.createReadResolveMethod(getDefinedClass());
         // Process the method descriptors and add to the model before
         // writing.

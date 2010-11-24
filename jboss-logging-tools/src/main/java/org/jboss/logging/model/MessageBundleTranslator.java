@@ -65,7 +65,7 @@ public class MessageBundleTranslator extends ClassModel {
         JCodeModel model = super.generateModel();
         JDefinedClass definedClass = getDefinedClass();
 
-        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
+        JMethod constructor = definedClass.constructor(JMod.PUBLIC);
         constructor.body().invoke("super");
 
         JMethod readResolve = ClassModelUtil.createReadResolveMethod(definedClass);

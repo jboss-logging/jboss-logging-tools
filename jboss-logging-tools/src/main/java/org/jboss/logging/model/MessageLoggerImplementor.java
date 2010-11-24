@@ -80,7 +80,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         final JCodeModel codeModel = super.generateModel();
         log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         // Add default constructor
-        final JMethod constructor = getDefinedClass().constructor(JMod.PROTECTED);
+        final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
         final JVar constructorParam = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
