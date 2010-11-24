@@ -1,0 +1,1133 @@
+Apache Maven 3.0 (r1004208; 2010-10-04 06:50:56-0500)
+Java version: 1.6.0_22
+Java home: /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre
+Default locale: en_US, platform encoding: UTF-8
+OS name: "linux" version: "2.6.34.7-61.fc13.x86_64" arch: "amd64" Family: "unix"
+[INFO] Error stacktraces are turned on.
+[DEBUG] Reading user settings from /home/david/.m2/settings.xml
+[DEBUG] Reading global settings from /home/david/local/apache-maven/conf/settings.xml
+[DEBUG] Using local repository at /home/david/.m2/repository
+[INFO] Scanning for projects...
+[DEBUG] Extension realms for project org.jboss.logging.test:tools-test:jar:1.0.0.Beta1-SNAPSHOT: (none)
+[DEBUG] Looking up lifecyle mappings for packaging jar from ClassRealm[plexus.core, parent: null]
+[DEBUG] === REACTOR BUILD PLAN ================================================
+[DEBUG] Project: org.jboss.logging.test:tools-test:jar:1.0.0.Beta1-SNAPSHOT
+[DEBUG] Tasks:   [clean, install]
+[DEBUG] Style:   Regular
+[DEBUG] =======================================================================
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building JBoss Logging I18n Tools Test Module 1.0.0.Beta1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] Lifecycle default -> [validate, initialize, generate-sources, process-sources, generate-resources, process-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy]
+[DEBUG] Lifecycle clean -> [pre-clean, clean, post-clean]
+[DEBUG] Lifecycle site -> [pre-site, site, post-site, site-deploy]
+[DEBUG] === PROJECT BUILD PLAN ================================================
+[DEBUG] Project:       org.jboss.logging.test:tools-test:1.0.0.Beta1-SNAPSHOT
+[DEBUG] Dependencies (collect): []
+[DEBUG] Dependencies (resolve): [compile, runtime, test]
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-clean-plugin:2.4.1:clean (default-clean)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <directory default-value="${project.build.directory}"/>
+  <excludeDefaultDirectories default-value="false">${clean.excludeDefaultDirectories}</excludeDefaultDirectories>
+  <failOnError default-value="true">${maven.clean.failOnError}</failOnError>
+  <followSymLinks default-value="false">${clean.followSymLinks}</followSymLinks>
+  <outputDirectory default-value="${project.build.outputDirectory}"/>
+  <reportDirectory default-value="${project.reporting.outputDirectory}"/>
+  <skip default-value="false">${clean.skip}</skip>
+  <testOutputDirectory default-value="${project.build.testOutputDirectory}"/>
+  <verbose>${clean.verbose}</verbose>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1:enforce (enforce-java-version)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <fail default-value="true">${enforcer.fail}</fail>
+  <failFast default-value="false">${enforcer.failFast}</failFast>
+  <ignoreCache default-value="false">${enforcer.ignoreCache}</ignoreCache>
+  <project>${project}</project>
+  <rules>
+    <requireJavaVersion>
+      <message>To build this project JDK 1.6 (or greater) is required. Please install it.</message>
+      <version>1.6</version>
+    </requireJavaVersion>
+  </rules>
+  <session>${session}</session>
+  <skip default-value="false">${enforcer.skip}</skip>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1:enforce (enforce-maven-version)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <fail default-value="true">${enforcer.fail}</fail>
+  <failFast default-value="false">${enforcer.failFast}</failFast>
+  <ignoreCache default-value="false">${enforcer.ignoreCache}</ignoreCache>
+  <project>${project}</project>
+  <rules>
+    <requireMavenVersion>
+      <message>To build this project Maven 3.0-beta-1 (or greater) is required. Please install it.</message>
+      <version>3.0-beta-1</version>
+    </requireMavenVersion>
+  </rules>
+  <session>${session}</session>
+  <skip default-value="false">${enforcer.skip}</skip>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-resources-plugin:2.4.3:resources (default-resources)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <buildFilters default-value="${project.build.filters}"/>
+  <encoding default-value="${project.build.sourceEncoding}">${encoding}</encoding>
+  <escapeString default-value="${maven.resources.escapeString}"/>
+  <escapeWindowsPaths default-value="true">${maven.resources.escapeWindowsPaths}</escapeWindowsPaths>
+  <includeEmptyDirs default-value="false">${maven.resources.includeEmptyDirs}</includeEmptyDirs>
+  <outputDirectory default-value="${project.build.outputDirectory}"/>
+  <overwrite default-value="false">${maven.resources.overwrite}</overwrite>
+  <project default-value="${project}"/>
+  <resources default-value="${project.resources}"/>
+  <session default-value="${session}"/>
+  <useBuildFilters default-value="true"/>
+  <useDefaultDelimiters default-value="true"/>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-compiler-plugin:2.3.1:compile (default-compile)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <basedir default-value="${basedir}"/>
+  <buildDirectory default-value="${project.build.directory}"/>
+  <classpathElements default-value="${project.compileClasspathElements}"/>
+  <compileSourceRoots default-value="${project.compileSourceRoots}"/>
+  <compilerArgument>-AgeneratedTranslationFilesPath=/home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/</compilerArgument>
+  <compilerId default-value="javac">${maven.compiler.compilerId}</compilerId>
+  <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
+  <debug default-value="true">${maven.compiler.debug}</debug>
+  <debuglevel>${maven.compiler.debuglevel}</debuglevel>
+  <encoding default-value="${project.build.sourceEncoding}">${encoding}</encoding>
+  <executable>${maven.compiler.executable}</executable>
+  <failOnError default-value="true">${maven.compiler.failOnError}</failOnError>
+  <fork default-value="false">${maven.compiler.fork}</fork>
+  <generatedSourcesDirectory default-value="${project.build.directory}/generated-sources/annotations"/>
+  <maxmem>${maven.compiler.maxmem}</maxmem>
+  <meminitial>${maven.compiler.meminitial}</meminitial>
+  <optimize default-value="false">${maven.compiler.optimize}</optimize>
+  <outputDirectory default-value="${project.build.outputDirectory}"/>
+  <outputFileName>${project.build.finalName}</outputFileName>
+  <projectArtifact default-value="${project.artifact}"/>
+  <session default-value="${session}"/>
+  <showDeprecation default-value="false">${maven.compiler.showDeprecation}</showDeprecation>
+  <showWarnings default-value="false">${maven.compiler.showWarnings}</showWarnings>
+  <source default-value="1.5">${maven.compiler.source}</source>
+  <staleMillis default-value="0">${lastModGranularityMs}</staleMillis>
+  <target default-value="1.5">${maven.compiler.target}</target>
+  <verbose default-value="false">true</verbose>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-resources-plugin:2.4.3:testResources (default-testResources)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <buildFilters default-value="${project.build.filters}"/>
+  <encoding default-value="${project.build.sourceEncoding}">${encoding}</encoding>
+  <escapeString default-value="${maven.resources.escapeString}"/>
+  <escapeWindowsPaths default-value="true">${maven.resources.escapeWindowsPaths}</escapeWindowsPaths>
+  <includeEmptyDirs default-value="false">${maven.resources.includeEmptyDirs}</includeEmptyDirs>
+  <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+  <overwrite default-value="false">${maven.resources.overwrite}</overwrite>
+  <project default-value="${project}"/>
+  <resources>${project.testResources}</resources>
+  <session default-value="${session}"/>
+  <useBuildFilters default-value="true"/>
+  <useDefaultDelimiters default-value="true"/>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-compiler-plugin:2.3.1:testCompile (default-testCompile)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <basedir default-value="${basedir}"/>
+  <buildDirectory default-value="${project.build.directory}"/>
+  <classpathElements default-value="${project.testClasspathElements}"/>
+  <compileSourceRoots default-value="${project.testCompileSourceRoots}"/>
+  <compilerArgument>-AgeneratedTranslationFilesPath=/home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/</compilerArgument>
+  <compilerId default-value="javac">${maven.compiler.compilerId}</compilerId>
+  <compilerVersion>${maven.compiler.compilerVersion}</compilerVersion>
+  <debug default-value="true">${maven.compiler.debug}</debug>
+  <debuglevel>${maven.compiler.debuglevel}</debuglevel>
+  <encoding default-value="${project.build.sourceEncoding}">${encoding}</encoding>
+  <executable>${maven.compiler.executable}</executable>
+  <failOnError default-value="true">${maven.compiler.failOnError}</failOnError>
+  <fork default-value="false">${maven.compiler.fork}</fork>
+  <generatedTestSourcesDirectory default-value="${project.build.directory}/generated-sources/test-annotations"/>
+  <maxmem>${maven.compiler.maxmem}</maxmem>
+  <meminitial>${maven.compiler.meminitial}</meminitial>
+  <optimize default-value="false">${maven.compiler.optimize}</optimize>
+  <outputDirectory default-value="${project.build.testOutputDirectory}"/>
+  <outputFileName>${project.build.finalName}</outputFileName>
+  <session default-value="${session}"/>
+  <showDeprecation default-value="false">${maven.compiler.showDeprecation}</showDeprecation>
+  <showWarnings default-value="false">${maven.compiler.showWarnings}</showWarnings>
+  <skip>${maven.test.skip}</skip>
+  <source default-value="1.5">${maven.compiler.source}</source>
+  <staleMillis default-value="0">${lastModGranularityMs}</staleMillis>
+  <target default-value="1.5">${maven.compiler.target}</target>
+  <testSource>${maven.compiler.testSource}</testSource>
+  <testTarget>${maven.compiler.testTarget}</testTarget>
+  <verbose default-value="false">true</verbose>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-surefire-plugin:2.5:test (default-test)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <argLine>${argLine}</argLine>
+  <basedir>${basedir}</basedir>
+  <childDelegation default-value="false">${childDelegation}</childDelegation>
+  <classesDirectory default-value="${project.build.outputDirectory}"/>
+  <classpathElements>${project.testClasspathElements}</classpathElements>
+  <debugForkedProcess>${maven.surefire.debug}</debugForkedProcess>
+  <disableXmlReport default-value="false">${disableXmlReport}</disableXmlReport>
+  <enableAssertions default-value="true">${enableAssertions}</enableAssertions>
+  <excludedGroups>${excludedGroups}</excludedGroups>
+  <failIfNoTests>${failIfNoTests}</failIfNoTests>
+  <forkMode default-value="once">${forkMode}</forkMode>
+  <forkedProcessTimeoutInSeconds>${surefire.timeout}</forkedProcessTimeoutInSeconds>
+  <groups>${groups}</groups>
+  <junitArtifactName default-value="junit:junit">${junitArtifactName}</junitArtifactName>
+  <jvm>${jvm}</jvm>
+  <localRepository>${localRepository}</localRepository>
+  <objectFactory>${objectFactory}</objectFactory>
+  <parallel>${parallel}</parallel>
+  <perCoreThreadCount>${perCoreThreadCount}</perCoreThreadCount>
+  <pluginArtifactMap>${plugin.artifactMap}</pluginArtifactMap>
+  <printSummary default-value="true">${surefire.printSummary}</printSummary>
+  <project>${project}</project>
+  <projectArtifactMap>${project.artifactMap}</projectArtifactMap>
+  <redirectTestOutputToFile default-value="false">${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
+  <remoteRepositories>${project.pluginArtifactRepositories}</remoteRepositories>
+  <reportFormat default-value="brief">${surefire.reportFormat}</reportFormat>
+  <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+  <session>${session}</session>
+  <skip>${maven.test.skip}</skip>
+  <skipExec>${maven.test.skip.exec}</skipExec>
+  <skipTests>${skipTests}</skipTests>
+  <test>${test}</test>
+  <testClassesDirectory default-value="${project.build.testOutputDirectory}"/>
+  <testFailureIgnore>${maven.test.failure.ignore}</testFailureIgnore>
+  <testNGArtifactName default-value="org.testng:testng">${testNGArtifactName}</testNGArtifactName>
+  <testSourceDirectory>${project.build.testSourceDirectory}</testSourceDirectory>
+  <threadCount>${threadCount}</threadCount>
+  <trimStackTrace default-value="true">${trimStackTrace}</trimStackTrace>
+  <useFile default-value="true">${surefire.useFile}</useFile>
+  <useManifestOnlyJar default-value="true">${surefire.useManifestOnlyJar}</useManifestOnlyJar>
+  <useSystemClassLoader>${surefire.useSystemClassLoader}</useSystemClassLoader>
+  <useUnlimitedThreads>${useUnlimitedThreads}</useUnlimitedThreads>
+  <workingDirectory>${basedir}</workingDirectory>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-jar-plugin:2.3.1:jar (default-jar)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <archive>
+    <index>true</index>
+    <manifest>
+      <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+      <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+    </manifest>
+    <manifestEntries>
+      <Implementation-URL>http://www.jboss.org/jboss-logging-tools-parent/tools-test</Implementation-URL>
+    </manifestEntries>
+    <manifestSections>
+      <manifestSection>
+        <name>Build-Information</name>
+        <manifestEntries>
+          <Java-Version>1.6.0_22</Java-Version>
+          <Java-Vendor>Sun Microsystems Inc.</Java-Vendor>
+          <Os-Name>Linux</Os-Name>
+          <Os-Arch>amd64</Os-Arch>
+          <Os-Version>2.6.34.7-61.fc13.x86_64</Os-Version>
+          <Scm-Url>scm:git:git@github.com:jboss/jboss-parent-pom.git/jboss-logging-tools-parent/tools-test</Scm-Url>
+        </manifestEntries>
+      </manifestSection>
+    </manifestSections>
+  </archive>
+  <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+  <defaultManifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</defaultManifestFile>
+  <finalName default-value="${project.build.finalName}">${jar.finalName}</finalName>
+  <forceCreation default-value="false">${jar.forceCreation}</forceCreation>
+  <outputDirectory>${project.build.directory}</outputDirectory>
+  <project>${project}</project>
+  <useDefaultManifestFile default-value="false">${jar.useDefaultManifestFile}</useDefaultManifestFile>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-source-plugin:2.1.2:jar-no-fork (attach-sources)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <attach default-value="true">${attach}</attach>
+  <defaultManifestFile default-value="${project.build.outputDirectory}/META-INF/MANIFEST.MF"/>
+  <excludeResources default-value="false">${source.excludeResources}</excludeResources>
+  <finalName default-value="${project.build.finalName}"/>
+  <forceCreation default-value="false">${source.forceCreation}</forceCreation>
+  <includePom default-value="false">${source.includePom}</includePom>
+  <outputDirectory default-value="${project.build.directory}"/>
+  <project>${project}</project>
+  <reactorProjects>${reactorProjects}</reactorProjects>
+  <useDefaultExcludes default-value="true"/>
+  <useDefaultManifestFile default-value="false"/>
+</configuration>
+[DEBUG] -----------------------------------------------------------------------
+[DEBUG] Goal:          org.apache.maven.plugins:maven-install-plugin:2.3.1:install (default-install)
+[DEBUG] Style:         Regular
+[DEBUG] Configuration: <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <artifact default-value="${project.artifact}"/>
+  <attachedArtifacts default-value="${project.attachedArtifacts}"/>
+  <createChecksum default-value="false">${createChecksum}</createChecksum>
+  <localRepository>${localRepository}</localRepository>
+  <packaging default-value="${project.packaging}"/>
+  <pomFile default-value="${project.file}"/>
+  <updateReleaseInfo default-value="false">${updateReleaseInfo}</updateReleaseInfo>
+</configuration>
+[DEBUG] =======================================================================
+[DEBUG] Skipped remote update check for org.jboss.logging:jboss-logging-tools:1.0.0.Beta1-SNAPSHOT/maven-metadata.xml, locally built metadata up-to-date.
+[DEBUG] Skipped remote update check for org.jboss.logging:jboss-logging-tools:1.0.0.Beta1-SNAPSHOT/maven-metadata.xml, locally built metadata up-to-date.
+[DEBUG] Skipped remote update check for org.jboss.logging:jboss-logging-tools-parent:1.0.0.Beta1-SNAPSHOT/maven-metadata.xml, locally built metadata up-to-date.
+[DEBUG] org.jboss.logging.test:tools-test:jar:1.0.0.Beta1-SNAPSHOT
+[DEBUG]    org.jboss.logging:jboss-logging-tools:jar:1.0.0.Beta1-SNAPSHOT:compile
+[DEBUG]       system:jdk-tools:jar:jdk:system
+[DEBUG]    org.jboss.logging:jboss-logging:jar:3.0.0.Beta4:compile
+[DEBUG] Skipped remote update check for org.jboss.logging:jboss-logging-tools:1.0.0.Beta1-SNAPSHOT/maven-metadata.xml, locally built metadata up-to-date.
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ tools-test ---
+[DEBUG] org.apache.maven.plugins:maven-clean-plugin:jar:2.4.1:
+[DEBUG]    org.apache.maven:maven-plugin-api:jar:2.0.6:compile
+[DEBUG]    org.codehaus.plexus:plexus-utils:jar:2.0.5:compile
+[DEBUG] Created new class realm plugin>org.apache.maven.plugins:maven-clean-plugin:2.4.1
+[DEBUG] Created new class realm maven.api
+[DEBUG] Populating class realm plugin>org.apache.maven.plugins:maven-clean-plugin:2.4.1
+[DEBUG]   Included: org.apache.maven.plugins:maven-clean-plugin:jar:2.4.1
+[DEBUG]   Included: org.codehaus.plexus:plexus-utils:jar:2.0.5
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-api:jar:2.0.6
+[DEBUG] Configuring mojo org.apache.maven.plugins:maven-clean-plugin:2.4.1:clean from plugin realm ClassRealm[plugin>org.apache.maven.plugins:maven-clean-plugin:2.4.1, parent: ClassRealm[maven.api, parent: null]]
+[DEBUG] Configuring mojo 'org.apache.maven.plugins:maven-clean-plugin:2.4.1:clean' with basic configurator -->
+[DEBUG]   (f) directory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target
+[DEBUG]   (f) excludeDefaultDirectories = false
+[DEBUG]   (f) failOnError = true
+[DEBUG]   (f) followSymLinks = false
+[DEBUG]   (f) outputDirectory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[DEBUG]   (f) reportDirectory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target/site
+[DEBUG]   (f) skip = false
+[DEBUG]   (f) testOutputDirectory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target/test-classes
+[DEBUG] -- end configuration --
+[INFO] Deleting /home/david/src/java/logws/jboss-logging-tools/tools-test/target
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainsSpotterLog.i18n_fr_FR_POSIX.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages.i18n_en_US.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainMessages.i18n_en.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainMessages.i18n_en_US_POSIX.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages.i18n_en.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainMessages.i18n_en_US.properties
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/test/TestInnerBundle$InnerBundle.i18n_en.properties
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/test
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainsSpotterLog_$logger_fr_FR_POSIX.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainMessages_$bundle_en_US.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainMessages_$bundle.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainMessages_$bundle_en.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages_$bundle_en.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainsSpotterLog_$logger_fr_FR.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages_$bundle.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainsSpotterLog_$logger_fr.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainsSpotterLog_$logger.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainMessages_$bundle_en_US_POSIX.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages_$bundle_en_US.java
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation/test
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/translation
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/test/TestExtendedLogger_$logger.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/test/TestLogger_$logger.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/test/TestBundle_$bundle.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/test/TestInnerBundle$InnerBundle_$bundle_en.java
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/test/TestInnerBundle$InnerBundle_$bundle.java
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging/test
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss/logging
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org/jboss
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations/org
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages.i18n_locale_COUNTRY_VARIANT.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/translation/test/TrainsSpotterLog.i18n_locale_COUNTRY_VARIANT.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/translation/test/TrainMessages.i18n_locale_COUNTRY_VARIANT.properties
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/translation/test
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/translation
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/test/TestInnerBundle$InnerBundle.i18n_locale_COUNTRY_VARIANT.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/test/TestLogger.i18n_locale_COUNTRY_VARIANT.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/test/TestBundle.i18n_locale_COUNTRY_VARIANT.properties
+[INFO] Deleting file /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/test/TestExtendedLogger.i18n_locale_COUNTRY_VARIANT.properties
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging/test
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss/logging
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org/jboss
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/org
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources
+[INFO] Deleting directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target
+[DEBUG] Skipping non-existing directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[DEBUG] Skipping non-existing directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/test-classes
+[DEBUG] Skipping non-existing directory /home/david/src/java/logws/jboss-logging-tools/tools-test/target/site
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0-beta-1:enforce (enforce-java-version) @ tools-test ---
+[DEBUG] org.apache.maven.plugins:maven-enforcer-plugin:jar:1.0-beta-1:
+[DEBUG]    org.apache.maven:maven-artifact:jar:2.0.9:compile
+[DEBUG]    org.apache.maven:maven-plugin-api:jar:2.0.9:compile
+[DEBUG]    org.apache.maven:maven-project:jar:2.0.9:compile
+[DEBUG]       org.apache.maven:maven-settings:jar:2.0.9:compile
+[DEBUG]       org.apache.maven:maven-profile:jar:2.0.9:compile
+[DEBUG]       org.apache.maven:maven-model:jar:2.0.9:compile
+[DEBUG]       org.apache.maven:maven-artifact-manager:jar:2.0.9:compile
+[DEBUG]       org.apache.maven:maven-plugin-registry:jar:2.0.9:compile
+[DEBUG]       org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile
+[DEBUG]          junit:junit:jar:3.8.2:test (scope managed from compile) (version managed from 3.8.1)
+[DEBUG]    org.apache.maven:maven-core:jar:2.0.9:compile
+[DEBUG]       org.apache.maven:maven-plugin-parameter-documenter:jar:2.0.9:compile
+[DEBUG]       org.apache.maven.reporting:maven-reporting-api:jar:2.0.9:compile
+[DEBUG]          org.apache.maven.doxia:doxia-sink-api:jar:1.0-alpha-10:compile
+[DEBUG]       org.apache.maven:maven-repository-metadata:jar:2.0.9:compile
+[DEBUG]       org.apache.maven:maven-error-diagnostics:jar:2.0.9:compile
+[DEBUG]       commons-cli:commons-cli:jar:1.0:compile
+[DEBUG]       org.apache.maven:maven-plugin-descriptor:jar:2.0.9:compile
+[DEBUG]       org.codehaus.plexus:plexus-interactivity-api:jar:1.0-alpha-4:compile
+[DEBUG]       org.apache.maven:maven-monitor:jar:2.0.9:compile
+[DEBUG]       classworlds:classworlds:jar:1.1:compile
+[DEBUG]    org.codehaus.plexus:plexus-utils:jar:1.5.8:compile
+[DEBUG]    commons-lang:commons-lang:jar:2.3:compile
+[DEBUG]    org.apache.maven.enforcer:enforcer-api:jar:1.0-beta-1:compile
+[DEBUG]    org.apache.maven.enforcer:enforcer-rules:jar:1.0-beta-1:compile
+[DEBUG]       org.beanshell:bsh:jar:2.0b4:compile
+[DEBUG] Created new class realm plugin>org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1
+[DEBUG] Populating class realm plugin>org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1
+[DEBUG]   Included: org.apache.maven.plugins:maven-enforcer-plugin:jar:1.0-beta-1
+[DEBUG]   Included: org.apache.maven.reporting:maven-reporting-api:jar:2.0.9
+[DEBUG]   Included: org.apache.maven.doxia:doxia-sink-api:jar:1.0-alpha-10
+[DEBUG]   Included: commons-cli:commons-cli:jar:1.0
+[DEBUG]   Included: org.codehaus.plexus:plexus-interactivity-api:jar:1.0-alpha-4
+[DEBUG]   Included: org.codehaus.plexus:plexus-utils:jar:1.5.8
+[DEBUG]   Included: commons-lang:commons-lang:jar:2.3
+[DEBUG]   Included: org.apache.maven.enforcer:enforcer-api:jar:1.0-beta-1
+[DEBUG]   Included: org.apache.maven.enforcer:enforcer-rules:jar:1.0-beta-1
+[DEBUG]   Included: org.beanshell:bsh:jar:2.0b4
+[DEBUG]   Excluded: org.apache.maven:maven-artifact:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-api:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-project:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-settings:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-profile:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-model:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-artifact-manager:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-registry:jar:2.0.9
+[DEBUG]   Excluded: org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1
+[DEBUG]   Excluded: junit:junit:jar:3.8.2
+[DEBUG]   Excluded: org.apache.maven:maven-core:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-parameter-documenter:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-repository-metadata:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-error-diagnostics:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-descriptor:jar:2.0.9
+[DEBUG]   Excluded: org.apache.maven:maven-monitor:jar:2.0.9
+[DEBUG]   Excluded: classworlds:classworlds:jar:1.1
+[DEBUG] Configuring mojo org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1:enforce from plugin realm ClassRealm[plugin>org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1, parent: ClassRealm[maven.api, parent: null]]
+[DEBUG] Configuring mojo 'org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1:enforce' with basic configurator -->
+[DEBUG]   (s) fail = true
+[DEBUG]   (s) failFast = false
+[DEBUG]   (f) ignoreCache = false
+[DEBUG]   (s) project = MavenProject: org.jboss.logging.test:tools-test:1.0.0.Beta1-SNAPSHOT @ /home/david/src/java/logws/jboss-logging-tools/tools-test/pom.xml
+[DEBUG]   (f) message = To build this project JDK 1.6 (or greater) is required. Please install it.
+[DEBUG]   (s) version = 1.6
+[DEBUG]   (s) rules = [org.apache.maven.plugins.enforcer.RequireJavaVersion@6d1a0d35]
+[DEBUG]   (s) session = org.apache.maven.execution.MavenSession@52c4c57
+[DEBUG]   (s) skip = false
+[DEBUG] -- end configuration --
+[DEBUG] Executing rule: org.apache.maven.plugins.enforcer.RequireJavaVersion
+[DEBUG] Rule org.apache.maven.plugins.enforcer.RequireJavaVersion is cacheable.
+[DEBUG] Detected Java String: 1.6.0_22
+[DEBUG] Normalized Java String: 1.6.0-22
+[DEBUG] Parsed Version: Major: 1 Minor: 6 Incremental: 0 Build: 22 Qualifier: null
+[DEBUG] Detected JDK Version: 1.6.0-22 is allowed in the range 1.6.
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0-beta-1:enforce (enforce-maven-version) @ tools-test ---
+[DEBUG] Configuring mojo org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1:enforce from plugin realm ClassRealm[plugin>org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1, parent: ClassRealm[maven.api, parent: null]]
+[DEBUG] Configuring mojo 'org.apache.maven.plugins:maven-enforcer-plugin:1.0-beta-1:enforce' with basic configurator -->
+[DEBUG]   (s) fail = true
+[DEBUG]   (s) failFast = false
+[DEBUG]   (f) ignoreCache = false
+[DEBUG]   (s) project = MavenProject: org.jboss.logging.test:tools-test:1.0.0.Beta1-SNAPSHOT @ /home/david/src/java/logws/jboss-logging-tools/tools-test/pom.xml
+[DEBUG]   (f) message = To build this project Maven 3.0-beta-1 (or greater) is required. Please install it.
+[DEBUG]   (s) version = 3.0-beta-1
+[DEBUG]   (s) rules = [org.apache.maven.plugins.enforcer.RequireMavenVersion@37f8d244]
+[DEBUG]   (s) session = org.apache.maven.execution.MavenSession@52c4c57
+[DEBUG]   (s) skip = false
+[DEBUG] -- end configuration --
+[DEBUG] Executing rule: org.apache.maven.plugins.enforcer.RequireMavenVersion
+[DEBUG] Rule org.apache.maven.plugins.enforcer.RequireMavenVersion is cacheable.
+[DEBUG] Detected Maven Version: 3.0
+[DEBUG] Detected Maven Version: 3.0 is allowed in the range 3.0-beta-1.
+[INFO] 
+[INFO] --- maven-resources-plugin:2.4.3:resources (default-resources) @ tools-test ---
+[DEBUG] org.apache.maven.plugins:maven-resources-plugin:jar:2.4.3:
+[DEBUG]    org.apache.maven:maven-plugin-api:jar:2.0.6:compile
+[DEBUG]    org.apache.maven:maven-project:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-profile:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-artifact-manager:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-plugin-registry:jar:2.0.6:compile
+[DEBUG]    org.apache.maven:maven-core:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-plugin-parameter-documenter:jar:2.0.6:compile
+[DEBUG]       org.apache.maven.reporting:maven-reporting-api:jar:2.0.6:compile
+[DEBUG]          org.apache.maven.doxia:doxia-sink-api:jar:1.0-alpha-7:compile
+[DEBUG]       org.apache.maven:maven-repository-metadata:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-error-diagnostics:jar:2.0.6:compile
+[DEBUG]       commons-cli:commons-cli:jar:1.0:compile
+[DEBUG]       org.apache.maven:maven-plugin-descriptor:jar:2.0.6:compile
+[DEBUG]       org.codehaus.plexus:plexus-interactivity-api:jar:1.0-alpha-4:compile
+[DEBUG]       classworlds:classworlds:jar:1.1:compile
+[DEBUG]    org.apache.maven:maven-artifact:jar:2.0.6:compile
+[DEBUG]    org.apache.maven:maven-settings:jar:2.0.6:compile
+[DEBUG]    org.apache.maven:maven-model:jar:2.0.6:compile
+[DEBUG]    org.apache.maven:maven-monitor:jar:2.0.6:compile
+[DEBUG]    org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile
+[DEBUG]       junit:junit:jar:3.8.1:compile
+[DEBUG]    org.codehaus.plexus:plexus-utils:jar:2.0.5:compile
+[DEBUG]    org.apache.maven.shared:maven-filtering:jar:1.0-beta-4:compile
+[DEBUG]       org.sonatype.plexus:plexus-build-api:jar:0.0.4:compile
+[DEBUG]    org.codehaus.plexus:plexus-interpolation:jar:1.13:compile
+[DEBUG] Created new class realm plugin>org.apache.maven.plugins:maven-resources-plugin:2.4.3
+[DEBUG] Populating class realm plugin>org.apache.maven.plugins:maven-resources-plugin:2.4.3
+[DEBUG]   Included: org.apache.maven.plugins:maven-resources-plugin:jar:2.4.3
+[DEBUG]   Included: org.apache.maven.reporting:maven-reporting-api:jar:2.0.6
+[DEBUG]   Included: org.apache.maven.doxia:doxia-sink-api:jar:1.0-alpha-7
+[DEBUG]   Included: commons-cli:commons-cli:jar:1.0
+[DEBUG]   Included: org.codehaus.plexus:plexus-interactivity-api:jar:1.0-alpha-4
+[DEBUG]   Included: junit:junit:jar:3.8.1
+[DEBUG]   Included: org.codehaus.plexus:plexus-utils:jar:2.0.5
+[DEBUG]   Included: org.apache.maven.shared:maven-filtering:jar:1.0-beta-4
+[DEBUG]   Included: org.sonatype.plexus:plexus-build-api:jar:0.0.4
+[DEBUG]   Included: org.codehaus.plexus:plexus-interpolation:jar:1.13
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-api:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-project:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-profile:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-artifact-manager:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-registry:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-core:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-parameter-documenter:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-repository-metadata:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-error-diagnostics:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-descriptor:jar:2.0.6
+[DEBUG]   Excluded: classworlds:classworlds:jar:1.1
+[DEBUG]   Excluded: org.apache.maven:maven-artifact:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-settings:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-model:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-monitor:jar:2.0.6
+[DEBUG]   Excluded: org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1
+[DEBUG] Configuring mojo org.apache.maven.plugins:maven-resources-plugin:2.4.3:resources from plugin realm ClassRealm[plugin>org.apache.maven.plugins:maven-resources-plugin:2.4.3, parent: ClassRealm[maven.api, parent: null]]
+[DEBUG] Configuring mojo 'org.apache.maven.plugins:maven-resources-plugin:2.4.3:resources' with basic configurator -->
+[DEBUG]   (f) buildFilters = []
+[DEBUG]   (f) encoding = UTF-8
+[DEBUG]   (f) escapeWindowsPaths = true
+[DEBUG]   (s) includeEmptyDirs = false
+[DEBUG]   (s) outputDirectory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[DEBUG]   (s) overwrite = false
+[DEBUG]   (f) project = MavenProject: org.jboss.logging.test:tools-test:1.0.0.Beta1-SNAPSHOT @ /home/david/src/java/logws/jboss-logging-tools/tools-test/pom.xml
+[DEBUG]   (s) resources = [Resource {targetPath: null, filtering: false, FileSet {directory: /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources, PatternSet [includes: {}, excludes: {}]}}]
+[DEBUG]   (f) session = org.apache.maven.execution.MavenSession@52c4c57
+[DEBUG]   (f) useBuildFilters = true
+[DEBUG]   (s) useDefaultDelimiters = true
+[DEBUG] -- end configuration --
+[DEBUG] properties used {env.DESKTOP_SESSION=gnome, env.OLDPWD=/home/david/src/java/logws/jboss-logging-tools/tools-test, file.encoding.pkg=sun.io, version.assembly.plugin=2.2-beta-5, java.home=/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre, env.GDM_LANG=en_US.utf8, env.DISPLAY=:0.0, classworlds.conf=/home/david/local/apache-maven/bin/m2.conf, env.XDG_SESSION_COOKIE=ab7255e2118191ff5be006b50000000e-1290552998.836522-99932180, java.endorsed.dirs=/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/endorsed, env.LOGNAME=david, env.USERNAME=david, env.FIGNORE=.svn, env.SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/1864,unix/unix:/tmp/.ICE-unix/1864, env.KDEDIRS=/usr, sun.os.patch.level=unknown, java.vendor.url=http://java.sun.com/, version.javadoc.plugin=2.7, version.findbugs.plugin=2.2, env.G_BROKEN_FILENAMES=1, java.version=1.6.0_22, env.ORBIT_SOCKETDIR=/tmp/orbit-david, env.VISUAL=pico -w, arguments=-Prelease, java.vendor.url.bug=http://java.sun.com/cgi-bin/bugreport.cgi, version.deploy.plugin=2.5, version.pir.plugin=2.2, env.GNOME_KEYRING_CONTROL=/tmp/keyring-NHzY6W, user.name=david, env.LANG=en_US.utf8, env.CVS_RSH=ssh, version.site.plugin=2.1.1, sun.io.unicode.encoding=UnicodeLittle, sun.jnu.encoding=UTF-8, env.DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-AdE4HZOTov,guid=df7e5d72dec930c832327f6c00000020, java.runtime.name=Java(TM) SE Runtime Environment, env.SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass, version.resources.plugin=2.4.3, java.specification.name=Java Platform API Specification, version.plugin.plugin=2.6, user.timezone=US/Central, env.LESSOPEN=|/usr/bin/lesspipe.sh %s, path.separator=:, env.XMODIFIERS=@im=none, file.encoding=UTF-8, version.war.plugin=2.1-beta-1, env.HOME=/home/david, version.taglist.plugin=2.4, version.pmd.plugin=2.5, netbeans.hint.license=jboss, env.GTK_RC_FILES=/etc/gtk/gtkrc:/home/david/.gtkrc-1.2-gnome2, version.eclipse.plugin=2.8, env.HOSTNAME=behemoth.home.flurg.com, env.GIT_EDITOR=pico -w, version.javancss.plugin=2.0, java.io.tmpdir=/tmp, env.GNOME_KEYRING_PID=1857, user.language=en, env.HISTCONTROL=ignoredups, line.separator=
+, env.HISTSIZE=1000, version.sonar.plugin=1.0-beta-1, version.enforcer.plugin=1.0-beta-1, version.antrun.plugin=1.4, version.cobertura.plugin=2.4, java.vm.info=mixed mode, sun.desktop=gnome, java.vm.specification.name=Java Virtual Machine Specification, jdk.min.version=1.6, version.install.plugin=2.3.1, env.COLORTERM=gnome-terminal, env.EDITOR=pico -w, env.IDEA_JDK=/home/david/local/jdk/sun-jdk-1.6.0_19-x86_64, env.GDMSESSION=gnome, version.jxr.plugin=2.2, java.awt.printerjob=sun.print.PSPrinterJob, env.WINDOWID=52430353, env.BASE_PATH=/home/david/bin:/home/david/local/bin:/home/david/local/perl5/bin:/usr/bin:/usr/sbin:/bin:/sbin:/usr/games/bin:/opt/bin:/usr/kerberos/bin:/usr/lib64/ccache:/usr/local/bin:/usr/X11R6/bin:/usr/local/sbin, os.name=Linux, java.specification.vendor=Sun Microsystems Inc., version.ear.plugin=2.4.2, env.TERM=xterm, java.vm.name=Java HotSpot(TM) 64-Bit Server VM, version.checkstyle.plugin=2.5, env.QT_IM_MODULE=xim, java.library.path=/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/amd64/server:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/amd64:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/amd64:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib, env.PATH=/home/david/local/jdk/home/bin:/home/david/bin:/home/david/local/bin:/home/david/local/perl5/bin:/usr/bin:/usr/sbin:/bin:/sbin:/usr/games/bin:/opt/bin:/usr/kerberos/bin:/usr/lib64/ccache:/usr/local/bin:/usr/X11R6/bin:/usr/local/sbin, jboss.snapshots.repo.url=https://repository.jboss.org/nexus/content/repositories/snapshots/, env.JDK_HOME=/home/david/local/jdk/home, version.jdepend.plugin=2.0-beta-2, targetJdk=1.6, java.class.version=50.0, env.SHLVL=2, env.LD_LIBRARY_PATH=/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/amd64/server:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/amd64:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/amd64, version.ejb.plugin=2.2.1, version.clover2.plugin=3.0.2, sun.boot.library.path=/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/amd64, project.build.sourceEncoding=UTF-8, sun.management.compiler=HotSpot 64-Bit Server Compiler, java.awt.graphicsenv=sun.awt.X11GraphicsEnvironment, env.USER=david, version.buildnumber.plugin=1.0-beta-4, env.GIT_COMPLETION_PATH=/etc/bash_completion.d/git, version.clean.plugin=2.4.1, java.vm.specification.version=1.0, env.KDE_IS_PRELINKED=1, version.source.plugin=2.1.2, env.GDM_KEYBOARD_LAYOUT=us, env.NLSPATH=/usr/dt/lib/nls/msg/%L/%N.cat, sun.cpu.isalist=, version.release.plugin=2.0, java.ext.dirs=/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext:/usr/java/packages/lib/ext, os.version=2.6.34.7-61.fc13.x86_64, user.home=/home/david, version.surefire.plugin=2.5, java.vm.vendor=Sun Microsystems Inc., jboss.releases.repo.url=https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/, env.JAVA_HOME=/home/david/local/jdk/home, env.XAUTHORITY=/var/run/gdm/auth-for-david-AOWFXV/database, user.dir=/home/david/src/java/logws/jboss-logging-tools/tools-test, env.XFILESEARCHPATH=/usr/dt/app-defaults/%L/Dt, env.WINDOWPATH=1, env.MAIL=/var/spool/mail/david, env.PWD=/home/david/src/java/logws/jboss-logging-tools/tools-test, version.rar.plugin=2.2, sun.cpu.endian=little, useReleaseProfile=false, env.QTLIB=/usr/lib64/qt-3.3/lib, maven.min.version=3.0-beta-1, java.vm.version=17.1-b03, java.class.path=/home/david/local/apache-maven/boot/plexus-classworlds-2.2.3.jar, version.idea.plugin=2.2, downloadSources=true, env.QTDIR=/usr/lib64/qt-3.3, os.arch=amd64, version.injection.plugin=1.0.2, version.compiler.plugin=2.3.1, sun.java.launcher=SUN_STANDARD, env.IMSETTINGS_INTEGRATE_DESKTOP=yes, java.vm.specification.vendor=Sun Microsystems Inc., file.separator=/, java.runtime.version=1.6.0_22-b04, sun.boot.class.path=/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/resources.jar:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/rt.jar:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/sunrsasign.jar:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jsse.jar:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jce.jar:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/charsets.jar:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/classes, env.SSH_AUTH_SOCK=/tmp/keyring-NHzY6W/ssh, version.dependency.plugin=2.1, env.QTINC=/usr/lib64/qt-3.3/include, user.country=US, env.ANT_HOME=/home/david/local/apache-ant, env.SHELL=/bin/bash, maven.home=/home/david/local/apache-maven, maven.compiler.target=1.6, maven.deploy.skip=true, java.vendor=Sun Microsystems Inc., version.jar.plugin=2.3.1, env.IMSETTINGS_MODULE=none, maven.compiler.source=1.6, java.specification.version=1.6, sun.arch.data.model=64, env.GNOME_DESKTOP_SESSION_ID=this-is-deprecated}
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[DEBUG] resource with targetPath null
+directory /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources
+excludes []
+includes []
+[DEBUG] ignoreDelta true
+[INFO] Copying 7 resources
+[DEBUG] file TestInnerBundle$InnerBundle.i18n_en.properties has a filtered file extension
+[DEBUG] copy /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources/org/jboss/logging/test/TestInnerBundle$InnerBundle.i18n_en.properties to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/test/TestInnerBundle$InnerBundle.i18n_en.properties
+[DEBUG] file TrainMessages.i18n_en_US.properties has a filtered file extension
+[DEBUG] copy /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources/org/jboss/logging/translation/test/TrainMessages.i18n_en_US.properties to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainMessages.i18n_en_US.properties
+[DEBUG] file TrainInnerMessages$InnerMessages.i18n_en.properties has a filtered file extension
+[DEBUG] copy /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages.i18n_en.properties to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages.i18n_en.properties
+[DEBUG] file TrainMessages.i18n_en_US_POSIX.properties has a filtered file extension
+[DEBUG] copy /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources/org/jboss/logging/translation/test/TrainMessages.i18n_en_US_POSIX.properties to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainMessages.i18n_en_US_POSIX.properties
+[DEBUG] file TrainMessages.i18n_en.properties has a filtered file extension
+[DEBUG] copy /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources/org/jboss/logging/translation/test/TrainMessages.i18n_en.properties to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainMessages.i18n_en.properties
+[DEBUG] file TrainInnerMessages$InnerMessages.i18n_en_US.properties has a filtered file extension
+[DEBUG] copy /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages.i18n_en_US.properties to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainInnerMessages$InnerMessages.i18n_en_US.properties
+[DEBUG] file TrainsSpotterLog.i18n_fr_FR_POSIX.properties has a filtered file extension
+[DEBUG] copy /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/resources/org/jboss/logging/translation/test/TrainsSpotterLog.i18n_fr_FR_POSIX.properties to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes/org/jboss/logging/translation/test/TrainsSpotterLog.i18n_fr_FR_POSIX.properties
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.1:compile (default-compile) @ tools-test ---
+[DEBUG] org.apache.maven.plugins:maven-compiler-plugin:jar:2.3.1:
+[DEBUG]    org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile
+[DEBUG]       junit:junit:jar:3.8.1:compile
+[DEBUG]       classworlds:classworlds:jar:1.1-alpha-2:compile
+[DEBUG]    org.apache.maven:maven-plugin-api:jar:2.0.6:compile
+[DEBUG]    org.apache.maven:maven-artifact:jar:2.0.6:compile
+[DEBUG]    org.apache.maven:maven-core:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-settings:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-plugin-parameter-documenter:jar:2.0.6:compile
+[DEBUG]       org.apache.maven.reporting:maven-reporting-api:jar:2.0.6:compile
+[DEBUG]          org.apache.maven.doxia:doxia-sink-api:jar:1.0-alpha-7:compile
+[DEBUG]       org.apache.maven:maven-profile:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-model:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-repository-metadata:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-error-diagnostics:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-project:jar:2.0.6:compile
+[DEBUG]          org.apache.maven:maven-plugin-registry:jar:2.0.6:compile
+[DEBUG]       commons-cli:commons-cli:jar:1.0:compile
+[DEBUG]       org.apache.maven:maven-plugin-descriptor:jar:2.0.6:compile
+[DEBUG]       org.codehaus.plexus:plexus-interactivity-api:jar:1.0-alpha-4:compile
+[DEBUG]       org.apache.maven:maven-artifact-manager:jar:2.0.6:compile
+[DEBUG]       org.apache.maven:maven-monitor:jar:2.0.6:compile
+[DEBUG]    org.codehaus.plexus:plexus-utils:jar:2.0.5:compile
+[DEBUG]    org.codehaus.plexus:plexus-compiler-api:jar:1.8:compile
+[DEBUG]    org.apache.maven:maven-toolchain:jar:1.0:compile
+[DEBUG]    org.codehaus.plexus:plexus-compiler-manager:jar:1.8:compile
+[DEBUG]    org.codehaus.plexus:plexus-compiler-javac:jar:1.8:runtime
+[DEBUG] Created new class realm plugin>org.apache.maven.plugins:maven-compiler-plugin:2.3.1
+[DEBUG] Populating class realm plugin>org.apache.maven.plugins:maven-compiler-plugin:2.3.1
+[DEBUG]   Included: org.apache.maven.plugins:maven-compiler-plugin:jar:2.3.1
+[DEBUG]   Included: junit:junit:jar:3.8.1
+[DEBUG]   Included: org.apache.maven.reporting:maven-reporting-api:jar:2.0.6
+[DEBUG]   Included: org.apache.maven.doxia:doxia-sink-api:jar:1.0-alpha-7
+[DEBUG]   Included: commons-cli:commons-cli:jar:1.0
+[DEBUG]   Included: org.codehaus.plexus:plexus-interactivity-api:jar:1.0-alpha-4
+[DEBUG]   Included: org.codehaus.plexus:plexus-utils:jar:2.0.5
+[DEBUG]   Included: org.codehaus.plexus:plexus-compiler-api:jar:1.8
+[DEBUG]   Included: org.codehaus.plexus:plexus-compiler-manager:jar:1.8
+[DEBUG]   Included: org.codehaus.plexus:plexus-compiler-javac:jar:1.8
+[DEBUG]   Excluded: org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1
+[DEBUG]   Excluded: classworlds:classworlds:jar:1.1-alpha-2
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-api:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-artifact:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-core:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-settings:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-parameter-documenter:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-profile:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-model:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-repository-metadata:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-error-diagnostics:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-project:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-registry:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-plugin-descriptor:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-artifact-manager:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-monitor:jar:2.0.6
+[DEBUG]   Excluded: org.apache.maven:maven-toolchain:jar:1.0
+[DEBUG] Configuring mojo org.apache.maven.plugins:maven-compiler-plugin:2.3.1:compile from plugin realm ClassRealm[plugin>org.apache.maven.plugins:maven-compiler-plugin:2.3.1, parent: ClassRealm[maven.api, parent: null]]
+[DEBUG] Configuring mojo 'org.apache.maven.plugins:maven-compiler-plugin:2.3.1:compile' with basic configurator -->
+[DEBUG]   (f) basedir = /home/david/src/java/logws/jboss-logging-tools/tools-test
+[DEBUG]   (f) buildDirectory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target
+[DEBUG]   (f) classpathElements = [/home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes, /home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar, /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar, /home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar]
+[DEBUG]   (f) compileSourceRoots = [/home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java]
+[DEBUG]   (f) compilerArgument = -AgeneratedTranslationFilesPath=/home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/
+[DEBUG]   (f) compilerId = javac
+[DEBUG]   (f) debug = true
+[DEBUG]   (f) encoding = UTF-8
+[DEBUG]   (f) failOnError = true
+[DEBUG]   (f) fork = false
+[DEBUG]   (f) generatedSourcesDirectory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations
+[DEBUG]   (f) optimize = false
+[DEBUG]   (f) outputDirectory = /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[DEBUG]   (f) outputFileName = tools-test-1.0.0.Beta1-SNAPSHOT
+[DEBUG]   (f) projectArtifact = org.jboss.logging.test:tools-test:jar:1.0.0.Beta1-SNAPSHOT
+[DEBUG]   (f) session = org.apache.maven.execution.MavenSession@52c4c57
+[DEBUG]   (f) showDeprecation = false
+[DEBUG]   (f) showWarnings = false
+[DEBUG]   (f) source = 1.6
+[DEBUG]   (f) staleMillis = 0
+[DEBUG]   (f) target = 1.6
+[DEBUG]   (f) verbose = true
+[DEBUG] -- end configuration --
+[DEBUG] Using compiler 'javac'.
+[DEBUG] Source directories: [/home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java]
+[DEBUG] Classpath: [/home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+ /home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar
+ /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar
+ /home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar]
+[DEBUG] Output directory: /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[DEBUG] Classpath:
+[DEBUG]  /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[DEBUG]  /home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar
+[DEBUG]  /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar
+[DEBUG]  /home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar
+[DEBUG] Source roots:
+[DEBUG]  /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java
+[DEBUG] Command line options:
+[DEBUG] -d /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes -classpath /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes:/home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar:/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar:/home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar: -sourcepath /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java: /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestExtendedLogger.java /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/package-info.java /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainInnerMessages.java /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestInnerBundle.java /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainsSpotterLog.java /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestBundle.java /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestLogger.java /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainMessages.java -s /home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-sources/annotations -g -verbose -nowarn -target 1.6 -source 1.6 -encoding UTF-8 -AgeneratedTranslationFilesPath=/home/david/src/java/logws/jboss-logging-tools/tools-test/target/generated-resources/
+[INFO] Compiling 8 source files to /home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] Failure executing javac, but could not parse the error:
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestExtendedLogger.java]
+[parsing completed 19ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/package-info.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainInnerMessages.java]
+[parsing completed 0ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestInnerBundle.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainsSpotterLog.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestBundle.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestLogger.java]
+[parsing completed 2ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainMessages.java]
+[parsing completed 0ms]
+[search path for source files: /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java,]
+[search path for class files: /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/resources.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/rt.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/sunrsasign.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jsse.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jce.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/charsets.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/classes,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunjce_provider.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/dnsns.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunpkcs11.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/localedata.jar,/home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes,/home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar,/home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar,.]
+[loading org/jboss/logging/LogMessage.class(org/jboss/logging:LogMessage.class)]
+[loading org/jboss/logging/Logger.class(org/jboss/logging:Logger.class)]
+[loading org/jboss/logging/Logger$Level.class(org/jboss/logging:Logger$Level.class)]
+[loading org/jboss/logging/Message.class(org/jboss/logging:Message.class)]
+[loading org/jboss/logging/MessageLogger.class(org/jboss/logging:MessageLogger.class)]
+[loading org/jboss/logging/Cause.class(org/jboss/logging:Cause.class)]
+[loading org/jboss/logging/Message$Format.class(org/jboss/logging:Message$Format.class)]
+[loading java/lang/Object.class(java/lang:Object.class)]
+[loading java/lang/String.class(java/lang:String.class)]
+[loading java/lang/IllegalArgumentException.class(java/lang:IllegalArgumentException.class)]
+[loading java/lang/Throwable.class(java/lang:Throwable.class)]
+[loading org/jboss/logging/MessageBundle.class(org/jboss/logging:MessageBundle.class)]
+[loading java/io/IOException.class(java/io:IOException.class)]
+[loading java/lang/CharSequence.class(java/lang:CharSequence.class)]
+[loading java/lang/RuntimeException.class(java/lang:RuntimeException.class)]
+[loading java/lang/annotation/Retention.class(java/lang/annotation:Retention.class)]
+[loading java/lang/annotation/RetentionPolicy.class(java/lang/annotation:RetentionPolicy.class)]
+[loading java/lang/annotation/Target.class(java/lang/annotation:Target.class)]
+[loading java/lang/annotation/ElementType.class(java/lang/annotation:ElementType.class)]
+[loading java/lang/annotation/Annotation.class(java/lang/annotation:Annotation.class)]
+Round 1:
+	input files: {org.jboss.logging.test.TestExtendedLogger, org.jboss.logging.translation.test.TrainInnerMessages, org.jboss.logging.test.TestInnerBundle, org.jboss.logging.translation.test.TrainsSpotterLog, org.jboss.logging.test.TestBundle, org.jboss.logging.test.TestLogger, org.jboss.logging.translation.test.TrainMessages}
+	annotations: [org.jboss.logging.MessageLogger, org.jboss.logging.LogMessage, org.jboss.logging.Message, org.jboss.logging.MessageBundle, org.jboss.logging.Cause]
+	last round: false
+error: Cannot generate org.jboss.logging.translation.test.TrainMessages_$bundle_en source file, cause : javax.annotation.processing.FilerException: Attempt to recreate a file for type org.jboss.logging.translation.test.TrainMessages_$bundle_en
+	at com.sun.tools.javac.processing.JavacFiler.checkNameAndExistence(JavacFiler.java:478)
+	at com.sun.tools.javac.processing.JavacFiler.createSourceOrClassFile(JavacFiler.java:372)
+	at com.sun.tools.javac.processing.JavacFiler.createSourceFile(JavacFiler.java:363)
+	at org.jboss.logging.generator.TranslationClassGenerator.generateSourceFile(TranslationClassGenerator.java:235)
+	at org.jboss.logging.generator.TranslationClassGenerator.processTypeElement(TranslationClassGenerator.java:146)
+	at org.jboss.logging.LoggingToolsProcessor.process(LoggingToolsProcessor.java:150)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.callProcessor(JavacProcessingEnvironment.java:625)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.discoverAndRunProcs(JavacProcessingEnvironment.java:554)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.doProcessing(JavacProcessingEnvironment.java:699)
+	at com.sun.tools.javac.main.JavaCompiler.processAnnotations(JavaCompiler.java:981)
+	at com.sun.tools.javac.main.JavaCompiler.compile(JavaCompiler.java:727)
+	at com.sun.tools.javac.main.Main.compile(Main.java:353)
+	at com.sun.tools.javac.main.Main.compile(Main.java:279)
+	at com.sun.tools.javac.main.Main.compile(Main.java:270)
+	at com.sun.tools.javac.Main.compile(Main.java:87)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.plexus.compiler.javac.JavacCompiler.compileInProcess(JavacCompiler.java:549)
+	at org.codehaus.plexus.compiler.javac.JavacCompiler.compile(JavacCompiler.java:156)
+	at org.apache.maven.plugin.AbstractCompilerMojo.execute(AbstractCompilerMojo.java:605)
+	at org.apache.maven.plugin.CompilerMojo.execute(CompilerMojo.java:128)
+	at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:107)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:195)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:148)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:140)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:84)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:59)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.singleThreadedBuild(LifecycleStarter.java:183)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:161)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:314)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:151)
+	at org.apache.maven.cli.MavenCli.execute(MavenCli.java:445)
+	at org.apache.maven.cli.MavenCli.doMain(MavenCli.java:168)
+	at org.apache.maven.cli.MavenCli.main(MavenCli.java:132)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:290)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:230)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:409)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:352)
+Processor org.jboss.logging.LoggingToolsProcessor matches [org.jboss.logging.MessageBundle, org.jboss.logging.MessageLogger] and returns false.
+Round 2:
+	input files: {}
+	annotations: []
+	last round: true
+[total 664ms]
+1 error
+
+[INFO] 1error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 2.601s
+[INFO] Finished at: Tue Nov 23 17:56:08 CST 2010
+[INFO] Final Memory: 11M/151M
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:2.3.1:compile (default-compile) on project tools-test: Compilation failure
+[ERROR] Failure executing javac, but could not parse the error:
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestExtendedLogger.java]
+[ERROR] [parsing completed 19ms]
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/package-info.java]
+[ERROR] [parsing completed 1ms]
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainInnerMessages.java]
+[ERROR] [parsing completed 0ms]
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestInnerBundle.java]
+[ERROR] [parsing completed 1ms]
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainsSpotterLog.java]
+[ERROR] [parsing completed 1ms]
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestBundle.java]
+[ERROR] [parsing completed 1ms]
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestLogger.java]
+[ERROR] [parsing completed 2ms]
+[ERROR] [parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainMessages.java]
+[ERROR] [parsing completed 0ms]
+[ERROR] [search path for source files: /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java,]
+[ERROR] [search path for class files: /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/resources.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/rt.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/sunrsasign.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jsse.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jce.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/charsets.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/classes,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunjce_provider.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/dnsns.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunpkcs11.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/localedata.jar,/home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes,/home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar,/home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar,.]
+[ERROR] [loading org/jboss/logging/LogMessage.class(org/jboss/logging:LogMessage.class)]
+[ERROR] [loading org/jboss/logging/Logger.class(org/jboss/logging:Logger.class)]
+[ERROR] [loading org/jboss/logging/Logger$Level.class(org/jboss/logging:Logger$Level.class)]
+[ERROR] [loading org/jboss/logging/Message.class(org/jboss/logging:Message.class)]
+[ERROR] [loading org/jboss/logging/MessageLogger.class(org/jboss/logging:MessageLogger.class)]
+[ERROR] [loading org/jboss/logging/Cause.class(org/jboss/logging:Cause.class)]
+[ERROR] [loading org/jboss/logging/Message$Format.class(org/jboss/logging:Message$Format.class)]
+[ERROR] [loading java/lang/Object.class(java/lang:Object.class)]
+[ERROR] [loading java/lang/String.class(java/lang:String.class)]
+[ERROR] [loading java/lang/IllegalArgumentException.class(java/lang:IllegalArgumentException.class)]
+[ERROR] [loading java/lang/Throwable.class(java/lang:Throwable.class)]
+[ERROR] [loading org/jboss/logging/MessageBundle.class(org/jboss/logging:MessageBundle.class)]
+[ERROR] [loading java/io/IOException.class(java/io:IOException.class)]
+[ERROR] [loading java/lang/CharSequence.class(java/lang:CharSequence.class)]
+[ERROR] [loading java/lang/RuntimeException.class(java/lang:RuntimeException.class)]
+[ERROR] [loading java/lang/annotation/Retention.class(java/lang/annotation:Retention.class)]
+[ERROR] [loading java/lang/annotation/RetentionPolicy.class(java/lang/annotation:RetentionPolicy.class)]
+[ERROR] [loading java/lang/annotation/Target.class(java/lang/annotation:Target.class)]
+[ERROR] [loading java/lang/annotation/ElementType.class(java/lang/annotation:ElementType.class)]
+[ERROR] [loading java/lang/annotation/Annotation.class(java/lang/annotation:Annotation.class)]
+[ERROR] Round 1:
+[ERROR] input files: {org.jboss.logging.test.TestExtendedLogger, org.jboss.logging.translation.test.TrainInnerMessages, org.jboss.logging.test.TestInnerBundle, org.jboss.logging.translation.test.TrainsSpotterLog, org.jboss.logging.test.TestBundle, org.jboss.logging.test.TestLogger, org.jboss.logging.translation.test.TrainMessages}
+[ERROR] annotations: [org.jboss.logging.MessageLogger, org.jboss.logging.LogMessage, org.jboss.logging.Message, org.jboss.logging.MessageBundle, org.jboss.logging.Cause]
+[ERROR] last round: false
+[ERROR] error: Cannot generate org.jboss.logging.translation.test.TrainMessages_$bundle_en source file, cause : javax.annotation.processing.FilerException: Attempt to recreate a file for type org.jboss.logging.translation.test.TrainMessages_$bundle_en
+[ERROR] at com.sun.tools.javac.processing.JavacFiler.checkNameAndExistence(JavacFiler.java:478)
+[ERROR] at com.sun.tools.javac.processing.JavacFiler.createSourceOrClassFile(JavacFiler.java:372)
+[ERROR] at com.sun.tools.javac.processing.JavacFiler.createSourceFile(JavacFiler.java:363)
+[ERROR] at org.jboss.logging.generator.TranslationClassGenerator.generateSourceFile(TranslationClassGenerator.java:235)
+[ERROR] at org.jboss.logging.generator.TranslationClassGenerator.processTypeElement(TranslationClassGenerator.java:146)
+[ERROR] at org.jboss.logging.LoggingToolsProcessor.process(LoggingToolsProcessor.java:150)
+[ERROR] at com.sun.tools.javac.processing.JavacProcessingEnvironment.callProcessor(JavacProcessingEnvironment.java:625)
+[ERROR] at com.sun.tools.javac.processing.JavacProcessingEnvironment.discoverAndRunProcs(JavacProcessingEnvironment.java:554)
+[ERROR] at com.sun.tools.javac.processing.JavacProcessingEnvironment.doProcessing(JavacProcessingEnvironment.java:699)
+[ERROR] at com.sun.tools.javac.main.JavaCompiler.processAnnotations(JavaCompiler.java:981)
+[ERROR] at com.sun.tools.javac.main.JavaCompiler.compile(JavaCompiler.java:727)
+[ERROR] at com.sun.tools.javac.main.Main.compile(Main.java:353)
+[ERROR] at com.sun.tools.javac.main.Main.compile(Main.java:279)
+[ERROR] at com.sun.tools.javac.main.Main.compile(Main.java:270)
+[ERROR] at com.sun.tools.javac.Main.compile(Main.java:87)
+[ERROR] at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+[ERROR] at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+[ERROR] at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+[ERROR] at java.lang.reflect.Method.invoke(Method.java:597)
+[ERROR] at org.codehaus.plexus.compiler.javac.JavacCompiler.compileInProcess(JavacCompiler.java:549)
+[ERROR] at org.codehaus.plexus.compiler.javac.JavacCompiler.compile(JavacCompiler.java:156)
+[ERROR] at org.apache.maven.plugin.AbstractCompilerMojo.execute(AbstractCompilerMojo.java:605)
+[ERROR] at org.apache.maven.plugin.CompilerMojo.execute(CompilerMojo.java:128)
+[ERROR] at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:107)
+[ERROR] at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:195)
+[ERROR] at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:148)
+[ERROR] at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:140)
+[ERROR] at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:84)
+[ERROR] at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:59)
+[ERROR] at org.apache.maven.lifecycle.internal.LifecycleStarter.singleThreadedBuild(LifecycleStarter.java:183)
+[ERROR] at org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:161)
+[ERROR] at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:314)
+[ERROR] at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:151)
+[ERROR] at org.apache.maven.cli.MavenCli.execute(MavenCli.java:445)
+[ERROR] at org.apache.maven.cli.MavenCli.doMain(MavenCli.java:168)
+[ERROR] at org.apache.maven.cli.MavenCli.main(MavenCli.java:132)
+[ERROR] at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+[ERROR] at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+[ERROR] at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+[ERROR] at java.lang.reflect.Method.invoke(Method.java:597)
+[ERROR] at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:290)
+[ERROR] at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:230)
+[ERROR] at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:409)
+[ERROR] at org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:352)
+[ERROR] Processor org.jboss.logging.LoggingToolsProcessor matches [org.jboss.logging.MessageBundle, org.jboss.logging.MessageLogger] and returns false.
+[ERROR] Round 2:
+[ERROR] input files: {}
+[ERROR] annotations: []
+[ERROR] last round: true
+[ERROR] [total 664ms]
+[ERROR] 1 error
+[ERROR] -> [Help 1]
+org.apache.maven.lifecycle.LifecycleExecutionException: Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:2.3.1:compile (default-compile) on project tools-test: Compilation failure
+Failure executing javac, but could not parse the error:
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestExtendedLogger.java]
+[parsing completed 19ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/package-info.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainInnerMessages.java]
+[parsing completed 0ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestInnerBundle.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainsSpotterLog.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestBundle.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestLogger.java]
+[parsing completed 2ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainMessages.java]
+[parsing completed 0ms]
+[search path for source files: /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java,]
+[search path for class files: /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/resources.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/rt.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/sunrsasign.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jsse.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jce.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/charsets.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/classes,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunjce_provider.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/dnsns.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunpkcs11.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/localedata.jar,/home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes,/home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar,/home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar,.]
+[loading org/jboss/logging/LogMessage.class(org/jboss/logging:LogMessage.class)]
+[loading org/jboss/logging/Logger.class(org/jboss/logging:Logger.class)]
+[loading org/jboss/logging/Logger$Level.class(org/jboss/logging:Logger$Level.class)]
+[loading org/jboss/logging/Message.class(org/jboss/logging:Message.class)]
+[loading org/jboss/logging/MessageLogger.class(org/jboss/logging:MessageLogger.class)]
+[loading org/jboss/logging/Cause.class(org/jboss/logging:Cause.class)]
+[loading org/jboss/logging/Message$Format.class(org/jboss/logging:Message$Format.class)]
+[loading java/lang/Object.class(java/lang:Object.class)]
+[loading java/lang/String.class(java/lang:String.class)]
+[loading java/lang/IllegalArgumentException.class(java/lang:IllegalArgumentException.class)]
+[loading java/lang/Throwable.class(java/lang:Throwable.class)]
+[loading org/jboss/logging/MessageBundle.class(org/jboss/logging:MessageBundle.class)]
+[loading java/io/IOException.class(java/io:IOException.class)]
+[loading java/lang/CharSequence.class(java/lang:CharSequence.class)]
+[loading java/lang/RuntimeException.class(java/lang:RuntimeException.class)]
+[loading java/lang/annotation/Retention.class(java/lang/annotation:Retention.class)]
+[loading java/lang/annotation/RetentionPolicy.class(java/lang/annotation:RetentionPolicy.class)]
+[loading java/lang/annotation/Target.class(java/lang/annotation:Target.class)]
+[loading java/lang/annotation/ElementType.class(java/lang/annotation:ElementType.class)]
+[loading java/lang/annotation/Annotation.class(java/lang/annotation:Annotation.class)]
+Round 1:
+	input files: {org.jboss.logging.test.TestExtendedLogger, org.jboss.logging.translation.test.TrainInnerMessages, org.jboss.logging.test.TestInnerBundle, org.jboss.logging.translation.test.TrainsSpotterLog, org.jboss.logging.test.TestBundle, org.jboss.logging.test.TestLogger, org.jboss.logging.translation.test.TrainMessages}
+	annotations: [org.jboss.logging.MessageLogger, org.jboss.logging.LogMessage, org.jboss.logging.Message, org.jboss.logging.MessageBundle, org.jboss.logging.Cause]
+	last round: false
+error: Cannot generate org.jboss.logging.translation.test.TrainMessages_$bundle_en source file, cause : javax.annotation.processing.FilerException: Attempt to recreate a file for type org.jboss.logging.translation.test.TrainMessages_$bundle_en
+	at com.sun.tools.javac.processing.JavacFiler.checkNameAndExistence(JavacFiler.java:478)
+	at com.sun.tools.javac.processing.JavacFiler.createSourceOrClassFile(JavacFiler.java:372)
+	at com.sun.tools.javac.processing.JavacFiler.createSourceFile(JavacFiler.java:363)
+	at org.jboss.logging.generator.TranslationClassGenerator.generateSourceFile(TranslationClassGenerator.java:235)
+	at org.jboss.logging.generator.TranslationClassGenerator.processTypeElement(TranslationClassGenerator.java:146)
+	at org.jboss.logging.LoggingToolsProcessor.process(LoggingToolsProcessor.java:150)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.callProcessor(JavacProcessingEnvironment.java:625)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.discoverAndRunProcs(JavacProcessingEnvironment.java:554)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.doProcessing(JavacProcessingEnvironment.java:699)
+	at com.sun.tools.javac.main.JavaCompiler.processAnnotations(JavaCompiler.java:981)
+	at com.sun.tools.javac.main.JavaCompiler.compile(JavaCompiler.java:727)
+	at com.sun.tools.javac.main.Main.compile(Main.java:353)
+	at com.sun.tools.javac.main.Main.compile(Main.java:279)
+	at com.sun.tools.javac.main.Main.compile(Main.java:270)
+	at com.sun.tools.javac.Main.compile(Main.java:87)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.plexus.compiler.javac.JavacCompiler.compileInProcess(JavacCompiler.java:549)
+	at org.codehaus.plexus.compiler.javac.JavacCompiler.compile(JavacCompiler.java:156)
+	at org.apache.maven.plugin.AbstractCompilerMojo.execute(AbstractCompilerMojo.java:605)
+	at org.apache.maven.plugin.CompilerMojo.execute(CompilerMojo.java:128)
+	at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:107)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:195)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:148)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:140)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:84)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:59)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.singleThreadedBuild(LifecycleStarter.java:183)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:161)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:314)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:151)
+	at org.apache.maven.cli.MavenCli.execute(MavenCli.java:445)
+	at org.apache.maven.cli.MavenCli.doMain(MavenCli.java:168)
+	at org.apache.maven.cli.MavenCli.main(MavenCli.java:132)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:290)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:230)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:409)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:352)
+Processor org.jboss.logging.LoggingToolsProcessor matches [org.jboss.logging.MessageBundle, org.jboss.logging.MessageLogger] and returns false.
+Round 2:
+	input files: {}
+	annotations: []
+	last round: true
+[total 664ms]
+1 error
+
+
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:199)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:148)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:140)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:84)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:59)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.singleThreadedBuild(LifecycleStarter.java:183)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:161)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:314)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:151)
+	at org.apache.maven.cli.MavenCli.execute(MavenCli.java:445)
+	at org.apache.maven.cli.MavenCli.doMain(MavenCli.java:168)
+	at org.apache.maven.cli.MavenCli.main(MavenCli.java:132)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:290)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:230)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:409)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:352)
+Caused by: org.apache.maven.plugin.CompilationFailureException: Compilation failure
+Failure executing javac, but could not parse the error:
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestExtendedLogger.java]
+[parsing completed 19ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/package-info.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainInnerMessages.java]
+[parsing completed 0ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestInnerBundle.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainsSpotterLog.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestBundle.java]
+[parsing completed 1ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/test/TestLogger.java]
+[parsing completed 2ms]
+[parsing started /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java/org/jboss/logging/translation/test/TrainMessages.java]
+[parsing completed 0ms]
+[search path for source files: /home/david/src/java/logws/jboss-logging-tools/tools-test/src/main/java,]
+[search path for class files: /home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/resources.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/rt.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/sunrsasign.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jsse.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/jce.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/charsets.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/classes,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunjce_provider.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/dnsns.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/sunpkcs11.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/lib/ext/localedata.jar,/home/david/src/java/logws/jboss-logging-tools/tools-test/target/classes,/home/david/.m2/repository/org/jboss/logging/jboss-logging-tools/1.0.0.Beta1-SNAPSHOT/jboss-logging-tools-1.0.0.Beta1-SNAPSHOT.jar,/home/david/local/jdk/sun-jdk-1.6.0_22-x86_64/jre/../lib/tools.jar,/home/david/.m2/repository/org/jboss/logging/jboss-logging/3.0.0.Beta4/jboss-logging-3.0.0.Beta4.jar,.]
+[loading org/jboss/logging/LogMessage.class(org/jboss/logging:LogMessage.class)]
+[loading org/jboss/logging/Logger.class(org/jboss/logging:Logger.class)]
+[loading org/jboss/logging/Logger$Level.class(org/jboss/logging:Logger$Level.class)]
+[loading org/jboss/logging/Message.class(org/jboss/logging:Message.class)]
+[loading org/jboss/logging/MessageLogger.class(org/jboss/logging:MessageLogger.class)]
+[loading org/jboss/logging/Cause.class(org/jboss/logging:Cause.class)]
+[loading org/jboss/logging/Message$Format.class(org/jboss/logging:Message$Format.class)]
+[loading java/lang/Object.class(java/lang:Object.class)]
+[loading java/lang/String.class(java/lang:String.class)]
+[loading java/lang/IllegalArgumentException.class(java/lang:IllegalArgumentException.class)]
+[loading java/lang/Throwable.class(java/lang:Throwable.class)]
+[loading org/jboss/logging/MessageBundle.class(org/jboss/logging:MessageBundle.class)]
+[loading java/io/IOException.class(java/io:IOException.class)]
+[loading java/lang/CharSequence.class(java/lang:CharSequence.class)]
+[loading java/lang/RuntimeException.class(java/lang:RuntimeException.class)]
+[loading java/lang/annotation/Retention.class(java/lang/annotation:Retention.class)]
+[loading java/lang/annotation/RetentionPolicy.class(java/lang/annotation:RetentionPolicy.class)]
+[loading java/lang/annotation/Target.class(java/lang/annotation:Target.class)]
+[loading java/lang/annotation/ElementType.class(java/lang/annotation:ElementType.class)]
+[loading java/lang/annotation/Annotation.class(java/lang/annotation:Annotation.class)]
+Round 1:
+	input files: {org.jboss.logging.test.TestExtendedLogger, org.jboss.logging.translation.test.TrainInnerMessages, org.jboss.logging.test.TestInnerBundle, org.jboss.logging.translation.test.TrainsSpotterLog, org.jboss.logging.test.TestBundle, org.jboss.logging.test.TestLogger, org.jboss.logging.translation.test.TrainMessages}
+	annotations: [org.jboss.logging.MessageLogger, org.jboss.logging.LogMessage, org.jboss.logging.Message, org.jboss.logging.MessageBundle, org.jboss.logging.Cause]
+	last round: false
+error: Cannot generate org.jboss.logging.translation.test.TrainMessages_$bundle_en source file, cause : javax.annotation.processing.FilerException: Attempt to recreate a file for type org.jboss.logging.translation.test.TrainMessages_$bundle_en
+	at com.sun.tools.javac.processing.JavacFiler.checkNameAndExistence(JavacFiler.java:478)
+	at com.sun.tools.javac.processing.JavacFiler.createSourceOrClassFile(JavacFiler.java:372)
+	at com.sun.tools.javac.processing.JavacFiler.createSourceFile(JavacFiler.java:363)
+	at org.jboss.logging.generator.TranslationClassGenerator.generateSourceFile(TranslationClassGenerator.java:235)
+	at org.jboss.logging.generator.TranslationClassGenerator.processTypeElement(TranslationClassGenerator.java:146)
+	at org.jboss.logging.LoggingToolsProcessor.process(LoggingToolsProcessor.java:150)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.callProcessor(JavacProcessingEnvironment.java:625)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.discoverAndRunProcs(JavacProcessingEnvironment.java:554)
+	at com.sun.tools.javac.processing.JavacProcessingEnvironment.doProcessing(JavacProcessingEnvironment.java:699)
+	at com.sun.tools.javac.main.JavaCompiler.processAnnotations(JavaCompiler.java:981)
+	at com.sun.tools.javac.main.JavaCompiler.compile(JavaCompiler.java:727)
+	at com.sun.tools.javac.main.Main.compile(Main.java:353)
+	at com.sun.tools.javac.main.Main.compile(Main.java:279)
+	at com.sun.tools.javac.main.Main.compile(Main.java:270)
+	at com.sun.tools.javac.Main.compile(Main.java:87)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.plexus.compiler.javac.JavacCompiler.compileInProcess(JavacCompiler.java:549)
+	at org.codehaus.plexus.compiler.javac.JavacCompiler.compile(JavacCompiler.java:156)
+	at org.apache.maven.plugin.AbstractCompilerMojo.execute(AbstractCompilerMojo.java:605)
+	at org.apache.maven.plugin.CompilerMojo.execute(CompilerMojo.java:128)
+	at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:107)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:195)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:148)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:140)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:84)
+	at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:59)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.singleThreadedBuild(LifecycleStarter.java:183)
+	at org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:161)
+	at org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:314)
+	at org.apache.maven.DefaultMaven.execute(DefaultMaven.java:151)
+	at org.apache.maven.cli.MavenCli.execute(MavenCli.java:445)
+	at org.apache.maven.cli.MavenCli.doMain(MavenCli.java:168)
+	at org.apache.maven.cli.MavenCli.main(MavenCli.java:132)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:290)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:230)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:409)
+	at org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:352)
+Processor org.jboss.logging.LoggingToolsProcessor matches [org.jboss.logging.MessageBundle, org.jboss.logging.MessageLogger] and returns false.
+Round 2:
+	input files: {}
+	annotations: []
+	last round: true
+[total 664ms]
+1 error
+
+
+	at org.apache.maven.plugin.AbstractCompilerMojo.execute(AbstractCompilerMojo.java:656)
+	at org.apache.maven.plugin.CompilerMojo.execute(CompilerMojo.java:128)
+	at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:107)
+	at org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:195)
+	... 19 more
+[ERROR] 
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

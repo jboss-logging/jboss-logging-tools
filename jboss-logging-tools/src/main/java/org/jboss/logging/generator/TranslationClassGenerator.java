@@ -20,6 +20,8 @@
  */
 package org.jboss.logging.generator;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import org.jboss.logging.AbstractTool;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -138,6 +140,11 @@ public final class TranslationClassGenerator extends AbstractTool {
             File[] files = dir.listFiles(new TranslationFileFilter(primaryClassNamePrefix));
 
             if (files != null) {
+                Arrays.sort(files, new Comparator<File>() {
+                    public int compare(final File o1, final File o2) {
+                        return Integer.signum(o1.getName().length() - o2.getName().length());
+                    }
+                });
                 for (File file : files) {
                     String classNameSuffix = getTranslationClassNameSuffix(file.getName());
                     String qualifiedClassName = primaryClassName.concat(classNameSuffix);

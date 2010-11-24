@@ -67,41 +67,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <!-- <configuration>
-                    <compilerArgument>-proc:none</compilerArgument>
-                </configuration> -->
             </plugin>
-            <!-- <plugin>
-                <groupId>org.bsc.maven</groupId>
-                <artifactId>maven-processor-plugin</artifactId>
-                <version>1.3.4</version>
-                <executions>
-                    <execution>
-                        <id>logging-tools-process</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <compilerArguments>
-                                -AtranslationFilesPath=${project.basedir}/src/main/resources/
-                            </compilerArguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>tools-process</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <configuration>
-                            <compilerArguments>
-                                -AgeneratedTranslationFilesPath=${project.basedir}/target/generated-resources/
-                            </compilerArguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin> -->
         </plugins>
     </build>
 
