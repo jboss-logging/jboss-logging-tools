@@ -29,7 +29,7 @@
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging-tools-parent</artifactId>
     <name>JBoss Logging I18n Tools Parent POM</name>
-    <version>1.0.0.Beta1-SNAPSHOT</version>
+    <version>1.0.0.Beta1</version>
     <packaging>pom</packaging>
 
     <modules>
