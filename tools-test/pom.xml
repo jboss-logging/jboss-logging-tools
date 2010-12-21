@@ -31,13 +31,13 @@
     <parent>
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging-tools-parent</artifactId>
-        <version>1.0.0.Beta1-SNAPSHOT</version>
+        <version>1.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.logging.test</groupId>
     <artifactId>tools-test</artifactId>
     <name>JBoss Logging I18n Tools Test Module</name>
-    <version>1.0.0.Beta1-SNAPSHOT</version>
+    <version>1.0.0.Beta2-SNAPSHOT</version>
 
     <properties>
         <netbeans.hint.license>jboss</netbeans.hint.license>
