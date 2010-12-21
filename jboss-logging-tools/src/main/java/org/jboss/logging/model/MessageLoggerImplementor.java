@@ -20,6 +20,8 @@
  */
 package org.jboss.logging.model;
 
+import static org.jboss.logging.util.ElementHelper.*;
+
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JCodeModel;
@@ -88,9 +90,10 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
+            final JClass returnType = codeModel.ref(methodDesc.returnTypeAsString());
             final String methodName = methodDesc.name();
             // Create the method
-            final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, methodName);
+            final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodName);
             jMethod.annotate(Override.class);
             // Find the annotations
             final Message message = methodDesc.message();
@@ -103,39 +106,71 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             // Add the message method.
             final JMethod msgMethod = addMessageMethod(methodName, message.value());
             final JVar messageIdVar = addIdVar(methodDesc.name(), message.id());
-            // Determine the log method
-            final StringBuilder logMethod = new StringBuilder(logLevel.name().toLowerCase());
-            switch (methodDesc.message().format()) {
-                case MESSAGE_FORMAT:
-                    logMethod.append("v");
-                    break;
-                case PRINTF:
-                    logMethod.append("f");
-                    break;
-            }
             // Create the body of the method and add the text
             final JBlock methodBody = jMethod.body();
-            final JInvocation logInv = methodBody.invoke(log, logMethod.toString());
-            // The clause must be first if there is one.
-            if (methodDesc.hasClause()) {
-                logInv.arg(JExpr.direct(methodDesc.causeVarName()));
-            }
-            // The next parameter is the message. Should be accessed via the
-            // message retrieval method.
-            if (messageIdVar == null) {
-                logInv.arg(JExpr.invoke(msgMethod));
-            } else {
-                logInv.arg(messageIdVar.plus(JExpr.invoke(msgMethod)));
 
-            }
-            // Create the parameters
-            for (VariableElement param : methodDesc.parameters()) {
-                final JClass paramType = codeModel.ref(
-                        param.asType().toString());
-                final JVar var = jMethod.param(JMod.FINAL, paramType, param.getSimpleName().toString());
-                if (!param.equals(methodDesc.cause())) {
-                    logInv.arg(var);
+
+            if (isLoggerMethod(methodDesc.method())) {
+                // Determine the log method
+                final StringBuilder logMethod = new StringBuilder(logLevel.name().toLowerCase());
+                switch (methodDesc.message().format()) {
+                    case MESSAGE_FORMAT:
+                        logMethod.append("v");
+                        break;
+                    case PRINTF:
+                        logMethod.append("f");
+                        break;
                 }
+                final JInvocation logInv = methodBody.invoke(log, logMethod.toString());
+                // The clause must be first if there is one.
+                if (methodDesc.hasCause()) {
+                    logInv.arg(JExpr.direct(methodDesc.causeVarName()));
+                }
+                // The next parameter is the message. Should be accessed via the
+                // message retrieval method.
+                if (messageIdVar == null) {
+                    logInv.arg(JExpr.invoke(msgMethod));
+                } else {
+                    logInv.arg(messageIdVar.plus(JExpr.invoke(msgMethod)));
+
+                }
+                // Create the parameters
+                for (VariableElement param : methodDesc.parameters()) {
+                    final JClass paramType = codeModel.ref(
+                            param.asType().toString());
+                    final JVar var = jMethod.param(JMod.FINAL, paramType, param.getSimpleName().toString());
+                    if (!param.equals(methodDesc.cause())) {
+                        logInv.arg(var);
+                    }
+                }
+            } else {
+                final JClass returnField = codeModel.ref(returnType.fullName());
+                final JVar result = methodBody.decl(returnField, "result");
+                JClass formatter = null;
+                // Determine the format type
+                switch (message.format()) {
+                    case MESSAGE_FORMAT:
+                        formatter = codeModel.ref(java.text.MessageFormat.class);
+                        break;
+                    case PRINTF:
+                        formatter = codeModel.ref(String.class);
+                        break;
+                }
+                final JInvocation formatterMethod = formatter.staticInvoke("format");
+                if (messageIdVar == null) {
+                    formatterMethod.arg(JExpr.invoke(msgMethod));
+                } else {
+                    formatterMethod.arg(messageIdVar.plus(JExpr.invoke(msgMethod)));
+                }
+                // Create the parameters
+                for (VariableElement param : methodDesc.parameters()) {
+                    final JClass paramType = codeModel.ref(param.asType().toString());
+                    JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.getSimpleName().toString());
+                    formatterMethod.arg(paramVar);
+                }
+                // Setup the return type
+                result.init(formatterMethod);
+                methodBody._return(result);
             }
         }
         return codeModel;

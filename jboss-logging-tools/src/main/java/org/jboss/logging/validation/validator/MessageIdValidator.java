@@ -55,7 +55,7 @@ public class MessageIdValidator implements ElementValidator {
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
-        Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+        final Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
         // Process method descriptors
         for (ExecutableElement method : elementMethods) {

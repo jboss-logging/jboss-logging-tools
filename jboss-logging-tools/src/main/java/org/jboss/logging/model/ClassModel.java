@@ -102,6 +102,7 @@ public abstract class ClassModel {
         this.superClassName = superClassName;
         this.className = className;
         this.projectCode = projectCode;
+        initModel();
     }
 
     /**
@@ -114,7 +115,7 @@ public abstract class ClassModel {
     public final void create(final JavaFileObject fileObject) throws IOException, IllegalStateException {
 
         //Generate the model class
-        JCodeModel model = this.generateModel();
+        final JCodeModel model = this.generateModel();
 
         //Write it to a file
         model.build(new JavaFileObjectCodeWriter(fileObject));
@@ -128,36 +129,6 @@ public abstract class ClassModel {
      * @throws IllegalStateException if the class has already been defined.
      */
     protected JCodeModel generateModel() throws IllegalStateException {
-        codeModel = new JCodeModel();
-
-        try {
-            definedClass = codeModel._class(className);
-        } catch (JClassAlreadyExistsException e) {
-            throw new IllegalStateException("Class " + className + " has already been defined. Cannot generate the class.", e);
-        }
-
-        //Add generated annotation
-        JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
-        generatedAnnotation.param("value", getClass().getName());
-        generatedAnnotation.param("date", ClassModelUtil.generatedDateValue());
-
-        //Create the default JavaDoc
-        JDocComment docComment = definedClass.javadoc();
-        docComment.add("Warning this class consists of generated code.");
-
-        //Add extends
-        if (superClassName != null) {
-            definedClass._extends(codeModel.ref(superClassName));
-        }
-
-        //Add implements
-        if (interfaceNames != null) {
-            for (String intf : interfaceNames) {
-                // TODO - Temporary fix for implementing nested interfaces.
-                definedClass._implements(codeModel.ref(intf.replace("$", ".")));
-            }
-        }
-        
         return codeModel;
     }
 
@@ -206,15 +177,6 @@ public abstract class ClassModel {
     }
 
     /**
-     * Get the class model.
-     *
-     * @return the class model
-     */
-    public final JCodeModel getCodeModel() {
-        return this.codeModel;
-    }
-
-    /**
      * Returns the main enclosing class.
      *
      * @return the main enclosing class.
@@ -239,6 +201,41 @@ public abstract class ClassModel {
      */
     public String getProjectCode() {
         return projectCode;
+    }
+    
+    /**
+     * Initialize the model.
+     */
+    private void initModel() {
+        codeModel = new JCodeModel();
+
+        try {
+            definedClass = codeModel._class(className);
+        } catch (JClassAlreadyExistsException e) {
+            throw new IllegalStateException("Class " + className + " has already been defined. Cannot generate the class.", e);
+        }
+
+        //Add generated annotation
+        JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
+        generatedAnnotation.param("value", getClass().getName());
+        generatedAnnotation.param("date", ClassModelUtil.generatedDateValue());
+
+        //Create the default JavaDoc
+        JDocComment docComment = definedClass.javadoc();
+        docComment.add("Warning this class consists of generated code.");
+
+        //Add extends
+        if (superClassName != null) {
+            definedClass._extends(codeModel.ref(superClassName));
+        }
+
+        //Add implements
+        if (interfaceNames != null) {
+            for (String intf : interfaceNames) {
+                // TODO - Temporary fix for implementing nested interfaces.
+                definedClass._implements(codeModel.ref(intf.replace("$", ".")));
+            }
+        }
     }
     
 }

@@ -114,7 +114,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 formatterMethod.arg(paramVar);
             }
             // Setup the return type
-            if (methodDesc.hasClause() && codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
+            if (methodDesc.hasCause() && codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
                 result.init(JExpr._new(returnField));
                 JInvocation inv = body.invoke(result, "initCause");
                 inv.arg(JExpr.ref(methodDesc.causeVarName()));

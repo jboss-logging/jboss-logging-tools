@@ -26,15 +26,17 @@ import org.jboss.logging.model.ImplementationType;
 public final class ElementHelper {
 
     public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
+
     public static final Class<MessageLogger> MESSAGE_LOGGER_ANNOTATION = MessageLogger.class;
+
     public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
+
     public static final Class<Message> MESSAGE_ANNOTATION = Message.class;
 
     /**
      * Disable instantiation.
      */
     private ElementHelper() {
-
     }
 
     /**
@@ -48,13 +50,25 @@ public final class ElementHelper {
         if (element == null) {
             throw new NullPointerException("The element parameter is null");
         }
-        
+
         Annotation annotation = element.getAnnotation(clazz);
         if (annotation != null) {
             return true;
         }
 
-        return false;        
+        return false;
+    }
+
+    /**
+     * Check if the element is a logger method. Logger methods are annotated
+     * with the {@link LogMessage} annotation.
+     * 
+     * @param element the element to check.
+     * @return {@code true} of this is a logger method, otherwise {@code false}.
+     * @throws NullPointerException if element parameter is {@code null}.
+     */
+    public static boolean isLoggerMethod(final Element element) {
+        return isAnnotatedWith(element, LOG_MESSAGE_ANNOTATION);
     }
 
     /**
@@ -177,5 +191,4 @@ public final class ElementHelper {
 
         return result;
     }
-
 }

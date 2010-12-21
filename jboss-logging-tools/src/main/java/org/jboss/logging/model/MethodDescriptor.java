@@ -112,7 +112,7 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
      * 
      * @return {@code true} if there is a cause element, otherwise {@code false}
      */
-    public boolean hasClause() {
+    public boolean hasCause() {
         return cause != null;
     }
 
@@ -192,28 +192,17 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
             if (methodDesc.message() != null && message == null) {
                 message = methodDesc.message();
             }
-            if (methodDesc.logMessage() != null && logMessage == null) {
-                logMessage = methodDesc.logMessage();
-            }
             // If both the message and the log message are not null, we are
             // complete.
-            if (message != null && logMessage != null) {
+            if (message != null) {
                 break;
             }
         }
         // Process through the collection and update any currently null
-        // message or log messages
+        // messages
         for (MethodDescriptor methodDesc : methodDescriptors) {
-            boolean changed = false;
-            if (methodDesc.logMessage == null) {
-                methodDesc.logMessage = logMessage;
-                changed = true;
-            }
             if (methodDesc.message == null) {
                 methodDesc.message = message;
-                changed = true;
-            }
-            if (changed) {
                 descriptors.remove(methodDesc);
                 descriptors.add(methodDesc);
             }
@@ -277,13 +266,13 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
+        if (obj == this) {
             return true;
         }
         if (!(obj instanceof MethodDescriptor)) {
             return false;
         }
-        MethodDescriptor other = (MethodDescriptor) obj;
+        final MethodDescriptor other = (MethodDescriptor) obj;
         if (method == null) {
             if (other.method != null)
                 return false;
