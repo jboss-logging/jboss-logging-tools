@@ -175,6 +175,10 @@ public abstract class ClassModel {
         
         return method;
     }
+    
+    public JCodeModel getCodeModel() {
+        return codeModel;
+    }
 
     /**
      * Returns the main enclosing class.

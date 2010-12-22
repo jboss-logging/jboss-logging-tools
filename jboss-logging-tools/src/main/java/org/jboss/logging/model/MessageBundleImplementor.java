@@ -28,6 +28,7 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
+import java.lang.reflect.Constructor;
 import org.jboss.logging.Message;
 
 import javax.lang.model.element.ExecutableElement;
