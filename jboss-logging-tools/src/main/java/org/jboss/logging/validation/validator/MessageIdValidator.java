@@ -44,10 +44,12 @@ import org.jboss.logging.util.ElementHelper;
  */
 public class MessageIdValidator implements ElementValidator {
 
-    private final Map<String, Integer> messageIdMap;
+    private static final String ERROR_MESSAGE = "Message id %s is not unique for method %s with project code %s.";
+
+    private final Map<String, IdDescriptor> messageIdMap;
 
     public MessageIdValidator() {
-        messageIdMap = new HashMap<String, Integer>();
+        messageIdMap = new HashMap<String, IdDescriptor>();
     }
 
     /**
@@ -61,25 +63,26 @@ public class MessageIdValidator implements ElementValidator {
         for (ExecutableElement method : elementMethods) {
             Message message = method.getAnnotation(Message.class);
             if (message != null) {
-                if (message.id() > Message.NONE && isIdAlreadyDefined(ElementHelper.getProjectCode(element), method, message)) {
-                    errorMessages.add(ValidationErrorMessage.of(method, "Message id's must be unique for method %s.",  method));
+                if (message.id() > Message.NONE) {
+                    final String projectCode = ElementHelper.getProjectCode(element);
+                    final String key = createKey(projectCode, message);
+                    // If the id is in the map, create an error message.
+                    if (messageIdMap.containsKey(key)) {
+                        final IdDescriptor idDesc = messageIdMap.get(key);
+                        // Only add the original method once.
+                        if (!idDesc.error) {
+                            errorMessages.add(ValidationErrorMessage.of(idDesc.method, ERROR_MESSAGE, message.id(), idDesc.method, projectCode));
+                            idDesc.error = true;
+                        }
+                        errorMessages.add(ValidationErrorMessage.of(method, ERROR_MESSAGE, message.id(), method, projectCode));
+                    } else {
+                        messageIdMap.put(key, new IdDescriptor(message.id(), method));
+                    }
                 }
             }
         }
 
         return errorMessages;
-    }
-
-    private boolean isIdAlreadyDefined(final String projectCode, final ExecutableElement method, final Message message) {
-        boolean alreadyDefined = false;
-        final String key = createKey(projectCode, message);
-        final int id = message.id();
-        if (messageIdMap.containsKey(key)) {
-            alreadyDefined = (messageIdMap.get(key) == id);
-        } else {
-            messageIdMap.put(key, id);
-        }
-        return alreadyDefined;
     }
 
     private String createKey(final String projectCode, final Message message) {
@@ -88,5 +91,31 @@ public class MessageIdValidator implements ElementValidator {
         result.append(":");
         result.append(message.id());
         return result.toString();
+    }
+
+    /**
+     * Simple descriptor for id's.
+     */
+    private static class IdDescriptor {
+
+        /**
+         * The id of the message.
+         */
+        final int id;
+
+        /**
+         * The method annotated with the message.
+         */
+        final ExecutableElement method;
+
+        /**
+         * If the message id is in error.
+         */
+        boolean error = false;
+
+        public IdDescriptor(final int id, final ExecutableElement method) {
+            this.id = id;
+            this.method = method;
+        }
     }
 }
