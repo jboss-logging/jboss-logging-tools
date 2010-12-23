@@ -14,6 +14,7 @@ import org.jboss.logging.MessageLogger;
  */
 @MessageLogger(projectCode = "LOGEL")
 public interface TestExtendedLogger extends TestLogger {
+
     @LogMessage(level = Level.ERROR)
     @Message(id = Message.INHERIT, value = "%s.")
     void extendedError(String value);
