@@ -65,7 +65,7 @@ public class MessageAnnotationValidator implements ElementValidator {
                 for (ExecutableElement m : likeMethods) {
                     boolean found = m.getAnnotation(annotationClass) != null;
                     if (foundFirst && found) {
-                        errorMessages.add(new ValidationErrorMessage(m, String.format(ERROR_MESSAGE, annotationClass.getName())));
+                        errorMessages.add(ValidationErrorMessage.of(m, ERROR_MESSAGE, annotationClass.getName()));
                     }
                     foundFirst = found;
                 }

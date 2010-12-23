@@ -27,6 +27,29 @@ public class ValidationErrorMessage {
         this.element = element;
         this.message = message;
     }
+    
+    /**
+     * Creates a new validation error message.
+     * 
+     * @param element the element to create the message for.
+     * @param message the message for the error.
+     * @return a new validation error message.
+     */
+    public static ValidationErrorMessage of(final Element element, final String message) {
+        return new ValidationErrorMessage(element, message);
+    }
+    
+    /**
+     * Creates a new formatted validation error message.
+     * 
+     * @param element       the element to create the message for.
+     * @param messageFormat the message format.
+     * @param args          the replacement arguments for {@link String#format(java.lang.String, java.lang.Object[])}.
+     * @return a new validation error message.
+     */
+    public static ValidationErrorMessage of(final Element element, final String messageFormat, final Object... args) {
+        return new ValidationErrorMessage(element, String.format(messageFormat, args));
+    }
 
     /**
      * Returns the element that caused the error.

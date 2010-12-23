@@ -62,7 +62,7 @@ public class MessageIdValidator implements ElementValidator {
             Message message = method.getAnnotation(Message.class);
             if (message != null) {
                 if (message.id() > Message.NONE && isIdAlreadyDefined(ElementHelper.getProjectCode(element), method, message)) {
-                    errorMessages.add(new ValidationErrorMessage(method, "Message id's must be unique for method " + method));
+                    errorMessages.add(ValidationErrorMessage.of(method, "Message id's must be unique for method %s.",  method));
                 }
             }
         }

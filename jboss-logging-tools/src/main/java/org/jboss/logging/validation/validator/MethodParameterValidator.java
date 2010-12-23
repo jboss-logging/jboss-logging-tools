@@ -75,8 +75,8 @@ public class MethodParameterValidator implements ElementValidator {
                 for (ExecutableElement m : likeMethods) {
                     int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters()) ? 1 : 0);
                     if (paramCount1 != paramCount2) {
-                        errorMessages.add(new ValidationErrorMessage(m,
-                                String.format(ERROR_MESSAGE, method.toString(), method.getParameters().size(), m.toString(), m.getParameters().size())));
+                        errorMessages.add(ValidationErrorMessage.of(m,
+                                ERROR_MESSAGE, method.toString(), method.getParameters().size(), m.toString(), m.getParameters().size()));
                     }
                 }
             }
@@ -88,7 +88,7 @@ public class MethodParameterValidator implements ElementValidator {
                 final Cause cause = varElem.getAnnotation(Cause.class);
                 invalid = (ogCause != null && cause != null);
                 if (invalid) {
-                    errorMessages.add(new ValidationErrorMessage(varElem, "Only one cause parameter allowed per method."));
+                    errorMessages.add(ValidationErrorMessage.of(varElem, "Only one cause parameter allowed per method."));
                 }
                 ogCause = cause;
             }

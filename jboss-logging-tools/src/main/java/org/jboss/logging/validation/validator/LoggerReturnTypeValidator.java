@@ -42,8 +42,6 @@ import java.util.Collection;
  */
 public class LoggerReturnTypeValidator implements ElementValidator {
 
-    private static final String ERROR_MESSAGE = "Logger methods must have void or string return types, method %s return type is %s";
-
     /**
      * {@inheritDoc}
      */
@@ -56,21 +54,27 @@ public class LoggerReturnTypeValidator implements ElementValidator {
             for (ExecutableElement method : elementMethods) {
                 if (isAnnotatedWith(method, LOG_MESSAGE_ANNOTATION)) {
                     if (method.getReturnType().getKind() != TypeKind.VOID) {
-                        errorMessages.add(createMessage(method));
+                        errorMessages.add(ValidationErrorMessage.of(method,
+                                "Methods annotated with %s must have a void return type.",
+                                LOG_MESSAGE_ANNOTATION.getName()));
                     }
                 } else {
                     if (method.getReturnType().getKind() == TypeKind.VOID) {
-                        errorMessages.add(new ValidationErrorMessage(method, "Cannot have a void return type if the method is not a log method."));
+                        errorMessages.add(ValidationErrorMessage.of(method,
+                                "Cannot have a void return type if the method is not a log method."));
                     } else {
                         try {
                             Class<?> returnClass = Class.forName(method.getReturnType().toString());
                             if (!returnClass.isAssignableFrom(String.class)) {
-                                errorMessages.add(createMessage(method));
+                                errorMessages.add(ValidationErrorMessage.of(element,
+                                        "Logger methods must have a string return type if not annotated with %s.",
+                                        LOG_MESSAGE_ANNOTATION.getName()));
                             }
 
                         } catch (ClassNotFoundException e) {
-                            String message = String.format("Return type %s for method %s is not in the classpath", method.getReturnType(), method);
-                            errorMessages.add(new ValidationErrorMessage(method, message));
+                            errorMessages.add(ValidationErrorMessage.of(method,
+                                    "Return type %s for method %s is not in the classpath",
+                                    method.getReturnType(), method));
                         }
                     }
                 }
@@ -78,10 +82,5 @@ public class LoggerReturnTypeValidator implements ElementValidator {
         }
 
         return errorMessages;
-    }
-
-    private ValidationErrorMessage createMessage(final ExecutableElement method) {
-        String message = String.format(ERROR_MESSAGE, method, method.getReturnType());
-        return new ValidationErrorMessage(method, message);
     }
 }
