@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.model.ImplementationType;
 
@@ -24,6 +25,8 @@ import org.jboss.logging.model.ImplementationType;
  * @author Kevin Pollet
  */
 public final class ElementHelper {
+    
+    public static final Class<Cause> CAUSE_ANNOTATION = Cause.class;
 
     public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
 

@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.type.TypeKind;
 
 /**
  * Stores information about methods.
@@ -41,16 +42,25 @@ import java.util.Set;
  * @author James R. Perkins Jr. (jrp)
  * 
  */
-public final class MethodDescriptor implements Comparable<MethodDescriptor>,
+final class MethodDescriptor implements Comparable<MethodDescriptor>,
         Iterable<MethodDescriptor> {
 
     private final Set<MethodDescriptor> descriptors;
+
     private VariableElement cause;
+
+    private ReturnTypeDescriptor returnTypeDescriptor;
+
     private LogMessage logMessage;
+
     private Message message;
+
     private final ExecutableElement method;
+
     private final String name;
+
     private final List<VariableElement> parameters;
+
     private TypeMirror returnType;
 
     /**
@@ -134,6 +144,10 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
         return cause().getSimpleName().toString();
     }
 
+    public ReturnTypeDescriptor returnTypeDescriptor() {
+        return returnTypeDescriptor;
+    }
+
     /**
      * Returns the LogMessage annotation associated with this method.
      * 
@@ -185,8 +199,16 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
         Message message = method.getAnnotation(Message.class);
         LogMessage logMessage = method.getAnnotation(LogMessage.class);
         result.returnType = method.getReturnType();
-        final Collection<MethodDescriptor> methodDescriptors = find(result
-                .name());
+        if (result.returnType.getKind() != TypeKind.VOID) {
+            try {
+                result.returnTypeDescriptor = new ReturnTypeDescriptor(result.returnTypeAsString());
+            } catch (ClassNotFoundException ex) {
+                throw new IllegalStateException(String.format("Return type %s for method %s is not in the classpath",
+                        result.method().getReturnType(), result.method()));
+            }
+        }
+
+        final Collection<MethodDescriptor> methodDescriptors = find(result.name());
         // Locate the first message with a non-null message
         for (MethodDescriptor methodDesc : methodDescriptors) {
             if (methodDesc.message() != null && message == null) {
@@ -274,10 +296,12 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
         }
         final MethodDescriptor other = (MethodDescriptor) obj;
         if (method == null) {
-            if (other.method != null)
+            if (other.method != null) {
                 return false;
-        } else if (!method.equals(other.method))
+            }
+        } else if (!method.equals(other.method)) {
             return false;
+        }
         return true;
     }
 
@@ -317,11 +341,9 @@ public final class MethodDescriptor implements Comparable<MethodDescriptor>,
      */
     @Override
     public int compareTo(final MethodDescriptor o) {
-        int c = this.method.getSimpleName().toString()
-                .compareTo(o.method.getSimpleName().toString());
+        int c = this.method.getSimpleName().toString().compareTo(o.method.getSimpleName().toString());
         c = (c != 0) ? c : this.method.getKind().compareTo(o.method.getKind());
-        c = (c != 0) ? c : (this.method.getParameters().size() - o.method
-                .getParameters().size());
+        c = (c != 0) ? c : (this.method.getParameters().size() - o.method.getParameters().size());
         // Compare the parameters
         if (c == 0) {
             List<? extends VariableElement> parms = this.method.getParameters();

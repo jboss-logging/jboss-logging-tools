@@ -28,8 +28,8 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
-import java.lang.reflect.Constructor;
 import org.jboss.logging.Message;
+import static org.jboss.logging.util.ElementHelper.*;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -112,18 +112,39 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             for (VariableElement param : methodDesc.parameters()) {
                 final JClass paramType = codeModel.ref(param.asType().toString());
                 JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.getSimpleName().toString());
-                formatterMethod.arg(paramVar);
+                if (!isAnnotatedWith(param, CAUSE_ANNOTATION)) {
+                    formatterMethod.arg(paramVar);
+                }
             }
             // Setup the return type
-            if (methodDesc.hasCause() && codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
-                result.init(JExpr._new(returnField));
-                JInvocation inv = body.invoke(result, "initCause");
-                inv.arg(JExpr.ref(methodDesc.causeVarName()));
+            if (codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
+                initCause(result, returnField, body, methodDesc, formatterMethod);
             } else {
                 result.init(formatterMethod);
             }
             body._return(result);
         }
         return codeModel;
+    }
+
+    private void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
+        ReturnTypeDescriptor desc = methodDesc.returnTypeDescriptor();
+        if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.causeVarName())));
+        } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.causeVarName())).arg(formatterMethod));
+        } else if (desc.hasStringConsturctor()) {
+            result.init(JExpr._new(returnField).arg(formatterMethod));
+            JInvocation resultInv = body.invoke(result, "initCause");
+            resultInv.arg(JExpr.ref(methodDesc.causeVarName()));
+        } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(methodDesc.causeVarName()));
+        } else if (methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField));
+            JInvocation resultInv = body.invoke(result, "initCause");
+            resultInv.arg(JExpr.ref(methodDesc.causeVarName()));
+        } else {
+            result.init(JExpr._new(returnField));
+        }
     }
 }
