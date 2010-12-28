@@ -39,69 +39,6 @@ public final class TranslationHelper {
     }
 
     /**
-     * @param translationFileName the translation file name
-     * @return the locale or null if none
-     * @throws NullPointerException if translationFileName parameter is null
-     */
-    public static String getTranslationFileLocale(final String translationFileName) {
-        if (translationFileName == null) {
-            throw new NullPointerException("The translationFileName parameter cannot be null");
-        }
-
-        Pattern pattern = Pattern.compile("[^_]*_([^_.]*)[^.]*.properties");
-        Matcher matcher = pattern.matcher(translationFileName);
-        boolean found = matcher.find();
-
-        if (found) {
-            return matcher.group(1);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param translationFileName the translation file name
-     * @return the county or null if none
-     * @throws NullPointerException if translationFileName parameter is null
-     */
-    public static String getTranslationFileCountry(final String translationFileName) {
-        if (translationFileName == null) {
-            throw new NullPointerException("The translationFileName parameter cannot be null");
-        }
-
-        Pattern pattern = Pattern.compile("[^_]*_[^_.]*_([^_.]*)[^.]*.properties");
-        Matcher matcher = pattern.matcher(translationFileName);
-        boolean found = matcher.find();
-
-        if (found) {
-            return matcher.group(1);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param translationFileName the translation file name
-     * @return the variant or null if none
-     * @throws NullPointerException if translationFileName parameter is null
-     */
-    public static String getTranslationFileVariant(final String translationFileName) {
-        if (translationFileName == null) {
-            throw new NullPointerException("The translationFileName parameter cannot be null");
-        }
-
-        Pattern pattern = Pattern.compile("[^_]*_[^_.]*_[^_.]*_([^_.]*)[^.]*.properties");
-        Matcher matcher = pattern.matcher(translationFileName);
-        boolean found = matcher.find();
-
-        if (found) {
-            return matcher.group(1);
-        }
-
-        return null;
-    }
-
-    /**
      * Get the class name suffix to be added to the
      * generated class for the given property file name.
      *
