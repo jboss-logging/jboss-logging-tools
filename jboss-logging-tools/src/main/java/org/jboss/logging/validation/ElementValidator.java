@@ -29,7 +29,7 @@ import java.util.Collection;
  * be implemented the code model.
  *
  * @author James R. Perkins Jr. (jrp)
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  *
  */
 public interface ElementValidator {

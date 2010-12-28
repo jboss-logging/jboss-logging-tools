@@ -34,7 +34,7 @@ import javax.tools.Diagnostic.Kind;
  * A logger for logging messages for annotation processors.
  *
  * @author James R. Perkins (jrp)
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public final class ToolLogger {
 

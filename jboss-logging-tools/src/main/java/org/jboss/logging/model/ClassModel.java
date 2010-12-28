@@ -40,7 +40,7 @@ import java.io.IOException;
 /**
  * The basic java class model.
  *
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  * @author James R. Perkins Jr. (jrp)
  */
 public abstract class ClassModel {

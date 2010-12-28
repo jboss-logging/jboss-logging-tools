@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * The java message logger translation class model.
  *
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public class MessageLoggerTranslator extends ClassModel {
 

@@ -66,7 +66,7 @@ import static org.jboss.logging.util.TranslationHelper.getTranslationClassNameSu
  * files of a MessageLogger or MessageBundle.
  * </p>
  *
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 @SupportedOptions(TranslationClassGenerator.TRANSLATION_FILES_PATH_OPTION)
 public final class TranslationClassGenerator extends AbstractTool {

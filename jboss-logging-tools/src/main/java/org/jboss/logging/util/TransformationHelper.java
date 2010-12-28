@@ -28,7 +28,7 @@ import java.io.StringWriter;
  * Various transformation utilities.
  * 
  * @author James R. Perkins Jr. (jrp)
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public final class TransformationHelper {
 

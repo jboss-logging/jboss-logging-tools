@@ -41,7 +41,7 @@ import javax.lang.model.element.VariableElement;
  * </p>
  *
  * @author James R. Perkins Jr. (jrp)
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  *
  */
 public class MessageBundleImplementor extends ImplementationClassModel {

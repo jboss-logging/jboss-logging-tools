@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * Utility class to work with
  * translation filename.
  *
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public final class TranslationHelper {
 

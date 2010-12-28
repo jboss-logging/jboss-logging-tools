@@ -22,7 +22,7 @@ import org.jboss.logging.model.ImplementationType;
 /**
  * An utility class to work with element.
  *
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public final class ElementHelper {
     

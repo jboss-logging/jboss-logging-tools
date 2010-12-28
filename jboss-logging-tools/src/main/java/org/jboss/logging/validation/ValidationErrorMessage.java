@@ -10,7 +10,7 @@ import javax.lang.model.element.Element;
  * the error.
  * </p>
  *
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public class ValidationErrorMessage {
 

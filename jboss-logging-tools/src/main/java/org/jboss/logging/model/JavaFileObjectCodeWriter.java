@@ -39,7 +39,7 @@ import java.io.OutputStream;
  * </p>
  *
  * @author James R. Perkins Jr. (jrp)
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public class JavaFileObjectCodeWriter extends CodeWriter {
 

@@ -20,7 +20,7 @@ import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
  * The generator of skeletal
  * translations files.
  *
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 @SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
 public final class TranslationFileGenerator extends AbstractTool {

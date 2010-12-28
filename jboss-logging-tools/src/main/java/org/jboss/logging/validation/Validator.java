@@ -18,7 +18,7 @@ import java.util.List;
 import org.jboss.logging.util.TransformationHelper;
 
 /**
- * @author Kevin Pollet
+ * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public class Validator {
 
