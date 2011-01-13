@@ -88,7 +88,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         logger = ToolLogger.getLogger(processingEnv);
 
-        //Tools generator
+        //Tools generator -  Note the order these are excuted in. 
         processors.add(new ImplementorClassGenerator(processingEnv));
         processors.add(new TranslationClassGenerator(processingEnv));
         processors.add(new TranslationFileGenerator(processingEnv));
