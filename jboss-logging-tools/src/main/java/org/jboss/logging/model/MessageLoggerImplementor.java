@@ -31,12 +31,15 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.jboss.logging.util.BasicLoggerDescriptor;
 
 /**
  * Used to generate a message logger implementation.
@@ -51,6 +54,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
 
     private static final String LOG_FIELD_NAME = "log";
 
+    private final boolean extendsBasicLogger;
+
     private JFieldVar log;
 
     /**
@@ -62,8 +67,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      *            the project code from the annotation.
      */
     public MessageLoggerImplementor(final String interfaceName,
-            final String projectCode) {
+            final String projectCode, final boolean extendsBasicLogger) {
         super(interfaceName, projectCode, ImplementationType.LOGGER);
+        this.extendsBasicLogger = extendsBasicLogger;
     }
 
     /**
@@ -107,6 +113,10 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             } else {
                 createBundleMethod(methodDesc, jMethod, msgMethod, messageIdVar);
             }
+        }
+        // If implementing the BasicLogger, defer to the global log instance.
+        if (extendsBasicLogger) {
+            implementBasicLogger(codeModel);
         }
         return codeModel;
     }
@@ -199,5 +209,41 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         // Setup the return type
         result.init(formatterMethod);
         body._return(result);
+    }
+
+    /**
+     * Implements the basic logger methods.
+     * 
+     * @param codeModel the code model to implement to.
+     */
+    private void implementBasicLogger(final JCodeModel codeModel) {
+        for (Method m : BasicLoggerDescriptor.getInstance().getMethods()) {
+            if (!m.getReturnType().isPrimitive()) {
+                codeModel.ref(m.getReturnType());
+            }
+            final JMethod blMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, m.getReturnType(), m.getName());
+            blMethod.annotate(Override.class);
+            final int paramSize = m.getParameterTypes().length;
+            int argCount = 0;
+            final StringBuilder blBody = new StringBuilder();
+            if (!m.getReturnType().equals(Void.TYPE)) {
+                blBody.append("return ");
+            }
+            blBody.append("this.").append(log.name()).append(".").append(m.getName()).append("(");
+            for (Class<?> param : m.getParameterTypes()) {
+                // Reference the parameter with the code model
+                codeModel.ref(param);
+                // Create the method parameters
+                blMethod.param(JMod.FINAL, param, "arg" + argCount);
+                // Add the parameters to the body
+                blBody.append("arg").append(argCount);
+                argCount++;
+                if (argCount < paramSize) {
+                    blBody.append(", ");
+                }
+            }
+            blBody.append(");");
+            blMethod.body().directStatement(blBody.toString());
+        }
     }
 }

@@ -28,6 +28,8 @@ import java.lang.reflect.Constructor;
  */
 class ReturnTypeDescriptor {
 
+    private final boolean primitive;
+
     private final Class<?> returnType;
 
     private final String returnTypeClassName;
@@ -41,11 +43,23 @@ class ReturnTypeDescriptor {
     private boolean throwableAndStringConstructor = false;
 
     public ReturnTypeDescriptor(final String returnTypeClassName)
-            throws
-            ClassNotFoundException {
+            throws ClassNotFoundException {
         this.returnTypeClassName = returnTypeClassName;
         returnType = Class.forName(returnTypeClassName);
+        this.primitive = false;
         init();
+    }
+
+    public ReturnTypeDescriptor(final String returnTypeName, final boolean primitive)
+            throws ClassNotFoundException {
+        this.returnTypeClassName = returnTypeName;
+        this.primitive = primitive;
+        if (primitive) {
+            returnType = null;
+        } else {
+            returnType = Class.forName(returnTypeClassName);
+            init();
+        }
     }
 
     private void init() {
@@ -73,6 +87,14 @@ class ReturnTypeDescriptor {
                     break;
             }
         }
+    }
+
+    public boolean isPrimitive() {
+        return primitive;
+    }
+
+    public String getReturnTypeAsString() {
+        return returnTypeClassName;
     }
 
     public Class<?> getReturnType() {

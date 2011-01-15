@@ -32,6 +32,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.util.Collection;
+import javax.lang.model.type.TypeMirror;
+import org.jboss.logging.util.BasicLoggerDescriptor;
 
 /**
  * A generator for creating implementations of message bundle and logging
@@ -56,7 +58,7 @@ public final class ImplementorClassGenerator extends AbstractTool {
             final MessageLogger messageLogger = element.getAnnotation(MessageLogger.class);
             final MessageBundle messageBundle = element.getAnnotation(MessageBundle.class);
             if (messageLogger != null) {
-                createClass(new MessageLoggerImplementor(interfaceName, messageLogger.projectCode()), methods);
+                createClass(new MessageLoggerImplementor(interfaceName, messageLogger.projectCode(),extendsBasicLogger(element)), methods);
             }
             if (messageBundle != null) {
                 createClass(new MessageBundleImplementor(interfaceName, messageBundle.projectCode()), methods);
@@ -87,5 +89,17 @@ public final class ImplementorClassGenerator extends AbstractTool {
 
         // Write the source file
         classModel.create(filer().createSourceFile(classModel.getClassName()));
+    }
+    
+    private boolean extendsBasicLogger(final TypeElement element) {
+        if (element.getQualifiedName().toString().equals(BasicLoggerDescriptor.BASIC_LOGGER_CLASS.getName())) {
+            return true;
+        }
+        for (TypeMirror type : element.getInterfaces()) {
+           if (extendsBasicLogger((TypeElement) super.typeUtils().asElement(type))) {
+               return true;
+           }
+        }
+        return false;
     }
 }

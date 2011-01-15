@@ -25,7 +25,7 @@ import org.jboss.logging.model.ImplementationType;
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public final class ElementHelper {
-    
+
     public static final Class<Cause> CAUSE_ANNOTATION = Cause.class;
 
     public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
@@ -133,7 +133,8 @@ public final class ElementHelper {
 
     /**
      * Returns all methods of the given interface.
-     * Include all declared and inherited methods.
+     * Include all declared and inherited methods, with the exception of any
+     * methods in the {@link org.jboss.logging.BasicLogger} interface.
      *
      * @param element the interface element
      * @param types   the type util
@@ -148,7 +149,11 @@ public final class ElementHelper {
         Collection<ExecutableElement> methods = new HashSet<ExecutableElement>();
 
         for (TypeMirror intf : element.getInterfaces()) {
-            methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types));
+            // Ignore BasicLogger methods
+            if (!intf.toString().equals(BasicLoggerDescriptor.BASIC_LOGGER_CLASS.getName())) {
+                methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types));
+
+            }
         }
 
         methods.addAll(ElementFilter.methodsIn(element.getEnclosedElements()));
