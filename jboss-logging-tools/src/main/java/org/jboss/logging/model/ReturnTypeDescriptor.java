@@ -23,6 +23,7 @@ package org.jboss.logging.model;
 import java.lang.reflect.Constructor;
 
 /**
+ * Describes information about the return type.
  *
  * @author James R. Perkins (jrp)
  */
@@ -42,6 +43,12 @@ class ReturnTypeDescriptor {
 
     private boolean throwableAndStringConstructor = false;
 
+    /**
+     * Creates a new descriptor that is not primitive.
+     * 
+     * @param returnTypeClassName the class name of the return type.
+     * @throws ClassNotFoundException if the return type is not found in the classpath.
+     */
     public ReturnTypeDescriptor(final String returnTypeClassName)
             throws ClassNotFoundException {
         this.returnTypeClassName = returnTypeClassName;
@@ -50,6 +57,14 @@ class ReturnTypeDescriptor {
         init();
     }
 
+    /**
+     * Creates a new descriptor.
+     * 
+     * @param returnTypeName the name of the return type.
+     * @param primitive      {@code true} if the return type is a primitive, 
+     *                       otherwise {@code false}.
+     * @throws ClassNotFoundException if the return type is not found in the classpath.
+     */
     public ReturnTypeDescriptor(final String returnTypeName, final boolean primitive)
             throws ClassNotFoundException {
         this.returnTypeClassName = returnTypeName;
@@ -62,6 +77,9 @@ class ReturnTypeDescriptor {
         }
     }
 
+    /**
+     * Initializes the object.
+     */
     private void init() {
         final Constructor<?>[] constructors = returnType.getConstructors();
         for (Constructor<?> construct : constructors) {
@@ -89,34 +107,77 @@ class ReturnTypeDescriptor {
         }
     }
 
+    /**
+     * Indicates whether or not the return type is a primitive.
+     * 
+     * @return {@code true} if a primitive, otherwise {@code false}.
+     */
     public boolean isPrimitive() {
         return primitive;
     }
 
+    /**
+     * Returns a string version of the return type.
+     * 
+     * @return a string version of the return type.
+     */
     public String getReturnTypeAsString() {
         return returnTypeClassName;
     }
 
+    /**
+     * Returns the class created from the return type.
+     * 
+     * @return the return type as a class.
+     */
     public Class<?> getReturnType() {
         return returnType;
     }
 
-    public String getCauseClassName() {
-        return returnTypeClassName;
-    }
-
+    /**
+     * If the return type is a constructor and has a {@link java.lang.String}
+     * and {@link java.lang.Throwable} constructor, {@code true} is returned. 
+     * Otherwise {@code false} is returned.
+     * 
+     * @return {@code true} if the throwable has both a string and throwable
+     *         constructor, otherwise {@code false}.
+     */
     public boolean hasStringAndThrowableConstructor() {
         return stringAndThrowableConstructor;
     }
 
+    /**
+     * If the return type is a constructor and has a {@link java.lang.String}
+     * constructor, {@code true} is returned. Otherwise {@code false} is 
+     * returned.
+     * 
+     * @return {@code true} if the throwable has a string constructor, otherwise 
+     *         {@code false}.
+     */
     public boolean hasStringConsturctor() {
         return stringConsturctor;
     }
 
+    /**
+     * If the return type is a constructor and has a {@link java.lang.Throwable}
+     * and {@link java.lang.String} constructor, {@code true} is returned. 
+     * Otherwise {@code false} is returned.
+     * 
+     * @return {@code true} if the throwable has both a throwable and string
+     *         constructor, otherwise {@code false}.
+     */
     public boolean hasThrowableAndStringConstructor() {
         return throwableAndStringConstructor;
     }
 
+    /**
+     * If the return type is a constructor and has a {@link java.lang.Throwable}
+     * constructor, {@code true} is returned. Otherwise {@code false} is 
+     * returned.
+     * 
+     * @return {@code true} if the throwable has a throwable constructor, 
+     *         otherwise {@code false}.
+     */
     public boolean hasThrowableConstructor() {
         return throwableConstructor;
     }

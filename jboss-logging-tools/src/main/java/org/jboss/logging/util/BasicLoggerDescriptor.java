@@ -27,7 +27,12 @@ import java.util.List;
 import org.jboss.logging.BasicLogger;
 
 /**
- *
+ * A simple descriptor for the {@link org.jboss.logging.BasicLogger}.
+ * 
+ * <p>
+ * Reflects into the basic logger to retrieve information for implementation.
+ * </p>
+ * 
  * @author James R. Perkins (jrp)
  */
 public final class BasicLoggerDescriptor {
@@ -50,10 +55,20 @@ public final class BasicLoggerDescriptor {
         this.methods = Arrays.asList(BASIC_LOGGER_CLASS.getMethods());
     }
 
+    /**
+     * Returns the current instance of the descriptor.
+     * 
+     * @return the current instance of the descriptor.
+     */
     public static BasicLoggerDescriptor getInstance() {
         return INSTANCE;
     }
     
+    /**
+     * Returns all the methods in an unmodifiable list of the basic logger.
+     * 
+     * @return a list of all methods.
+     */
     public List<Method> getMethods() {
         return Collections.unmodifiableList(methods);
     }
