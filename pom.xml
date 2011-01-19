@@ -19,7 +19,6 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -37,6 +36,17 @@
     <version>1.0.0.Beta2-SNAPSHOT</version>
 
     <name>JBoss Logging I18n Tools</name>
+
+    <developers>
+        <developer>
+            <name>James R. Perkins</name>
+            <email>jrperkinsjr@gmail.com</email>
+        </developer>
+        <developer>
+            <name>Kevin Pollet</name>
+            <email>kevin.pollet@serli.com</email>
+        </developer>
+    </developers>
 
     <dependencies>
         <!--
@@ -62,7 +72,6 @@
 
     <build>
         <plugins>
-
             <!--
                 Disable Annotation processor
                 on project compile
