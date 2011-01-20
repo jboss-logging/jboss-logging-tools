@@ -20,19 +20,15 @@
  */
 package org.jboss.logging.model;
 
-import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JInvocation;
-import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JVar;
+import com.sun.codemodel.internal.*;
 import org.jboss.logging.Message;
-import static org.jboss.logging.util.ElementHelper.*;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+
+import static org.jboss.logging.util.ElementHelper.CAUSE_ANNOTATION;
+import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
+import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
 
 /**
  * Used to generate a message bundle implementation.
@@ -73,6 +69,12 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
+        //Add a project code constant
+        JFieldVar projectCodeVar = null;
+        if (!getProjectCode().isEmpty()) {
+            projectCodeVar = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, "projectCode");
+            projectCodeVar.init(JExpr.lit(getProjectCode()));
+        }
         // Add default constructor
         getDefinedClass().constructor(JMod.PROTECTED);
         ClassModelUtil.createReadResolveMethod(getDefinedClass());
@@ -87,7 +89,6 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             // Add the message method.
             final JMethod msgMethod = addMessageMethod(methodDesc.name(),
                     message.value());
-            final JVar messageIdVar = addIdVar(methodDesc.name(), message.id());
             // Create the method body
             final JBlock body = jMethod.body();
             final JClass returnField = codeModel.ref(returnType.fullName());
@@ -103,10 +104,11 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                     break;
             }
             final JInvocation formatterMethod = formatter.staticInvoke("format");
-            if (messageIdVar == null) {
-                formatterMethod.arg(JExpr.invoke(msgMethod));
+            if (message.id() > Message.NONE && projectCodeVar != null) {
+                String formatedId = String.format(STRING_ID_FORMAT, message.id());
+                formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formatedId)).plus(JExpr.invoke(msgMethod)));
             } else {
-                formatterMethod.arg(messageIdVar.plus(JExpr.invoke(msgMethod)));
+                formatterMethod.arg(JExpr.invoke(msgMethod));
             }
             // Create the parameters
             for (VariableElement param : methodDesc.parameters()) {

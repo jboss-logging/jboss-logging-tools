@@ -88,34 +88,6 @@ public abstract class ImplementationClassModel extends ClassModel {
     }
 
     /**
-     * Adds and id variable to the generated class if the id is greater than 0.
-     *
-     * <p>
-     * The variable name will be the method name with &quot;Id&quot; as the
-     * suffix.
-     * </p>
-     *
-     * @param methodName the method name to prefix the id with.
-     * @param id         the id of the message.
-     *
-     * @return the variable that was created or {@code null} if no variable was
-     *         created.
-     */
-    protected JVar addIdVar(final String methodName, final int id) {
-        final String idFieldName = methodName + ID_FIELD_NAME_SUFFIX;
-        JVar idVar = getDefinedClass().fields().get(idFieldName);
-        if (idVar == null && id > Message.NONE) {
-            // Create the message id field
-            idVar = getDefinedClass().field(
-                    JMod.PROTECTED | JMod.STATIC | JMod.FINAL,
-                    String.class, idFieldName);
-            idVar.init(JExpr.lit(ClassModelUtil.formatMessageId(
-                    getProjectCode(), id)));
-        }
-        return idVar;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override

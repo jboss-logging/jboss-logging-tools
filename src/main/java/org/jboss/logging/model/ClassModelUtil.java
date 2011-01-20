@@ -36,6 +36,8 @@ import java.util.Date;
  */
 final class ClassModelUtil {
 
+    public static final String STRING_ID_FORMAT = "-%05d:";
+
     private static final String INSTANCE_FIELD_NAME = "INSTANCE";
 
     private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
@@ -45,44 +47,6 @@ final class ClassModelUtil {
      *
      */
     private ClassModelUtil() {
-    }
-
-    /**
-     * Formats the message id. The message id is comprised of the project code
-     * plus the id.
-     *
-     * @param id the id used to prepend the project code.
-     * @return the formatted message id.
-     */
-    public static String formatMessageId(final String projectCode, final int id) {
-        final StringBuilder result = new StringBuilder(projectCode);
-        if (result.length() > 0) {
-            result.append("-");
-            result.append(padLeft("" + id, '0', 5));
-            result.append(": ");
-        }
-        return result.toString();
-    }
-
-    /**
-     * Pads the initial value with the character. If the length is greater than
-     * or equal to the length of the initial value, the initial value will be
-     * returned.
-     *
-     * @param initValue the value to pad.
-     * @param padChar   the character to pad the value with.
-     * @param padLen    the total length the string should be.
-     * @return the padded value.
-     */
-    public static String padLeft(final String initValue, final char padChar,
-            final int padLen) {
-
-        final StringBuilder result = new StringBuilder();
-        for (int i = initValue.length(); i < padLen; i++) {
-            result.append(padChar);
-        }
-        result.append(initValue);
-        return result.toString();
     }
 
     /**
