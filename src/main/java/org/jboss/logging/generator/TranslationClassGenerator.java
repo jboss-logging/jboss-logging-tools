@@ -20,24 +20,6 @@
  */
 package org.jboss.logging.generator;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import org.jboss.logging.AbstractTool;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.MessageLogger;
-import org.jboss.logging.model.ClassModel;
-import org.jboss.logging.model.ImplementationType;
-import org.jboss.logging.model.MessageBundleTranslator;
-import org.jboss.logging.model.MessageLoggerTranslator;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -48,6 +30,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+
+import org.jboss.logging.AbstractTool;
+import org.jboss.logging.Message;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.MessageLogger;
+import org.jboss.logging.model.ClassModel;
+import org.jboss.logging.model.ImplementationType;
+import org.jboss.logging.model.MessageBundleTranslator;
+import org.jboss.logging.model.MessageLoggerTranslator;
 
 import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassName;
@@ -56,6 +54,7 @@ import static org.jboss.logging.util.TransformationHelper.toPackage;
 import static org.jboss.logging.util.TransformationHelper.toQualifiedClassName;
 import static org.jboss.logging.util.TransformationHelper.toSimpleClassName;
 import static org.jboss.logging.util.TranslationHelper.getEnclosingTranslationClassName;
+import static org.jboss.logging.util.TranslationHelper.getEnclosingTranslationFileName;
 import static org.jboss.logging.util.TranslationHelper.getTranslationClassNameSuffix;
 
 /**
@@ -72,8 +71,6 @@ import static org.jboss.logging.util.TranslationHelper.getTranslationClassNameSu
 public final class TranslationClassGenerator extends AbstractTool {
 
     public static final String TRANSLATION_FILES_PATH_OPTION = "translationFilesPath";
-
-    private static final String SOURCE_FILE_EXTENSION = ".java";
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
@@ -108,49 +105,33 @@ public final class TranslationClassGenerator extends AbstractTool {
      */
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods) {
-    
-
-        PackageElement packageElement = elementUtils().getPackageOf(element);
-        String packageName = packageElement.getQualifiedName().toString();
-
-        String primaryClassName = getPrimaryClassName(element);
-        primaryClassName = toQualifiedClassName(packageName, primaryClassName);
-
-        String primaryClassNamePrefix = getPrimaryClassNamePrefix(element);
-
+        String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
         String interfaceName = element.getSimpleName().toString();
-
+        String primaryClassName = toQualifiedClassName(packageName, getPrimaryClassName(element));
+        String primaryClassNamePrefix = getPrimaryClassNamePrefix(element);
         Map<String, String> elementTranslations = getAllMessageMethods(methods);
 
         try {
 
-            String packagePath;
+            String classTranslationFilesPath;
 
             //User defined
             if (translationFilesPath != null) {
-                packagePath = translationFilesPath + packageName.replaceAll("\\.", FILE_SEPARATOR);
+                classTranslationFilesPath = translationFilesPath + packageName.replaceAll("\\.", FILE_SEPARATOR);
 
             //By default use the class output folder
             } else {
                 FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-                packagePath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
+                classTranslationFilesPath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
             }
 
-            File dir = new File(packagePath);
+            File dir = new File(classTranslationFilesPath);
             File[] files = dir.listFiles(new TranslationFileFilter(primaryClassNamePrefix));
 
             if (files != null) {
-                Arrays.sort(files, new Comparator<File>() {
-                    public int compare(final File o1, final File o2) {
-                        return Integer.signum(o1.getName().length() - o2.getName().length());
-                    }
-                });
                 for (File file : files) {
-                    String classNameSuffix = getTranslationClassNameSuffix(file.getName());
-                    String qualifiedClassName = primaryClassName.concat(classNameSuffix);
-                    
                     Map<String, String> translations = validateTranslationMessages(elementTranslations, file);
-                    this.generateSourceFile(primaryClassName, qualifiedClassName, translations);
+                    generateSourceFileFor(primaryClassName, classTranslationFilesPath, file.getName(), translations);
                 }
             }
 
@@ -158,7 +139,6 @@ public final class TranslationClassGenerator extends AbstractTool {
         catch (IOException e) {
             logger().error(e, "Cannot read %s package files", packageName);
         }
-
     }
 
     /**
@@ -206,44 +186,42 @@ public final class TranslationClassGenerator extends AbstractTool {
      * Generate a class for the given translation file.
      *
      * @param primaryClassName   the qualified primary class name
-     * @param generatedClassName the qualified class name
+     * @param translationFilePath the translation file path
+     * @param translationFileName the translation file name
      * @param translations       the translations message
      */
-    private void generateSourceFile(final String primaryClassName, final String generatedClassName, final Map<String, String> translations) {
+    private void generateSourceFileFor(final String primaryClassName, final String translationFilePath, final String translationFileName, final Map<String, String> translations) {
+        logger().note("Generating translation class for", translationFileName);
 
-        logger().note("Generating %s translation class", generatedClassName);
+        String generatedClassName = primaryClassName.concat(getTranslationClassNameSuffix(translationFileName));
+        String superClassName = getEnclosingTranslationClassName(generatedClassName);
+
+        //Generate empty translation super class if needed
+        //Check if enclosing translation file exists, if not generate an empty super class
+        String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFileName);
+        File enclosingTranslationFile = new File(translationFilePath, enclosingTranslationFileName);
+        if (!enclosingTranslationFileName.equals(translationFileName) && !enclosingTranslationFile.exists()) {
+               generateSourceFileFor(primaryClassName, translationFilePath, enclosingTranslationFileName, Collections.<String, String>emptyMap());
+        }
+
+        //Create source file
+        ClassModel classModel;
+
+        if (primaryClassName.endsWith(ImplementationType.BUNDLE.toString())) {
+            classModel = new MessageBundleTranslator(generatedClassName, superClassName, translations);
+        } else {
+            classModel = new MessageLoggerTranslator(generatedClassName, superClassName, translations);
+        }
 
         try {
 
-            //Generate super class if needed
-            String superClassName = getEnclosingTranslationClassName(generatedClassName);
-            String packageName = toPackage(superClassName);
-            String simpleClassName = toSimpleClassName(superClassName);
-
-            if (!superClassName.equals(primaryClassName)) {
-                FileObject fObject = filer().getResource(StandardLocation.SOURCE_OUTPUT, packageName, simpleClassName);
-                String pathName = fObject.toUri().getPath().replaceAll(Pattern.quote(simpleClassName), "");
-                File file = new File(pathName, simpleClassName.concat(SOURCE_FILE_EXTENSION));
-
-                if (!file.exists()) {
-                    this.generateSourceFile(primaryClassName, superClassName, Collections.EMPTY_MAP);
-                }
-            }
-
-            //Create source file
-            ClassModel classModel;
-
-            if (primaryClassName.contains(ImplementationType.BUNDLE.toString())) {
-                classModel = new MessageBundleTranslator(generatedClassName, superClassName, translations);
-            } else {
-                classModel = new MessageLoggerTranslator(generatedClassName, superClassName, translations);
-            }
-
             classModel.create(filer().createSourceFile(classModel.getClassName()));
 
-        }
-        catch (Exception e) {
-            logger().error(e, "Cannot generate %s source file", generatedClassName);
+        } catch (IOException ex) {
+            logger().error(ex, "Cannot generate %s source file", generatedClassName);
+
+        } catch (IllegalStateException ex) {
+            logger().error(ex, "Cannot generate %s source file", generatedClassName);
         }
     }
 

@@ -24,12 +24,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility class to work with
- * translation filename.
+ * Utility class to work with translation filename.
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public final class TranslationHelper {
+
+    private static final String TRANSLATION_FILE_NAME_EXTENSION = ".properties";
 
     /**
      * Private constructor to
@@ -40,7 +41,7 @@ public final class TranslationHelper {
 
     /**
      * Get the class name suffix to be added to the
-     * generated class for the given property file name.
+     * generated class for the given translation file name.
      *
      * @param translationFileName the translation file name
      * @return the class name suffix corresponding to the given translation filename
@@ -63,6 +64,31 @@ public final class TranslationHelper {
     }
 
     /**
+     * Returns the enclosing translation file name for the given
+     * translation file name.
+     *
+     * If the given translation file name is InterfaceName.i18n_locale
+     * the given translation file name is returned.
+     *
+     * @param translationFileName the translation file name
+     * @return the enclosing file name
+     * @throws NullPointerException if translationFileName is null
+     */
+    public static String getEnclosingTranslationFileName(final String translationFileName) {
+        if (translationFileName == null) {
+            throw new NullPointerException("The translationClassName parameter cannot be null");
+        }
+
+        int lastUnderscore = translationFileName.lastIndexOf('_');
+
+        if (translationFileName.indexOf('_') == lastUnderscore) {
+            return translationFileName;
+        } else {
+            return translationFileName.substring(0, lastUnderscore).concat(TRANSLATION_FILE_NAME_EXTENSION);
+        }
+    }
+
+     /**
      * Returns the enclosing translation class name for
      * the given translation class name. If the given translation
      * class name is the upper class name then the parameter class
@@ -80,5 +106,4 @@ public final class TranslationHelper {
         int lastUnderScore = translationClassName.lastIndexOf("_");
         return lastUnderScore != -1 ? translationClassName.substring(0, lastUnderScore) : translationClassName;
     }
-
 }
