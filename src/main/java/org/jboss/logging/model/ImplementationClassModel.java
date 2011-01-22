@@ -24,8 +24,6 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JVar;
-import org.jboss.logging.Message;
 
 import javax.lang.model.element.ExecutableElement;
 import java.io.Serializable;
