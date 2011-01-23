@@ -20,6 +20,7 @@
  */
 package org.jboss.logging.model;
 
+import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
@@ -27,11 +28,8 @@ import org.jboss.logging.Message;
 import org.jboss.logging.util.BasicLoggerDescriptor;
 
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import java.lang.reflect.Method;
 
-import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
-import static org.jboss.logging.util.ElementHelper.isLoggerMethod;
 import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
 
 /**
@@ -68,9 +66,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void addMethod(final ExecutableElement method) {
-        super.addMethod(method);
+    //@Override
+    private void addMethod(final ExecutableElement method) {
+        //super.addMethod(method);
     }
 
     /**
@@ -95,7 +93,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
-            final JClass returnType = codeModel.ref(methodDesc.returnTypeAsString());
+            final JClass returnType = codeModel.ref(methodDesc.returnType());
             final String methodName = methodDesc.name();
             // Create the method
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodName);
@@ -106,7 +104,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             final JMethod msgMethod = addMessageMethod(methodName, message.value());
 
             // Create the method body
-            if (isLoggerMethod(methodDesc.method())) {
+            if (methodDesc.isLoggerMethod()) {
                 createLoggerMethod(methodDesc, jMethod, msgMethod, message.id(), projectCodeVar);
             } else {
                 createBundleMethod(methodDesc, jMethod, msgMethod, message.id(), projectCodeVar);
@@ -151,7 +149,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         final JInvocation logInv = body.invoke(log, logMethod.toString());
         // The clause must be first if there is one.
         if (methodDesc.hasCause()) {
-            logInv.arg(JExpr.direct(methodDesc.causeVarName()));
+            logInv.arg(JExpr.direct(methodDesc.cause().name()));
         }
         // The next parameter is the message. Should be accessed via the
         // message retrieval method.
@@ -162,9 +160,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             logInv.arg(JExpr.invoke(msgMethod));
         }
         // Create the parameters
-        for (VariableElement param : methodDesc.parameters()) {
-            final JClass paramType = getCodeModel().ref(param.asType().toString());
-            final JVar var = method.param(JMod.FINAL, paramType, param.getSimpleName().toString());
+        for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
+            final JClass paramType = getCodeModel().ref(param.fullType());
+            final JVar var = method.param(JMod.FINAL, paramType, param.name());
             if (!param.equals(methodDesc.cause())) {
                 logInv.arg(var);
             }
@@ -203,9 +201,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             formatterMethod.arg(JExpr.invoke(msgMethod));
         }
         // Create the parameters
-        for (VariableElement param : methodDesc.parameters()) {
-            final JClass paramType = getCodeModel().ref(param.asType().toString());
-            JVar paramVar = method.param(JMod.FINAL, paramType, param.getSimpleName().toString());
+        for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
+            final JClass paramType = getCodeModel().ref(param.fullType());
+            JVar paramVar = method.param(JMod.FINAL, paramType, param.name());
             formatterMethod.arg(paramVar);
         }
         // Setup the return type

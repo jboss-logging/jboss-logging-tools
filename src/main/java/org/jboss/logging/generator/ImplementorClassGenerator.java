@@ -83,10 +83,11 @@ public final class ImplementorClassGenerator extends AbstractTool {
             final Collection<ExecutableElement> methods) throws IOException,
                                                                 IllegalStateException {
         // Create the methods
-        for (ExecutableElement method : methods) {
-            classModel.addMethod(method);
-        }
+        //for (ExecutableElement method : methods) {
+        //    classModel.addMethod(method);
+       // }
 
+        classModel.setMethodDescriptor(MethodDescriptor.create(elementUtils(), typeUtils(), methods));
         // Write the source file
         classModel.create(filer().createSourceFile(classModel.getClassName()));
     }

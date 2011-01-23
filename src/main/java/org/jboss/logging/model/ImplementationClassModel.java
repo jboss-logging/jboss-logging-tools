@@ -27,6 +27,7 @@ import com.sun.codemodel.internal.JMod;
 
 import javax.lang.model.element.ExecutableElement;
 import java.io.Serializable;
+import org.jboss.logging.generator.MethodDescriptor;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -63,7 +64,6 @@ public abstract class ImplementationClassModel extends ClassModel {
         super(interfaceName + type, projectCode, Object.class.getName(), interfaceName, Serializable.class.getName());
 
         this.type = type;
-        this.methodDescriptor = new MethodDescriptor();
     }
 
     /**
@@ -74,15 +74,9 @@ public abstract class ImplementationClassModel extends ClassModel {
     public final ImplementationType getType() {
         return type;
     }
-
-    /**
-     * Adds a method to the class.
-     * 
-     * @param method
-     *            the method to add.
-     */
-    public void addMethod(final ExecutableElement method) {
-        methodDescriptor = methodDescriptor.add(method);
+    
+    public void setMethodDescriptor(final MethodDescriptor methodDescriptor) {
+        this.methodDescriptor = methodDescriptor;
     }
 
     /**

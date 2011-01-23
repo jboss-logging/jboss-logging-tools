@@ -48,6 +48,11 @@
         </developer>
     </developers>
 
+    <properties>
+        <netbeans.hint.license>jboss</netbeans.hint.license>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
         <!--
             JBoss Logging

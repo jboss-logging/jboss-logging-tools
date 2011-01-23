@@ -20,6 +20,8 @@
  */
 package org.jboss.logging.model;
 
+import org.jboss.logging.generator.ReturnType;
+import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
 import org.jboss.logging.Message;
 
@@ -58,10 +60,10 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void addMethod(final ExecutableElement method) {
-        super.addMethod(method);
-    }
+    //@Override
+    //public void addMethod(final ExecutableElement method) {
+    //    super.addMethod(method);
+   // }
 
     /**
      * {@inheritDoc}
@@ -81,7 +83,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
-            final JClass returnType = codeModel.ref(methodDesc.returnTypeAsString());
+            final JClass returnType = codeModel.ref(methodDesc.returnType());
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
             jMethod.annotate(Override.class);
 
@@ -111,12 +113,12 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 formatterMethod.arg(JExpr.invoke(msgMethod));
             }
             // Create the parameters
-            for (VariableElement param : methodDesc.parameters()) {
-                final JClass paramType = codeModel.ref(param.asType().toString());
-                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.getSimpleName().toString());
-                if (!isAnnotatedWith(param, CAUSE_ANNOTATION)) {
+            for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
+                final JClass paramType = codeModel.ref(param.fullType());
+                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.name());
+                if (!param.isCause()) {
                     formatterMethod.arg(paramVar);
-                }
+                } 
             }
             // Setup the return type
             if (codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
@@ -130,21 +132,21 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     }
 
     private void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
-        ReturnTypeDescriptor desc = methodDesc.returnTypeDescriptor();
+        ReturnType desc = methodDesc.returnTypeDescriptor();
         if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.causeVarName())));
+            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
         } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.causeVarName())).arg(formatterMethod));
+            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
         } else if (desc.hasStringConsturctor()) {
             result.init(JExpr._new(returnField).arg(formatterMethod));
             JInvocation resultInv = body.invoke(result, "initCause");
-            resultInv.arg(JExpr.ref(methodDesc.causeVarName()));
+            resultInv.arg(JExpr.ref(methodDesc.cause().name()));
         } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(methodDesc.causeVarName()));
+            result.init(JExpr._new(returnField).arg(methodDesc.cause().name()));
         } else if (methodDesc.hasCause()) {
             result.init(JExpr._new(returnField));
             JInvocation resultInv = body.invoke(result, "initCause");
-            resultInv.arg(JExpr.ref(methodDesc.causeVarName()));
+            resultInv.arg(JExpr.ref(methodDesc.cause().name()));
         } else {
             result.init(JExpr._new(returnField));
         }
