@@ -63,8 +63,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     //@Override
     //public void addMethod(final ExecutableElement method) {
     //    super.addMethod(method);
-   // }
-
+    // }
     /**
      * {@inheritDoc}
      */
@@ -118,7 +117,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.name());
                 if (!param.isCause()) {
                     formatterMethod.arg(paramVar);
-                } 
+                }
             }
             // Setup the return type
             if (codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
@@ -139,8 +138,10 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
         } else if (desc.hasStringConsturctor()) {
             result.init(JExpr._new(returnField).arg(formatterMethod));
-            JInvocation resultInv = body.invoke(result, "initCause");
-            resultInv.arg(JExpr.ref(methodDesc.cause().name()));
+            if (methodDesc.hasCause()) {
+                JInvocation resultInv = body.invoke(result, "initCause");
+                resultInv.arg(JExpr.ref(methodDesc.cause().name()));
+            }
         } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
             result.init(JExpr._new(returnField).arg(methodDesc.cause().name()));
         } else if (methodDesc.hasCause()) {
