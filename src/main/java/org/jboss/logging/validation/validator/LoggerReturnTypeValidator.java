@@ -65,7 +65,7 @@ public class LoggerReturnTypeValidator implements ElementValidator {
                     } else {
                         try {
                             Class<?> returnClass = Class.forName(method.getReturnType().toString());
-                            if (!Throwable.class.isAssignableFrom(returnClass) || !returnClass.isAssignableFrom(String.class)) {
+                            if (!(Throwable.class.isAssignableFrom(returnClass) || returnClass.isAssignableFrom(String.class))) {
                                 errorMessages.add(ValidationErrorMessage.of(element,
                                         "Method %s has an invalud return type type. Must have a String or Throwable return type if not annotated with %s.",
                                         method, LOG_MESSAGE_ANNOTATION.getName()));
