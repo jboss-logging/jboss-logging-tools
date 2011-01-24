@@ -60,7 +60,7 @@ public class BundleReturnTypeValidator implements ElementValidator {
 
                     if (!(Throwable.class.isAssignableFrom(returnClass) || returnClass.isAssignableFrom(String.class))) {
                         errorMessages.add(ValidationErrorMessage.of(method, 
-                                "Message bundle %s has a method with invalid return type, method %s have return type of type %s", 
+                                "Message bundle %s has a method with invalid return type, method %s has a return type of %s", 
                                 element, method, returnClass));
                     }
 
