@@ -205,7 +205,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
             final JClass paramType = getCodeModel().ref(param.fullType());
             JVar paramVar = method.param(JMod.FINAL, paramType, param.name());
-            formatterMethod.arg(paramVar);
+            if (!param.isCause()) {
+                formatterMethod.arg(paramVar);
+            }
         }
         // Setup the return type
         if (methodDesc.returnType().isException()) {
