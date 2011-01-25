@@ -20,7 +20,15 @@
  */
 package org.jboss.logging.generator;
 
-import java.lang.reflect.Constructor;
+import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
+import org.jboss.logging.util.ElementHelper;
 
 /**
  * Describes information about the return type.
@@ -29,11 +37,7 @@ import java.lang.reflect.Constructor;
  */
 public class ReturnType {
 
-    private final boolean primitive;
-
-    private final Class<?> returnType;
-
-    private final String returnTypeClassName;
+    private final TypeMirror returnType;
 
     private boolean stringConsturctor = false;
 
@@ -47,86 +51,45 @@ public class ReturnType {
      * Creates a new descriptor that is not primitive.
      * 
      * @param returnTypeClassName the class name of the return type.
-     * @throws ClassNotFoundException if the return type is not found in the classpath.
      */
-    private ReturnType(final String returnTypeClassName)
-            throws ClassNotFoundException {
-        this.returnTypeClassName = returnTypeClassName;
-        returnType = Class.forName(returnTypeClassName);
-        this.primitive = false;
-    }
-
-    /**
-     * Creates a new descriptor.
-     * 
-     * @param returnTypeName the name of the return type.
-     * @param primitive      {@code true} if the return type is a primitive, 
-     *                       otherwise {@code false}.
-     * @throws ClassNotFoundException if the return type is not found in the classpath.
-     */
-    private ReturnType(final String returnTypeName, final boolean primitive)
-            throws ClassNotFoundException {
-        this.returnTypeClassName = returnTypeName;
-        this.primitive = primitive;
-        if (primitive) {
-            returnType = null;
-        } else {
-            returnType = Class.forName(returnTypeClassName);
-        }
+    private ReturnType(final TypeMirror returnType) {
+        this.returnType = returnType;
     }
 
     /**
      * Creates a new descriptor that is not primitive.
      * 
      * @param returnTypeClassName the class name of the return type.
-     * @throws ClassNotFoundException if the return type is not found in the classpath.
      */
-    protected static ReturnType of(final String returnTypeName) throws
-            ClassNotFoundException {
-        final ReturnType result = new ReturnType(returnTypeName);
-        result.init();
-        return result;
-    }
-
-    /**
-     * Creates a new descriptor.
-     * 
-     * @param returnTypeName the name of the return type.
-     * @param primitive      {@code true} if the return type is a primitive, 
-     *                       otherwise {@code false}.
-     * @throws ClassNotFoundException if the return type is not found in the classpath.
-     */
-    protected static ReturnType of(final String returnTypeName, final boolean primitive)
-            throws ClassNotFoundException {
-        final ReturnType result = new ReturnType(returnTypeName, primitive);
-        result.init();
+    protected static ReturnType of(final TypeMirror returnType, final Types typeUtil) {
+        final ReturnType result = new ReturnType(returnType);
+        result.init(typeUtil);
         return result;
     }
 
     /**
      * Initializes the object.
      */
-    private void init() {
-        if (!primitive) {
-            final Constructor<?>[] constructors = returnType.getConstructors();
-            for (Constructor<?> construct : constructors) {
-                final Class<?>[] params = construct.getParameterTypes();
-
-                switch (params.length) {
+    private void init(final Types typeUtil) {
+        if (!returnType.getKind().isPrimitive() && returnType.getKind() != TypeKind.VOID) {
+            final Element element = typeUtil.asElement(returnType);
+            final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
+            for (ExecutableElement constructor : constructors) {
+                List<? extends VariableElement> params = constructor.getParameters();
+                switch (params.size()) {
                     case 1:
-                        final Class<?> param = params[0];
-                        if (param.isAssignableFrom(String.class)) {
+                        if (ElementHelper.isAssignableFrom(params.get(0).asType(), String.class)) {
                             stringConsturctor = true;
-                        } else if (Throwable.class.isAssignableFrom(param)) {
+                        } else if (ElementHelper.isAssignableFrom(Throwable.class, params.get(0).asType())) {
                             throwableConstructor = true;
                         }
                         break;
                     case 2:
-                        final Class<?> param1 = params[0];
-                        final Class<?> param2 = params[1];
-                        if (param1.isAssignableFrom(String.class) && Throwable.class.isAssignableFrom(param2)) {
+                        if (ElementHelper.isAssignableFrom(params.get(0).asType(), String.class)
+                                && ElementHelper.isAssignableFrom(Throwable.class, params.get(1).asType())) {
                             stringAndThrowableConstructor = true;
-                        } else if (Throwable.class.isAssignableFrom(param1) && param2.isAssignableFrom(String.class)) {
+                        } else if (ElementHelper.isAssignableFrom(Throwable.class, params.get(0).asType())
+                                && ElementHelper.isAssignableFrom(params.get(1).asType(), String.class)) {
                             throwableAndStringConstructor = true;
                         }
                         break;
@@ -141,7 +104,7 @@ public class ReturnType {
      * @return {@code true} if a primitive, otherwise {@code false}.
      */
     public boolean isPrimitive() {
-        return primitive;
+        return returnType.getKind().isPrimitive();
     }
 
     /**
@@ -150,18 +113,9 @@ public class ReturnType {
      * @return a string version of the return type.
      */
     public String getReturnTypeAsString() {
-        return returnTypeClassName;
+        return returnType.toString();
     }
-
-    /**
-     * Returns the class created from the return type.
-     * 
-     * @return the return type as a class.
-     */
-    public Class<?> getReturnType() {
-        return returnType;
-    }
-
+    
     /**
      * If the return type is a constructor and has a {@link java.lang.String}
      * and {@link java.lang.Throwable} constructor, {@code true} is returned. 
@@ -209,16 +163,22 @@ public class ReturnType {
     public boolean hasThrowableConstructor() {
         return throwableConstructor;
     }
+    
+    /**
+     * Checks to see if the return type is an exception, extends Throwable.
+     * 
+     * @return {@code true} if the return type is an exception, otherwise
+     *         {@code false}.
+     */
+    public boolean isException() {
+        return ElementHelper.isAssignableFrom(Throwable.class, returnType);
+    }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((returnType == null) ? 0 : returnType.hashCode());
-        result = prime * result + ((stringConsturctor) ? 1 : 0);
-        result = prime * result + ((throwableConstructor) ? 1 : 0);
-        result = prime * result + ((stringAndThrowableConstructor) ? 1 : 0);
-        result = prime * result + ((throwableAndStringConstructor) ? 1 : 0);
         return result;
     }
 
@@ -234,10 +194,7 @@ public class ReturnType {
         if ((this.returnType == null) ? other.returnType != null : this.returnType.equals(other.returnType)) {
             return false;
         }
-        return (this.stringConsturctor == other.stringConsturctor)
-                && (this.throwableConstructor == other.throwableConstructor)
-                && (this.stringAndThrowableConstructor == other.stringAndThrowableConstructor)
-                && (this.throwableAndStringConstructor == other.throwableAndStringConstructor);
+        return true;
     }
 
     @Override

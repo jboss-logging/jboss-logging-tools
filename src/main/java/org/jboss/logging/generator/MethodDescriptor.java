@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.jboss.logging.Cause;
@@ -134,7 +133,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
 
     private MethodParameter cause;
 
-    private ReturnType returnTypeDescriptor;
+    private ReturnType returnType;
 
     private LogMessage logMessage;
 
@@ -300,8 +299,8 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      * 
      * @return the return type descriptor.
      */
-    public ReturnType returnTypeDescriptor() {
-        return returnTypeDescriptor;
+    public ReturnType returnType() {
+        return returnType;
     }
 
     /**
@@ -320,15 +319,6 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      */
     public Collection<MethodParameter> parameters() {
         return Collections.unmodifiableCollection(parameters);
-    }
-
-    /**
-     * Returns the return type for the method.
-     * 
-     * @return the return type for the method.
-     */
-    public String returnType() {
-        return method.getReturnType().toString();
     }
 
     /**
@@ -368,14 +358,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         // Find the annotations
         Message message = method.getAnnotation(Message.class);
         LogMessage logMessage = method.getAnnotation(LogMessage.class);
-        if (method.getReturnType().getKind() != TypeKind.VOID) {
-            try {
-                this.returnTypeDescriptor = ReturnType.of(this.returnType());
-            } catch (ClassNotFoundException ex) {
-                throw new IllegalStateException(String.format("Return type %s for method %s is not in the classpath",
-                        method.getReturnType(), method));
-            }
-        }
+        this.returnType = ReturnType.of(method.getReturnType(), typeUtil);
 
         final Collection<MethodDescriptor> methodDescriptors = find(this.name());
         // Locate the first message with a non-null message

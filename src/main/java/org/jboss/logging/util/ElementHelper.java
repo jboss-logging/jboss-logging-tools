@@ -14,7 +14,9 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import javax.lang.model.type.DeclaredType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.model.ImplementationType;
@@ -198,5 +200,94 @@ public final class ElementHelper {
         }
 
         return result;
+    }
+
+    /**
+     * Checks to see if the type element is assignable from the type.
+     * 
+     * @param typeElement the type element to check.
+     * @param type        the type to check.
+     * @return {@code true} if the type element is assignable from the type, 
+     *         otherwise {@code false}.
+     */
+    public static boolean isAssignableFrom(final TypeElement typeElement, final Class<?> type) {
+        if (type.getName().equals(typeElement.getQualifiedName().toString())) {
+            return true;
+        }
+        for (Class<?> intf : type.getInterfaces()) {
+            if (isAssignableFrom(typeElement, intf)) {
+                return true;
+            }
+        }
+        if (type.getSuperclass() != null && isAssignableFrom(typeElement, type.getSuperclass())) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see id the type mirror is assignable from the type.
+     * 
+     * @param typeMirror the type mirror to check.
+     * @param type       the type to check.
+     * @return {@code true} if the type mirror is assignable from the type, 
+     *         otherwise {@code false}.
+     */
+    public static boolean isAssignableFrom(final TypeMirror typeMirror, final Class<?> type) {
+        if (typeMirror instanceof DeclaredType) {
+            final DeclaredType dclType = (DeclaredType) typeMirror;
+            final TypeElement typeElement = (TypeElement) dclType.asElement();
+            return isAssignableFrom(typeElement, type);
+        }
+        for (Class<?> intf : type.getInterfaces()) {
+            if (isAssignableFrom(typeMirror, intf)) {
+                return true;
+            }
+        }
+        if (type.getSuperclass() != null && isAssignableFrom(typeMirror, type.getSuperclass())) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see if the type is assignable from the type element.
+     * 
+     * @param type        the type to check.
+     * @param typeElement the type element to check.
+     * @return {@code true} if the type is assignable from the type element,
+     *         otherwise {@code false}.
+     */
+    public static boolean isAssignableFrom(final Class<?> type, final TypeElement typeElement) {
+        if (type.getName().equals(typeElement.getQualifiedName().toString())) {
+            return true;
+        }
+        final List<? extends TypeMirror> types = typeElement.getInterfaces();
+        for (TypeMirror typeMirror : types) {
+            if (isAssignableFrom(type, typeMirror)) {
+                return true;
+            }
+        }
+        if (isAssignableFrom(type, typeElement.getSuperclass())) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see if the type is assignable from the type mirror.
+     * 
+     * @param type        the type to check.
+     * @param typeMirrort the type mirror to check.
+     * @return {@code true} if the type is assignable from the type mirror,
+     *         otherwise {@code false}.
+     */
+    public static boolean isAssignableFrom(final Class<?> type, final TypeMirror typeMirror) {
+        if (typeMirror instanceof DeclaredType) {
+            final DeclaredType dclType = (DeclaredType) typeMirror;
+            final TypeElement typeElement = (TypeElement) dclType.asElement();
+            return isAssignableFrom(type, typeElement);
+        }
+        return false;
     }
 }

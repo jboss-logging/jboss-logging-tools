@@ -25,11 +25,7 @@ import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
 import org.jboss.logging.Message;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 
-import static org.jboss.logging.util.ElementHelper.CAUSE_ANNOTATION;
-import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
 import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
 
 /**
@@ -56,14 +52,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             final String projectCode) {
         super(interfaceName, projectCode, ImplementationType.BUNDLE);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    //@Override
-    //public void addMethod(final ExecutableElement method) {
-    //    super.addMethod(method);
-    // }
+    
     /**
      * {@inheritDoc}
      */
@@ -82,7 +71,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
-            final JClass returnType = codeModel.ref(methodDesc.returnType());
+            final JClass returnType = codeModel.ref(methodDesc.returnType().getReturnTypeAsString());
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
             jMethod.annotate(Override.class);
 
@@ -120,7 +109,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 }
             }
             // Setup the return type
-            if (codeModel.ref(Throwable.class).isAssignableFrom(returnField)) {
+            if (methodDesc.returnType().isException()) {
                 initCause(result, returnField, body, methodDesc, formatterMethod);
             } else {
                 result.init(formatterMethod);
@@ -131,7 +120,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
     }
 
     private void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
-        ReturnType desc = methodDesc.returnTypeDescriptor();
+        ReturnType desc = methodDesc.returnType();
         if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
             result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
         } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {

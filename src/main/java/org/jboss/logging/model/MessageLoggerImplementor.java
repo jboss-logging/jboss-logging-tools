@@ -20,6 +20,7 @@
  */
 package org.jboss.logging.model;
 
+import org.jboss.logging.generator.ReturnType;
 import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
 import org.jboss.logging.LogMessage;
@@ -93,7 +94,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MethodDescriptor methodDesc : methodDescriptor) {
-            final JClass returnType = codeModel.ref(methodDesc.returnType());
+            final JClass returnType = codeModel.ref(methodDesc.returnType().getReturnTypeAsString());
             final String methodName = methodDesc.name();
             // Create the method
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodName);
@@ -207,7 +208,11 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             formatterMethod.arg(paramVar);
         }
         // Setup the return type
-        result.init(formatterMethod);
+        if (methodDesc.returnType().isException()) {
+            initCause(result, returnField, body, methodDesc, formatterMethod);
+        } else {
+            result.init(formatterMethod);
+        }
         body._return(result);
     }
 
@@ -244,6 +249,29 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             blBody.append(");");
             blMethod.body().directStatement(blBody.toString());
+        }
+    }
+
+    private void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
+        ReturnType desc = methodDesc.returnType();
+        if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
+        } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
+        } else if (desc.hasStringConsturctor()) {
+            result.init(JExpr._new(returnField).arg(formatterMethod));
+            if (methodDesc.hasCause()) {
+                JInvocation resultInv = body.invoke(result, "initCause");
+                resultInv.arg(JExpr.ref(methodDesc.cause().name()));
+            }
+        } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(methodDesc.cause().name()));
+        } else if (methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField));
+            JInvocation resultInv = body.invoke(result, "initCause");
+            resultInv.arg(JExpr.ref(methodDesc.cause().name()));
+        } else {
+            result.init(JExpr._new(returnField));
         }
     }
 }

@@ -63,18 +63,11 @@ public class LoggerReturnTypeValidator implements ElementValidator {
                         errorMessages.add(ValidationErrorMessage.of(method,
                                 "Cannot have a void return type if the method is not a log method."));
                     } else {
-                        try {
-                            Class<?> returnClass = Class.forName(method.getReturnType().toString());
-                            if (!(Throwable.class.isAssignableFrom(returnClass) || returnClass.isAssignableFrom(String.class))) {
+                        if (!(ElementHelper.isAssignableFrom(method.getReturnType(), String.class) || 
+                                ElementHelper.isAssignableFrom(Throwable.class, method.getReturnType()))) {
                                 errorMessages.add(ValidationErrorMessage.of(element,
                                         "Method %s has an invalud return type type. Must have a String or Throwable return type if not annotated with %s.",
                                         method, LOG_MESSAGE_ANNOTATION.getName()));
-                            }
-
-                        } catch (ClassNotFoundException e) {
-                            errorMessages.add(ValidationErrorMessage.of(method,
-                                    "Return type %s for method %s is not in the classpath",
-                                    method.getReturnType(), method));
                         }
                     }
                 }

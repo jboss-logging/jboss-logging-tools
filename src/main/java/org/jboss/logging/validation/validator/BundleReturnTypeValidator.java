@@ -53,27 +53,15 @@ public class BundleReturnTypeValidator implements ElementValidator {
         if (ElementHelper.isAnnotatedWith(element, MessageBundle.class)) {
 
             for (ExecutableElement method : elementMethods) {
-
-                try {
-
-                    Class<?> returnClass = Class.forName(method.getReturnType().toString());
-
-                    if (!(Throwable.class.isAssignableFrom(returnClass) || returnClass.isAssignableFrom(String.class))) {
-                        errorMessages.add(ValidationErrorMessage.of(method, 
-                                "Message bundle %s has a method with invalid return type, method %s has a return type of %s", 
-                                element, method, returnClass));
-                    }
-
-                } catch (ClassNotFoundException e) {
-                    errorMessages.add(ValidationErrorMessage.of(method, 
-                            "Return type %s for method %s is not in the classpath", 
-                            method.getReturnType(), method));
+                if (!(ElementHelper.isAssignableFrom(method.getReturnType(), String.class)
+                        || ElementHelper.isAssignableFrom(Throwable.class, method.getReturnType()))) {
+                    errorMessages.add(ValidationErrorMessage.of(method,
+                            "Message bundle %s has a method with invalid return type, method %s has a return type of %s",
+                            element, method, method.getReturnType()));
                 }
-
             }
         }
 
         return errorMessages;
     }
-
 }
