@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-            <version>3.0.0.Beta4</version>
+            <version>3.0.0.Beta5-SNAPSHOT</version>
             <optional>true</optional>
         </dependency>
 

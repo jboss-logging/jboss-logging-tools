@@ -105,7 +105,12 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 final JClass paramType = codeModel.ref(param.fullType());
                 JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.name());
                 if (!param.isCause()) {
-                    formatterMethod.arg(paramVar);
+                    final String formatterClass = param.getFormatterClass();
+                    if (formatterClass == null) {
+                        formatterMethod.arg(paramVar);
+                    } else {
+                        formatterMethod.arg(JExpr._new(JClass.parse(codeModel, formatterClass)).arg(paramVar));
+                    }
                 }
             }
             // Setup the return type

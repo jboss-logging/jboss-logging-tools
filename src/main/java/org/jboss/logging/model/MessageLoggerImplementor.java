@@ -206,7 +206,12 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             final JClass paramType = getCodeModel().ref(param.fullType());
             JVar paramVar = method.param(JMod.FINAL, paramType, param.name());
             if (!param.isCause()) {
-                formatterMethod.arg(paramVar);
+                final String formatterClass = param.getFormatterClass();
+                if (formatterClass == null) {
+                    formatterMethod.arg(paramVar);
+                } else {
+                    formatterMethod.arg(JExpr._new(JClass.parse(getCodeModel(), formatterClass)).arg(paramVar));
+                }
             }
         }
         // Setup the return type

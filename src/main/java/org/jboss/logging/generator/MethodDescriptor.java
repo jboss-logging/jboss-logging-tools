@@ -1,21 +1,23 @@
 /*
- *  JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
- *  individual contributors by the @authors tag. See the copyright.txt in the
- *  distribution for a full listing of individual contributors.
- * 
- *  This is free software; you can redistribute it and/or modify it under the
- *  terms of the GNU Lesser General Public License as published by the Free
- *  Software Foundation; either version 2.1 of the License, or (at your option)
- *  any later version.
- * 
- *  This software is distributed in the hope that it will be useful, but WITHOUT
- *  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- *  FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- *  details.
- * 
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this software; if not, write to the Free Software Foundation,
- *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.logging.generator;
 
@@ -26,11 +28,17 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.jboss.logging.Cause;
+import org.jboss.logging.FormatWith;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
 import org.jboss.logging.util.ElementHelper;
@@ -51,6 +59,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         private final VariableElement param;
 
         private final String fullType;
+        private final String formatterClass;
 
         /**
          * Only allow construction from within the parent class.
@@ -61,6 +70,20 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         private MethodParameter(final String fullType, final VariableElement param) {
             this.fullType = fullType;
             this.param = param;
+            formatterClass = null;
+        }
+
+        /**
+         * Only allow construction from within the parent class.
+         *
+         * @param fullType the full type name.
+         * @param param    the parameter.
+         * @param formatterClass the formatter class, or {@code null} if none
+         */
+        private MethodParameter(final String fullType, final VariableElement param, final String formatterClass) {
+            this.param = param;
+            this.fullType = fullType;
+            this.formatterClass = formatterClass;
         }
 
         /**
@@ -83,6 +106,15 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
          */
         public String fullType() {
             return fullType;
+        }
+
+        /**
+         * The formatter class, or {@code null} if there is none.
+         *
+         * @return the formatter class
+         */
+        public String getFormatterClass() {
+            return formatterClass;
         }
 
         /**
@@ -162,7 +194,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
             } else {
                 current = new MethodDescriptor();
             }
-            current.init(typeUtil, method);
+            current.init(elementUtil, typeUtil, method);
             descriptors.add(current);
         }
         return result;
@@ -353,7 +385,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      * @param typeUtil the type utilities for internal usage.
      * @param method   the method to process.
      */
-    private void init(final Types typeUtil, ExecutableElement method) {
+    private void init(final Elements elementUtil, final Types typeUtil, ExecutableElement method) {
         this.method = method;
         // Find the annotations
         Message message = method.getAnnotation(Message.class);
@@ -386,10 +418,19 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
             if (param.getAnnotation(Cause.class) != null) {
                 this.cause = new MethodParameter(typeUtil.asElement(param.asType()).toString(), param);
             }
+            String formatClass = null;
+            // Format class may not yet be compiled, so get it in a roundabout way
+            for (AnnotationMirror mirror : param.getAnnotationMirrors()) {
+                final DeclaredType annotationType = mirror.getAnnotationType();
+                if (annotationType.equals(typeUtil.getDeclaredType(elementUtil.getTypeElement(FormatWith.class.getName())))) {
+                    final AnnotationValue value = mirror.getElementValues().values().iterator().next();
+                    formatClass = ((TypeElement)(((DeclaredType)value.getValue()).asElement())).getQualifiedName().toString();
+                }
+            }
             if (param.asType().getKind().isPrimitive()) {
-                this.parameters.add(new MethodParameter(param.asType().toString(), param));
+                this.parameters.add(new MethodParameter(param.asType().toString(), param, formatClass));
             } else {
-                this.parameters.add(new MethodParameter(typeUtil.asElement(param.asType()).toString(), param));
+                this.parameters.add(new MethodParameter(typeUtil.asElement(param.asType()).toString(), param, formatClass));
             }
         }
         // Setup the global variables for the result
