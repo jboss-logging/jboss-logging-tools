@@ -72,8 +72,6 @@ public final class TranslationClassGenerator extends AbstractTool {
 
     public static final String TRANSLATION_FILES_PATH_OPTION = "translationFilesPath";
 
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-
     /**
      * The properties file pattern. The property file must
      * match the given pattern <em>org.pkgname.InterfaceName.i18n_locale.properties</em> where locale is :
@@ -117,7 +115,7 @@ public final class TranslationClassGenerator extends AbstractTool {
 
             //User defined
             if (translationFilesPath != null) {
-                classTranslationFilesPath = translationFilesPath + packageName.replaceAll("\\.", FILE_SEPARATOR);
+                classTranslationFilesPath = translationFilesPath + packageName.replace('.', File.separatorChar);
 
             //By default use the class output folder
             } else {
