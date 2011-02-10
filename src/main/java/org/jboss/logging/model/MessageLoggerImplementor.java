@@ -86,7 +86,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             projectCodeVar.init(JExpr.lit(getProjectCode()));
         }
         // Add default constructor
-        final JMethod constructor = getDefinedClass().constructor(JMod.PROTECTED);
+        final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
         final JVar constructorParam = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
@@ -172,7 +172,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
 
     /**
      * Create the bundle method body.
-     * 
+     *
      * @param methodDesc     the method descriptor.
      * @param method         the method to create the body for.
      * @param msgMethod      the message method for retrieving the message.
@@ -225,7 +225,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
 
     /**
      * Implements the basic logger methods.
-     * 
+     *
      * @param codeModel the code model to implement to.
      */
     private void implementBasicLogger(final JCodeModel codeModel) {
