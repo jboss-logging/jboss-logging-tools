@@ -36,7 +36,7 @@ import java.util.Date;
  */
 final class ClassModelUtil {
 
-    public static final String STRING_ID_FORMAT = "-%05d:";
+    public static final String STRING_ID_FORMAT = "%05d:";
 
     private static final String INSTANCE_FIELD_NAME = "INSTANCE";
 
