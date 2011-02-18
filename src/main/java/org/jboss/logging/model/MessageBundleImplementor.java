@@ -52,7 +52,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             final String projectCode) {
         super(interfaceName, projectCode, ImplementationType.BUNDLE);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -83,41 +83,45 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             final JBlock body = jMethod.body();
             final JClass returnField = codeModel.ref(returnType.fullName());
             final JVar result = body.decl(returnField, "result");
-            JClass formatter = null;
-            // Determine the format type
-            switch (message.format()) {
-                case MESSAGE_FORMAT:
-                    formatter = codeModel.ref(java.text.MessageFormat.class);
-                    break;
-                case PRINTF:
-                    formatter = codeModel.ref(String.class);
-                    break;
-            }
-            final JInvocation formatterMethod = formatter.staticInvoke("format");
-            if (message.id() > Message.NONE && projectCodeVar != null) {
-                String formatedId = String.format(STRING_ID_FORMAT, message.id());
-                formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formatedId)).plus(JExpr.invoke(msgMethod)));
+            if (methodDesc.parameters().isEmpty()) {
+                result.init(JExpr.invoke(msgMethod));
             } else {
-                formatterMethod.arg(JExpr.invoke(msgMethod));
-            }
-            // Create the parameters
-            for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
-                final JClass paramType = codeModel.ref(param.fullType());
-                JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.name());
-                if (!param.isCause()) {
-                    final String formatterClass = param.getFormatterClass();
-                    if (formatterClass == null) {
-                        formatterMethod.arg(paramVar);
-                    } else {
-                        formatterMethod.arg(JExpr._new(JClass.parse(codeModel, formatterClass)).arg(paramVar));
+                JClass formatter = null;
+                // Determine the format type
+                switch (message.format()) {
+                    case MESSAGE_FORMAT:
+                        formatter = codeModel.ref(java.text.MessageFormat.class);
+                        break;
+                    case PRINTF:
+                        formatter = codeModel.ref(String.class);
+                        break;
+                }
+                final JInvocation formatterMethod = formatter.staticInvoke("format");
+                if (message.id() > Message.NONE && projectCodeVar != null) {
+                    String formatedId = String.format(STRING_ID_FORMAT, message.id());
+                    formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formatedId)).plus(JExpr.invoke(msgMethod)));
+                } else {
+                    formatterMethod.arg(JExpr.invoke(msgMethod));
+                }
+                // Create the parameters
+                for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
+                    final JClass paramType = codeModel.ref(param.fullType());
+                    JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.name());
+                    if (!param.isCause()) {
+                        final String formatterClass = param.getFormatterClass();
+                        if (formatterClass == null) {
+                            formatterMethod.arg(paramVar);
+                        } else {
+                            formatterMethod.arg(JExpr._new(JClass.parse(codeModel, formatterClass)).arg(paramVar));
+                        }
                     }
                 }
-            }
-            // Setup the return type
-            if (methodDesc.returnType().isException()) {
-                initCause(result, returnField, body, methodDesc, formatterMethod);
-            } else {
-                result.init(formatterMethod);
+                // Setup the return type
+                if (methodDesc.returnType().isException()) {
+                    initCause(result, returnField, body, methodDesc, formatterMethod);
+                } else {
+                    result.init(formatterMethod);
+                }
             }
             body._return(result);
         }
