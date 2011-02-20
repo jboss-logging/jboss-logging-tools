@@ -20,10 +20,11 @@
  */
 package org.jboss.logging.model;
 
+import org.jboss.logging.generator.MethodParameter;
+import org.jboss.logging.Loggers;
 import org.jboss.logging.generator.ReturnType;
 import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
-import org.jboss.logging.Message;
 
 
 import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
@@ -48,9 +49,9 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * @param projectCode
      *            the project code from the annotation.
      */
-    public MessageBundleImplementor(final String interfaceName,
+    public MessageBundleImplementor(final Loggers loggers, final String interfaceName,
             final String projectCode) {
-        super(interfaceName, projectCode, ImplementationType.BUNDLE);
+        super(loggers, interfaceName, projectCode, ImplementationType.BUNDLE);
     }
 
     /**
@@ -75,10 +76,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
             jMethod.annotate(Override.class);
 
-            final Message message = methodDesc.message();
             // Add the message method.
-            final JMethod msgMethod = addMessageMethod(methodDesc.name(),
-                    message.value());
+            final JMethod msgMethod = addMessageMethod(methodDesc.name(), methodDesc.messageValue());
             // Create the method body
             final JBlock body = jMethod.body();
             final JClass returnField = codeModel.ref(returnType.fullName());
@@ -86,25 +85,16 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             if (methodDesc.parameters().isEmpty()) {
                 result.init(JExpr.invoke(msgMethod));
             } else {
-                JClass formatter = null;
-                // Determine the format type
-                switch (message.format()) {
-                    case MESSAGE_FORMAT:
-                        formatter = codeModel.ref(java.text.MessageFormat.class);
-                        break;
-                    case PRINTF:
-                        formatter = codeModel.ref(String.class);
-                        break;
-                }
-                final JInvocation formatterMethod = formatter.staticInvoke("format");
-                if (message.id() > Message.NONE && projectCodeVar != null) {
-                    String formatedId = String.format(STRING_ID_FORMAT, message.id());
+                final JClass formatter = codeModel.ref(methodDesc.messageFormat().formatClass());
+                final JInvocation formatterMethod = formatter.staticInvoke(methodDesc.messageFormat().staticMethod());
+                if (methodDesc.hasMessageId() && projectCodeVar != null) {
+                    String formatedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
                     formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formatedId)).plus(JExpr.invoke(msgMethod)));
                 } else {
                     formatterMethod.arg(JExpr.invoke(msgMethod));
                 }
                 // Create the parameters
-                for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
+                for (MethodParameter param : methodDesc.parameters()) {
                     final JClass paramType = codeModel.ref(param.fullType());
                     JVar paramVar = jMethod.param(JMod.FINAL, paramType, param.name());
                     if (!param.isCause()) {

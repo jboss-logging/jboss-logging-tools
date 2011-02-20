@@ -20,15 +20,12 @@
  */
 package org.jboss.logging.model;
 
+import org.jboss.logging.generator.MethodParameter;
+import org.jboss.logging.Loggers;
 import org.jboss.logging.generator.ReturnType;
 import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.util.BasicLoggerDescriptor;
 
-import javax.lang.model.element.ExecutableElement;
 import java.lang.reflect.Method;
 
 import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
@@ -45,9 +42,7 @@ import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
 public final class MessageLoggerImplementor extends ImplementationClassModel {
 
     private static final String LOG_FIELD_NAME = "log";
-
     private final boolean extendsBasicLogger;
-
     private JFieldVar log;
 
     /**
@@ -58,18 +53,9 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param projectCode
      *            the project code from the annotation.
      */
-    public MessageLoggerImplementor(final String interfaceName,
-            final String projectCode, final boolean extendsBasicLogger) {
-        super(interfaceName, projectCode, ImplementationType.LOGGER);
+    public MessageLoggerImplementor(final Loggers loggers, final String interfaceName, final String projectCode, final boolean extendsBasicLogger) {
+        super(loggers, interfaceName, projectCode, ImplementationType.LOGGER);
         this.extendsBasicLogger = extendsBasicLogger;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    //@Override
-    private void addMethod(final ExecutableElement method) {
-        //super.addMethod(method);
     }
 
     /**
@@ -78,7 +64,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
+        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
         //Add a project code constant
         JFieldVar projectCodeVar = null;
         if (!getProjectCode().isEmpty()) {
@@ -87,7 +73,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         }
         // Add default constructor
         final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
-        final JVar constructorParam = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
+        final JVar constructorParam = constructor.param(JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
 
@@ -99,16 +85,14 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             // Create the method
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodName);
             jMethod.annotate(Override.class);
-            // Find the annotations
-            final Message message = methodDesc.message();
             // Add the message method.
-            final JMethod msgMethod = addMessageMethod(methodName, message.value());
+            final JMethod msgMethod = addMessageMethod(methodName, methodDesc.messageValue());
 
             // Create the method body
             if (methodDesc.isLoggerMethod()) {
-                createLoggerMethod(methodDesc, jMethod, msgMethod, message.id(), projectCodeVar);
+                createLoggerMethod(methodDesc, jMethod, msgMethod, projectCodeVar);
             } else {
-                createBundleMethod(methodDesc, jMethod, msgMethod, message.id(), projectCodeVar);
+                createBundleMethod(methodDesc, jMethod, msgMethod, projectCodeVar);
             }
         }
         // If implementing the BasicLogger, defer to the global log instance.
@@ -127,26 +111,12 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param messageId      the message id.
      * @param projectCodeVar the project code variable
      */
-    private void createLoggerMethod(final MethodDescriptor methodDesc, final JMethod method, final JMethod msgMethod, final int messageId, final JVar projectCodeVar) {
-        final LogMessage logMessage = methodDesc.logMessage();
-        // Set a default log level
-        Logger.Level logLevel = Logger.Level.INFO;
-        if (logMessage != null) {
-            logLevel = logMessage.level();
-        }
+    private void createLoggerMethod(final MethodDescriptor methodDesc, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
         // Create the body of the method and add the text
         final JBlock body = method.body();
 
         // Determine the log method
-        final StringBuilder logMethod = new StringBuilder(logLevel.name().toLowerCase());
-        switch (methodDesc.message().format()) {
-            case MESSAGE_FORMAT:
-                logMethod.append("v");
-                break;
-            case PRINTF:
-                logMethod.append("f");
-                break;
-        }
+        final StringBuilder logMethod = new StringBuilder(methodDesc.loggerMethod());
         final JInvocation logInv = body.invoke(log, logMethod.toString());
         // The clause must be first if there is one.
         if (methodDesc.hasCause()) {
@@ -154,14 +124,14 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         }
         // The next parameter is the message. Should be accessed via the
         // message retrieval method.
-        if (messageId > Message.NONE && projectCodeVar != null) {
-            String formatedId = String.format(STRING_ID_FORMAT, messageId);
+        if (methodDesc.hasMessageId() && projectCodeVar != null) {
+            String formatedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
             logInv.arg(projectCodeVar.plus(JExpr.lit(formatedId)).plus(JExpr.invoke(msgMethod)));
         } else {
             logInv.arg(JExpr.invoke(msgMethod));
         }
         // Create the parameters
-        for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
+        for (MethodParameter param : methodDesc.parameters()) {
             final JClass paramType = getCodeModel().ref(param.fullType());
             final JVar var = method.param(JMod.FINAL, paramType, param.name());
             if (!param.equals(methodDesc.cause())) {
@@ -179,7 +149,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param messageId      the message id.
      * @param projectCodeVar the project code variable
      */
-    private void createBundleMethod(final MethodDescriptor methodDesc, final JMethod method, final JMethod msgMethod, final int messageId, final JVar projectCodeVar) {
+    private void createBundleMethod(final MethodDescriptor methodDesc, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
         // Create the body of the method and add the text
         final JBlock body = method.body();
         final JClass returnField = getCodeModel().ref(method.type().fullName());
@@ -187,25 +157,16 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         if (methodDesc.parameters().isEmpty()) {
             result.init(JExpr.invoke(msgMethod));
         } else {
-            JClass formatter = null;
-            // Determine the format type
-            switch (methodDesc.message().format()) {
-                case MESSAGE_FORMAT:
-                    formatter = getCodeModel().ref(java.text.MessageFormat.class);
-                    break;
-                case PRINTF:
-                    formatter = getCodeModel().ref(String.class);
-                    break;
-            }
-            final JInvocation formatterMethod = formatter.staticInvoke("format");
-            if (messageId > Message.NONE && projectCodeVar != null) {
-                String formatedId = String.format(STRING_ID_FORMAT, messageId);
+            final JClass formatter = getCodeModel().ref(methodDesc.messageFormat().formatClass());
+            final JInvocation formatterMethod = formatter.staticInvoke(methodDesc.messageFormat().staticMethod());
+            if (methodDesc.hasMessageId() && projectCodeVar != null) {
+                String formatedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
                 formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formatedId)).plus(JExpr.invoke(msgMethod)));
             } else {
                 formatterMethod.arg(JExpr.invoke(msgMethod));
             }
             // Create the parameters
-            for (MethodDescriptor.MethodParameter param : methodDesc.parameters()) {
+            for (MethodParameter param : methodDesc.parameters()) {
                 final JClass paramType = getCodeModel().ref(param.fullType());
                 JVar paramVar = method.param(JMod.FINAL, paramType, param.name());
                 if (!param.isCause()) {
@@ -233,7 +194,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param codeModel the code model to implement to.
      */
     private void implementBasicLogger(final JCodeModel codeModel) {
-        for (Method m : BasicLoggerDescriptor.getInstance().getMethods()) {
+        for (Method m : loggers().basicLoggerMethods()) {
             if (!m.getReturnType().isPrimitive()) {
                 codeModel.ref(m.getReturnType());
             }

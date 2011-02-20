@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- * 
+ *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -21,8 +21,6 @@
 package org.jboss.logging.generator;
 
 import org.jboss.logging.AbstractTool;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.MessageLogger;
 import org.jboss.logging.model.ImplementationClassModel;
 import org.jboss.logging.model.MessageBundleImplementor;
 import org.jboss.logging.model.MessageLoggerImplementor;
@@ -33,7 +31,8 @@ import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.util.Collection;
 import javax.lang.model.type.TypeMirror;
-import org.jboss.logging.util.BasicLoggerDescriptor;
+import org.jboss.logging.Annotations;
+import org.jboss.logging.Loggers;
 
 /**
  * A generator for creating implementations of message bundle and logging
@@ -46,8 +45,8 @@ public final class ImplementorClassGenerator extends AbstractTool {
     /**
      * @param processingEnv
      */
-    public ImplementorClassGenerator(ProcessingEnvironment processingEnv) {
-        super(processingEnv);
+    public ImplementorClassGenerator(ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
+        super(processingEnv, annotations, loggers);
     }
 
     @Override
@@ -55,13 +54,11 @@ public final class ImplementorClassGenerator extends AbstractTool {
             final Collection<ExecutableElement> methods) {
         try {
             final String interfaceName = elementUtils().getBinaryName(element).toString();
-            final MessageLogger messageLogger = element.getAnnotation(MessageLogger.class);
-            final MessageBundle messageBundle = element.getAnnotation(MessageBundle.class);
-            if (messageLogger != null) {
-                createClass(new MessageLoggerImplementor(interfaceName, messageLogger.projectCode(),extendsBasicLogger(element)), methods);
+            if (element.getAnnotation(annotations().messageLogger()) != null) {
+                createClass(new MessageLoggerImplementor(loggers(), interfaceName, annotations().projectCode(element),extendsBasicLogger(element)), methods);
             }
-            if (messageBundle != null) {
-                createClass(new MessageBundleImplementor(interfaceName, messageBundle.projectCode()), methods);
+            if (element.getAnnotation(annotations().messageBundle()) != null) {
+                createClass(new MessageBundleImplementor(loggers(), interfaceName, annotations().projectCode(element)), methods);
             }
         } catch (IOException e) {
             logger().error(element, e);
@@ -87,13 +84,13 @@ public final class ImplementorClassGenerator extends AbstractTool {
         //    classModel.addMethod(method);
        // }
 
-        classModel.setMethodDescriptor(MethodDescriptor.create(elementUtils(), typeUtils(), methods));
+        classModel.setMethodDescriptor(MethodDescriptor.create(elementUtils(), typeUtils(), methods, annotations()));
         // Write the source file
         classModel.create(filer().createSourceFile(classModel.getClassName()));
     }
-    
+
     private boolean extendsBasicLogger(final TypeElement element) {
-        if (element.getQualifiedName().toString().equals(BasicLoggerDescriptor.BASIC_LOGGER_CLASS.getName())) {
+        if (element.getQualifiedName().toString().equals(loggers().basicLoggerClass().getName())) {
             return true;
         }
         for (TypeMirror type : element.getInterfaces()) {

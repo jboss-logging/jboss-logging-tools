@@ -2,17 +2,17 @@
  * JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  * individual contributors by the @authors tag. See the copyright.txt in the
  * distribution for a full listing of individual contributors.
- * 
+ *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -88,10 +88,13 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         logger = ToolLogger.getLogger(processingEnv);
 
-        //Tools generator -  Note the order these are excuted in. 
-        processors.add(new ImplementorClassGenerator(processingEnv));
-        processors.add(new TranslationClassGenerator(processingEnv));
-        processors.add(new TranslationFileGenerator(processingEnv));
+        //Tools generator -  Note the order these are excuted in.
+        // TODO - fix
+        final Annotations a = new AnnotationsImpl();
+        final Loggers l = new LoggersImpl();
+        processors.add(new ImplementorClassGenerator(processingEnv, a, l));
+        processors.add(new TranslationClassGenerator(processingEnv,a, l));
+        processors.add(new TranslationFileGenerator(processingEnv,a, l));
     }
 
     /**
@@ -122,7 +125,10 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
         Types typesUtil = processingEnv.getTypeUtils();
-        Validator validator = Validator.buildValidator(processingEnv);
+        // TODO - fix
+        final Annotations a = new AnnotationsImpl();
+        final Loggers l = new LoggersImpl();
+        Validator validator = Validator.buildValidator(processingEnv, a);
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
@@ -143,7 +149,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                     if (element.getKind().isInterface()
                         && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
-                        Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
+                        Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil, l);
 
                         for (AbstractTool processor : processors) {
                             logger.debug("Executing processor %s", processor.getName());
@@ -153,7 +159,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 }
 
             }
-            
+
         }
 
         return ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS;

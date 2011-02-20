@@ -1,8 +1,26 @@
-package org.jboss.logging.util;
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.MessageLogger;
+package org.jboss.logging.util;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -17,26 +35,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.type.DeclaredType;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.Annotations;
+import org.jboss.logging.Loggers;
 import org.jboss.logging.model.ImplementationType;
 
 /**
  * An utility class to work with element.
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
+ * @author James R. Perkins
  */
 public final class ElementHelper {
-
-    public static final Class<Cause> CAUSE_ANNOTATION = Cause.class;
-
-    public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
-
-    public static final Class<MessageLogger> MESSAGE_LOGGER_ANNOTATION = MessageLogger.class;
-
-    public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
-
-    public static final Class<Message> MESSAGE_ANNOTATION = Message.class;
 
     /**
      * Disable instantiation.
@@ -65,18 +74,6 @@ public final class ElementHelper {
     }
 
     /**
-     * Check if the element is a logger method. Logger methods are annotated
-     * with the {@link LogMessage} annotation.
-     * 
-     * @param element the element to check.
-     * @return {@code true} of this is a logger method, otherwise {@code false}.
-     * @throws NullPointerException if element parameter is {@code null}.
-     */
-    public static boolean isLoggerMethod(final Element element) {
-        return isAnnotatedWith(element, LOG_MESSAGE_ANNOTATION);
-    }
-
-    /**
      * Returns the primary class simple name for an element
      * who represents a MessageBundle or MessageLogger interface.
      *
@@ -85,7 +82,7 @@ public final class ElementHelper {
      * @throws NullPointerException     if element is null
      * @throws IllegalArgumentException if element is not an interface
      */
-    public static String getPrimaryClassName(final TypeElement element) {
+    public static String getPrimaryClassName(final TypeElement element, final Annotations annotations) {
         if (element == null) {
             throw new NullPointerException("The element parameter cannot be null");
         }
@@ -95,9 +92,9 @@ public final class ElementHelper {
 
         String prefix = getPrimaryClassNamePrefix(element);
 
-        if (element.getAnnotation(MESSAGE_BUNDLE_ANNOTATION) != null) {
+        if (element.getAnnotation(annotations.messageBundle()) != null) {
             return prefix + ImplementationType.BUNDLE.toString();
-        } else if (element.getAnnotation(MESSAGE_LOGGER_ANNOTATION) != null) {
+        } else if (element.getAnnotation(annotations.messageLogger()) != null) {
             return prefix + ImplementationType.LOGGER.toString();
         }
 
@@ -143,7 +140,7 @@ public final class ElementHelper {
      * @return the collection of all methods
      * @throws IllegalArgumentException if element is not an interface
      */
-    public static Collection<ExecutableElement> getInterfaceMethods(final TypeElement element, final Types types) {
+    public static Collection<ExecutableElement> getInterfaceMethods(final TypeElement element, final Types types, final Loggers loggers) {
         if (!element.getKind().isInterface()) {
             throw new IllegalArgumentException("The element parameter is not an interface");
         }
@@ -152,8 +149,8 @@ public final class ElementHelper {
 
         for (TypeMirror intf : element.getInterfaces()) {
             // Ignore BasicLogger methods
-            if (!intf.toString().equals(BasicLoggerDescriptor.BASIC_LOGGER_CLASS.getName())) {
-                methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types));
+            if (loggers != null && !intf.toString().equals(loggers.basicLoggerClass().getName())) {
+                methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types, loggers));
 
             }
         }
@@ -170,13 +167,12 @@ public final class ElementHelper {
      * @param methods the methods collection
      * @return a map containing the message where the key is the method name
      */
-    public static Map<String, String> getAllMessageMethods(final Collection<ExecutableElement> methods) {
+    public static Map<String, String> getAllMessageMethods(final Collection<ExecutableElement> methods, final Annotations annotations) {
         Map<String, String> messages = new HashMap<String, String>();
 
         for (ExecutableElement method : methods) {
-            Message annotation = method.getAnnotation(MESSAGE_ANNOTATION);
-            if (annotation != null) {
-                messages.put(method.getSimpleName().toString(), annotation.value());
+            if (isAnnotatedWith(method, annotations.message())) {
+                messages.put(method.getSimpleName().toString(), annotations.messageValue(method));
             }
         }
 
@@ -184,30 +180,11 @@ public final class ElementHelper {
     }
 
     /**
-     * Returns the project code from the annotation on the element.
-     *
-     * @param interfaceElement the interface element that contains the annotation,
-     * @return the project code from the annotation or {@code null}.
-     */
-    public static String getProjectCode(final TypeElement interfaceElement) {
-        String result = null;
-        final MessageBundle messageBundle = interfaceElement.getAnnotation(MESSAGE_BUNDLE_ANNOTATION);
-        final MessageLogger messageLogger = interfaceElement.getAnnotation(MESSAGE_LOGGER_ANNOTATION);
-        if (messageBundle != null) {
-            result = messageBundle.projectCode();
-        } else if (messageLogger != null) {
-            result = messageLogger.projectCode();
-        }
-
-        return result;
-    }
-
-    /**
      * Checks to see if the type element is assignable from the type.
-     * 
+     *
      * @param typeElement the type element to check.
      * @param type        the type to check.
-     * @return {@code true} if the type element is assignable from the type, 
+     * @return {@code true} if the type element is assignable from the type,
      *         otherwise {@code false}.
      */
     public static boolean isAssignableFrom(final TypeElement typeElement, final Class<?> type) {
@@ -227,10 +204,10 @@ public final class ElementHelper {
 
     /**
      * Checks to see id the type mirror is assignable from the type.
-     * 
+     *
      * @param typeMirror the type mirror to check.
      * @param type       the type to check.
-     * @return {@code true} if the type mirror is assignable from the type, 
+     * @return {@code true} if the type mirror is assignable from the type,
      *         otherwise {@code false}.
      */
     public static boolean isAssignableFrom(final TypeMirror typeMirror, final Class<?> type) {
@@ -252,7 +229,7 @@ public final class ElementHelper {
 
     /**
      * Checks to see if the type is assignable from the type element.
-     * 
+     *
      * @param type        the type to check.
      * @param typeElement the type element to check.
      * @return {@code true} if the type is assignable from the type element,
@@ -276,7 +253,7 @@ public final class ElementHelper {
 
     /**
      * Checks to see if the type is assignable from the type mirror.
-     * 
+     *
      * @param type        the type to check.
      * @param typeMirrort the type mirror to check.
      * @return {@code true} if the type is assignable from the type mirror,

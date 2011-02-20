@@ -35,7 +35,7 @@ import java.util.Set;
 
 /**
  * An abstract processor used process annotations.
- * 
+ *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
@@ -47,6 +47,10 @@ public abstract class AbstractTool {
 
     private final ToolLogger logger;
 
+    private final Loggers loggers;
+
+    private final Annotations annotations;
+
     private final Types typeUtils;
 
     private final ProcessingEnvironment processingEnv;
@@ -56,10 +60,12 @@ public abstract class AbstractTool {
      *
      * @param processingEnv the processing environment.
      */
-    public AbstractTool(final ProcessingEnvironment processingEnv) {
+    public AbstractTool(final ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
         this.elementUtils = processingEnv.getElementUtils();
         this.filer = processingEnv.getFiler();
         this.logger = ToolLogger.getLogger(processingEnv);
+        this.annotations = annotations;
+        this.loggers = loggers;
         this.typeUtils = processingEnv.getTypeUtils();
         this.processingEnv = processingEnv;
     }
@@ -73,6 +79,7 @@ public abstract class AbstractTool {
      */
     public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods);
 
+
     /**
      * Returns the logger to log messages with.
      *
@@ -80,6 +87,19 @@ public abstract class AbstractTool {
      */
     public final ToolLogger logger() {
         return logger;
+    }
+
+    public final Loggers loggers() {
+        return loggers;
+    }
+
+    /**
+     * Returns the logging annotations to use.
+     *
+     * @return the logging annotations to use.
+     */
+    public final Annotations annotations() {
+        return annotations;
     }
 
     /**

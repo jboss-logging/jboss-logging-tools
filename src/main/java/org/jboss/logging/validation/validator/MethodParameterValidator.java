@@ -20,10 +20,12 @@
  */
 package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.Cause;
+import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
 
+
+import java.lang.annotation.Annotation;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -49,7 +51,7 @@ import java.util.Set;
  * </p>
  *
  * @author James R. Perkins Jr. (jrp)
- * 
+ *
  */
 public class MethodParameterValidator implements ElementValidator {
 
@@ -60,7 +62,8 @@ public class MethodParameterValidator implements ElementValidator {
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
+    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
+            final Annotations annotations) {
 
         final List<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
@@ -71,9 +74,9 @@ public class MethodParameterValidator implements ElementValidator {
             if (methodNames.add(method.getSimpleName())) {
                 // Find all like named methods
                 final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName());
-                final int paramCount1 = method.getParameters().size() - (hasCause(method.getParameters()) ? 1 : 0);
+                final int paramCount1 = method.getParameters().size() - (hasCause(method.getParameters(), annotations.cause()) ? 1 : 0);
                 for (ExecutableElement m : likeMethods) {
-                    int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters()) ? 1 : 0);
+                    int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters(), annotations.cause()) ? 1 : 0);
                     if (paramCount1 != paramCount2) {
                         errorMessages.add(ValidationErrorMessage.of(m,
                                 ERROR_MESSAGE, method.toString(), method.getParameters().size(), m.toString(), m.getParameters().size()));
@@ -83,9 +86,9 @@ public class MethodParameterValidator implements ElementValidator {
 
             // Finally the method is only allowed one cause parameter
             boolean invalid = false;
-            Cause ogCause = null;
+            Annotation ogCause = null;
             for (VariableElement varElem : method.getParameters()) {
-                final Cause cause = varElem.getAnnotation(Cause.class);
+                final Annotation cause = varElem.getAnnotation(annotations.cause());
                 invalid = (ogCause != null && cause != null);
                 if (invalid) {
                     errorMessages.add(ValidationErrorMessage.of(varElem, "Only one cause parameter allowed per method."));
@@ -122,10 +125,10 @@ public class MethodParameterValidator implements ElementValidator {
      *
      * @return {@code true} if there is a cause, otherwise {@code false}.
      */
-    private boolean hasCause(Collection<? extends VariableElement> params) {
+    private boolean hasCause(Collection<? extends VariableElement> params, final Class<? extends Annotation> causeAnnotation) {
         // Look for cause
         for (VariableElement param : params) {
-            if (param.getAnnotation(Cause.class) != null) {
+            if (param.getAnnotation(causeAnnotation) != null) {
                 return true;
             }
         }

@@ -1,5 +1,6 @@
 package org.jboss.logging.generator;
 
+import org.jboss.logging.Loggers;
 import org.jboss.logging.AbstractTool;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -12,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import org.jboss.logging.Annotations;
 
 import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
@@ -38,8 +40,8 @@ public final class TranslationFileGenerator extends AbstractTool {
      *
      * @param processingEnv the processing env
      */
-    public TranslationFileGenerator(final ProcessingEnvironment processingEnv) {
-        super(processingEnv);
+    public TranslationFileGenerator(final ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
+        super(processingEnv, annotations, loggers);
 
         Map<String, String> options = processingEnv.getOptions();
         this.generatedFilesPath = options.get(GENERATED_FILES_PATH_OPTION);
@@ -58,7 +60,7 @@ public final class TranslationFileGenerator extends AbstractTool {
                 String relativePath = packageName.replaceAll("\\.", FILE_SEPARATOR);
                 String fileName = getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
-                Map<String, String> translationMessages = getAllMessageMethods(methods);
+                Map<String, String> translationMessages = getAllMessageMethods(methods, annotations());
                 this.generateSkeletalTranslationFile(relativePath, fileName, translationMessages);
             }
 

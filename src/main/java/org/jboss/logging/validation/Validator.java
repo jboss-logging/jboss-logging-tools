@@ -14,6 +14,7 @@ import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.jboss.logging.Annotations;
 
 import org.jboss.logging.util.TransformationHelper;
 
@@ -22,18 +23,21 @@ import org.jboss.logging.util.TransformationHelper;
  */
 public class Validator {
 
+    private final Annotations annotations;
+
     private final Types typeUtils;
 
     private final List<ElementValidator> validators;
 
-    private Validator(final Types typeUtils) {
+    private Validator(final Types typeUtils, final Annotations annotations) {
+        this.annotations = annotations;
         this.validators = new ArrayList<ElementValidator>();
         this.typeUtils = typeUtils;
     }
 
-    public static Validator buildValidator(final ProcessingEnvironment pev) {
+    public static Validator buildValidator(final ProcessingEnvironment pev, final Annotations annotations) {
 
-        Validator validator = new Validator(pev.getTypeUtils());
+        Validator validator = new Validator(pev.getTypeUtils(), annotations);
 
         //Add validators
         validator.addElementValidator(new BundleReturnTypeValidator());
@@ -52,10 +56,10 @@ public class Validator {
         for (TypeElement element : typeElements) {
             try {
 
-                Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, typeUtils);
+                Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, typeUtils, null);
 
                 for (ElementValidator validator : validators) {
-                    errorMessages.addAll(validator.validate(element, elementMethods));
+                    errorMessages.addAll(validator.validate(element, elementMethods, annotations));
                 }
             } catch (Exception e) {
                 errorMessages.add(new ValidationErrorMessage(element, TransformationHelper.stackTraceToString(e)));

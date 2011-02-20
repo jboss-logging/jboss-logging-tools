@@ -20,6 +20,7 @@
  */
 package org.jboss.logging.generator;
 
+import org.jboss.logging.Loggers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -33,15 +34,12 @@ import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 import org.jboss.logging.AbstractTool;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.Annotations;
 import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.model.MessageBundleTranslator;
@@ -50,9 +48,7 @@ import org.jboss.logging.model.MessageLoggerTranslator;
 import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassName;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
-import static org.jboss.logging.util.TransformationHelper.toPackage;
 import static org.jboss.logging.util.TransformationHelper.toQualifiedClassName;
-import static org.jboss.logging.util.TransformationHelper.toSimpleClassName;
 import static org.jboss.logging.util.TranslationHelper.getEnclosingTranslationClassName;
 import static org.jboss.logging.util.TranslationHelper.getEnclosingTranslationFileName;
 import static org.jboss.logging.util.TranslationHelper.getTranslationClassNameSuffix;
@@ -85,15 +81,15 @@ public final class TranslationClassGenerator extends AbstractTool {
 
     private final String translationFilesPath;
 
+
     /**
      * Construct an instance of the Translation
      * Class Generator.
      *
      * @param processingEnv the processing environment
      */
-    public TranslationClassGenerator(final ProcessingEnvironment processingEnv) {
-        super(processingEnv);
-
+    public TranslationClassGenerator(final ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
+        super(processingEnv, annotations, loggers);
         Map<String, String> options = processingEnv.getOptions();
         this.translationFilesPath = options.get(TRANSLATION_FILES_PATH_OPTION);
     }
@@ -105,9 +101,9 @@ public final class TranslationClassGenerator extends AbstractTool {
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods) {
         String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
         String interfaceName = element.getSimpleName().toString();
-        String primaryClassName = toQualifiedClassName(packageName, getPrimaryClassName(element));
+        String primaryClassName = toQualifiedClassName(packageName, getPrimaryClassName(element, annotations()));
         String primaryClassNamePrefix = getPrimaryClassNamePrefix(element);
-        Map<String, String> elementTranslations = getAllMessageMethods(methods);
+        Map<String, String> elementTranslations = getAllMessageMethods(methods, annotations());
 
         try {
 
@@ -248,7 +244,7 @@ public final class TranslationClassGenerator extends AbstractTool {
             boolean isGenerated = name.endsWith(TranslationFileGenerator.GENERATED_FILE_EXTENSION);
             boolean isTranslationFile = name.matches(Pattern.quote(className) + TRANSLATION_FILE_EXTENSION_PATTERN);
 
-            return !isGenerated && isTranslationFile; 
+            return !isGenerated && isTranslationFile;
         }
     }
 
