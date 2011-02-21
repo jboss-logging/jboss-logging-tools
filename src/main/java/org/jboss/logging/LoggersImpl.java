@@ -24,6 +24,7 @@ package org.jboss.logging;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *

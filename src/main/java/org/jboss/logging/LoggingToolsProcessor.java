@@ -47,29 +47,24 @@ import java.util.Set;
 import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.jboss.logging.util.ElementHelper.getInterfaceMethods;
 
-
 /**
  * The main annotation processor for JBoss Logging Tooling.
  *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-@SupportedAnnotationTypes({
-        "org.jboss.logging.MessageBundle",
-        "org.jboss.logging.MessageLogger"
-})
+@SupportedAnnotationTypes("*")
 @SupportedOptions({
-        LoggingToolsProcessor.DEBUG_OPTION
+    LoggingToolsProcessor.DEBUG_OPTION
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class LoggingToolsProcessor extends AbstractProcessor {
 
     public static final String DEBUG_OPTION = "debug";
-
-    private static final boolean ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS = false;
-
+    private static final boolean ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS = true;
     private final List<AbstractTool> processors;
-
+    private Annotations annotations;
+    private Loggers loggers;
     private ToolLogger logger;
 
     /**
@@ -87,14 +82,13 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         super.init(processingEnv);
 
         logger = ToolLogger.getLogger(processingEnv);
+        annotations = Providers.findAnnotations();
+        loggers = Providers.findLoggers();
 
         //Tools generator -  Note the order these are excuted in.
-        // TODO - fix
-        final Annotations a = new AnnotationsImpl();
-        final Loggers l = new LoggersImpl();
-        processors.add(new ImplementorClassGenerator(processingEnv, a, l));
-        processors.add(new TranslationClassGenerator(processingEnv,a, l));
-        processors.add(new TranslationFileGenerator(processingEnv,a, l));
+        processors.add(new ImplementorClassGenerator(processingEnv, annotations, loggers));
+        processors.add(new TranslationClassGenerator(processingEnv, annotations, loggers));
+        processors.add(new TranslationFileGenerator(processingEnv, annotations, loggers));
     }
 
     /**
@@ -125,10 +119,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 
         Types typesUtil = processingEnv.getTypeUtils();
-        // TODO - fix
-        final Annotations a = new AnnotationsImpl();
-        final Loggers l = new LoggersImpl();
-        Validator validator = Validator.buildValidator(processingEnv, a);
+        Validator validator = Validator.buildValidator(processingEnv, this.annotations);
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
@@ -147,9 +138,9 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 for (TypeElement element : elements) {
 
                     if (element.getKind().isInterface()
-                        && !element.getModifiers().contains(Modifier.PRIVATE)) {
+                            && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
-                        Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil, l);
+                        Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil, loggers);
 
                         for (AbstractTool processor : processors) {
                             logger.debug("Executing processor %s", processor.getName());
