@@ -32,8 +32,8 @@ public class LoggingTools {
 
     private static Annotations annotations;
     private static Loggers loggers;
-    private static ServiceLoader<Annotations> annotationsLoader = ServiceLoader.load(Annotations.class);
-    private static ServiceLoader<Loggers> loggersLoader = ServiceLoader.load(Loggers.class);
+    private static ServiceLoader<Annotations> annotationsLoader = ServiceLoader.load(Annotations.class, LoggingTools.class.getClassLoader());
+    private static ServiceLoader<Loggers> loggersLoader = ServiceLoader.load(Loggers.class, LoggingTools.class.getClassLoader());
 
     private LoggingTools() {
     }
@@ -47,6 +47,7 @@ public class LoggingTools {
      */
     public static Annotations findAnnotations() {
         if (annotations == null) {
+            for (Annotations a : annotationsLoader)
             if (annotationsLoader.iterator().hasNext()) {
                 annotations = annotationsLoader.iterator().next();
             } else {
@@ -69,7 +70,7 @@ public class LoggingTools {
             if (loggersLoader.iterator().hasNext()) {
                 loggers = loggersLoader.iterator().next();
             } else {
-                throw new IllegalStateException("Annotations not found.");
+                throw new IllegalStateException("Loggers not found.");
             }
         }
         return loggers;

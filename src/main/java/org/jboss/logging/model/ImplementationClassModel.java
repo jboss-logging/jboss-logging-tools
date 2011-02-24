@@ -45,7 +45,6 @@ import org.jboss.logging.generator.MethodDescriptor;
 public abstract class ImplementationClassModel extends ClassModel {
 
     private final ImplementationType type;
-    private final Loggers loggers;
     protected MethodDescriptor methodDescriptor;
 
     /**
@@ -58,9 +57,8 @@ public abstract class ImplementationClassModel extends ClassModel {
      * @param type
      *            the type of the implementation.
      */
-    protected ImplementationClassModel(final Loggers loggers, final String interfaceName, final String projectCode, final ImplementationType type) {
+    protected ImplementationClassModel(final String interfaceName, final String projectCode, final ImplementationType type) {
         super(interfaceName + type, projectCode, Object.class.getName(), interfaceName, Serializable.class.getName());
-        this.loggers = loggers;
         this.type = type;
     }
 
@@ -75,10 +73,6 @@ public abstract class ImplementationClassModel extends ClassModel {
 
     public void setMethodDescriptor(final MethodDescriptor methodDescriptor) {
         this.methodDescriptor = methodDescriptor;
-    }
-
-    public final Loggers loggers() {
-        return loggers;
     }
 
     /**

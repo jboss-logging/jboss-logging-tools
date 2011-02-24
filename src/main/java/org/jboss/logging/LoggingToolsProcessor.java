@@ -123,36 +123,42 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
+            if (isValidAnnotation(annotation)) {
+                Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
+                Collection<ValidationErrorMessage> errorMessages = validator.validate(elements);
 
-            Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
-            Collection<ValidationErrorMessage> errorMessages = validator.validate(elements);
+                if (!errorMessages.isEmpty()) {
 
-            if (!errorMessages.isEmpty()) {
+                    for (ValidationErrorMessage error : errorMessages) {
+                        logger.error(error.getElement(), error.getMessage());
+                    }
 
-                for (ValidationErrorMessage error : errorMessages) {
-                    logger.error(error.getElement(), error.getMessage());
-                }
+                } else {
 
-            } else {
+                    for (TypeElement element : elements) {
 
-                for (TypeElement element : elements) {
+                        if (element.getKind().isInterface()
+                                && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
-                    if (element.getKind().isInterface()
-                            && !element.getModifiers().contains(Modifier.PRIVATE)) {
+                            Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil, loggers);
 
-                        Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil, loggers);
-
-                        for (AbstractTool processor : processors) {
-                            logger.debug("Executing processor %s", processor.getName());
-                            processor.processTypeElement(annotation, element, methods);
+                            for (AbstractTool processor : processors) {
+                                logger.debug("Executing processor %s", processor.getName());
+                                processor.processTypeElement(annotation, element, methods);
+                            }
                         }
                     }
-                }
 
+                }
             }
 
         }
 
         return ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS;
+    }
+
+    private boolean isValidAnnotation(final TypeElement annotation) {
+        final String name = annotation.getQualifiedName().toString();
+        return (name.equals(annotations.messageBundle().getName()) || name.equals(annotations.messageLogger().getName()));
     }
 }

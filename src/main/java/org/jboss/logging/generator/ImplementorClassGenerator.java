@@ -55,10 +55,10 @@ public final class ImplementorClassGenerator extends AbstractTool {
         try {
             final String interfaceName = elementUtils().getBinaryName(element).toString();
             if (element.getAnnotation(annotations().messageLogger()) != null) {
-                createClass(new MessageLoggerImplementor(loggers(), interfaceName, annotations().projectCode(element),extendsBasicLogger(element)), methods);
+                createClass(new MessageLoggerImplementor(interfaceName, annotations().projectCode(element),extendsBasicLogger(element)), methods);
             }
             if (element.getAnnotation(annotations().messageBundle()) != null) {
-                createClass(new MessageBundleImplementor(loggers(), interfaceName, annotations().projectCode(element)), methods);
+                createClass(new MessageBundleImplementor(interfaceName, annotations().projectCode(element)), methods);
             }
         } catch (IOException e) {
             logger().error(element, e);

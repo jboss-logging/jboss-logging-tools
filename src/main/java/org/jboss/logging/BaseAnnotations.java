@@ -18,7 +18,6 @@
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  *  site: http://www.fsf.org.
  */
-
 package org.jboss.logging;
 
 import java.lang.annotation.Annotation;
@@ -29,7 +28,8 @@ import javax.lang.model.element.TypeElement;
  *
  * @author James R. Perkins (jrp) - 19.Feb.2011
  */
-class BaseAnnotations implements Annotations {
+public class BaseAnnotations implements Annotations {
+
     public static final Class<FormatWith> FORMAT_WITH_ANNOTATION = FormatWith.class;
     public static final Class<Cause> CAUSE_ANNOTATION = Cause.class;
     public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
@@ -37,44 +37,54 @@ class BaseAnnotations implements Annotations {
     public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
     public static final Class<Message> MESSAGE_ANNOTATION = Message.class;
 
+    @Override
     public Class<? extends Annotation> cause() {
         return CAUSE_ANNOTATION;
     }
 
+    @Override
     public Class<? extends Annotation> formatWith() {
         return FORMAT_WITH_ANNOTATION;
     }
 
+    @Override
     public Class<? extends Annotation> logMessage() {
         return LOG_MESSAGE_ANNOTATION;
     }
 
+    @Override
     public Class<? extends Annotation> message() {
         return MESSAGE_ANNOTATION;
     }
 
+    @Override
     public Class<? extends Annotation> messageBundle() {
         return MESSAGE_BUNDLE_ANNOTATION;
     }
 
+    @Override
     public Class<? extends Annotation> messageLogger() {
         return MESSAGE_LOGGER_ANNOTATION;
     }
 
+    @Override
     public FormatType messageFormat(final ExecutableElement method) {
         FormatType result = null;
         final Message message = method.getAnnotation(MESSAGE_ANNOTATION);
-        switch (message.format()) {
-            case MESSAGE_FORMAT:
-                result = FormatType.MESSAGE_FORMAT;
-                break;
-            case PRINTF:
-                result = FormatType.PRINTF;
-                break;
+        if (message != null) {
+            switch (message.format()) {
+                case MESSAGE_FORMAT:
+                    result = FormatType.MESSAGE_FORMAT;
+                    break;
+                case PRINTF:
+                    result = FormatType.PRINTF;
+                    break;
+            }
         }
         return result;
     }
 
+    @Override
     public String projectCode(final TypeElement intf) {
         String result = null;
         final MessageBundle bundle = intf.getAnnotation(MESSAGE_BUNDLE_ANNOTATION);
@@ -82,29 +92,37 @@ class BaseAnnotations implements Annotations {
         if (bundle != null) {
             result = bundle.projectCode();
         } else if (logger != null) {
-            result = bundle.projectCode();
+            result = logger.projectCode();
         }
         return result;
     }
 
+    @Override
     public boolean hasMessageId(final ExecutableElement method) {
         final Message message = method.getAnnotation(MESSAGE_ANNOTATION);
         return (message == null ? false : (message.id() > Message.NONE));
     }
 
+    @Override
     public int messageId(final ExecutableElement method) {
         final Message message = method.getAnnotation(MESSAGE_ANNOTATION);
         return (message == null ? Message.NONE : message.id());
     }
 
+    @Override
     public String messageValue(final ExecutableElement method) {
         final Message message = method.getAnnotation(MESSAGE_ANNOTATION);
         return (message == null ? null : message.value());
     }
 
-    public String loggerMethod(final ExecutableElement method) {
+    @Override
+    public String loggerMethod(final ExecutableElement method, final FormatType formatType) {
+        String result = null;
         final LogMessage logMessage = method.getAnnotation(LOG_MESSAGE_ANNOTATION);
-        return String.format("%s%c",logMessage.level().name().toLowerCase(), messageFormat(method).logType());
+        if (logMessage != null) {
+            final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
+            result = String.format("%s%c", logLevel.name().toLowerCase(), formatType.logType());
+        }
+        return result;
     }
-
 }

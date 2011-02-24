@@ -24,7 +24,6 @@ package org.jboss.logging;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  *
@@ -32,14 +31,17 @@ import java.util.logging.Logger;
  */
 public class BaseLoggers implements Loggers {
 
+    @Override
     public Class<?> loggerClass() {
         return Logger.class;
     }
 
+    @Override
     public Class<?> basicLoggerClass() {
         return BasicLogger.class;
     }
 
+    @Override
     public List<Method> basicLoggerMethods() {
         return Arrays.asList(basicLoggerClass().getMethods());
     }

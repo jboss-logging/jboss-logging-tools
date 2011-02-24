@@ -150,9 +150,10 @@ public interface Annotations {
     /**
      * Returns the logger method name to use.
      *
-     * @param method the method used to determine the log method.
+     * @param method     the method used to determine the log method.
+     * @param formatType the format type for the method.
      * @return the name of the logger method.
      */
-    String loggerMethod(ExecutableElement method);
+    String loggerMethod(ExecutableElement method, FormatType formatType);
 
 }

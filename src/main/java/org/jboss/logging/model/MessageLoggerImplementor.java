@@ -20,8 +20,8 @@
  */
 package org.jboss.logging.model;
 
+import org.jboss.logging.LoggingTools;
 import org.jboss.logging.generator.MethodParameter;
-import org.jboss.logging.Loggers;
 import org.jboss.logging.generator.ReturnType;
 import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
@@ -53,8 +53,8 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param projectCode
      *            the project code from the annotation.
      */
-    public MessageLoggerImplementor(final Loggers loggers, final String interfaceName, final String projectCode, final boolean extendsBasicLogger) {
-        super(loggers, interfaceName, projectCode, ImplementationType.LOGGER);
+    public MessageLoggerImplementor(final String interfaceName, final String projectCode, final boolean extendsBasicLogger) {
+        super(interfaceName, projectCode, ImplementationType.LOGGER);
         this.extendsBasicLogger = extendsBasicLogger;
     }
 
@@ -64,7 +64,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
+        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, LoggingTools.findLoggers().loggerClass(), LOG_FIELD_NAME);
         //Add a project code constant
         JFieldVar projectCodeVar = null;
         if (!getProjectCode().isEmpty()) {
@@ -73,7 +73,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         }
         // Add default constructor
         final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
-        final JVar constructorParam = constructor.param(JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
+        final JVar constructorParam = constructor.param(JMod.FINAL, LoggingTools.findLoggers().loggerClass(), LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
 
@@ -194,7 +194,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param codeModel the code model to implement to.
      */
     private void implementBasicLogger(final JCodeModel codeModel) {
-        for (Method m : loggers().basicLoggerMethods()) {
+        for (Method m : LoggingTools.findLoggers().basicLoggerMethods()) {
             if (!m.getReturnType().isPrimitive()) {
                 codeModel.ref(m.getReturnType());
             }

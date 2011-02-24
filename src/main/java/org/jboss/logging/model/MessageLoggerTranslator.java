@@ -30,7 +30,7 @@ import com.sun.codemodel.internal.JMod;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
+import org.jboss.logging.LoggingTools;
 
 
 /**
@@ -75,7 +75,7 @@ public class MessageLoggerTranslator extends ClassModel {
         JDefinedClass definedClass = getDefinedClass();
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
-        constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
+        constructor.param(JMod.FINAL, LoggingTools.findLoggers().loggerClass(), LOGGER_PARAMETER_NAME);
 
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");

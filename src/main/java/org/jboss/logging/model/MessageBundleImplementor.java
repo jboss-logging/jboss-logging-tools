@@ -21,7 +21,6 @@
 package org.jboss.logging.model;
 
 import org.jboss.logging.generator.MethodParameter;
-import org.jboss.logging.Loggers;
 import org.jboss.logging.generator.ReturnType;
 import org.jboss.logging.generator.MethodDescriptor;
 import com.sun.codemodel.internal.*;
@@ -49,9 +48,8 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * @param projectCode
      *            the project code from the annotation.
      */
-    public MessageBundleImplementor(final Loggers loggers, final String interfaceName,
-            final String projectCode) {
-        super(loggers, interfaceName, projectCode, ImplementationType.BUNDLE);
+    public MessageBundleImplementor(final String interfaceName, final String projectCode) {
+        super(interfaceName, projectCode, ImplementationType.BUNDLE);
     }
 
     /**

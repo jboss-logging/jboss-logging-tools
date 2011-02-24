@@ -53,7 +53,6 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
     private ReturnType returnType;
     private final Annotations annotations;
     private Message message;
-    private String loggerMethod;
     private ExecutableElement method;
     private final List<MethodParameter> parameters;
 
@@ -135,7 +134,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         stringBuilder.append(",message=");
         stringBuilder.append(message);
         stringBuilder.append(",loggerMethod=");
-        stringBuilder.append(loggerMethod);
+        stringBuilder.append(loggerMethod());
         stringBuilder.append(")");
         return stringBuilder.toString();
     }
@@ -242,7 +241,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      * @return the log message annotation
      */
     public String loggerMethod() {
-        return loggerMethod;
+        return annotations.loggerMethod(method, message.format());
     }
 
     /**
@@ -260,7 +259,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      * @return {@code true} if this is a logger method, otherwise {@code false}.
      */
     public boolean isLoggerMethod() {
-        return ElementHelper.isAnnotatedWith(method, annotations.messageLogger());
+        return ElementHelper.isAnnotatedWith(method, annotations.logMessage());
     }
 
     /**
@@ -296,7 +295,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         final Collection<MethodDescriptor> methodDescriptors = find(this.name());
         // Locate the first message with a non-null message
         for (MethodDescriptor methodDesc : methodDescriptors) {
-            if (methodDesc.message != null && message == null) {
+            if (methodDesc.message.value() != null && message.value() == null) {
                 message = methodDesc.message;
             }
             // If both the message and the log message are not null, we are
@@ -308,7 +307,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         // Process through the collection and update any currently null
         // messages
         for (MethodDescriptor methodDesc : methodDescriptors) {
-            if (methodDesc.message == null) {
+            if (methodDesc.message.value() == null) {
                 methodDesc.message = message;
                 descriptors.remove(methodDesc);
                 descriptors.add(methodDesc);
