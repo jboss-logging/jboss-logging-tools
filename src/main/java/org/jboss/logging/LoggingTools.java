@@ -23,20 +23,28 @@ package org.jboss.logging;
 import java.util.ServiceLoader;
 
 /**
- * This class is not thread safe.
+ * This class is not thread safe. The static methods use lazy loading for static
+ * variables.
  *
  * @author James R. Perkins (jrp) - 21.Feb.2011
  */
-public class Providers {
+public class LoggingTools {
 
     private static Annotations annotations;
     private static Loggers loggers;
     private static ServiceLoader<Annotations> annotationsLoader = ServiceLoader.load(Annotations.class);
     private static ServiceLoader<Loggers> loggersLoader = ServiceLoader.load(Loggers.class);
 
-    private Providers() {
+    private LoggingTools() {
     }
 
+    /**
+     * Locates the first implementation of {@link org.jboss.logging.Annotations}.
+     *
+     * @return the annotations to use.
+     *
+     * @throws IllegalStateException if the implementation could not be found.
+     */
     public static Annotations findAnnotations() {
         if (annotations == null) {
             if (annotationsLoader.iterator().hasNext()) {
@@ -48,6 +56,14 @@ public class Providers {
         return annotations;
     }
 
+
+    /**
+     * Locates the first implementation of {@link org.jboss.logging.Loggers}.
+     *
+     * @return the loggers to use.
+     *
+     * @throws IllegalStateException if the implementation could not be found.
+     */
     public static Loggers findLoggers() {
         if (loggers == null) {
             if (loggersLoader.iterator().hasNext()) {

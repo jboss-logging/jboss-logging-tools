@@ -82,8 +82,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         super.init(processingEnv);
 
         logger = ToolLogger.getLogger(processingEnv);
-        annotations = Providers.findAnnotations();
-        loggers = Providers.findLoggers();
+        annotations = LoggingTools.findAnnotations();
+        loggers = LoggingTools.findLoggers();
 
         //Tools generator -  Note the order these are excuted in.
         processors.add(new ImplementorClassGenerator(processingEnv, annotations, loggers));

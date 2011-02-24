@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  *
  * @author James R. Perkins (jrp) - 20.Feb.2011
  */
-public class LoggersImpl implements Loggers {
+public class BaseLoggers implements Loggers {
 
     public Class<?> loggerClass() {
         return Logger.class;

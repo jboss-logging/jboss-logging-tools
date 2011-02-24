@@ -29,7 +29,7 @@ import javax.lang.model.element.TypeElement;
  *
  * @author James R. Perkins (jrp) - 19.Feb.2011
  */
-class AnnotationsImpl implements Annotations {
+class BaseAnnotations implements Annotations {
     public static final Class<FormatWith> FORMAT_WITH_ANNOTATION = FormatWith.class;
     public static final Class<Cause> CAUSE_ANNOTATION = Cause.class;
     public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
