@@ -90,7 +90,7 @@ final class Message {
                 append(hasId).
                 append(",value=").
                 append(value).
-                append("format").
+                append(",format=").
                 append(format).
                 append(")");
         return stringBuilder.toString();
