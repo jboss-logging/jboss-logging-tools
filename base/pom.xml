@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>jboss-logging-tools</artifactId>
+        <groupId>org.jboss.logging</groupId>
+        <version>1.0.0.Beta5-SNAPSHOT</version>
+    </parent>
+    <groupId>org.jboss.logging</groupId>
+    <artifactId>jboss-logging-tools-base</artifactId>
+
+    <name>JBoss Logging I18n Tools Base</name>
+
+    <url>http://maven.apache.org</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <!--
+            JBoss Logging
+        -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>3.0.0.Beta5-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
+        <!--
+            JBoss Logging
+        -->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>jboss-logging-tools-core</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                Disable Annotation processor
+                on project compile
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgument>-proc:none</compilerArgument>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -13,3 +13,5 @@ target/
 
 #Ignore Mac files
 .DS_Store
+/core/target/
+/base/target/
