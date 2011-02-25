@@ -15,3 +15,4 @@ target/
 .DS_Store
 /core/target/
 /base/target/
+nb-configuration.xml
