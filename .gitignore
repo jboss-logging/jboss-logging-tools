@@ -16,3 +16,5 @@ target/
 /core/target/
 /base/target/
 nb-configuration.xml
+/processor/target/
+/generator/target/

@@ -32,9 +32,9 @@
     </parent>
 
     <groupId>org.jboss.logging</groupId>
-    <artifactId>jboss-logging-tools-core</artifactId>
+    <artifactId>jboss-logging-generator</artifactId>
 
-    <name>JBoss Logging I18n Tools Core</name>
+    <name>JBoss Logging I18n Tools Generator</name>
 
     <developers>
         <developer>
