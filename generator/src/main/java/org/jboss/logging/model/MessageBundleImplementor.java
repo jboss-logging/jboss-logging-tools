@@ -81,7 +81,11 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             final JClass returnField = codeModel.ref(returnType.fullName());
             final JVar result = body.decl(returnField, "result");
             if (methodDesc.parameters().isEmpty()) {
-                result.init(JExpr.invoke(msgMethod));
+                if (methodDesc.returnType().isException()) {
+                    initCause(result, returnField, body, methodDesc, JExpr.invoke(msgMethod));
+                } else {
+                    result.init(JExpr.invoke(msgMethod));
+                }
             } else {
                 final JClass formatter = codeModel.ref(methodDesc.messageFormat().formatClass());
                 final JInvocation formatterMethod = formatter.staticInvoke(methodDesc.messageFormat().staticMethod());
@@ -122,7 +126,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
         } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
             result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
-        } else if (desc.hasStringConsturctor()) {
+        } else if (desc.hasStringConsturctor() && methodDesc.hasCause()) {
             result.init(JExpr._new(returnField).arg(formatterMethod));
             if (methodDesc.hasCause()) {
                 JInvocation resultInv = body.invoke(result, "initCause");
