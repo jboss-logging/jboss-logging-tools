@@ -31,7 +31,7 @@
     </parent>
 
     <groupId>org.jboss.logging</groupId>
-    <artifactId>jboss-logging-tools</artifactId>
+    <artifactId>jboss-logging-tools-parent</artifactId>
     <version>1.0.0.Beta5-SNAPSHOT</version>
     <packaging>pom</packaging>
 

@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>jboss-logging-tools</artifactId>
+        <artifactId>jboss-logging-tools-parent</artifactId>
         <groupId>org.jboss.logging</groupId>
         <version>1.0.0.Beta5-SNAPSHOT</version>
     </parent>
