@@ -81,8 +81,14 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             final JClass returnField = codeModel.ref(returnType.fullName());
             final JVar result = body.decl(returnField, "result");
             if (methodDesc.parameters().isEmpty()) {
+                // If the return type is an exception, initialize the exception.
                 if (methodDesc.returnType().isException()) {
-                    initCause(result, returnField, body, methodDesc, JExpr.invoke(msgMethod));
+                    // A null message method means there is no message field, just initalize the field and return.
+                    if (msgMethod == null) {
+                        result.init(JExpr._new(returnType));
+                    } else {
+                        initCause(result, returnField, body, methodDesc, JExpr.invoke(msgMethod));
+                    }
                 } else {
                     result.init(JExpr.invoke(msgMethod));
                 }

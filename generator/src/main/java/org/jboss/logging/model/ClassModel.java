@@ -152,7 +152,10 @@ public abstract class ClassModel {
         if (codeModel == null || definedClass == null) {
             throw new IllegalStateException("The code model or the corresponding defined class is null");
         }
-
+        // Values could be null and we shouldn't create message methods for null values.
+        if (returnValue == null) {
+            return null;
+        }
         String internalMethodName = methodName + MESSAGE_METHOD_SUFFIX;
         JMethod method = definedClass.getMethod(internalMethodName, EMPTY_TYPE_ARRAY);
 
