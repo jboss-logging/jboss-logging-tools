@@ -5,7 +5,7 @@
     <parent>
         <artifactId>jboss-logging-tools-parent</artifactId>
         <groupId>org.jboss.logging</groupId>
-        <version>1.0.0.Beta5-SNAPSHOT</version>
+        <version>1.0.0.Beta5</version>
     </parent>
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging-processor</artifactId>
