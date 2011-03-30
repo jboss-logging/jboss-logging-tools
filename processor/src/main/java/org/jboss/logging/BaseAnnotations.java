@@ -20,12 +20,11 @@
  */
 package org.jboss.logging;
 
-import java.lang.annotation.Annotation;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import java.lang.annotation.Annotation;
 
 /**
- *
  * @author James R. Perkins (jrp) - 19.Feb.2011
  */
 public class BaseAnnotations implements Annotations {
@@ -117,12 +116,18 @@ public class BaseAnnotations implements Annotations {
 
     @Override
     public String loggerMethod(final ExecutableElement method, final FormatType formatType) {
+        return "log" + formatType.logType();
+    }
+
+    @Override
+    public String logLevel(final ExecutableElement method) {
         String result = null;
         final LogMessage logMessage = method.getAnnotation(LOG_MESSAGE_ANNOTATION);
         if (logMessage != null) {
             final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
-            result = String.format("%s%c", logLevel.name().toLowerCase(), formatType.logType());
+            result = String.format("%s.%s.%s", Logger.class.getSimpleName(), Logger.Level.class.getSimpleName(), logLevel.name());
         }
         return result;
     }
+
 }

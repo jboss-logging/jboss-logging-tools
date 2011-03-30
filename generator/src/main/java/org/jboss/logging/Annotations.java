@@ -21,12 +21,13 @@
 
 package org.jboss.logging;
 
-import java.lang.annotation.Annotation;
-import java.text.MessageFormat;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import java.lang.annotation.Annotation;
+import java.text.MessageFormat;
 
 /**
+ * Defines the annotations and annotation values used to generate the concrete classes from the annotated interfaces.
  *
  * @author James R. Perkins (jrp) - 19.Feb.2011
  */
@@ -155,5 +156,13 @@ public interface Annotations {
      * @return the name of the logger method.
      */
     String loggerMethod(ExecutableElement method, FormatType formatType);
+
+    /**
+     * Returns the log level enum. For example Logger.Level.INFO.
+     *
+     * @param method the method used to determine the log method.
+     * @return the log level.
+     */
+    String logLevel(final ExecutableElement method);
 
 }

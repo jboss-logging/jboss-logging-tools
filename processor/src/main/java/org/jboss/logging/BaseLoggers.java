@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
  *
  * @author James R. Perkins (jrp) - 20.Feb.2011
  */

@@ -21,28 +21,17 @@
  */
 package org.jboss.logging.generator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import org.jboss.logging.Annotations;
 import org.jboss.logging.Annotations.FormatType;
 import org.jboss.logging.util.ElementHelper;
 
+import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import java.util.*;
+
 /**
- *
  * @author James R. Perkins (jrp)
  */
 public class MethodDescriptor implements Iterable<MethodDescriptor>,
@@ -65,7 +54,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
     }
 
     protected static MethodDescriptor create(final Elements elementUtil, final Types typeUtil, Collection<ExecutableElement> methods,
-            final Annotations annotations) {
+                                             final Annotations annotations) {
         final MethodDescriptor result = new MethodDescriptor(annotations);
         descriptors = new ArrayList<MethodDescriptor>();
         boolean first = true;
@@ -244,6 +233,10 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         return annotations.loggerMethod(method, message.format());
     }
 
+    public String logLevelParameter() {
+        return annotations.logLevel(method);
+    }
+
     /**
      * Returns an unmodifiable collection of the parameters.
      *
@@ -265,8 +258,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
     /**
      * Returns a collection of method descriptors that match the method name.
      *
-     * @param methodName
-     *            the method name to search for.
+     * @param methodName the method name to search for.
      * @return a collection of method descriptors that match the method name.
      */
     public Collection<MethodDescriptor> find(final String methodName) {
