@@ -20,19 +20,23 @@
  */
 package org.jboss.logging.model;
 
+import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
 import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JVar;
+import org.jboss.logging.generator.MethodDescriptor;
+import org.jboss.logging.generator.ReturnType;
 
 import java.io.Serializable;
-import org.jboss.logging.Loggers;
-import org.jboss.logging.generator.MethodDescriptor;
 
 /**
  * An abstract code model to create the source file that implements the
  * interface.
- *
+ * <p/>
  * <p>
  * Essentially this uses the com.sun.codemodel.internal.JCodeModel to generate the
  * source files with. This class is for convenience in generating default source
@@ -40,7 +44,6 @@ import org.jboss.logging.generator.MethodDescriptor;
  * </p>
  *
  * @author James R. Perkins Jr. (jrp)
- *
  */
 public abstract class ImplementationClassModel extends ClassModel {
 
@@ -50,12 +53,9 @@ public abstract class ImplementationClassModel extends ClassModel {
     /**
      * Class constructor.
      *
-     * @param interfaceName
-     *            the interface name to implement.
-     * @param projectCode
-     *            the project code to prepend messages with.
-     * @param type
-     *            the type of the implementation.
+     * @param interfaceName the interface name to implement.
+     * @param projectCode   the project code to prepend messages with.
+     * @param type          the type of the implementation.
      */
     protected ImplementationClassModel(final String interfaceName, final String projectCode, final ImplementationType type) {
         super(interfaceName + type, projectCode, Object.class.getName(), interfaceName, Serializable.class.getName());
@@ -87,5 +87,37 @@ public abstract class ImplementationClassModel extends ClassModel {
         serialVersionUID.init(JExpr.lit(1L));
 
         return codeModel;
+    }
+
+    /**
+     * Initialize the cause (Throwable) return type.
+     *
+     * @param result          the return variable
+     * @param returnField     the return field
+     * @param body            the body of the method
+     * @param methodDesc      the method description
+     * @param formatterMethod the formatter method used to format the string cause
+     */
+    protected static void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
+        ReturnType desc = methodDesc.returnType();
+        if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
+        } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
+        } else if (desc.hasStringConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(formatterMethod));
+            if (methodDesc.hasCause()) {
+                JInvocation resultInv = body.invoke(result, "initCause");
+                resultInv.arg(JExpr.ref(methodDesc.cause().name()));
+            }
+        } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(methodDesc.cause().name()));
+        } else if (methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField));
+            JInvocation resultInv = body.invoke(result, "initCause");
+            resultInv.arg(JExpr.ref(methodDesc.cause().name()));
+        } else {
+            result.init(JExpr._new(returnField));
+        }
     }
 }

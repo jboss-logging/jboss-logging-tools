@@ -25,11 +25,21 @@ import org.jboss.logging.Annotations;
 import org.jboss.logging.Annotations.FormatType;
 import org.jboss.logging.util.ElementHelper;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author James R. Perkins (jrp)
@@ -47,19 +57,31 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
 
     /**
      * Private constructor for the
+     *
+     * @param annotations the annotation descriptor.
      */
     private MethodDescriptor(final Annotations annotations) {
         this.parameters = new ArrayList<MethodParameter>();
         this.annotations = annotations;
     }
 
+    /**
+     * Create the method descriptor.
+     *
+     * @param elementUtil the element utilities for annotation processing.
+     * @param typeUtil    the type utilities for annotation processing.
+     * @param methods     the methods to parse.
+     * @param annotations the annotation descriptor.
+     *
+     * @return the method descriptor created for the methods.
+     */
     protected static MethodDescriptor create(final Elements elementUtil, final Types typeUtil, Collection<ExecutableElement> methods,
                                              final Annotations annotations) {
         final MethodDescriptor result = new MethodDescriptor(annotations);
         descriptors = new ArrayList<MethodDescriptor>();
         boolean first = true;
         for (ExecutableElement method : methods) {
-            MethodDescriptor current = null;
+            final MethodDescriptor current;
             if (first) {
                 current = result;
                 first = false;
@@ -152,7 +174,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
 
     @Override
     public Iterator<MethodDescriptor> iterator() {
-        Collection<MethodDescriptor> result = null;
+        final Collection<MethodDescriptor> result;
         if (descriptors == null) {
             result = Collections.emptyList();
         } else {
@@ -259,6 +281,7 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      * Returns a collection of method descriptors that match the method name.
      *
      * @param methodName the method name to search for.
+     *
      * @return a collection of method descriptors that match the method name.
      */
     public Collection<MethodDescriptor> find(final String methodName) {
@@ -274,8 +297,9 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
     /**
      * Initializes the instance.
      *
-     * @param typeUtil the type utilities for internal usage.
-     * @param method   the method to process.
+     * @param elementUtil the element utilities for annotation procesing.
+     * @param typeUtil    the type utilities for internal usage.
+     * @param method      the method to process.
      */
     private void init(final Elements elementUtil, final Types typeUtil, final ExecutableElement method) {
         this.method = method;
@@ -287,8 +311,10 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         final Collection<MethodDescriptor> methodDescriptors = find(this.name());
         // Locate the first message with a non-null message
         for (MethodDescriptor methodDesc : methodDescriptors) {
-            if (methodDesc.message.value() != null && message.value() == null) {
-                message = methodDesc.message;
+            if (message != null) {
+                if (methodDesc.message.value() != null && message.value() == null) {
+                    message = methodDesc.message;
+                }
             }
             // If both the message and the log message are not null, we are
             // complete.

@@ -74,8 +74,8 @@ public abstract class AbstractTool {
      * Processes a type element.
      *
      * @param annotation the annotation who trigger the processing
-     * @param element the element that contains the methods.
-     * @param methods the declared and inherited methods in the interface.
+     * @param element    the element that contains the methods.
+     * @param methods    the declared and inherited methods in the interface.
      */
     public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods);
 

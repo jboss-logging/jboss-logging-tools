@@ -21,7 +21,8 @@
  */
 package org.jboss.logging.generator;
 
-import java.util.List;
+import org.jboss.logging.util.ElementHelper;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -29,7 +30,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import org.jboss.logging.util.ElementHelper;
+import java.util.List;
 
 /**
  * Describes information about the return type.
@@ -40,7 +41,7 @@ public class ReturnType {
 
     private final TypeMirror returnType;
 
-    private boolean stringConsturctor = false;
+    private boolean stringConstructor = false;
 
     private boolean throwableConstructor = false;
 
@@ -50,8 +51,8 @@ public class ReturnType {
 
     /**
      * Creates a new descriptor that is not primitive.
-     * 
-     * @param returnTypeClassName the class name of the return type.
+     *
+     * @param returnType the class name of the return type.
      */
     private ReturnType(final TypeMirror returnType) {
         this.returnType = returnType;
@@ -59,8 +60,11 @@ public class ReturnType {
 
     /**
      * Creates a new descriptor that is not primitive.
-     * 
-     * @param returnTypeClassName the class name of the return type.
+     *
+     * @param returnType the class name of the return type.
+     * @param typeUtil   the type utilities.
+     *
+     * @return the return type descriptor.
      */
     protected static ReturnType of(final TypeMirror returnType, final Types typeUtil) {
         final ReturnType result = new ReturnType(returnType);
@@ -70,6 +74,8 @@ public class ReturnType {
 
     /**
      * Initializes the object.
+     *
+     * @param typeUtil the type utilities.
      */
     private void init(final Types typeUtil) {
         if (!returnType.getKind().isPrimitive() && returnType.getKind() != TypeKind.VOID) {
@@ -80,7 +86,7 @@ public class ReturnType {
                 switch (params.size()) {
                     case 1:
                         if (ElementHelper.isAssignableFrom(params.get(0).asType(), String.class)) {
-                            stringConsturctor = true;
+                            stringConstructor = true;
                         } else if (ElementHelper.isAssignableFrom(Throwable.class, params.get(0).asType())) {
                             throwableConstructor = true;
                         }
@@ -101,7 +107,7 @@ public class ReturnType {
 
     /**
      * Indicates whether or not the return type is a primitive.
-     * 
+     *
      * @return {@code true} if a primitive, otherwise {@code false}.
      */
     public boolean isPrimitive() {
@@ -110,18 +116,18 @@ public class ReturnType {
 
     /**
      * Returns a string version of the return type.
-     * 
+     *
      * @return a string version of the return type.
      */
     public String getReturnTypeAsString() {
         return returnType.toString();
     }
-    
+
     /**
      * If the return type is a constructor and has a {@link java.lang.String}
-     * and {@link java.lang.Throwable} constructor, {@code true} is returned. 
+     * and {@link java.lang.Throwable} constructor, {@code true} is returned.
      * Otherwise {@code false} is returned.
-     * 
+     *
      * @return {@code true} if the throwable has both a string and throwable
      *         constructor, otherwise {@code false}.
      */
@@ -131,21 +137,21 @@ public class ReturnType {
 
     /**
      * If the return type is a constructor and has a {@link java.lang.String}
-     * constructor, {@code true} is returned. Otherwise {@code false} is 
+     * constructor, {@code true} is returned. Otherwise {@code false} is
      * returned.
-     * 
-     * @return {@code true} if the throwable has a string constructor, otherwise 
+     *
+     * @return {@code true} if the throwable has a string constructor, otherwise
      *         {@code false}.
      */
-    public boolean hasStringConsturctor() {
-        return stringConsturctor;
+    public boolean hasStringConstructor() {
+        return stringConstructor;
     }
 
     /**
      * If the return type is a constructor and has a {@link java.lang.Throwable}
-     * and {@link java.lang.String} constructor, {@code true} is returned. 
+     * and {@link java.lang.String} constructor, {@code true} is returned.
      * Otherwise {@code false} is returned.
-     * 
+     *
      * @return {@code true} if the throwable has both a throwable and string
      *         constructor, otherwise {@code false}.
      */
@@ -155,19 +161,19 @@ public class ReturnType {
 
     /**
      * If the return type is a constructor and has a {@link java.lang.Throwable}
-     * constructor, {@code true} is returned. Otherwise {@code false} is 
+     * constructor, {@code true} is returned. Otherwise {@code false} is
      * returned.
-     * 
-     * @return {@code true} if the throwable has a throwable constructor, 
+     *
+     * @return {@code true} if the throwable has a throwable constructor,
      *         otherwise {@code false}.
      */
     public boolean hasThrowableConstructor() {
         return throwableConstructor;
     }
-    
+
     /**
      * Checks to see if the return type is an exception, extends Throwable.
-     * 
+     *
      * @return {@code true} if the return type is an exception, otherwise
      *         {@code false}.
      */
@@ -205,7 +211,7 @@ public class ReturnType {
                 append("(returnType=").
                 append(returnType).
                 append(", stringConstructor=").
-                append(stringConsturctor).
+                append(stringConstructor).
                 append(", throwableConstructor=").
                 append(throwableConstructor).
                 append(", stringAndThrowableConstructor=").

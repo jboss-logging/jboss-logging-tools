@@ -1,6 +1,8 @@
 package org.jboss.logging.validation;
 
+import org.jboss.logging.Annotations;
 import org.jboss.logging.util.ElementHelper;
+import org.jboss.logging.util.TransformationHelper;
 import org.jboss.logging.validation.validator.BundleReturnTypeValidator;
 import org.jboss.logging.validation.validator.LoggerReturnTypeValidator;
 import org.jboss.logging.validation.validator.MessageAnnotationValidator;
@@ -14,14 +16,11 @@ import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.jboss.logging.Annotations;
-
-import org.jboss.logging.util.TransformationHelper;
 
 /**
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-public class Validator {
+public final class Validator {
 
     private final Annotations annotations;
 
@@ -49,6 +48,13 @@ public class Validator {
         return validator;
     }
 
+    /**
+     * Validates the collection of elements and returns validation messages.
+     *
+     * @param typeElements the elements to validate.
+     *
+     * @return the collection of validator messages.
+     */
     public Collection<ValidationErrorMessage> validate(final Collection<? extends TypeElement> typeElements) {
 
         Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
@@ -69,6 +75,11 @@ public class Validator {
         return errorMessages;
     }
 
+    /**
+     * Adds an element validator to validate the elements with.
+     *
+     * @param elementValidator the element validator.
+     */
     public void addElementValidator(final ElementValidator elementValidator) {
         this.validators.add(elementValidator);
     }

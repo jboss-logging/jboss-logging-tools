@@ -20,7 +20,20 @@
  */
 package org.jboss.logging.generator;
 
+import org.jboss.logging.AbstractTool;
+import org.jboss.logging.Annotations;
 import org.jboss.logging.Loggers;
+import org.jboss.logging.model.ClassModel;
+import org.jboss.logging.model.ImplementationType;
+import org.jboss.logging.model.MessageBundleTranslator;
+import org.jboss.logging.model.MessageLoggerTranslator;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -31,19 +44,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
-
-import org.jboss.logging.AbstractTool;
-import org.jboss.logging.Annotations;
-import org.jboss.logging.model.ClassModel;
-import org.jboss.logging.model.ImplementationType;
-import org.jboss.logging.model.MessageBundleTranslator;
-import org.jboss.logging.model.MessageLoggerTranslator;
 
 import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassName;
@@ -87,6 +87,8 @@ public final class TranslationClassGenerator extends AbstractTool {
      * Class Generator.
      *
      * @param processingEnv the processing environment
+     * @param annotations   the annotation descriptor.
+     * @param loggers       the logger descriptor.
      */
     public TranslationClassGenerator(final ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
         super(processingEnv, annotations, loggers);
@@ -113,7 +115,7 @@ public final class TranslationClassGenerator extends AbstractTool {
             if (translationFilesPath != null) {
                 classTranslationFilesPath = translationFilesPath + packageName.replace('.', File.separatorChar);
 
-            //By default use the class output folder
+                //By default use the class output folder
             } else {
                 FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
                 classTranslationFilesPath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
@@ -129,8 +131,7 @@ public final class TranslationClassGenerator extends AbstractTool {
                 }
             }
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger().error(e, "Cannot read %s package files", packageName);
         }
     }
@@ -142,6 +143,7 @@ public final class TranslationClassGenerator extends AbstractTool {
      *
      * @param elementTranslations the declared element translations
      * @param file                the translation file
+     *
      * @return the valid translations messages
      */
     private Map<String, String> validateTranslationMessages(final Map<String, String> elementTranslations, final File file) {
@@ -168,8 +170,7 @@ public final class TranslationClassGenerator extends AbstractTool {
                 }
             }
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger().error(e, "Cannot read the % translation file", file.getName());
         }
 
@@ -179,10 +180,10 @@ public final class TranslationClassGenerator extends AbstractTool {
     /**
      * Generate a class for the given translation file.
      *
-     * @param primaryClassName   the qualified primary class name
+     * @param primaryClassName    the qualified primary class name
      * @param translationFilePath the translation file path
      * @param translationFileName the translation file name
-     * @param translations       the translations message
+     * @param translations        the translations message
      */
     private void generateSourceFileFor(final String primaryClassName, final String translationFilePath, final String translationFileName, final Map<String, String> translations) {
         logger().note("Generating translation class for", translationFileName);
@@ -195,7 +196,7 @@ public final class TranslationClassGenerator extends AbstractTool {
         String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFileName);
         File enclosingTranslationFile = new File(translationFilePath, enclosingTranslationFileName);
         if (!enclosingTranslationFileName.equals(translationFileName) && !enclosingTranslationFile.exists()) {
-               generateSourceFileFor(primaryClassName, translationFilePath, enclosingTranslationFileName, Collections.<String, String>emptyMap());
+            generateSourceFileFor(primaryClassName, translationFilePath, enclosingTranslationFileName, Collections.<String, String>emptyMap());
         }
 
         //Create source file

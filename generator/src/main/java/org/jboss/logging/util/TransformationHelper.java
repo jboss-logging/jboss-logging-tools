@@ -26,7 +26,7 @@ import java.io.StringWriter;
 
 /**
  * Various transformation utilities.
- * 
+ *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
@@ -39,50 +39,18 @@ public final class TransformationHelper {
     }
 
     /**
-     * Returns the package name from a qualified object name.
-     *
-     * @param qualifiedName the qualified object name.
-     * @return the package name.
-     */
-    public static String toPackage(final String qualifiedName) {
-        String result = null;
-        int index = qualifiedName.lastIndexOf(".");
-        if (index != -1) {
-            result = qualifiedName.substring(0, index);
-        }
-        return result;
-    }
-
-    /**
-     * Removes the package name from the qualified object name and returns the
-     * class name.
-     *
-     * @param qualifiedClassName the qualified object name.
-     * @return the class name minus the package.
-     */
-    public static String toSimpleClassName(final String qualifiedClassName) {
-        String result;
-        int index = qualifiedClassName.lastIndexOf(".");
-        if (index != -1) {
-            result = qualifiedClassName.substring(index + 1);
-        } else {
-            result = null;
-        }
-        return result;
-    }
-
-    /**
      * Get the qualified name of a class in the given
      * package.
      *
      * @param packageName the package name
-     * @param className the class name
+     * @param className   the class name
+     *
      * @return the class qualified name
      */
     public static String toQualifiedClassName(final String packageName, final String className) {
         String qualifiedClassName;
         if (!packageName.isEmpty() && !packageName.endsWith(".")) {
-            qualifiedClassName = String.format("%s.%s",packageName,className);
+            qualifiedClassName = String.format("%s.%s", packageName, className);
         } else {
             qualifiedClassName = packageName.concat(className);
         }
@@ -93,6 +61,7 @@ public final class TransformationHelper {
      * Converts a stack trace to string output.
      *
      * @param t the stack trace to convert.
+     *
      * @return a string version of the stack trace.
      */
     public static String stackTraceToString(final Throwable t) {

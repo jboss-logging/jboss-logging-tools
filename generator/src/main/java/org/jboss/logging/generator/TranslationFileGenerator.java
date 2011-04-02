@@ -1,7 +1,8 @@
 package org.jboss.logging.generator;
 
-import org.jboss.logging.Loggers;
 import org.jboss.logging.AbstractTool;
+import org.jboss.logging.Annotations;
+import org.jboss.logging.Loggers;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -13,7 +14,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import org.jboss.logging.Annotations;
 
 import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
@@ -72,6 +72,7 @@ public final class TranslationFileGenerator extends AbstractTool {
      * Generate the translation file containing the given
      * translations.
      *
+     * @param relativePath the relative path
      * @param fileName     the file name
      * @param translations the translations
      */
@@ -98,8 +99,7 @@ public final class TranslationFileGenerator extends AbstractTool {
                 writer.newLine();
             }
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger().error(e, "Cannot write generated skeletal translation file %s", fileName);
         } finally {
             try {

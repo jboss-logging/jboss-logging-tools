@@ -24,12 +24,11 @@ import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
 
-
-import java.lang.annotation.Annotation;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,20 +37,19 @@ import java.util.Set;
 
 /**
  * Validates the parameters of a method.
- *
+ * <p/>
  * <p>
  * Multiple methods with the same name are permitted, as long as they meet all
  * of the following criteria:
  * <ul>
- *   <li>They have the same number of non-{@link org.jboss.logging.Cause} parameters.</li>
- *   <li>Only one of the methods may specify a {@link org.jboss.logging.Message}
- *       annotation.
- *   </li>
+ * <li>They have the same number of non-{@link org.jboss.logging.Cause} parameters.</li>
+ * <li>Only one of the methods may specify a {@link org.jboss.logging.Message}
+ * annotation.
+ * </li>
  * </ul>
  * </p>
  *
  * @author James R. Perkins Jr. (jrp)
- *
  */
 public class MethodParameterValidator implements ElementValidator {
 
@@ -63,7 +61,7 @@ public class MethodParameterValidator implements ElementValidator {
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-            final Annotations annotations) {
+                                                       final Annotations annotations) {
 
         final List<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
@@ -85,11 +83,10 @@ public class MethodParameterValidator implements ElementValidator {
             }
 
             // Finally the method is only allowed one cause parameter
-            boolean invalid = false;
             Annotation ogCause = null;
             for (VariableElement varElem : method.getParameters()) {
                 final Annotation cause = varElem.getAnnotation(annotations.cause());
-                invalid = (ogCause != null && cause != null);
+                boolean invalid = (ogCause != null && cause != null);
                 if (invalid) {
                     errorMessages.add(ValidationErrorMessage.of(varElem, "Only one cause parameter allowed per method."));
                 }
@@ -121,7 +118,8 @@ public class MethodParameterValidator implements ElementValidator {
     /**
      * Checks to see if there is a cause parameter.
      *
-     * @param params the parameters to check.
+     * @param params          the parameters to check.
+     * @param causeAnnotation the cause annotation class.
      *
      * @return {@code true} if there is a cause, otherwise {@code false}.
      */

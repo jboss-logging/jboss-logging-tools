@@ -20,12 +20,12 @@
  */
 package org.jboss.logging.generator;
 
-import javax.lang.model.element.VariableElement;
 import org.jboss.logging.Annotations;
 import org.jboss.logging.util.ElementHelper;
 
+import javax.lang.model.element.VariableElement;
+
 /**
- *
  * @author James R. Perkins (jrp) - 20.Feb.2011
  */
 public final class MethodParameter implements Comparable<MethodParameter> {
@@ -51,8 +51,9 @@ public final class MethodParameter implements Comparable<MethodParameter> {
     /**
      * Only allow construction from within the parent class.
      *
-     * @param fullType the full type name.
-     * @param param    the parameter.
+     * @param annotations    the annotation descriptor.
+     * @param fullType       the full type name.
+     * @param param          the parameter.
      * @param formatterClass the formatter class, or {@code null} if none
      */
     MethodParameter(final Annotations annotations, final String fullType, final VariableElement param, final String formatterClass) {

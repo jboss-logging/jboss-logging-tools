@@ -109,6 +109,7 @@ public interface Annotations {
      * Returns the method format type.
      *
      * @param method the method with the Message annotation.
+     *
      * @return the format type of the message or {@code null} if the format type
      *         was not found.
      */
@@ -118,6 +119,7 @@ public interface Annotations {
      * The project code from the interface.
      *
      * @param intf the interface to find the project code on.
+     *
      * @return the project code or {@code null} if one was not found.
      */
     String projectCode(TypeElement intf);
@@ -126,6 +128,7 @@ public interface Annotations {
      * Checks to see if the method has a message id.
      *
      * @param method the method to check.
+     *
      * @return {@code true} if the method id was found, otherwise {@code false}.
      */
     boolean hasMessageId(ExecutableElement method);
@@ -135,6 +138,7 @@ public interface Annotations {
      * Returns the message id.
      *
      * @param method the method to check.
+     *
      * @return the message id or 0 if one was not found.
      */
     int messageId(ExecutableElement method);
@@ -143,6 +147,7 @@ public interface Annotations {
      * Returns the message value for the method.
      *
      * @param method the method to check.
+     *
      * @return the message for the method, if no method found {@code null} is
      *         returned.
      */
@@ -153,6 +158,7 @@ public interface Annotations {
      *
      * @param method     the method used to determine the log method.
      * @param formatType the format type for the method.
+     *
      * @return the name of the logger method.
      */
     String loggerMethod(ExecutableElement method, FormatType formatType);
@@ -161,6 +167,7 @@ public interface Annotations {
      * Returns the log level enum. For example Logger.Level.INFO.
      *
      * @param method the method used to determine the log method.
+     *
      * @return the log level.
      */
     String logLevel(final ExecutableElement method);

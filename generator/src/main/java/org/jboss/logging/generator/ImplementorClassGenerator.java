@@ -21,6 +21,8 @@
 package org.jboss.logging.generator;
 
 import org.jboss.logging.AbstractTool;
+import org.jboss.logging.Annotations;
+import org.jboss.logging.Loggers;
 import org.jboss.logging.model.ImplementationClassModel;
 import org.jboss.logging.model.MessageBundleImplementor;
 import org.jboss.logging.model.MessageLoggerImplementor;
@@ -28,11 +30,9 @@ import org.jboss.logging.model.MessageLoggerImplementor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.util.Collection;
-import javax.lang.model.type.TypeMirror;
-import org.jboss.logging.Annotations;
-import org.jboss.logging.Loggers;
 
 /**
  * A generator for creating implementations of message bundle and logging
@@ -43,7 +43,9 @@ import org.jboss.logging.Loggers;
 public final class ImplementorClassGenerator extends AbstractTool {
 
     /**
-     * @param processingEnv
+     * @param processingEnv the processing environment.
+     * @param annotations   the annotation descriptor.
+     * @param loggers       the logger descriptor.
      */
     public ImplementorClassGenerator(ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
         super(processingEnv, annotations, loggers);
@@ -51,11 +53,11 @@ public final class ImplementorClassGenerator extends AbstractTool {
 
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element,
-            final Collection<ExecutableElement> methods) {
+                                   final Collection<ExecutableElement> methods) {
         try {
             final String interfaceName = elementUtils().getBinaryName(element).toString();
             if (element.getAnnotation(annotations().messageLogger()) != null) {
-                createClass(new MessageLoggerImplementor(interfaceName, annotations().projectCode(element),extendsBasicLogger(element)), methods);
+                createClass(new MessageLoggerImplementor(interfaceName, annotations().projectCode(element), extendsBasicLogger(element)), methods);
             }
             if (element.getAnnotation(annotations().messageBundle()) != null) {
                 createClass(new MessageBundleImplementor(interfaceName, annotations().projectCode(element)), methods);
@@ -71,18 +73,18 @@ public final class ImplementorClassGenerator extends AbstractTool {
      * Creates the actual implementation.
      *
      * @param classModel the class model used to generate the source.
-     * @param methods   the methods to process.
+     * @param methods    the methods to process.
      *
      * @throws IOException           if there is an error writing the source file.
      * @throws IllegalStateException if the class has already been defined.
      */
     private void createClass(final ImplementationClassModel classModel,
-            final Collection<ExecutableElement> methods) throws IOException,
-                                                                IllegalStateException {
+                             final Collection<ExecutableElement> methods) throws IOException,
+            IllegalStateException {
         // Create the methods
         //for (ExecutableElement method : methods) {
         //    classModel.addMethod(method);
-       // }
+        // }
 
         classModel.setMethodDescriptor(MethodDescriptor.create(elementUtils(), typeUtils(), methods, annotations()));
         // Write the source file
@@ -94,9 +96,9 @@ public final class ImplementorClassGenerator extends AbstractTool {
             return true;
         }
         for (TypeMirror type : element.getInterfaces()) {
-           if (extendsBasicLogger((TypeElement) super.typeUtils().asElement(type))) {
-               return true;
-           }
+            if (extendsBasicLogger((TypeElement) super.typeUtils().asElement(type))) {
+                return true;
+            }
         }
         return false;
     }

@@ -20,11 +20,18 @@
  */
 package org.jboss.logging.model;
 
-import com.sun.codemodel.internal.*;
+import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClass;
+import com.sun.codemodel.internal.JCodeModel;
+import com.sun.codemodel.internal.JExpr;
+import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JInvocation;
+import com.sun.codemodel.internal.JMethod;
+import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.LoggingTools;
 import org.jboss.logging.generator.MethodDescriptor;
 import org.jboss.logging.generator.MethodParameter;
-import org.jboss.logging.generator.ReturnType;
 
 import java.lang.reflect.Method;
 
@@ -231,29 +238,6 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             blBody.append(");");
             blMethod.body().directStatement(blBody.toString());
-        }
-    }
-
-    private void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
-        ReturnType desc = methodDesc.returnType();
-        if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
-        } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
-        } else if (desc.hasStringConsturctor()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod));
-            if (methodDesc.hasCause()) {
-                JInvocation resultInv = body.invoke(result, "initCause");
-                resultInv.arg(JExpr.ref(methodDesc.cause().name()));
-            }
-        } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(methodDesc.cause().name()));
-        } else if (methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField));
-            JInvocation resultInv = body.invoke(result, "initCause");
-            resultInv.arg(JExpr.ref(methodDesc.cause().name()));
-        } else {
-            result.init(JExpr._new(returnField));
         }
     }
 }

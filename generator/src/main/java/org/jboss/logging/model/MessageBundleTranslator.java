@@ -46,6 +46,7 @@ public class MessageBundleTranslator extends ClassModel {
      *
      * @param className      the qualified class name
      * @param superClassName the super class name
+     * @param translations   the translation map.
      */
     public MessageBundleTranslator(final String className, final String superClassName, final Map<String, String> translations) {
         super(className, superClassName);

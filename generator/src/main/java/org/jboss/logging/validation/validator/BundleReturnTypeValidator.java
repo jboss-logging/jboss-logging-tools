@@ -20,6 +20,7 @@
  */
 package org.jboss.logging.validation.validator;
 
+import org.jboss.logging.Annotations;
 import org.jboss.logging.util.ElementHelper;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
@@ -28,7 +29,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.jboss.logging.Annotations;
 
 /**
  * Validates the return types for message bundle methods.
@@ -47,7 +47,7 @@ public class BundleReturnTypeValidator implements ElementValidator {
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-        final Annotations annotations) {
+                                                       final Annotations annotations) {
 
         Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 

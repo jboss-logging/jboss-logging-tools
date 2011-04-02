@@ -23,7 +23,6 @@ package org.jboss.logging.generator;
 import org.jboss.logging.Annotations.FormatType;
 
 /**
- *
  * @author James R. Perkins (jrp) - 20.Feb.2011
  */
 final class Message {
@@ -33,13 +32,31 @@ final class Message {
     private final String value;
     private final FormatType format;
 
-    public Message(int id, boolean hasId, String value, FormatType format) {
+    /**
+     * Create the message descriptor.
+     *
+     * @param id     the message id.
+     * @param hasId  {@code true} if message has an id, otherwise {@code false}.
+     * @param value  the message value.
+     * @param format the message format type.
+     */
+    private Message(int id, boolean hasId, String value, FormatType format) {
         this.id = id;
         this.hasId = hasId;
         this.value = value;
         this.format = format;
     }
 
+    /**
+     * Creates   the message descriptor.
+     *
+     * @param id     the message id.
+     * @param hasId  {@code true} if message has an id, otherwise {@code false}.
+     * @param value  the message value.
+     * @param format the message format type.
+     *
+     * @return the message that was created.
+     */
     public static Message of(int id, boolean hasId, String value, FormatType format) {
         return new Message(id, hasId, value, format);
     }

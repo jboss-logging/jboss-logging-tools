@@ -20,8 +20,9 @@
  */
 package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ElementValidator;
+import org.jboss.logging.validation.ValidationErrorMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -31,7 +32,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jboss.logging.Annotations;
 
 /**
  * Checks to make sure that only one {@link org.jboss.logging.Message}
@@ -44,11 +44,11 @@ public class MessageAnnotationValidator implements ElementValidator {
     private static final String ERROR_MESSAGE = "Only one method with the same name is allowed to be annotated the %s annotation.";
 
     /**
-     *{@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-            final Annotations annotations) {
+                                                       final Annotations annotations) {
 
         final List<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 

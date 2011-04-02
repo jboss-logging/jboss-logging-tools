@@ -21,8 +21,8 @@
 package org.jboss.logging.validation.validator;
 
 import org.jboss.logging.Annotations;
-import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ElementValidator;
+import org.jboss.logging.validation.ValidationErrorMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -33,7 +33,7 @@ import java.util.Map;
 
 /**
  * Validates messages id's from the {@link org.jboss.logging.Message} annotation.
- *
+ * <p/>
  * <p>
  * Message id's must be unique for each method unless the methods have the same
  * name.
@@ -55,7 +55,7 @@ public class MessageIdValidator implements ElementValidator {
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-            final Annotations annotations) {
+                                                       final Annotations annotations) {
         final Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
         // Process method descriptors

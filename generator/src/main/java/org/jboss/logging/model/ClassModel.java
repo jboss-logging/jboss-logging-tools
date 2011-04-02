@@ -110,7 +110,8 @@ public abstract class ClassModel {
      *
      * @param fileObject the files object to write the source to.
      *
-     * @throws Exception if an error occurs creating the source file.
+     * @throws java.io.IOException   if the file could not be written.
+     * @throws IllegalStateException if the implementation is in an invalid state.
      */
     public final void create(final JavaFileObject fileObject) throws IOException, IllegalStateException {
 
@@ -145,6 +146,7 @@ public abstract class ClassModel {
      *
      * @param methodName  the method name.
      * @param returnValue the message value.
+     *
      * @return the newly created method.
      * @throws IllegalStateException if this method is called before the generateModel method
      */

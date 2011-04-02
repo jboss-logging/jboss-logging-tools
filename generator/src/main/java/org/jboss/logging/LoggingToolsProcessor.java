@@ -55,7 +55,7 @@ import static org.jboss.logging.util.ElementHelper.getInterfaceMethods;
  */
 @SupportedAnnotationTypes("*")
 @SupportedOptions({
-    LoggingToolsProcessor.DEBUG_OPTION
+        LoggingToolsProcessor.DEBUG_OPTION
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class LoggingToolsProcessor extends AbstractProcessor {

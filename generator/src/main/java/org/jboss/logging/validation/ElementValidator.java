@@ -20,10 +20,11 @@
  */
 package org.jboss.logging.validation;
 
+import org.jboss.logging.Annotations;
+
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.util.Collection;
-import org.jboss.logging.Annotations;
 
 /**
  * Used to validate various aspects of an interface to make sure the classes can
@@ -31,16 +32,15 @@ import org.jboss.logging.Annotations;
  *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
- *
  */
 public interface ElementValidator {
 
     /**
      * Validates the collection of methods that were passed.
      *
-     * @param element            the root element, generally the interface.
-     * @param elementMethods     the methods of the interface.
-     * @param annotations the logging annotations.
+     * @param element        the root element, generally the interface.
+     * @param elementMethods the methods of the interface.
+     * @param annotations    the logging annotations.
      *
      * @return a collection of error messages or a an empty collection if no errors were found.
      */

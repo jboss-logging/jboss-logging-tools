@@ -25,16 +25,29 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
- *
  * @author James R. Perkins (jrp) - 20.Feb.2011
- * @version
  */
 public interface Loggers {
 
+    /**
+     * The class of main logger.
+     *
+     * @return the main logger class.
+     */
     Class<?> loggerClass();
 
+    /**
+     * Returns the basic logger class.
+     *
+     * @return the basic logger class.
+     */
     Class<?> basicLoggerClass();
 
+    /**
+     * The methods that need to be implemented if an interface extends a basic logger.
+     *
+     * @return the methods of the basic logger.
+     */
     List<Method> basicLoggerMethods();
 
 }

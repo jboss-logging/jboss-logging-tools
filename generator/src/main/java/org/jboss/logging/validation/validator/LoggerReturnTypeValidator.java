@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.validation.validator;
 
-import static org.jboss.logging.util.ElementHelper.*;
+import org.jboss.logging.Annotations;
 import org.jboss.logging.util.ElementHelper;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
@@ -30,7 +30,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.jboss.logging.Annotations;
+
+import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
 
 /**
  * Validates the return type for logger methods.
@@ -47,7 +48,7 @@ public class LoggerReturnTypeValidator implements ElementValidator {
      */
     @Override
     public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-            final Annotations annotations) {
+                                                       final Annotations annotations) {
 
         final Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
 
@@ -66,9 +67,9 @@ public class LoggerReturnTypeValidator implements ElementValidator {
                     } else {
                         if (!(ElementHelper.isAssignableFrom(method.getReturnType(), String.class) ||
                                 ElementHelper.isAssignableFrom(Throwable.class, method.getReturnType()))) {
-                                errorMessages.add(ValidationErrorMessage.of(element,
-                                        "Method %s has an invalud return type type. Must have a String or Throwable return type if not annotated with %s.",
-                                        method, annotations.logMessage().getName()));
+                            errorMessages.add(ValidationErrorMessage.of(element,
+                                    "Method %s has an invalud return type type. Must have a String or Throwable return type if not annotated with %s.",
+                                    method, annotations.logMessage().getName()));
                         }
                     }
                 }

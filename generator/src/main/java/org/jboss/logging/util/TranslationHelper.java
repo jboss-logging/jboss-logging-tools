@@ -44,6 +44,7 @@ public final class TranslationHelper {
      * generated class for the given translation file name.
      *
      * @param translationFileName the translation file name
+     *
      * @return the class name suffix corresponding to the given translation filename
      * @throws NullPointerException if translationFileName is null or not valid
      */
@@ -66,11 +67,12 @@ public final class TranslationHelper {
     /**
      * Returns the enclosing translation file name for the given
      * translation file name.
-     *
+     * <p/>
      * If the given translation file name is InterfaceName.i18n_locale
      * the given translation file name is returned.
      *
      * @param translationFileName the translation file name
+     *
      * @return the enclosing file name
      * @throws NullPointerException if translationFileName is null
      */
@@ -88,13 +90,14 @@ public final class TranslationHelper {
         }
     }
 
-     /**
+    /**
      * Returns the enclosing translation class name for
      * the given translation class name. If the given translation
      * class name is the upper class name then the parameter class
      * name is returned.
      *
      * @param translationClassName the translation class name
+     *
      * @return the enclosing class name
      * @throws NullPointerException if translationClassName is null
      */

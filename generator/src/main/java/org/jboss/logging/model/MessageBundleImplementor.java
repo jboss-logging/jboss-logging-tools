@@ -20,11 +20,17 @@
  */
 package org.jboss.logging.model;
 
-import org.jboss.logging.generator.MethodParameter;
-import org.jboss.logging.generator.ReturnType;
+import com.sun.codemodel.internal.JBlock;
+import com.sun.codemodel.internal.JClass;
+import com.sun.codemodel.internal.JCodeModel;
+import com.sun.codemodel.internal.JExpr;
+import com.sun.codemodel.internal.JFieldVar;
+import com.sun.codemodel.internal.JInvocation;
+import com.sun.codemodel.internal.JMethod;
+import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.generator.MethodDescriptor;
-import com.sun.codemodel.internal.*;
-
+import org.jboss.logging.generator.MethodParameter;
 
 import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
 
@@ -36,17 +42,14 @@ import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
  *
  * @author James R. Perkins Jr. (jrp)
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
- *
  */
 public class MessageBundleImplementor extends ImplementationClassModel {
 
     /**
      * Creates a new message bundle code model.
      *
-     * @param interfaceName
-     *            the interface name.
-     * @param projectCode
-     *            the project code from the annotation.
+     * @param interfaceName the interface name.
+     * @param projectCode   the project code from the annotation.
      */
     public MessageBundleImplementor(final String interfaceName, final String projectCode) {
         super(interfaceName, projectCode, ImplementationType.BUNDLE);
@@ -124,28 +127,5 @@ public class MessageBundleImplementor extends ImplementationClassModel {
             body._return(result);
         }
         return codeModel;
-    }
-
-    private void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
-        ReturnType desc = methodDesc.returnType();
-        if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
-        } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
-        } else if (desc.hasStringConsturctor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod));
-            if (methodDesc.hasCause()) {
-                JInvocation resultInv = body.invoke(result, "initCause");
-                resultInv.arg(JExpr.ref(methodDesc.cause().name()));
-            }
-        } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(methodDesc.cause().name()));
-        } else if (methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField));
-            JInvocation resultInv = body.invoke(result, "initCause");
-            resultInv.arg(JExpr.ref(methodDesc.cause().name()));
-        } else {
-            result.init(JExpr._new(returnField));
-        }
     }
 }

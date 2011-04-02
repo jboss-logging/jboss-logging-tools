@@ -42,17 +42,16 @@ public class LoggingTools {
      * Locates the first implementation of {@link org.jboss.logging.Annotations}.
      *
      * @return the annotations to use.
-     *
      * @throws IllegalStateException if the implementation could not be found.
      */
     public static Annotations findAnnotations() {
         if (annotations == null) {
             for (Annotations a : annotationsLoader)
-            if (annotationsLoader.iterator().hasNext()) {
-                annotations = annotationsLoader.iterator().next();
-            } else {
-                throw new IllegalStateException("Annotations not found.");
-            }
+                if (annotationsLoader.iterator().hasNext()) {
+                    annotations = annotationsLoader.iterator().next();
+                } else {
+                    throw new IllegalStateException("Annotations not found.");
+                }
         }
         return annotations;
     }
@@ -62,7 +61,6 @@ public class LoggingTools {
      * Locates the first implementation of {@link org.jboss.logging.Loggers}.
      *
      * @return the loggers to use.
-     *
      * @throws IllegalStateException if the implementation could not be found.
      */
     public static Loggers findLoggers() {

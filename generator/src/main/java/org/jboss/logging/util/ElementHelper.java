@@ -22,9 +22,14 @@
 
 package org.jboss.logging.util;
 
+import org.jboss.logging.Annotations;
+import org.jboss.logging.Loggers;
+import org.jboss.logging.model.ImplementationType;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
@@ -34,10 +39,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import javax.lang.model.type.DeclaredType;
-import org.jboss.logging.Annotations;
-import org.jboss.logging.Loggers;
-import org.jboss.logging.model.ImplementationType;
 
 /**
  * An utility class to work with element.
@@ -56,7 +57,9 @@ public final class ElementHelper {
     /**
      * Check if an element is annotated with the given annotation.
      *
-     * @param clazz the annotation class
+     * @param element the element to look for the annotation on.
+     * @param clazz   the annotation class
+     *
      * @return true if the element is annotated, false otherwise
      * @throws NullPointerException if element parameter is null
      */
@@ -66,18 +69,16 @@ public final class ElementHelper {
         }
 
         Annotation annotation = element.getAnnotation(clazz);
-        if (annotation != null) {
-            return true;
-        }
-
-        return false;
+        return (annotation != null);
     }
 
     /**
      * Returns the primary class simple name for an element
      * who represents a MessageBundle or MessageLogger interface.
      *
-     * @param element the element
+     * @param element     the element
+     * @param annotations the annotation descriptor.
+     *
      * @return the translation file name prefix
      * @throws NullPointerException     if element is null
      * @throws IllegalArgumentException if element is not an interface
@@ -106,6 +107,7 @@ public final class ElementHelper {
      * who represents a MessageBundle or MessageLogger interface.
      *
      * @param element the element
+     *
      * @return the translation file name prefix
      * @throws NullPointerException     if element is null
      * @throws IllegalArgumentException if element is not an interface
@@ -137,6 +139,8 @@ public final class ElementHelper {
      *
      * @param element the interface element
      * @param types   the type util
+     * @param loggers the logger descriptor.
+     *
      * @return the collection of all methods
      * @throws IllegalArgumentException if element is not an interface
      */
@@ -164,7 +168,9 @@ public final class ElementHelper {
      * Returns a collection of all Message methods. A message
      * method is annotated with {@link org.jboss.logging.Message}.
      *
-     * @param methods the methods collection
+     * @param methods     the methods collection
+     * @param annotations the annotation descriptor.
+     *
      * @return a map containing the message where the key is the method name
      */
     public static Map<String, String> getAllMessageMethods(final Collection<ExecutableElement> methods, final Annotations annotations) {
@@ -184,6 +190,7 @@ public final class ElementHelper {
      *
      * @param typeElement the type element to check.
      * @param type        the type to check.
+     *
      * @return {@code true} if the type element is assignable from the type,
      *         otherwise {@code false}.
      */
@@ -196,10 +203,7 @@ public final class ElementHelper {
                 return true;
             }
         }
-        if (type.getSuperclass() != null && isAssignableFrom(typeElement, type.getSuperclass())) {
-            return true;
-        }
-        return false;
+        return (type.getSuperclass() != null && isAssignableFrom(typeElement, type.getSuperclass()));
     }
 
     /**
@@ -207,6 +211,7 @@ public final class ElementHelper {
      *
      * @param typeMirror the type mirror to check.
      * @param type       the type to check.
+     *
      * @return {@code true} if the type mirror is assignable from the type,
      *         otherwise {@code false}.
      */
@@ -221,10 +226,7 @@ public final class ElementHelper {
                 return true;
             }
         }
-        if (type.getSuperclass() != null && isAssignableFrom(typeMirror, type.getSuperclass())) {
-            return true;
-        }
-        return false;
+        return (type.getSuperclass() != null && isAssignableFrom(typeMirror, type.getSuperclass()));
     }
 
     /**
@@ -232,6 +234,7 @@ public final class ElementHelper {
      *
      * @param type        the type to check.
      * @param typeElement the type element to check.
+     *
      * @return {@code true} if the type is assignable from the type element,
      *         otherwise {@code false}.
      */
@@ -245,17 +248,15 @@ public final class ElementHelper {
                 return true;
             }
         }
-        if (isAssignableFrom(type, typeElement.getSuperclass())) {
-            return true;
-        }
-        return false;
+        return isAssignableFrom(type, typeElement.getSuperclass());
     }
 
     /**
      * Checks to see if the type is assignable from the type mirror.
      *
-     * @param type        the type to check.
-     * @param typeMirrort the type mirror to check.
+     * @param type       the type to check.
+     * @param typeMirror the type mirror to check.
+     *
      * @return {@code true} if the type is assignable from the type mirror,
      *         otherwise {@code false}.
      */

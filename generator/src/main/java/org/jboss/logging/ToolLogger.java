@@ -2,17 +2,17 @@
  *  JBoss, Home of Professional Open Source Copyright 2010, Red Hat, Inc., and
  *  individual contributors by the @authors tag. See the copyright.txt in the
  *  distribution for a full listing of individual contributors.
- * 
+ *
  *  This is free software; you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
  *  Software Foundation; either version 2.1 of the License, or (at your option)
  *  any later version.
- * 
+ *
  *  This software is distributed in the hope that it will be useful, but WITHOUT
  *  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  *  details.
- * 
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this software; if not, write to the Free Software Foundation,
  *  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
@@ -20,15 +20,15 @@
  */
 package org.jboss.logging;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.jboss.logging.util.TransformationHelper;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic.Kind;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A logger for logging messages for annotation processors.
@@ -51,6 +51,7 @@ public final class ToolLogger {
      * Creates a new tool logger.
      *
      * @param processingEnv the processing environment
+     *
      * @return a new tool logger
      */
     public static ToolLogger getLogger(final ProcessingEnvironment processingEnv) {
@@ -232,7 +233,7 @@ public final class ToolLogger {
      * @param args          the format arguments.
      */
     public void other(final String messageFormat, final Object... args) {
-        other(messageFormat, args);
+        log(Kind.OTHER, null, messageFormat, args);
     }
 
     /**

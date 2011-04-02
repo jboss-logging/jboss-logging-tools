@@ -26,11 +26,11 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import org.jboss.logging.LoggingTools;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import org.jboss.logging.LoggingTools;
 
 
 /**
@@ -55,6 +55,7 @@ public class MessageLoggerTranslator extends ClassModel {
      *
      * @param className      the qualified class name
      * @param superClassName the super class name
+     * @param translations   the translation map.
      */
     public MessageLoggerTranslator(final String className, final String superClassName, final Map<String, String> translations) {
         super(className, superClassName);
