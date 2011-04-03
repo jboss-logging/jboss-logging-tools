@@ -104,14 +104,14 @@ public abstract class ImplementationClassModel extends ClassModel {
             result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
         } else if (desc.hasThrowableAndStringConstructor() && methodDesc.hasCause()) {
             result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())).arg(formatterMethod));
-        } else if (desc.hasStringConstructor() && methodDesc.hasCause()) {
+        } else if (desc.hasStringConstructor()) {
             result.init(JExpr._new(returnField).arg(formatterMethod));
             if (methodDesc.hasCause()) {
                 JInvocation resultInv = body.invoke(result, "initCause");
                 resultInv.arg(JExpr.ref(methodDesc.cause().name()));
             }
         } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
-            result.init(JExpr._new(returnField).arg(methodDesc.cause().name()));
+            result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())));
         } else if (methodDesc.hasCause()) {
             result.init(JExpr._new(returnField));
             JInvocation resultInv = body.invoke(result, "initCause");
