@@ -171,7 +171,7 @@ public final class TranslationClassGenerator extends AbstractTool {
             }
 
         } catch (IOException e) {
-            logger().error(e, "Cannot read the % translation file", file.getName());
+            logger().error(e, "Cannot read the %s translation file", file.getName());
         }
 
         return validTranslations;
@@ -186,7 +186,7 @@ public final class TranslationClassGenerator extends AbstractTool {
      * @param translations        the translations message
      */
     private void generateSourceFileFor(final String primaryClassName, final String translationFilePath, final String translationFileName, final Map<String, String> translations) {
-        logger().note("Generating translation class for", translationFileName);
+        logger().note("Generating translation class for %s.", translationFileName);
 
         String generatedClassName = primaryClassName.concat(getTranslationClassNameSuffix(translationFileName));
         String superClassName = getEnclosingTranslationClassName(generatedClassName);
