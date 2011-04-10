@@ -21,37 +21,38 @@
 package org.jboss.logging.validation.validator;
 
 import org.jboss.logging.Annotations;
-import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
-
 /**
- * Checks to make sure that only one {@link org.jboss.logging.Message}
+ * Checks to make sure that only one {@link org.jboss.logging.Annotations#message()}
  * annotation is present on like named methods.
  *
  * @author James R. Perkins (jrp)
  */
-public class MessageAnnotationValidator implements ElementValidator {
+public class MessageAnnotationValidator extends AbstractValidator {
 
     private static final String ERROR_MESSAGE = "Only one method with the same name is allowed to be annotated the %s annotation.";
+
+    public MessageAnnotationValidator(final Annotations annotations, final Types typeUtil) {
+        super(annotations, typeUtil);
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                  final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
 
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
@@ -74,23 +75,5 @@ public class MessageAnnotationValidator implements ElementValidator {
         }
 
         return messages;
-    }
-
-    /**
-     * Returns a collection of methods with the same name.
-     *
-     * @param methods    the methods to process.
-     * @param methodName the method name to find.
-     *
-     * @return a collection of methods with the same name.
-     */
-    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName) {
-        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
-        for (ExecutableElement method : methods) {
-            if (methodName.equals(method.getSimpleName())) {
-                result.add(method);
-            }
-        }
-        return result;
     }
 }

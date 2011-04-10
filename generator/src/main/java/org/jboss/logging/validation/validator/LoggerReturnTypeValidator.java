@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
-import static org.jboss.logging.util.ElementHelper.isAssignableFrom;
 
 /**
  * Validates the return type for logger methods.
@@ -42,18 +41,17 @@ import static org.jboss.logging.util.ElementHelper.isAssignableFrom;
  *
  * @author James R. Perkins (jrp)
  */
-public class LoggerReturnTypeValidator extends AbstractReturnTypeValidator {
+public class LoggerReturnTypeValidator extends AbstractValidator {
 
-    public LoggerReturnTypeValidator(final Types typeUtil) {
-        super(typeUtil);
+    public LoggerReturnTypeValidator(final Annotations annotations, final Types typeUtil) {
+        super(annotations, typeUtil);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                       final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
 
         final Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
@@ -67,13 +65,7 @@ public class LoggerReturnTypeValidator extends AbstractReturnTypeValidator {
                     if (method.getReturnType().getKind() == TypeKind.VOID) {
                         messages.add(ValidationErrorMessage.of(method, "Cannot have a void return type if the method is not a log method."));
                     } else {
-                        if (!(isAssignableFrom(method.getReturnType(), String.class) || isAssignableFrom(Throwable.class, method.getReturnType()))) {
-                            messages.add(ValidationErrorMessage.of(method,
-                                    "Method %s has an invalid return type type. Must have a String or Throwable return type if not annotated with %s.",
-                                    method, annotations.logMessage().getName()));
-                        } else if (isAssignableFrom(Throwable.class, method.getReturnType())) {
-                           messages.addAll(checkExceptionConstructor(method));
-                        }
+                        messages.addAll(checkMessageBundleMethod(element, method));
                     }
                 }
             }

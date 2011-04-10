@@ -22,28 +22,25 @@ import java.util.List;
  */
 public final class Validator {
 
-    private final Annotations annotations;
-
     private final Types typeUtils;
 
     private final List<ElementValidator> validators;
 
-    private Validator(final Types typeUtils, final Annotations annotations) {
-        this.annotations = annotations;
+    private Validator(final Types typeUtils) {
         this.validators = new ArrayList<ElementValidator>();
         this.typeUtils = typeUtils;
     }
 
     public static Validator buildValidator(final ProcessingEnvironment pev, final Annotations annotations) {
 
-        Validator validator = new Validator(pev.getTypeUtils(), annotations);
+        Validator validator = new Validator(pev.getTypeUtils());
 
         //Add validators
-        validator.addElementValidator(new BundleReturnTypeValidator(pev.getTypeUtils()));
-        validator.addElementValidator(new LoggerReturnTypeValidator(pev.getTypeUtils()));
-        validator.addElementValidator(new MessageAnnotationValidator());
-        validator.addElementValidator(new MethodParameterValidator());
-        validator.addElementValidator(new MessageIdValidator());
+        validator.addElementValidator(new BundleReturnTypeValidator(annotations, pev.getTypeUtils()));
+        validator.addElementValidator(new LoggerReturnTypeValidator(annotations, pev.getTypeUtils()));
+        validator.addElementValidator(new MessageAnnotationValidator(annotations, pev.getTypeUtils()));
+        validator.addElementValidator(new MethodParameterValidator(annotations, pev.getTypeUtils()));
+        validator.addElementValidator(new MessageIdValidator(annotations, pev.getTypeUtils()));
 
         return validator;
     }
@@ -65,7 +62,7 @@ public final class Validator {
                 Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, typeUtils, null);
 
                 for (ElementValidator validator : validators) {
-                    errorMessages.addAll(validator.validate(element, elementMethods, annotations));
+                    errorMessages.addAll(validator.validate(element, elementMethods));
                 }
             } catch (Exception e) {
                 errorMessages.add(new ValidationErrorMessage(element, TransformationHelper.stackTraceToString(e)));

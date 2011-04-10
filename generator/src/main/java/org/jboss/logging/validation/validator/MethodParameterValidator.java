@@ -21,7 +21,6 @@
 package org.jboss.logging.validation.validator;
 
 import org.jboss.logging.Annotations;
-import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
@@ -29,6 +28,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,8 +43,8 @@ import java.util.Set;
  * Multiple methods with the same name are permitted, as long as they meet all
  * of the following criteria:
  * <ul>
- * <li>They have the same number of non-{@link org.jboss.logging.Cause} parameters.</li>
- * <li>Only one of the methods may specify a {@link org.jboss.logging.Message}
+ * <li>They have the same number of non-{@link org.jboss.logging.Annotations#cause()} parameters.</li>
+ * <li>Only one of the methods may specify a {@link org.jboss.logging.Annotations#message()}
  * annotation.
  * </li>
  * </ul>
@@ -52,7 +52,11 @@ import java.util.Set;
  *
  * @author James R. Perkins Jr. (jrp)
  */
-public class MethodParameterValidator implements ElementValidator {
+public class MethodParameterValidator extends AbstractValidator {
+
+    public MethodParameterValidator(final Annotations annotations, final Types typeUtil) {
+        super(annotations, typeUtil);
+    }
 
     private static final String ERROR_MESSAGE = "The number of parameters, minus the cause parameter, must match all match all methods with the same name. "
             + "Method %s accepts %d parameters and method %s accepts %d parameters.";
@@ -61,8 +65,7 @@ public class MethodParameterValidator implements ElementValidator {
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                  final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
 
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
@@ -73,9 +76,9 @@ public class MethodParameterValidator implements ElementValidator {
             if (methodNames.add(method.getSimpleName())) {
                 // Find all like named methods
                 final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName());
-                final int paramCount1 = method.getParameters().size() - (hasCause(method.getParameters(), annotations.cause()) ? 1 : 0);
+                final int paramCount1 = method.getParameters().size() - (hasCause(method.getParameters()) ? 1 : 0);
                 for (ExecutableElement m : likeMethods) {
-                    int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters(), annotations.cause()) ? 1 : 0);
+                    int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters()) ? 1 : 0);
                     if (paramCount1 != paramCount2) {
                         messages.add(ValidationErrorMessage.of(m,
                                 ERROR_MESSAGE, method.toString(), method.getParameters().size(), m.toString(), m.getParameters().size()));
@@ -96,41 +99,5 @@ public class MethodParameterValidator implements ElementValidator {
         }
 
         return messages;
-    }
-
-    /**
-     * Returns a collection of methods with the same name.
-     *
-     * @param methods    the methods to process.
-     * @param methodName the method name to find.
-     *
-     * @return a collection of methods with the same name.
-     */
-    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName) {
-        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
-        for (ExecutableElement method : methods) {
-            if (methodName.equals(method.getSimpleName())) {
-                result.add(method);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Checks to see if there is a cause parameter.
-     *
-     * @param params          the parameters to check.
-     * @param causeAnnotation the cause annotation class.
-     *
-     * @return {@code true} if there is a cause, otherwise {@code false}.
-     */
-    private boolean hasCause(Collection<? extends VariableElement> params, final Class<? extends Annotation> causeAnnotation) {
-        // Look for cause
-        for (VariableElement param : params) {
-            if (param.getAnnotation(causeAnnotation) != null) {
-                return true;
-            }
-        }
-        return false;
     }
 }

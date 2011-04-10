@@ -21,19 +21,19 @@
 package org.jboss.logging.validation.validator;
 
 import org.jboss.logging.Annotations;
-import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Validates messages id's from the {@link org.jboss.logging.Message} annotation.
+ * Validates messages id's from the {@link org.jboss.logging.Annotations#message()} annotation.
  * <p/>
  * <p>
  * Message id's must be unique for each method unless the methods have the same
@@ -42,12 +42,13 @@ import java.util.Map;
  *
  * @author James R. Perkins (jrp)
  */
-public class MessageIdValidator implements ElementValidator {
+public class MessageIdValidator extends AbstractValidator {
 
     private static final String ERROR_MESSAGE = "Message id %s is not unique for method %s with project code %s.";
     private final Map<String, IdDescriptor> messageIdMap;
 
-    public MessageIdValidator() {
+    public MessageIdValidator(final Annotations annotations, final Types typeUtil) {
+        super(annotations, typeUtil);
         messageIdMap = new HashMap<String, IdDescriptor>();
     }
 
@@ -55,8 +56,7 @@ public class MessageIdValidator implements ElementValidator {
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                       final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
         final Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
         // Process method descriptors

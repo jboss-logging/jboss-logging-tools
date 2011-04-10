@@ -21,7 +21,6 @@
 package org.jboss.logging.validation.validator;
 
 import org.jboss.logging.Annotations;
-import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
@@ -31,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
-import static org.jboss.logging.util.ElementHelper.isAssignableFrom;
 
 /**
  * Validates the return types for message bundle methods.
@@ -43,31 +41,24 @@ import static org.jboss.logging.util.ElementHelper.isAssignableFrom;
  *
  * @author James R. Perkins (jrp)
  */
-public class BundleReturnTypeValidator extends AbstractReturnTypeValidator {
+public class BundleReturnTypeValidator extends AbstractValidator {
 
-    public BundleReturnTypeValidator(final Types typeUtil) {
-        super(typeUtil);
+    public BundleReturnTypeValidator(final Annotations annotations, final Types typeUtil) {
+        super(annotations, typeUtil);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                  final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
 
         Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
         if (isAnnotatedWith(element, annotations.messageBundle())) {
 
             for (ExecutableElement method : elementMethods) {
-                if (!(isAssignableFrom(method.getReturnType(), String.class) || isAssignableFrom(Throwable.class, method.getReturnType()))) {
-                    messages.add(ValidationErrorMessage.of(method,
-                            "Message bundle %s has a method with invalid return type, method %s has a return type of %s",
-                            element, method, method.getReturnType()));
-                } else if (isAssignableFrom(Throwable.class, method.getReturnType())) {
-                    messages.addAll(checkExceptionConstructor(method));
-                }
+                messages.addAll(checkMessageBundleMethod(element, method));
             }
         }
 

@@ -20,8 +20,6 @@
  */
 package org.jboss.logging.validation;
 
-import org.jboss.logging.Annotations;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.util.Collection;
@@ -40,9 +38,8 @@ public interface ElementValidator {
      *
      * @param element        the root element, generally the interface.
      * @param elementMethods the methods of the interface.
-     * @param annotations    the logging annotations.
      *
      * @return a collection of messages or a an empty collection if no errors or warnings were found.
      */
-    Collection<ValidationMessage> validate(TypeElement element, Collection<ExecutableElement> elementMethods, Annotations annotations);
+    Collection<ValidationMessage> validate(TypeElement element, Collection<ExecutableElement> elementMethods);
 }
