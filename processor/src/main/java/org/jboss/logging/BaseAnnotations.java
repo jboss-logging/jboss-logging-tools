@@ -116,7 +116,7 @@ public class BaseAnnotations implements Annotations {
 
     @Override
     public String loggerMethod(final ExecutableElement method, final FormatType formatType) {
-        return "log" + formatType.logType();
+        return "log" + (formatType == null ? "" : formatType.logType());
     }
 
     @Override
