@@ -167,15 +167,22 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         final JBlock body = method.body();
         final JClass returnField = getCodeModel().ref(method.type().fullName());
         final JVar result = body.decl(returnField, "result");
+        final JClass formatter = getCodeModel().ref(methodDesc.messageFormat().formatClass());
+        final JInvocation formatterMethod = formatter.staticInvoke(methodDesc.messageFormat().staticMethod());
         if (methodDesc.parameters().isEmpty()) {
+            // If the return type is an exception, initialize the exception.
             if (methodDesc.returnType().isException()) {
-                initCause(result, returnField, body, methodDesc, JExpr.invoke(msgMethod));
+                if (methodDesc.hasMessageId() && projectCodeVar != null) {
+                    String formattedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
+                    formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+                    initCause(result, returnField, body, methodDesc, formatterMethod);
+                } else {
+                    initCause(result, returnField, body, methodDesc, JExpr.invoke(msgMethod));
+                }
             } else {
                 result.init(JExpr.invoke(msgMethod));
             }
         } else {
-            final JClass formatter = getCodeModel().ref(methodDesc.messageFormat().formatClass());
-            final JInvocation formatterMethod = formatter.staticInvoke(methodDesc.messageFormat().staticMethod());
             if (methodDesc.hasMessageId() && projectCodeVar != null) {
                 String formattedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
                 formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));

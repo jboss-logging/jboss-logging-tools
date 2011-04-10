@@ -23,6 +23,7 @@ package org.jboss.logging.validation.validator;
 import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -32,6 +33,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
 
 /**
  * Checks to make sure that only one {@link org.jboss.logging.Message}
@@ -47,10 +50,10 @@ public class MessageAnnotationValidator implements ElementValidator {
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                       final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
+                                                  final Annotations annotations) {
 
-        final List<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
         // Set for the method names that have been processed
         final Set<Name> methodNames = new HashSet<Name>();
@@ -63,14 +66,14 @@ public class MessageAnnotationValidator implements ElementValidator {
                 for (ExecutableElement m : likeMethods) {
                     boolean found = m.getAnnotation(annotations.message()) != null;
                     if (foundFirst && found) {
-                        errorMessages.add(ValidationErrorMessage.of(m, ERROR_MESSAGE, annotations.message().getName()));
+                        messages.add(ValidationErrorMessage.of(m, ERROR_MESSAGE, annotations.message().getName()));
                     }
                     foundFirst = found;
                 }
             }
         }
 
-        return errorMessages;
+        return messages;
     }
 
     /**

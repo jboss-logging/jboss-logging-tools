@@ -98,7 +98,7 @@ public abstract class ImplementationClassModel extends ClassModel {
      * @param methodDesc      the method description
      * @param formatterMethod the formatter method used to format the string cause
      */
-    protected static void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
+    protected void initCause(final JVar result, final JClass returnField, final JBlock body, final MethodDescriptor methodDesc, final JInvocation formatterMethod) {
         ReturnType desc = methodDesc.returnType();
         if (desc.hasStringAndThrowableConstructor() && methodDesc.hasCause()) {
             result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(methodDesc.cause().name())));
@@ -112,6 +112,10 @@ public abstract class ImplementationClassModel extends ClassModel {
             }
         } else if (desc.hasThrowableConstructor() && methodDesc.hasCause()) {
             result.init(JExpr._new(returnField).arg(JExpr.ref(methodDesc.cause().name())));
+        } else if (desc.hasStringAndThrowableConstructor() && !methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr._null()));
+        } else if (desc.hasThrowableAndStringConstructor() && !methodDesc.hasCause()) {
+            result.init(JExpr._new(returnField).arg(JExpr._null()).arg(formatterMethod));
         } else if (methodDesc.hasCause()) {
             result.init(JExpr._new(returnField));
             JInvocation resultInv = body.invoke(result, "initCause");

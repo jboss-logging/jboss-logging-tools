@@ -21,17 +21,18 @@
 package org.jboss.logging.validation.validator;
 
 import org.jboss.logging.Annotations;
-import org.jboss.logging.util.ElementHelper;
-import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
+import static org.jboss.logging.util.ElementHelper.isAssignableFrom;
 
 /**
  * Validates the return type for logger methods.
@@ -41,41 +42,43 @@ import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
  *
  * @author James R. Perkins (jrp)
  */
-public class LoggerReturnTypeValidator implements ElementValidator {
+public class LoggerReturnTypeValidator extends AbstractReturnTypeValidator {
+
+    public LoggerReturnTypeValidator(final Types typeUtil) {
+        super(typeUtil);
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
                                                        final Annotations annotations) {
 
-        final Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+        final Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
-        if (ElementHelper.isAnnotatedWith(element, annotations.messageLogger())) {
+        if (isAnnotatedWith(element, annotations.messageLogger())) {
             for (ExecutableElement method : elementMethods) {
                 if (isAnnotatedWith(method, annotations.logMessage())) {
                     if (method.getReturnType().getKind() != TypeKind.VOID) {
-                        errorMessages.add(ValidationErrorMessage.of(method,
-                                "Methods annotated with %s must have a void return type.",
-                                annotations.logMessage().getName()));
+                        messages.add(ValidationErrorMessage.of(method, "Methods annotated with %s must have a void return type.", annotations.logMessage().getName()));
                     }
                 } else {
                     if (method.getReturnType().getKind() == TypeKind.VOID) {
-                        errorMessages.add(ValidationErrorMessage.of(method,
-                                "Cannot have a void return type if the method is not a log method."));
+                        messages.add(ValidationErrorMessage.of(method, "Cannot have a void return type if the method is not a log method."));
                     } else {
-                        if (!(ElementHelper.isAssignableFrom(method.getReturnType(), String.class) ||
-                                ElementHelper.isAssignableFrom(Throwable.class, method.getReturnType()))) {
-                            errorMessages.add(ValidationErrorMessage.of(element,
-                                    "Method %s has an invalud return type type. Must have a String or Throwable return type if not annotated with %s.",
+                        if (!(isAssignableFrom(method.getReturnType(), String.class) || isAssignableFrom(Throwable.class, method.getReturnType()))) {
+                            messages.add(ValidationErrorMessage.of(method,
+                                    "Method %s has an invalid return type type. Must have a String or Throwable return type if not annotated with %s.",
                                     method, annotations.logMessage().getName()));
+                        } else if (isAssignableFrom(Throwable.class, method.getReturnType())) {
+                           messages.addAll(checkExceptionConstructor(method));
                         }
                     }
                 }
             }
         }
 
-        return errorMessages;
+        return messages;
     }
 }

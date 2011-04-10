@@ -25,6 +25,7 @@ import org.jboss.logging.util.ElementHelper;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -40,6 +41,8 @@ import java.util.List;
 public class ReturnType {
 
     private final TypeMirror returnType;
+
+    private boolean defaultConstructor = false;
 
     private boolean stringConstructor = false;
 
@@ -66,7 +69,7 @@ public class ReturnType {
      *
      * @return the return type descriptor.
      */
-    protected static ReturnType of(final TypeMirror returnType, final Types typeUtil) {
+    public static ReturnType of(final TypeMirror returnType, final Types typeUtil) {
         final ReturnType result = new ReturnType(returnType);
         result.init(typeUtil);
         return result;
@@ -82,8 +85,15 @@ public class ReturnType {
             final Element element = typeUtil.asElement(returnType);
             final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
             for (ExecutableElement constructor : constructors) {
+                // Only allow public constructors
+                if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
                 List<? extends VariableElement> params = constructor.getParameters();
                 switch (params.size()) {
+                    case 0:
+                        defaultConstructor = true;
+                        break;
                     case 1:
                         if (ElementHelper.isAssignableFrom(params.get(0).asType(), String.class)) {
                             stringConstructor = true;
@@ -121,6 +131,16 @@ public class ReturnType {
      */
     public String getReturnTypeAsString() {
         return returnType.toString();
+    }
+
+    /**
+     * If the return type is a default constructor {@code true} is returned.
+     * Otherwise {@code false} is returned.
+     *
+     * @return {@code true} if the throwable has a default constructor, otherwise {@code false}.
+     */
+    public boolean hasDefaultConstructor() {
+        return defaultConstructor;
     }
 
     /**

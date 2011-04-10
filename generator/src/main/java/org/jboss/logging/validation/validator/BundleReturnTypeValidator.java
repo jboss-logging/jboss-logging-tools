@@ -21,14 +21,17 @@
 package org.jboss.logging.validation.validator;
 
 import org.jboss.logging.Annotations;
-import org.jboss.logging.util.ElementHelper;
-import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
+import static org.jboss.logging.util.ElementHelper.isAssignableFrom;
 
 /**
  * Validates the return types for message bundle methods.
@@ -40,29 +43,34 @@ import java.util.Collection;
  *
  * @author James R. Perkins (jrp)
  */
-public class BundleReturnTypeValidator implements ElementValidator {
+public class BundleReturnTypeValidator extends AbstractReturnTypeValidator {
+
+    public BundleReturnTypeValidator(final Types typeUtil) {
+        super(typeUtil);
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                       final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
+                                                  final Annotations annotations) {
 
-        Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+        Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
-        if (ElementHelper.isAnnotatedWith(element, annotations.messageBundle())) {
+        if (isAnnotatedWith(element, annotations.messageBundle())) {
 
             for (ExecutableElement method : elementMethods) {
-                if (!(ElementHelper.isAssignableFrom(method.getReturnType(), String.class)
-                        || ElementHelper.isAssignableFrom(Throwable.class, method.getReturnType()))) {
-                    errorMessages.add(ValidationErrorMessage.of(method,
+                if (!(isAssignableFrom(method.getReturnType(), String.class) || isAssignableFrom(Throwable.class, method.getReturnType()))) {
+                    messages.add(ValidationErrorMessage.of(method,
                             "Message bundle %s has a method with invalid return type, method %s has a return type of %s",
                             element, method, method.getReturnType()));
+                } else if (isAssignableFrom(Throwable.class, method.getReturnType())) {
+                    messages.addAll(checkExceptionConstructor(method));
                 }
             }
         }
 
-        return errorMessages;
+        return messages;
     }
 }

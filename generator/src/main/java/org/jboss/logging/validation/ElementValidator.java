@@ -42,7 +42,7 @@ public interface ElementValidator {
      * @param elementMethods the methods of the interface.
      * @param annotations    the logging annotations.
      *
-     * @return a collection of error messages or a an empty collection if no errors were found.
+     * @return a collection of messages or a an empty collection if no errors or warnings were found.
      */
-    Collection<ValidationErrorMessage> validate(TypeElement element, Collection<ExecutableElement> elementMethods, Annotations annotations);
+    Collection<ValidationMessage> validate(TypeElement element, Collection<ExecutableElement> elementMethods, Annotations annotations);
 }

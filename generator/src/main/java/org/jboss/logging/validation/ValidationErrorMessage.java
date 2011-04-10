@@ -12,7 +12,7 @@ import javax.lang.model.element.Element;
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-public class ValidationErrorMessage {
+public class ValidationErrorMessage implements ValidationMessage {
 
     private final Element element;
     private final String message;
@@ -54,6 +54,11 @@ public class ValidationErrorMessage {
     }
 
     @Override
+    public MessageType type() {
+        return MessageType.ERROR;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int hash = 1;
@@ -92,20 +97,12 @@ public class ValidationErrorMessage {
         return result.toString();
     }
 
-    /**
-     * Returns the element that caused the error.
-     *
-     * @return the element that caused the error.
-     */
+    @Override
     public Element getElement() {
         return element;
     }
 
-    /**
-     * Returns the error message.
-     *
-     * @return the error message.
-     */
+    @Override
     public String getMessage() {
         return this.message;
     }

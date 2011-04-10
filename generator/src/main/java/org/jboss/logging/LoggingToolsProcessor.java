@@ -23,7 +23,7 @@ package org.jboss.logging;
 import org.jboss.logging.generator.ImplementorClassGenerator;
 import org.jboss.logging.generator.TranslationClassGenerator;
 import org.jboss.logging.generator.TranslationFileGenerator;
-import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ValidationMessage;
 import org.jboss.logging.validation.Validator;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -61,7 +61,6 @@ import static org.jboss.logging.util.ElementHelper.getInterfaceMethods;
 public class LoggingToolsProcessor extends AbstractProcessor {
 
     public static final String DEBUG_OPTION = "debug";
-    private static final boolean ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS = true;
     private final List<AbstractTool> processors;
     private Annotations annotations;
     private Loggers loggers;
@@ -117,6 +116,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+        boolean process = true;
 
         Types typesUtil = processingEnv.getTypeUtils();
         Validator validator = Validator.buildValidator(processingEnv, this.annotations);
@@ -125,16 +125,16 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         for (TypeElement annotation : annotations) {
             if (isValidAnnotation(annotation)) {
                 Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
-                Collection<ValidationErrorMessage> errorMessages = validator.validate(elements);
-
-                if (!errorMessages.isEmpty()) {
-
-                    for (ValidationErrorMessage error : errorMessages) {
+                Collection<ValidationMessage> errorMessages = validator.validate(elements);
+                for (ValidationMessage error : errorMessages) {
+                    if (error.type() == ValidationMessage.MessageType.ERROR) {
                         logger.error(error.getElement(), error.getMessage());
+                        process = false;
+                    } else {
+                        logger.warn(error.getElement(), error.getMessage());
                     }
-
-                } else {
-
+                }
+                if (process) {
                     for (TypeElement element : elements) {
 
                         if (element.getKind().isInterface()
@@ -154,7 +154,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         }
 
-        return ALLOW_OTHER_ANNOTATION_PROCESSOR_TO_PROCESS;
+        return process;
     }
 
     private boolean isValidAnnotation(final TypeElement annotation) {

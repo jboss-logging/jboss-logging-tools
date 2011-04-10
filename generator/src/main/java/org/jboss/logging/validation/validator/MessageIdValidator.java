@@ -23,6 +23,7 @@ package org.jboss.logging.validation.validator;
 import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -54,9 +55,9 @@ public class MessageIdValidator implements ElementValidator {
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
                                                        final Annotations annotations) {
-        final Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+        final Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
         // Process method descriptors
         for (ExecutableElement method : elementMethods) {
@@ -69,17 +70,17 @@ public class MessageIdValidator implements ElementValidator {
                     final IdDescriptor idDesc = messageIdMap.get(key);
                     // Only add the original method once.
                     if (!idDesc.error) {
-                        errorMessages.add(ValidationErrorMessage.of(idDesc.method, ERROR_MESSAGE, messageId, idDesc.method, projectCode));
+                        messages.add(ValidationErrorMessage.of(idDesc.method, ERROR_MESSAGE, messageId, idDesc.method, projectCode));
                         idDesc.error = true;
                     }
-                    errorMessages.add(ValidationErrorMessage.of(method, ERROR_MESSAGE, messageId, method, projectCode));
+                    messages.add(ValidationErrorMessage.of(method, ERROR_MESSAGE, messageId, method, projectCode));
                 } else {
                     messageIdMap.put(key, new IdDescriptor(messageId, method));
                 }
             }
         }
 
-        return errorMessages;
+        return messages;
     }
 
     private String createKey(final String projectCode, final int messageId) {

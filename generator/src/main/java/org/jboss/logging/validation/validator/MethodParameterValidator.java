@@ -23,6 +23,7 @@ package org.jboss.logging.validation.validator;
 import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ElementValidator;
 import org.jboss.logging.validation.ValidationErrorMessage;
+import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -60,10 +61,10 @@ public class MethodParameterValidator implements ElementValidator {
      * {@inheritDoc}
      */
     @Override
-    public Collection<ValidationErrorMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
-                                                       final Annotations annotations) {
+    public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods,
+                                                  final Annotations annotations) {
 
-        final List<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
         // Set for the method names that have been processed
         final Set<Name> methodNames = new HashSet<Name>();
@@ -76,7 +77,7 @@ public class MethodParameterValidator implements ElementValidator {
                 for (ExecutableElement m : likeMethods) {
                     int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters(), annotations.cause()) ? 1 : 0);
                     if (paramCount1 != paramCount2) {
-                        errorMessages.add(ValidationErrorMessage.of(m,
+                        messages.add(ValidationErrorMessage.of(m,
                                 ERROR_MESSAGE, method.toString(), method.getParameters().size(), m.toString(), m.getParameters().size()));
                     }
                 }
@@ -88,13 +89,13 @@ public class MethodParameterValidator implements ElementValidator {
                 final Annotation cause = varElem.getAnnotation(annotations.cause());
                 boolean invalid = (ogCause != null && cause != null);
                 if (invalid) {
-                    errorMessages.add(ValidationErrorMessage.of(varElem, "Only one cause parameter allowed per method."));
+                    messages.add(ValidationErrorMessage.of(varElem, "Only one cause parameter allowed per method."));
                 }
                 ogCause = cause;
             }
         }
 
-        return errorMessages;
+        return messages;
     }
 
     /**

@@ -39,8 +39,8 @@ public final class Validator {
         Validator validator = new Validator(pev.getTypeUtils(), annotations);
 
         //Add validators
-        validator.addElementValidator(new BundleReturnTypeValidator());
-        validator.addElementValidator(new LoggerReturnTypeValidator());
+        validator.addElementValidator(new BundleReturnTypeValidator(pev.getTypeUtils()));
+        validator.addElementValidator(new LoggerReturnTypeValidator(pev.getTypeUtils()));
         validator.addElementValidator(new MessageAnnotationValidator());
         validator.addElementValidator(new MethodParameterValidator());
         validator.addElementValidator(new MessageIdValidator());
@@ -55,9 +55,9 @@ public final class Validator {
      *
      * @return the collection of validator messages.
      */
-    public Collection<ValidationErrorMessage> validate(final Collection<? extends TypeElement> typeElements) {
+    public Collection<ValidationMessage> validate(final Collection<? extends TypeElement> typeElements) {
 
-        Collection<ValidationErrorMessage> errorMessages = new ArrayList<ValidationErrorMessage>();
+        Collection<ValidationMessage> errorMessages = new ArrayList<ValidationMessage>();
 
         for (TypeElement element : typeElements) {
             try {
