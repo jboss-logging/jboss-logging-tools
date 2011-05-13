@@ -99,7 +99,13 @@ public class BaseAnnotations implements Annotations {
     @Override
     public boolean hasMessageId(final ExecutableElement method) {
         final Message message = method.getAnnotation(MESSAGE_ANNOTATION);
-        return (message == null ? false : (message.id() > Message.NONE));
+        return (message == null ? false : (message.id() != Message.NONE && message.id() != Message.INHERIT));
+    }
+
+    @Override
+    public boolean inheritsMessageId(final ExecutableElement method) {
+        final Message message = method.getAnnotation(MESSAGE_ANNOTATION);
+        return (message == null ? false : (message.id() == Message.INHERIT));
     }
 
     @Override

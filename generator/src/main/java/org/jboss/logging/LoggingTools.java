@@ -44,7 +44,7 @@ public class LoggingTools {
      * @return the annotations to use.
      * @throws IllegalStateException if the implementation could not be found.
      */
-    public static Annotations findAnnotations() {
+    public static Annotations annotations() {
         if (annotations == null) {
             for (Annotations a : annotationsLoader)
                 if (annotationsLoader.iterator().hasNext()) {
@@ -63,7 +63,7 @@ public class LoggingTools {
      * @return the loggers to use.
      * @throws IllegalStateException if the implementation could not be found.
      */
-    public static Loggers findLoggers() {
+    public static Loggers loggers() {
         if (loggers == null) {
             if (loggersLoader.iterator().hasNext()) {
                 loggers = loggersLoader.iterator().next();

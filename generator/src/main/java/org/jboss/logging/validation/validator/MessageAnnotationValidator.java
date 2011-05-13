@@ -20,12 +20,11 @@
  */
 package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.Annotations;
+import org.jboss.logging.LoggingTools;
 import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
@@ -33,6 +32,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.jboss.logging.util.ElementHelper.findByName;
+import static org.jboss.logging.util.ElementHelper.parameterCount;
 
 /**
  * Checks to make sure that only one {@link org.jboss.logging.Annotations#message()}
@@ -42,10 +44,10 @@ import java.util.Set;
  */
 public class MessageAnnotationValidator extends AbstractValidator {
 
-    private static final String ERROR_MESSAGE = "Only one method with the same name is allowed to be annotated the %s annotation.";
+    private static final String ERROR_MESSAGE = "Only one method with the same name and parameter count is allowed to be annotated the %s annotation.";
 
-    public MessageAnnotationValidator(final Annotations annotations, final Types typeUtil) {
-        super(annotations, typeUtil);
+    public MessageAnnotationValidator(final Types typeUtil) {
+        super(typeUtil);
     }
 
     /**
@@ -57,17 +59,22 @@ public class MessageAnnotationValidator extends AbstractValidator {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
         // Set for the method names that have been processed
-        final Set<Name> methodNames = new HashSet<Name>();
+        final Set<String> methodNames = new HashSet<String>();
         for (ExecutableElement method : elementMethods) {
+            // The name should be the method name, plus the number of parameters
+            final int paramCount = parameterCount(method.getParameters());
+            final String name = method.getSimpleName().toString() + paramCount;
+            // TODO - Find way to check if @Message was inherited.
+            // TODO - If new overloaded method, make sure a new @Message annotation was specified.
             // Only adds methods which have not been processed
-            if (methodNames.add(method.getSimpleName())) {
+            if (methodNames.add(name)) {
                 // Find all like named methods
-                final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName());
+                final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName(), paramCount);
                 boolean foundFirst = false;
                 for (ExecutableElement m : likeMethods) {
-                    boolean found = m.getAnnotation(annotations.message()) != null;
+                    boolean found = m.getAnnotation(LoggingTools.annotations().message()) != null;
                     if (foundFirst && found) {
-                        messages.add(ValidationErrorMessage.of(m, ERROR_MESSAGE, annotations.message().getName()));
+                        messages.add(ValidationErrorMessage.of(m, ERROR_MESSAGE, LoggingTools.annotations().message().getName()));
                     }
                     foundFirst = found;
                 }

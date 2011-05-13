@@ -36,7 +36,7 @@ import java.util.Date;
  */
 final class ClassModelUtil {
 
-    public static final String STRING_ID_FORMAT = "%05d: ";
+    private static final String STRING_ID_FORMAT = "%06d: ";
 
     private static final String INSTANCE_FIELD_NAME = "INSTANCE";
 
@@ -76,5 +76,15 @@ final class ClassModelUtil {
                 definedClass, GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return(instance);
         return readResolveMethod;
+    }
+
+    /**
+     * Formats message id.
+     *
+     * @param messageId the message id to format.
+     * @return the formatted message id.
+     */
+    public static String formatMessageId(final int messageId) {
+        return String.format(STRING_ID_FORMAT, messageId);
     }
 }

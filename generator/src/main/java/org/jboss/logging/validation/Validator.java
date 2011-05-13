@@ -1,6 +1,5 @@
 package org.jboss.logging.validation;
 
-import org.jboss.logging.Annotations;
 import org.jboss.logging.util.ElementHelper;
 import org.jboss.logging.util.TransformationHelper;
 import org.jboss.logging.validation.validator.BundleReturnTypeValidator;
@@ -31,16 +30,16 @@ public final class Validator {
         this.typeUtils = typeUtils;
     }
 
-    public static Validator buildValidator(final ProcessingEnvironment pev, final Annotations annotations) {
+    public static Validator buildValidator(final ProcessingEnvironment pev) {
 
         Validator validator = new Validator(pev.getTypeUtils());
 
         //Add validators
-        validator.addElementValidator(new BundleReturnTypeValidator(annotations, pev.getTypeUtils()));
-        validator.addElementValidator(new LoggerReturnTypeValidator(annotations, pev.getTypeUtils()));
-        validator.addElementValidator(new MessageAnnotationValidator(annotations, pev.getTypeUtils()));
-        validator.addElementValidator(new MethodParameterValidator(annotations, pev.getTypeUtils()));
-        validator.addElementValidator(new MessageIdValidator(annotations, pev.getTypeUtils()));
+        validator.addElementValidator(new BundleReturnTypeValidator(pev.getTypeUtils()));
+        validator.addElementValidator(new LoggerReturnTypeValidator(pev.getTypeUtils()));
+        validator.addElementValidator(new MessageAnnotationValidator(pev.getTypeUtils()));
+        validator.addElementValidator(new MethodParameterValidator(pev.getTypeUtils()));
+        validator.addElementValidator(new MessageIdValidator(pev.getTypeUtils()));
 
         return validator;
     }
@@ -59,7 +58,7 @@ public final class Validator {
         for (TypeElement element : typeElements) {
             try {
 
-                Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, typeUtils, null);
+                Collection<ExecutableElement> elementMethods = ElementHelper.getInterfaceMethods(element, typeUtils);
 
                 for (ElementValidator validator : validators) {
                     errorMessages.addAll(validator.validate(element, elementMethods));

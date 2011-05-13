@@ -27,6 +27,7 @@ import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.LoggingTools;
+import org.jboss.logging.generator.MethodDescriptor;
 
 import java.util.Collections;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class MessageLoggerTranslator extends ClassModel {
     /**
      * The translation map.
      */
-    private final Map<String, String> translations;
+    private final Map<MethodDescriptor, String> translations;
 
     /**
      * Create a MessageLogger with super class and interface.
@@ -57,7 +58,7 @@ public class MessageLoggerTranslator extends ClassModel {
      * @param superClassName the super class name
      * @param translations   the translation map.
      */
-    public MessageLoggerTranslator(final String className, final String superClassName, final Map<String, String> translations) {
+    public MessageLoggerTranslator(final String className, final String superClassName, final Map<MethodDescriptor, String> translations) {
         super(className, superClassName);
 
         if (translations != null) {
@@ -76,17 +77,14 @@ public class MessageLoggerTranslator extends ClassModel {
         JDefinedClass definedClass = getDefinedClass();
 
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
-        constructor.param(JMod.FINAL, LoggingTools.findLoggers().loggerClass(), LOGGER_PARAMETER_NAME);
+        constructor.param(JMod.FINAL, LoggingTools.loggers().loggerClass(), LOGGER_PARAMETER_NAME);
 
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
 
-        Set<Map.Entry<String, String>> entries = this.translations.entrySet();
-        for (Map.Entry<String, String> entry : entries) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            JMethod method = addMessageMethod(key, value);
+        Set<Map.Entry<MethodDescriptor, String>> entries = this.translations.entrySet();
+        for (Map.Entry<MethodDescriptor, String> entry : entries) {
+            JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             method.annotate(Override.class);
         }
 

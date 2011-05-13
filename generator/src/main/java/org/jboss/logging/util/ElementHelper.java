@@ -22,23 +22,27 @@
 
 package org.jboss.logging.util;
 
-import org.jboss.logging.Annotations;
-import org.jboss.logging.Loggers;
 import org.jboss.logging.model.ImplementationType;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import static org.jboss.logging.LoggingTools.annotations;
+import static org.jboss.logging.LoggingTools.loggers;
 
 /**
  * An utility class to work with element.
@@ -76,14 +80,13 @@ public final class ElementHelper {
      * Returns the primary class simple name for an element
      * who represents a MessageBundle or MessageLogger interface.
      *
-     * @param element     the element
-     * @param annotations the annotation descriptor.
+     * @param element the element.
      *
      * @return the translation file name prefix
      * @throws NullPointerException     if element is null
      * @throws IllegalArgumentException if element is not an interface
      */
-    public static String getPrimaryClassName(final TypeElement element, final Annotations annotations) {
+    public static String getPrimaryClassName(final TypeElement element) {
         if (element == null) {
             throw new NullPointerException("The element parameter cannot be null");
         }
@@ -93,9 +96,9 @@ public final class ElementHelper {
 
         String prefix = getPrimaryClassNamePrefix(element);
 
-        if (element.getAnnotation(annotations.messageBundle()) != null) {
+        if (element.getAnnotation(annotations().messageBundle()) != null) {
             return prefix + ImplementationType.BUNDLE.toString();
-        } else if (element.getAnnotation(annotations.messageLogger()) != null) {
+        } else if (element.getAnnotation(annotations().messageLogger()) != null) {
             return prefix + ImplementationType.LOGGER.toString();
         }
 
@@ -135,16 +138,15 @@ public final class ElementHelper {
     /**
      * Returns all methods of the given interface.
      * Include all declared and inherited methods, with the exception of any
-     * methods in the {@link org.jboss.logging.BasicLogger} interface.
+     * methods in the {@link org.jboss.logging.Loggers#basicLoggerClass()} interface.
      *
      * @param element the interface element
      * @param types   the type util
-     * @param loggers the logger descriptor.
      *
      * @return the collection of all methods
      * @throws IllegalArgumentException if element is not an interface
      */
-    public static Collection<ExecutableElement> getInterfaceMethods(final TypeElement element, final Types types, final Loggers loggers) {
+    public static Collection<ExecutableElement> getInterfaceMethods(final TypeElement element, final Types types) {
         if (!element.getKind().isInterface()) {
             throw new IllegalArgumentException("The element parameter is not an interface");
         }
@@ -153,8 +155,8 @@ public final class ElementHelper {
 
         for (TypeMirror intf : element.getInterfaces()) {
             // Ignore BasicLogger methods
-            if (loggers != null && !intf.toString().equals(loggers.basicLoggerClass().getName())) {
-                methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types, loggers));
+            if (!intf.toString().equals(loggers().basicLoggerClass().getName())) {
+                methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types));
 
             }
         }
@@ -166,23 +168,118 @@ public final class ElementHelper {
 
     /**
      * Returns a collection of all Message methods. A message
-     * method is annotated with {@link org.jboss.logging.Message}.
+     * method is annotated with {@link org.jboss.logging.Annotations#message()}.
+     * <p/>
+     * The key returned is comprised of the method name and the number of parameters of the method if the method is
+     * overloaded. Otherwise the method name is the key.
      *
-     * @param methods     the methods collection
-     * @param annotations the annotation descriptor.
+     * @param methods the methods collection
      *
      * @return a map containing the message where the key is the method name
      */
-    public static Map<String, String> getAllMessageMethods(final Collection<ExecutableElement> methods, final Annotations annotations) {
+    public static Map<String, String> getAllMessageMethods(final Collection<ExecutableElement> methods) {
         Map<String, String> messages = new HashMap<String, String>();
 
         for (ExecutableElement method : methods) {
-            if (isAnnotatedWith(method, annotations.message())) {
-                messages.put(method.getSimpleName().toString(), annotations.messageValue(method));
+            if (isAnnotatedWith(method, annotations().message())) {
+                final String name;
+                if (isOverloadedMethod(methods, method)) {
+                    name = method.getSimpleName().toString() + parameterCount(method.getParameters());
+                } else {
+                    name = method.getSimpleName().toString();
+                }
+                messages.put(name, annotations().messageValue(method));
             }
         }
 
         return messages;
+    }
+
+
+    /**
+     * Returns a collection of methods with the same name.
+     *
+     * @param methods    the methods to process.
+     * @param methodName the method name to find.
+     * @param paramCount the number of parameters the method must have.
+     *
+     * @return a collection of methods with the same name.
+     */
+    public static Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName, final int paramCount) {
+        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
+        for (ExecutableElement method : methods) {
+            if (methodName.equals(method.getSimpleName()) && parameterCount(method.getParameters()) == paramCount) {
+                result.add(method);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Checks to see if there is a cause parameter.
+     *
+     * @param methods a collections of methods to check.
+     * @param method  the method to check.
+     *
+     * @return {@code true} if there is a cause, otherwise {@code false}.
+     */
+    public static boolean isOverloadedMethod(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        for (ExecutableElement m : methods) {
+            if (m.getSimpleName().equals(method.getSimpleName()) && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see if there is a cause parameter.
+     *
+     * @param params the parameters to check.
+     *
+     * @return {@code true} if there is a cause, otherwise {@code false}.
+     */
+    public static boolean hasCause(final Collection<? extends VariableElement> params) {
+        // Look for cause
+        for (VariableElement param : params) {
+            if (param.getAnnotation(annotations().cause()) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the number of parameters excluding the {@link org.jboss.logging.Annotations#cause()} parameter if found.
+     *
+     * @param params the parameters to get the count for.
+     *
+     * @return the number of parameters.
+     */
+    public static int parameterCount(final Collection<? extends VariableElement> params) {
+        return (params.size() - (hasCause(params) ? 1 : 0));
+    }
+
+    /**
+     * Checks to see if the method has or inherits a {@link org.jboss.logging.Annotations#message()}  annotation.
+     *
+     * @param root   the interface, root element.
+     * @param method the method to check.
+     * @param types  the type util
+     *
+     * @return {@code true} if the method has or inherits a message annotation, otherwise {@code false}.
+     */
+    public static boolean hasOrInheritsMessage(final TypeElement root, final ExecutableElement method, final Types types) {
+        if (isAnnotatedWith(method, annotations().message())) {
+            return true;
+        }
+        final Collection<ExecutableElement> allMethods = findByName(getInterfaceMethods(root, types), method.getSimpleName(), parameterCount(method.getParameters()));
+        for (ExecutableElement m : allMethods) {
+            if (isAnnotatedWith(m, annotations().message())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

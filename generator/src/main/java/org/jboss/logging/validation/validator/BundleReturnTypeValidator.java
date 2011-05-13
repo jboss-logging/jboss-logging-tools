@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.Annotations;
+import org.jboss.logging.LoggingTools;
 import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
@@ -43,8 +43,8 @@ import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
  */
 public class BundleReturnTypeValidator extends AbstractValidator {
 
-    public BundleReturnTypeValidator(final Annotations annotations, final Types typeUtil) {
-        super(annotations, typeUtil);
+    public BundleReturnTypeValidator(final Types typeUtil) {
+        super(typeUtil);
     }
 
     /**
@@ -55,7 +55,7 @@ public class BundleReturnTypeValidator extends AbstractValidator {
 
         Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
-        if (isAnnotatedWith(element, annotations.messageBundle())) {
+        if (isAnnotatedWith(element, LoggingTools.annotations().messageBundle())) {
 
             for (ExecutableElement method : elementMethods) {
                 messages.addAll(checkMessageBundleMethod(element, method));

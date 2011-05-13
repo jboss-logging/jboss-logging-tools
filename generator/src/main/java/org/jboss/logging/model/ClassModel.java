@@ -33,6 +33,7 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JTypeVar;
+import org.jboss.logging.generator.MethodDescriptor;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -44,8 +45,6 @@ import java.io.IOException;
  * @author James R. Perkins Jr. (jrp)
  */
 public abstract class ClassModel {
-
-    private static final String MESSAGE_METHOD_SUFFIX = "$str";
 
     private static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
@@ -144,22 +143,47 @@ public abstract class ClassModel {
      * </p>
      * <p/>
      *
-     * @param methodName  the method name.
-     * @param returnValue the message value.
+     * @param methodDescriptor the method descriptor.
      *
      * @return the newly created method.
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    protected JMethod addMessageMethod(final String methodName, final String returnValue) {
+    protected JMethod addMessageMethod(final MethodDescriptor methodDescriptor) {
+        return addMessageMethod(methodDescriptor, methodDescriptor.messageValue());
+    }
+
+    /**
+     * Adds a method to return the message value. The method name should be the
+     * method name annotated {@code org.jboss.logging.Message}. This method will
+     * be appended with {@code $str}.
+     * <p/>
+     * <p>
+     * If the message method has already been defined the previously created
+     * method is returned.
+     * </p>
+     * <p/>
+     *
+     * @param methodDescriptor the method descriptor.
+     * @param messageValue     the message value.
+     *
+     * @return the newly created method.
+     * @throws IllegalStateException if this method is called before the generateModel method
+     */
+    protected JMethod addMessageMethod(final MethodDescriptor methodDescriptor, final String messageValue) {
         if (codeModel == null || definedClass == null) {
             throw new IllegalStateException("The code model or the corresponding defined class is null");
         }
         // Values could be null and we shouldn't create message methods for null values.
-        if (returnValue == null) {
+        if (messageValue == null) {
             return null;
         }
-        String internalMethodName = methodName + MESSAGE_METHOD_SUFFIX;
-        JMethod method = definedClass.getMethod(internalMethodName, EMPTY_TYPE_ARRAY);
+        final String methodName;
+        if (methodDescriptor.isOverloaded()) {
+            methodName = methodDescriptor.name() + methodDescriptor.relativeParameterCount();
+        } else {
+            methodName = methodDescriptor.name();
+        }
+        JMethod method = definedClass.getMethod(methodDescriptor.messageMethodName(), EMPTY_TYPE_ARRAY);
 
         if (method == null) {
 
@@ -167,12 +191,12 @@ public abstract class ClassModel {
             JFieldVar methodField = definedClass.fields().get(methodName);
             if (methodField == null) {
                 methodField = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName);
-                methodField.init(JExpr.lit(returnValue));
+                methodField.init(JExpr.lit(messageValue));
             }
 
             //Create method
             JClass returnType = codeModel.ref(String.class);
-            method = definedClass.method(JMod.PROTECTED, returnType, internalMethodName);
+            method = definedClass.method(JMod.PROTECTED, returnType, methodDescriptor.messageMethodName());
 
             JBlock body = method.body();
             body._return(methodField);

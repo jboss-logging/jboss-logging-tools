@@ -129,9 +129,18 @@ public interface Annotations {
      *
      * @param method the method to check.
      *
-     * @return {@code true} if the method id was found, otherwise {@code false}.
+     * @return {@code true} if the message id was found, otherwise {@code false}.
      */
     boolean hasMessageId(ExecutableElement method);
+
+    /**
+     * Checks to see if the method should inherit the message id from a different method if applicable.
+     *
+     * @param method the method to check.
+     *
+     * @return {@code true} if the message id should be inherited, otherwise {@code false}.
+     */
+    boolean inheritsMessageId(ExecutableElement method);
 
 
     /**

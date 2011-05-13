@@ -20,7 +20,6 @@
  */
 package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
@@ -31,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.jboss.logging.LoggingTools.annotations;
 
 /**
  * Validates messages id's from the {@link org.jboss.logging.Annotations#message()} annotation.
@@ -47,8 +48,8 @@ public class MessageIdValidator extends AbstractValidator {
     private static final String ERROR_MESSAGE = "Message id %s is not unique for method %s with project code %s.";
     private final Map<String, IdDescriptor> messageIdMap;
 
-    public MessageIdValidator(final Annotations annotations, final Types typeUtil) {
-        super(annotations, typeUtil);
+    public MessageIdValidator(final Types typeUtil) {
+        super(typeUtil);
         messageIdMap = new HashMap<String, IdDescriptor>();
     }
 
@@ -61,9 +62,9 @@ public class MessageIdValidator extends AbstractValidator {
 
         // Process method descriptors
         for (ExecutableElement method : elementMethods) {
-            if (annotations.hasMessageId(method)) {
-                final String projectCode = annotations.projectCode(element);
-                final int messageId = annotations.messageId(method);
+            if (annotations().hasMessageId(method) && !annotations().inheritsMessageId(method)) {
+                final String projectCode = annotations().projectCode(element);
+                final int messageId = annotations().messageId(method);
                 final String key = createKey(projectCode, messageId);
                 // If the id is in the map, create an error message.
                 if (messageIdMap.containsKey(key)) {

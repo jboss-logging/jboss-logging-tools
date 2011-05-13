@@ -30,9 +30,10 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.generator.MethodDescriptor;
+import org.jboss.logging.generator.MethodDescriptors;
 import org.jboss.logging.generator.MethodParameter;
 
-import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
+import static org.jboss.logging.model.ClassModelUtil.formatMessageId;
 
 /**
  * Used to generate a message bundle implementation.
@@ -49,10 +50,11 @@ public class MessageBundleImplementor extends ImplementationClassModel {
      * Creates a new message bundle code model.
      *
      * @param interfaceName the interface name.
+     * @param methodDescriptors the method descriptions
      * @param projectCode   the project code from the annotation.
      */
-    public MessageBundleImplementor(final String interfaceName, final String projectCode) {
-        super(interfaceName, projectCode, ImplementationType.BUNDLE);
+    public MessageBundleImplementor(final String interfaceName, final MethodDescriptors methodDescriptors, final String projectCode) {
+        super(interfaceName, methodDescriptors, projectCode, ImplementationType.BUNDLE);
     }
 
     /**
@@ -72,13 +74,13 @@ public class MessageBundleImplementor extends ImplementationClassModel {
         ClassModelUtil.createReadResolveMethod(getDefinedClass());
         // Process the method descriptors and add to the model before
         // writing.
-        for (MethodDescriptor methodDesc : methodDescriptor) {
+        for (MethodDescriptor methodDesc : super.getMethodDescriptors()) {
             final JClass returnType = codeModel.ref(methodDesc.returnType().getReturnTypeAsString());
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
             jMethod.annotate(Override.class);
 
             // Add the message method.
-            final JMethod msgMethod = addMessageMethod(methodDesc.name(), methodDesc.messageValue());
+            final JMethod msgMethod = addMessageMethod(methodDesc);
             // Create the method body
             final JBlock body = jMethod.body();
             final JClass returnField = codeModel.ref(returnType.fullName());
@@ -89,7 +91,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 // If the return type is an exception, initialize the exception.
                 if (methodDesc.returnType().isException()) {
                     if (methodDesc.hasMessageId() && projectCodeVar != null) {
-                        String formattedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
+                        String formattedId = formatMessageId(methodDesc.messageId());
                         formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
                         initCause(result, returnField, body, methodDesc, formatterMethod);
                     } else {
@@ -100,7 +102,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 }
             } else {
                 if (methodDesc.hasMessageId() && projectCodeVar != null) {
-                    String formattedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
+                    String formattedId = formatMessageId(methodDesc.messageId());
                     formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
                 } else {
                     formatterMethod.arg(JExpr.invoke(msgMethod));

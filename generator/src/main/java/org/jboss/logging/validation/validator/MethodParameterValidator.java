@@ -20,12 +20,10 @@
  */
 package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.Annotations;
 import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Types;
@@ -35,6 +33,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.jboss.logging.LoggingTools.annotations;
+import static org.jboss.logging.util.ElementHelper.findByName;
+import static org.jboss.logging.util.ElementHelper.parameterCount;
 
 /**
  * Validates the parameters of a method.
@@ -54,8 +56,8 @@ import java.util.Set;
  */
 public class MethodParameterValidator extends AbstractValidator {
 
-    public MethodParameterValidator(final Annotations annotations, final Types typeUtil) {
-        super(annotations, typeUtil);
+    public MethodParameterValidator(final Types typeUtil) {
+        super(typeUtil);
     }
 
     private static final String ERROR_MESSAGE = "The number of parameters, minus the cause parameter, must match all match all methods with the same name. "
@@ -70,26 +72,29 @@ public class MethodParameterValidator extends AbstractValidator {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
         // Set for the method names that have been processed
-        final Set<Name> methodNames = new HashSet<Name>();
+        final Set<String> methodNames = new HashSet<String>();
         for (ExecutableElement method : elementMethods) {
+            final int rootParamCount = parameterCount(method.getParameters());
+            // The name should be the method name, plus the number of parameters
+            final String name = method.getSimpleName().toString() + rootParamCount;
+            // TODO - Find way to check if @Message was inherited.
+            // TODO - If new overloaded method, make sure a new @Message annotation was specified.
             // Only adds methods which have not been processed
-            if (methodNames.add(method.getSimpleName())) {
+            if (methodNames.add(name)) {
                 // Find all like named methods
-                final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName());
-                final int paramCount1 = method.getParameters().size() - (hasCause(method.getParameters()) ? 1 : 0);
+                final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName(), rootParamCount);
                 for (ExecutableElement m : likeMethods) {
-                    int paramCount2 = m.getParameters().size() - (hasCause(m.getParameters()) ? 1 : 0);
-                    if (paramCount1 != paramCount2) {
+                    int paramCount = parameterCount(m.getParameters());
+                    if (rootParamCount != paramCount) {
                         messages.add(ValidationErrorMessage.of(m,
                                 ERROR_MESSAGE, method.toString(), method.getParameters().size(), m.toString(), m.getParameters().size()));
                     }
                 }
             }
-
             // Finally the method is only allowed one cause parameter
             Annotation ogCause = null;
             for (VariableElement varElem : method.getParameters()) {
-                final Annotation cause = varElem.getAnnotation(annotations.cause());
+                final Annotation cause = varElem.getAnnotation(annotations().cause());
                 boolean invalid = (ogCause != null && cause != null);
                 if (invalid) {
                     messages.add(ValidationErrorMessage.of(varElem, "Only one cause parameter allowed per method."));

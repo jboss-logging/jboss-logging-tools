@@ -29,6 +29,7 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.generator.MethodDescriptor;
+import org.jboss.logging.generator.MethodDescriptors;
 import org.jboss.logging.generator.ReturnType;
 
 import java.io.Serializable;
@@ -48,18 +49,21 @@ import java.io.Serializable;
 public abstract class ImplementationClassModel extends ClassModel {
 
     private final ImplementationType type;
-    protected MethodDescriptor methodDescriptor;
+
+    private final MethodDescriptors methodDescriptors;
 
     /**
      * Class constructor.
      *
      * @param interfaceName the interface name to implement.
+     * @param methodDescriptors the method descriptions
      * @param projectCode   the project code to prepend messages with.
      * @param type          the type of the implementation.
      */
-    protected ImplementationClassModel(final String interfaceName, final String projectCode, final ImplementationType type) {
+    protected ImplementationClassModel(final String interfaceName, final MethodDescriptors methodDescriptors, final String projectCode, final ImplementationType type) {
         super(interfaceName + type, projectCode, Object.class.getName(), interfaceName, Serializable.class.getName());
         this.type = type;
+        this.methodDescriptors = methodDescriptors;
     }
 
     /**
@@ -71,8 +75,13 @@ public abstract class ImplementationClassModel extends ClassModel {
         return type;
     }
 
-    public void setMethodDescriptor(final MethodDescriptor methodDescriptor) {
-        this.methodDescriptor = methodDescriptor;
+    /**
+     * Returns the method descriptions.
+     *
+     * @return the method descriptions.
+     */
+    public final MethodDescriptors getMethodDescriptors() {
+        return methodDescriptors;
     }
 
     /**

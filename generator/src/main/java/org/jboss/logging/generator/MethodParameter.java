@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.Annotations;
+import org.jboss.logging.LoggingTools;
 import org.jboss.logging.util.ElementHelper;
 
 import javax.lang.model.element.VariableElement;
@@ -30,7 +30,6 @@ import javax.lang.model.element.VariableElement;
  */
 public final class MethodParameter implements Comparable<MethodParameter> {
 
-    private final Annotations annotations;
     private final VariableElement param;
     private final String fullType;
     private final String formatterClass;
@@ -41,8 +40,7 @@ public final class MethodParameter implements Comparable<MethodParameter> {
      * @param fullType the full type name.
      * @param param    the parameter.
      */
-    MethodParameter(final Annotations annotations, final String fullType, final VariableElement param) {
-        this.annotations = annotations;
+    MethodParameter(final String fullType, final VariableElement param) {
         this.fullType = fullType;
         this.param = param;
         formatterClass = null;
@@ -51,13 +49,11 @@ public final class MethodParameter implements Comparable<MethodParameter> {
     /**
      * Only allow construction from within the parent class.
      *
-     * @param annotations    the annotation descriptor.
      * @param fullType       the full type name.
      * @param param          the parameter.
      * @param formatterClass the formatter class, or {@code null} if none
      */
-    MethodParameter(final Annotations annotations, final String fullType, final VariableElement param, final String formatterClass) {
-        this.annotations = annotations;
+    MethodParameter(final String fullType, final VariableElement param, final String formatterClass) {
         this.param = param;
         this.fullType = fullType;
         this.formatterClass = formatterClass;
@@ -68,10 +64,10 @@ public final class MethodParameter implements Comparable<MethodParameter> {
      * parameter, otherwise {@code false}.
      *
      * @return {@code true} if the parameter is annotated with
-     *         {@link org.jboss.logging.Cause}, otherwise {@code false}.
+     *         {@link org.jboss.logging.Annotations#cause()}, otherwise {@code false}.
      */
     public boolean isCause() {
-        return ElementHelper.isAnnotatedWith(param, annotations.cause());
+        return ElementHelper.isAnnotatedWith(param, LoggingTools.annotations().cause());
     }
 
     /**

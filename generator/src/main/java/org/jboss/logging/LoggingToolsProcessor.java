@@ -21,6 +21,7 @@
 package org.jboss.logging;
 
 import org.jboss.logging.generator.ImplementorClassGenerator;
+import org.jboss.logging.generator.MethodDescriptors;
 import org.jboss.logging.generator.TranslationClassGenerator;
 import org.jboss.logging.generator.TranslationFileGenerator;
 import org.jboss.logging.validation.ValidationMessage;
@@ -81,13 +82,13 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         super.init(processingEnv);
 
         logger = ToolLogger.getLogger(processingEnv);
-        annotations = LoggingTools.findAnnotations();
-        loggers = LoggingTools.findLoggers();
+        annotations = LoggingTools.annotations();
+        loggers = LoggingTools.loggers();
 
         //Tools generator -  Note the order these are excuted in.
-        processors.add(new ImplementorClassGenerator(processingEnv, annotations, loggers));
-        processors.add(new TranslationClassGenerator(processingEnv, annotations, loggers));
-        processors.add(new TranslationFileGenerator(processingEnv, annotations, loggers));
+        processors.add(new ImplementorClassGenerator(processingEnv));
+        processors.add(new TranslationClassGenerator(processingEnv));
+        processors.add(new TranslationFileGenerator(processingEnv));
     }
 
     /**
@@ -119,7 +120,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         boolean process = true;
 
         Types typesUtil = processingEnv.getTypeUtils();
-        Validator validator = Validator.buildValidator(processingEnv, this.annotations);
+        Validator validator = Validator.buildValidator(processingEnv);
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
@@ -140,11 +141,12 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                         if (element.getKind().isInterface()
                                 && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
-                            Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil, loggers);
+                            Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
+                            final MethodDescriptors methodDescriptors = MethodDescriptors.of(processingEnv.getElementUtils(), typesUtil, methods);
 
                             for (AbstractTool processor : processors) {
                                 logger.debug("Executing processor %s", processor.getName());
-                                processor.processTypeElement(annotation, element, methods);
+                                processor.processTypeElement(annotation, element, methodDescriptors);
                             }
                         }
                     }

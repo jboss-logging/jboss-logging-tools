@@ -20,15 +20,15 @@
  */
 package org.jboss.logging;
 
+import org.jboss.logging.generator.MethodDescriptors;
+
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,10 +47,6 @@ public abstract class AbstractTool {
 
     private final ToolLogger logger;
 
-    private final Loggers loggers;
-
-    private final Annotations annotations;
-
     private final Types typeUtils;
 
     private final ProcessingEnvironment processingEnv;
@@ -60,12 +56,10 @@ public abstract class AbstractTool {
      *
      * @param processingEnv the processing environment.
      */
-    public AbstractTool(final ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
+    public AbstractTool(final ProcessingEnvironment processingEnv) {
         this.elementUtils = processingEnv.getElementUtils();
         this.filer = processingEnv.getFiler();
         this.logger = ToolLogger.getLogger(processingEnv);
-        this.annotations = annotations;
-        this.loggers = loggers;
         this.typeUtils = processingEnv.getTypeUtils();
         this.processingEnv = processingEnv;
     }
@@ -73,11 +67,11 @@ public abstract class AbstractTool {
     /**
      * Processes a type element.
      *
-     * @param annotation the annotation who trigger the processing
-     * @param element    the element that contains the methods.
-     * @param methods    the declared and inherited methods in the interface.
+     * @param annotation       the annotation who trigger the processing
+     * @param element          the element that contains the methods.
+     * @param methodDescriptor the method descriptors.
      */
-    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods);
+    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final MethodDescriptors methodDescriptor);
 
 
     /**
@@ -87,19 +81,6 @@ public abstract class AbstractTool {
      */
     public final ToolLogger logger() {
         return logger;
-    }
-
-    public final Loggers loggers() {
-        return loggers;
-    }
-
-    /**
-     * Returns the logging annotations to use.
-     *
-     * @return the logging annotations to use.
-     */
-    public final Annotations annotations() {
-        return annotations;
     }
 
     /**

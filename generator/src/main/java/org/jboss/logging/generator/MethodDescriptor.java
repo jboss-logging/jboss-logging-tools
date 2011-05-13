@@ -21,8 +21,8 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.Annotations;
 import org.jboss.logging.Annotations.FormatType;
+import org.jboss.logging.LoggingTools;
 import org.jboss.logging.util.ElementHelper;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -31,65 +31,58 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+
+import static org.jboss.logging.LoggingTools.annotations;
 
 /**
  * @author James R. Perkins (jrp)
  */
-public class MethodDescriptor implements Iterable<MethodDescriptor>,
-        Comparable<MethodDescriptor> {
+public class MethodDescriptor implements Comparable<MethodDescriptor> {
 
-    private static List<MethodDescriptor> descriptors;
+    private static final String MESSAGE_METHOD_SUFFIX = "$str";
+
     private MethodParameter cause;
+    private boolean isOverloaded;
     private ReturnType returnType;
-    private final Annotations annotations;
     private Message message;
-    private ExecutableElement method;
+    private String messageMethodName;
+    private final ExecutableElement method;
     private final List<MethodParameter> parameters;
+    private String translationKey;
 
     /**
      * Private constructor for the
      *
-     * @param annotations the annotation descriptor.
+     * @param method the method to describe.
      */
-    private MethodDescriptor(final Annotations annotations) {
-        this.parameters = new ArrayList<MethodParameter>();
-        this.annotations = annotations;
+    private MethodDescriptor(final ExecutableElement method) {
+        this.method = method;
+        parameters = new ArrayList<MethodParameter>();
     }
 
     /**
      * Create the method descriptor.
      *
-     * @param elementUtil the element utilities for annotation processing.
-     * @param typeUtil    the type utilities for annotation processing.
-     * @param methods     the methods to parse.
-     * @param annotations the annotation descriptor.
+     * @param parent the method descriptor collection.
+     * @param method the method to describe.
      *
      * @return the method descriptor created for the methods.
      */
-    protected static MethodDescriptor create(final Elements elementUtil, final Types typeUtil, Collection<ExecutableElement> methods,
-                                             final Annotations annotations) {
-        final MethodDescriptor result = new MethodDescriptor(annotations);
-        descriptors = new ArrayList<MethodDescriptor>();
-        boolean first = true;
-        for (ExecutableElement method : methods) {
-            final MethodDescriptor current;
-            if (first) {
-                current = result;
-                first = false;
-            } else {
-                current = new MethodDescriptor(annotations);
-            }
-            current.init(elementUtil, typeUtil, method);
-            descriptors.add(current);
+    protected static MethodDescriptor of(final MethodDescriptors parent, final ExecutableElement method) {
+        final MethodDescriptor result = new MethodDescriptor(method);
+        result.init(parent);
+        // Check to see if the method is overloaded
+        result.isOverloaded = parent.isOverloaded(method);
+        if (result.isOverloaded) {
+            result.messageMethodName = result.name() + result.relativeParameterCount() + MESSAGE_METHOD_SUFFIX;
+            result.translationKey = result.name() + "." + result.relativeParameterCount();
+        } else {
+            result.messageMethodName = result.name() + MESSAGE_METHOD_SUFFIX;
+            result.translationKey = result.name();
         }
         return result;
     }
@@ -157,14 +150,14 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      */
     @Override
     public int compareTo(final MethodDescriptor o) {
-        int c = this.method.getSimpleName().toString().compareTo(o.method.getSimpleName().toString());
-        c = (c != 0) ? c : this.method.getKind().compareTo(o.method.getKind());
-        c = (c != 0) ? c : (this.method.getParameters().size() - o.method.getParameters().size());
+        int c = method.getSimpleName().toString().compareTo(o.method.getSimpleName().toString());
+        c = (c != 0) ? c : method.getKind().compareTo(o.method.getKind());
+        c = (c != 0) ? c : (method.getParameters().size() - o.method.getParameters().size());
         // Compare the parameters
         if (c == 0) {
-            List<? extends VariableElement> parms = this.method.getParameters();
-            for (int i = 0; i < parms.size(); i++) {
-                final VariableElement var1 = parms.get(i);
+            final List<? extends VariableElement> params = method.getParameters();
+            for (int i = 0; i < params.size(); i++) {
+                final VariableElement var1 = params.get(i);
                 final VariableElement var2 = o.method.getParameters().get(i);
                 c = var1.getKind().compareTo(var2.getKind());
             }
@@ -172,21 +165,21 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
         return c;
     }
 
-    @Override
-    public Iterator<MethodDescriptor> iterator() {
-        final Collection<MethodDescriptor> result;
-        if (descriptors == null) {
-            result = Collections.emptyList();
-        } else {
-            result = Collections.unmodifiableCollection(descriptors);
-        }
-        return result.iterator();
-    }
 
+    /**
+     * Returns {@code true} if the method has a message id, otherwise {@code false},
+     *
+     * @return {@code true} if the method has a message id, otherwise {@code false},
+     */
     public boolean hasMessageId() {
         return message.hasId();
     }
 
+    /**
+     * Returns the message format.
+     *
+     * @return the message format.
+     */
     public FormatType messageFormat() {
         return message.format();
     }
@@ -210,6 +203,24 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
     }
 
     /**
+     * Returns the name of the method used to retrieve the message.
+     *
+     * @return the name of the message method.
+     */
+    public String messageMethodName() {
+        return messageMethodName;
+    }
+
+    /**
+     * Returns the name of the key used in the translation files for the message translation.
+     *
+     * @return the name of the key in the translation files.
+     */
+    public String translationKey() {
+        return translationKey;
+    }
+
+    /**
      * Returns the method name.
      *
      * @return the method name.
@@ -226,6 +237,16 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      */
     public boolean hasCause() {
         return cause != null;
+    }
+
+    /**
+     * Returns {@code true} if the method is overloaded, otherwise {@code false}
+     * .
+     *
+     * @return {@code true} if the method is overloaded, otherwise {@code false}
+     */
+    public boolean isOverloaded() {
+        return isOverloaded;
     }
 
     /**
@@ -252,11 +273,16 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
      * @return the log message annotation
      */
     public String loggerMethod() {
-        return annotations.loggerMethod(method, message.format());
+        return LoggingTools.annotations().loggerMethod(method, message.format());
     }
 
+    /**
+     * Returns the log level parameter associated with the method.
+     *
+     * @return the log level annotation
+     */
     public String logLevelParameter() {
-        return annotations.logLevel(method);
+        return LoggingTools.annotations().logLevel(method);
     }
 
     /**
@@ -269,86 +295,92 @@ public class MethodDescriptor implements Iterable<MethodDescriptor>,
     }
 
     /**
+     * Returns the number of all parameters for the method.
+     *
+     * @return the number of all parameters for the method.
+     */
+    public int parameterCount() {
+        return parameters.size();
+    }
+
+    /**
+     * Returns the number of parameters minus the cause parameter count for the method.
+     *
+     * @return the number of parameters minus the cause parameter count for the method.
+     */
+    public int relativeParameterCount() {
+        return (hasCause() ? (parameters.size() - 1) : parameters.size());
+    }
+
+    /**
      * Returns {@code true} if this is a logger method, otherwise {@code false}.
      *
      * @return {@code true} if this is a logger method, otherwise {@code false}.
      */
     public boolean isLoggerMethod() {
-        return ElementHelper.isAnnotatedWith(method, annotations.logMessage());
-    }
-
-    /**
-     * Returns a collection of method descriptors that match the method name.
-     *
-     * @param methodName the method name to search for.
-     *
-     * @return a collection of method descriptors that match the method name.
-     */
-    public Collection<MethodDescriptor> find(final String methodName) {
-        final Set<MethodDescriptor> result = new LinkedHashSet<MethodDescriptor>();
-        for (MethodDescriptor methodDesc : descriptors) {
-            if (methodName.equals(methodDesc.name())) {
-                result.add(methodDesc);
-            }
-        }
-        return result;
+        return ElementHelper.isAnnotatedWith(method, LoggingTools.annotations().logMessage());
     }
 
     /**
      * Initializes the instance.
      *
-     * @param elementUtil the element utilities for annotation procesing.
-     * @param typeUtil    the type utilities for internal usage.
-     * @param method      the method to process.
+     * @param parent the parent collection of all method descriptors.
      */
-    private void init(final Elements elementUtil, final Types typeUtil, final ExecutableElement method) {
-        this.method = method;
+    private void init(final MethodDescriptors parent) {
         // Find the annotations
-        Message message = Message.of(annotations.messageId(method), annotations.hasMessageId(method),
-                annotations.messageValue(method), annotations.messageFormat(method));
-        this.returnType = ReturnType.of(method.getReturnType(), typeUtil);
+        Message message = Message.of(annotations().messageId(method), annotations().hasMessageId(method),
+                annotations().messageValue(method), annotations().messageFormat(method));
+        this.returnType = ReturnType.of(method.getReturnType(), parent.typeUtil);
 
-        final Collection<MethodDescriptor> methodDescriptors = find(this.name());
+        final Collection<MethodDescriptor> methodDescriptors = parent.find(name());
         // Locate the first message with a non-null message
         for (MethodDescriptor methodDesc : methodDescriptors) {
-            if (message != null) {
-                if (methodDesc.message.value() != null && message.value() == null) {
-                    message = methodDesc.message;
-                }
+            // Check for inherited message id's
+            if (annotations().inheritsMessageId(method) && methodDesc.message.hasId()) {
+                final Message current = message;
+                message = Message.of(message.id(), message.hasId(), current.value(), current.format());
             }
-            // If both the message and the log message are not null, we are
-            // complete.
-            if (message != null) {
-                break;
+            // If the message is not null, no need to process further.
+            if (message.value() != null) {
+                continue;
+            }
+
+            if (methodDesc.message.value() != null && message.value() == null &&
+                    ElementHelper.parameterCount(method.getParameters()) == ElementHelper.parameterCount(methodDesc.method.getParameters())) {
+                message = methodDesc.message;
             }
         }
         // Process through the collection and update any currently null
         // messages
         for (MethodDescriptor methodDesc : methodDescriptors) {
+            // Check for inherited message id's
+            if (annotations().inheritsMessageId(methodDesc.method) && message.hasId()) {
+                final Message old = methodDesc.message;
+                methodDesc.message = Message.of(message.id(), message.hasId(), old.value(), old.format());
+            }
             if (methodDesc.message.value() == null) {
                 methodDesc.message = message;
-                descriptors.remove(methodDesc);
-                descriptors.add(methodDesc);
+                parent.update(methodDesc);
             }
         }
         // Create a list of parameters
         for (VariableElement param : method.getParameters()) {
-            if (param.getAnnotation(annotations.cause()) != null) {
-                this.cause = new MethodParameter(annotations, typeUtil.asElement(param.asType()).toString(), param);
+            if (param.getAnnotation(annotations().cause()) != null) {
+                cause = new MethodParameter(parent.typeUtil.asElement(param.asType()).toString(), param);
             }
             String formatClass = null;
             // Format class may not yet be compiled, so get it in a roundabout way
             for (AnnotationMirror mirror : param.getAnnotationMirrors()) {
                 final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.equals(typeUtil.getDeclaredType(elementUtil.getTypeElement(annotations.formatWith().getName())))) {
+                if (annotationType.equals(parent.typeUtil.getDeclaredType(parent.elementUtil.getTypeElement(annotations().formatWith().getName())))) {
                     final AnnotationValue value = mirror.getElementValues().values().iterator().next();
                     formatClass = ((TypeElement) (((DeclaredType) value.getValue()).asElement())).getQualifiedName().toString();
                 }
             }
             if (param.asType().getKind().isPrimitive()) {
-                this.parameters.add(new MethodParameter(annotations, param.asType().toString(), param, formatClass));
+                parameters.add(new MethodParameter(param.asType().toString(), param, formatClass));
             } else {
-                this.parameters.add(new MethodParameter(annotations, typeUtil.asElement(param.asType()).toString(), param, formatClass));
+                parameters.add(new MethodParameter(parent.typeUtil.asElement(param.asType()).toString(), param, formatClass));
             }
         }
         // Setup the global variables for the result

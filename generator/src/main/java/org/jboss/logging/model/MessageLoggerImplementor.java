@@ -31,11 +31,12 @@ import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.LoggingTools;
 import org.jboss.logging.generator.MethodDescriptor;
+import org.jboss.logging.generator.MethodDescriptors;
 import org.jboss.logging.generator.MethodParameter;
 
 import java.lang.reflect.Method;
 
-import static org.jboss.logging.model.ClassModelUtil.STRING_ID_FORMAT;
+import static org.jboss.logging.model.ClassModelUtil.formatMessageId;
 
 /**
  * Used to generate a message logger implementation.
@@ -56,11 +57,12 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * Creates a new message logger code model.
      *
      * @param interfaceName      the interface name.
+     * @param methodDescriptors the method descriptions
      * @param projectCode        the project code from the annotation.
      * @param extendsBasicLogger {@code true} if extending the basic logger, otherwise {@code false}.
      */
-    public MessageLoggerImplementor(final String interfaceName, final String projectCode, final boolean extendsBasicLogger) {
-        super(interfaceName, projectCode, ImplementationType.LOGGER);
+    public MessageLoggerImplementor(final String interfaceName, final MethodDescriptors methodDescriptors, final String projectCode, final boolean extendsBasicLogger) {
+        super(interfaceName, methodDescriptors, projectCode, ImplementationType.LOGGER);
         this.extendsBasicLogger = extendsBasicLogger;
     }
 
@@ -70,7 +72,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, LoggingTools.findLoggers().loggerClass(), LOG_FIELD_NAME);
+        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, LoggingTools.loggers().loggerClass(), LOG_FIELD_NAME);
         //Add a project code constant
         JFieldVar projectCodeVar = null;
         if (!getProjectCode().isEmpty()) {
@@ -84,20 +86,19 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Add default constructor
         final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
-        final JVar constructorParam = constructor.param(JMod.FINAL, LoggingTools.findLoggers().loggerClass(), LOG_FIELD_NAME);
+        final JVar constructorParam = constructor.param(JMod.FINAL, LoggingTools.loggers().loggerClass(), LOG_FIELD_NAME);
         final JBlock body = constructor.body();
         body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
 
         // Process the method descriptors and add to the model before
         // writing.
-        for (MethodDescriptor methodDesc : methodDescriptor) {
+        for (MethodDescriptor methodDesc : super.getMethodDescriptors()) {
             final JClass returnType = codeModel.ref(methodDesc.returnType().getReturnTypeAsString());
-            final String methodName = methodDesc.name();
             // Create the method
-            final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodName);
+            final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, methodDesc.name());
             jMethod.annotate(Override.class);
             // Add the message method.
-            final JMethod msgMethod = addMessageMethod(methodName, methodDesc.messageValue());
+            final JMethod msgMethod = addMessageMethod(methodDesc);
 
             // Create the method body
             if (methodDesc.isLoggerMethod()) {
@@ -139,7 +140,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
         // The next parameter is the message. Should be accessed via the
         // message retrieval method.
         if (methodDesc.hasMessageId() && projectCodeVar != null) {
-            String formattedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
+            String formattedId = formatMessageId(methodDesc.messageId());
             logInv.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
         } else {
             logInv.arg(JExpr.invoke(msgMethod));
@@ -173,7 +174,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             // If the return type is an exception, initialize the exception.
             if (methodDesc.returnType().isException()) {
                 if (methodDesc.hasMessageId() && projectCodeVar != null) {
-                    String formattedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
+                    String formattedId = formatMessageId(methodDesc.messageId());
                     formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
                     initCause(result, returnField, body, methodDesc, formatterMethod);
                 } else {
@@ -184,7 +185,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             }
         } else {
             if (methodDesc.hasMessageId() && projectCodeVar != null) {
-                String formattedId = String.format(STRING_ID_FORMAT, methodDesc.messageId());
+                String formattedId = formatMessageId(methodDesc.messageId());
                 formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
             } else {
                 formatterMethod.arg(JExpr.invoke(msgMethod));
@@ -218,7 +219,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param codeModel the code model to implement to.
      */
     private void implementBasicLogger(final JCodeModel codeModel) {
-        for (Method m : LoggingTools.findLoggers().basicLoggerMethods()) {
+        for (Method m : LoggingTools.loggers().basicLoggerMethods()) {
             if (!m.getReturnType().isPrimitive()) {
                 codeModel.ref(m.getReturnType());
             }

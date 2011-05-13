@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.validation.validator;
 
-import org.jboss.logging.Annotations;
+import org.jboss.logging.LoggingTools;
 import org.jboss.logging.validation.ValidationErrorMessage;
 import org.jboss.logging.validation.ValidationMessage;
 
@@ -43,8 +43,8 @@ import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
  */
 public class LoggerReturnTypeValidator extends AbstractValidator {
 
-    public LoggerReturnTypeValidator(final Annotations annotations, final Types typeUtil) {
-        super(annotations, typeUtil);
+    public LoggerReturnTypeValidator(final Types typeUtil) {
+        super(typeUtil);
     }
 
     /**
@@ -55,11 +55,11 @@ public class LoggerReturnTypeValidator extends AbstractValidator {
 
         final Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
 
-        if (isAnnotatedWith(element, annotations.messageLogger())) {
+        if (isAnnotatedWith(element, LoggingTools.annotations().messageLogger())) {
             for (ExecutableElement method : elementMethods) {
-                if (isAnnotatedWith(method, annotations.logMessage())) {
+                if (isAnnotatedWith(method, LoggingTools.annotations().logMessage())) {
                     if (method.getReturnType().getKind() != TypeKind.VOID) {
-                        messages.add(ValidationErrorMessage.of(method, "Methods annotated with %s must have a void return type.", annotations.logMessage().getName()));
+                        messages.add(ValidationErrorMessage.of(method, "Methods annotated with %s must have a void return type.", LoggingTools.annotations().logMessage().getName()));
                     }
                 } else {
                     if (method.getReturnType().getKind() == TypeKind.VOID) {

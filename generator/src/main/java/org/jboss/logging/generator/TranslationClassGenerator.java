@@ -21,8 +21,6 @@
 package org.jboss.logging.generator;
 
 import org.jboss.logging.AbstractTool;
-import org.jboss.logging.Annotations;
-import org.jboss.logging.Loggers;
 import org.jboss.logging.model.ClassModel;
 import org.jboss.logging.model.ImplementationType;
 import org.jboss.logging.model.MessageBundleTranslator;
@@ -30,7 +28,6 @@ import org.jboss.logging.model.MessageLoggerTranslator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -38,14 +35,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassName;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
 import static org.jboss.logging.util.TransformationHelper.toQualifiedClassName;
@@ -90,8 +85,8 @@ public final class TranslationClassGenerator extends AbstractTool {
      * @param annotations   the annotation descriptor.
      * @param loggers       the logger descriptor.
      */
-    public TranslationClassGenerator(final ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
-        super(processingEnv, annotations, loggers);
+    public TranslationClassGenerator(final ProcessingEnvironment processingEnv) {
+        super(processingEnv);
         Map<String, String> options = processingEnv.getOptions();
         this.translationFilesPath = options.get(TRANSLATION_FILES_PATH_OPTION);
     }
@@ -100,12 +95,12 @@ public final class TranslationClassGenerator extends AbstractTool {
      * {@inheritDoc}
      */
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MethodDescriptors methodDescriptors) {
         String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
         String interfaceName = element.getSimpleName().toString();
-        String primaryClassName = toQualifiedClassName(packageName, getPrimaryClassName(element, annotations()));
+        String primaryClassName = toQualifiedClassName(packageName, getPrimaryClassName(element));
         String primaryClassNamePrefix = getPrimaryClassNamePrefix(element);
-        Map<String, String> elementTranslations = getAllMessageMethods(methods, annotations());
+        // Map<String, String> elementTranslations = getAllMessageMethods(methods);
 
         try {
 
@@ -126,7 +121,7 @@ public final class TranslationClassGenerator extends AbstractTool {
 
             if (files != null) {
                 for (File file : files) {
-                    Map<String, String> translations = validateTranslationMessages(elementTranslations, file);
+                    Map<MethodDescriptor, String> translations = validateTranslationMessages(methodDescriptors, file);
                     generateSourceFileFor(primaryClassName, classTranslationFilesPath, file.getName(), translations);
                 }
             }
@@ -146,21 +141,20 @@ public final class TranslationClassGenerator extends AbstractTool {
      *
      * @return the valid translations messages
      */
-    private Map<String, String> validateTranslationMessages(final Map<String, String> elementTranslations, final File file) {
-        Map<String, String> validTranslations = new HashMap<String, String>();
+    private Map<MethodDescriptor, String> validateTranslationMessages(final MethodDescriptors methodDescriptors, final File file) {
+        Map<MethodDescriptor, String> validTranslations = new HashMap<MethodDescriptor, String>();
 
         try {
 
             //Load translations
             Properties translations = new Properties();
             translations.load(new FileInputStream(file));
-
-            for (String key : translations.stringPropertyNames()) {
-                if (elementTranslations.containsKey(key)) {
-
+            for (MethodDescriptor methodDescriptor : methodDescriptors) {
+                final String key = methodDescriptor.translationKey();
+                if (translations.containsKey(key)) {
                     String message = translations.getProperty(key);
                     if (!message.trim().isEmpty()) {
-                        validTranslations.put(key, translations.getProperty(key));
+                        validTranslations.put(methodDescriptor, translations.getProperty(key));
                     } else {
                         logger().warn("The translation message with key %s is ignored because value is empty or contains only whitespace", key);
                     }
@@ -185,7 +179,7 @@ public final class TranslationClassGenerator extends AbstractTool {
      * @param translationFileName the translation file name
      * @param translations        the translations message
      */
-    private void generateSourceFileFor(final String primaryClassName, final String translationFilePath, final String translationFileName, final Map<String, String> translations) {
+    private void generateSourceFileFor(final String primaryClassName, final String translationFilePath, final String translationFileName, final Map<MethodDescriptor, String> translations) {
         logger().note("Generating translation class for %s.", translationFileName);
 
         String generatedClassName = primaryClassName.concat(getTranslationClassNameSuffix(translationFileName));
@@ -196,7 +190,7 @@ public final class TranslationClassGenerator extends AbstractTool {
         String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFileName);
         File enclosingTranslationFile = new File(translationFilePath, enclosingTranslationFileName);
         if (!enclosingTranslationFileName.equals(translationFileName) && !enclosingTranslationFile.exists()) {
-            generateSourceFileFor(primaryClassName, translationFilePath, enclosingTranslationFileName, Collections.<String, String>emptyMap());
+            generateSourceFileFor(primaryClassName, translationFilePath, enclosingTranslationFileName, Collections.<MethodDescriptor, String>emptyMap());
         }
 
         //Create source file

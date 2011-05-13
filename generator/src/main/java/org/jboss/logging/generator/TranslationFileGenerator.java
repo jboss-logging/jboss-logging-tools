@@ -1,21 +1,18 @@
 package org.jboss.logging.generator;
 
 import org.jboss.logging.AbstractTool;
-import org.jboss.logging.Annotations;
-import org.jboss.logging.Loggers;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-import static org.jboss.logging.util.ElementHelper.getAllMessageMethods;
 import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
 
 /**
@@ -40,8 +37,8 @@ public final class TranslationFileGenerator extends AbstractTool {
      *
      * @param processingEnv the processing env
      */
-    public TranslationFileGenerator(final ProcessingEnvironment processingEnv, final Annotations annotations, final Loggers loggers) {
-        super(processingEnv, annotations, loggers);
+    public TranslationFileGenerator(final ProcessingEnvironment processingEnv) {
+        super(processingEnv);
 
         Map<String, String> options = processingEnv.getOptions();
         this.generatedFilesPath = options.get(GENERATED_FILES_PATH_OPTION);
@@ -51,7 +48,7 @@ public final class TranslationFileGenerator extends AbstractTool {
      * {@inheritDoc}
      */
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final Collection<ExecutableElement> methods) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MethodDescriptors methodDescriptors) {
 
         if (generatedFilesPath != null) {
 
@@ -60,8 +57,7 @@ public final class TranslationFileGenerator extends AbstractTool {
                 String relativePath = packageName.replaceAll("\\.", FILE_SEPARATOR);
                 String fileName = getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
-                Map<String, String> translationMessages = getAllMessageMethods(methods, annotations());
-                this.generateSkeletalTranslationFile(relativePath, fileName, translationMessages);
+                this.generateSkeletalTranslationFile(relativePath, fileName, methodDescriptors);
             }
 
         }
@@ -76,8 +72,8 @@ public final class TranslationFileGenerator extends AbstractTool {
      * @param fileName     the file name
      * @param translations the translations
      */
-    public void generateSkeletalTranslationFile(final String relativePath, final String fileName, final Map<String, String> translations) {
-        if (translations == null) {
+    public void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MethodDescriptors methodDescriptors) {
+        if (methodDescriptors == null) {
             throw new NullPointerException("The translations parameter cannot be null");
         }
 
@@ -90,13 +86,15 @@ public final class TranslationFileGenerator extends AbstractTool {
         try {
 
             writer = new BufferedWriter(new FileWriter(file));
+            final Set<String> processed = new HashSet<String>();
 
-            for (String key : translations.keySet()) {
-                String property = translations.get(key);
-                writer.write(String.format("# %s", property));
-                writer.newLine();
-                writer.write(String.format("%s=", key));
-                writer.newLine();
+            for (MethodDescriptor methodDescriptor : methodDescriptors) {
+                if (processed.add(methodDescriptor.translationKey())) {
+                    writer.write(String.format("# %s", methodDescriptor.name()));
+                    writer.newLine();
+                    writer.write(String.format("%s=", methodDescriptor.translationKey()));
+                    writer.newLine();
+                }
             }
 
         } catch (IOException e) {

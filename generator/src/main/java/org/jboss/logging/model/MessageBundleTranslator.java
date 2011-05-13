@@ -24,6 +24,7 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
+import org.jboss.logging.generator.MethodDescriptor;
 
 import java.util.Collections;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class MessageBundleTranslator extends ClassModel {
     /**
      * The translation map.
      */
-    private final Map<String, String> translations;
+    private final Map<MethodDescriptor, String> translations;
 
     /**
      * Create a MessageBundle with super class and interface.
@@ -48,7 +49,7 @@ public class MessageBundleTranslator extends ClassModel {
      * @param superClassName the super class name
      * @param translations   the translation map.
      */
-    public MessageBundleTranslator(final String className, final String superClassName, final Map<String, String> translations) {
+    public MessageBundleTranslator(final String className, final String superClassName, final Map<MethodDescriptor, String> translations) {
         super(className, superClassName);
 
         if (translations != null) {
@@ -72,13 +73,9 @@ public class MessageBundleTranslator extends ClassModel {
         JMethod readResolve = ClassModelUtil.createReadResolveMethod(definedClass);
         readResolve.annotate(Override.class);
 
-        Set<Map.Entry<String, String>> entries = translations.entrySet();
-        for (Map.Entry<String, String> entry : entries) {
-
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            JMethod method = addMessageMethod(key, value);
+        Set<Map.Entry<MethodDescriptor, String>> entries = translations.entrySet();
+        for (Map.Entry<MethodDescriptor, String> entry : entries) {
+            JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             method.annotate(Override.class);
         }
 
