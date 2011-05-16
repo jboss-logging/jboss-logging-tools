@@ -29,7 +29,7 @@ import java.text.MessageFormat;
 /**
  * Defines the annotations and annotation values used to generate the concrete classes from the annotated interfaces.
  *
- * @author James R. Perkins (jrp) - 19.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 19.Feb.2011
  */
 public interface Annotations {
 

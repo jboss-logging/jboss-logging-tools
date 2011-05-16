@@ -41,7 +41,7 @@ import static org.jboss.logging.LoggingTools.annotations;
  * name.
  * </p>
  *
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class MessageIdValidator extends AbstractValidator {
 

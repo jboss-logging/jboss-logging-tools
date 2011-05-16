@@ -26,7 +26,7 @@ import org.jboss.logging.util.ElementHelper;
 import javax.lang.model.element.VariableElement;
 
 /**
- * @author James R. Perkins (jrp) - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
 public final class MethodParameter implements Comparable<MethodParameter> {
 

@@ -44,7 +44,7 @@ import java.io.Serializable;
  * files.
  * </p>
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public abstract class ImplementationClassModel extends ClassModel {
 

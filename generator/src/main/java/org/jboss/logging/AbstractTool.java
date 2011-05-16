@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * An abstract processor used process annotations.
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public abstract class AbstractTool {

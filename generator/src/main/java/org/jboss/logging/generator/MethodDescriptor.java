@@ -39,7 +39,7 @@ import java.util.List;
 import static org.jboss.logging.LoggingTools.annotations;
 
 /**
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class MethodDescriptor implements Comparable<MethodDescriptor> {
 

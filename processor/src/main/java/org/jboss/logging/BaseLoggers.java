@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
  *
- * @author James R. Perkins (jrp) - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
 public class BaseLoggers implements Loggers {
 

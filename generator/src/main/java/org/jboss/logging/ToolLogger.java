@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * A logger for logging messages for annotation processors.
  *
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public final class ToolLogger {

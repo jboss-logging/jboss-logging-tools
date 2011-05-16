@@ -48,7 +48,7 @@ import static org.jboss.logging.LoggingTools.loggers;
  * An utility class to work with element.
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
- * @author James R. Perkins
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class ElementHelper {
 

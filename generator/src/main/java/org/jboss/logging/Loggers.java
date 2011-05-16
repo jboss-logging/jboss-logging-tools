@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
- * @author James R. Perkins (jrp) - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
 public interface Loggers {
 

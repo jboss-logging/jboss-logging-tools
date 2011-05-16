@@ -32,7 +32,7 @@ import java.util.Date;
 /**
  * Utilities for the code model.
  *
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 final class ClassModelUtil {
 

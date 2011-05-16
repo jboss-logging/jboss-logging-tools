@@ -28,7 +28,7 @@ import java.util.Collection;
  * Used to validate various aspects of an interface to make sure the classes can
  * be implemented the code model.
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public interface ElementValidator {

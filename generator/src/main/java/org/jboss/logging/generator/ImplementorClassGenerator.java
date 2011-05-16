@@ -37,7 +37,7 @@ import static org.jboss.logging.LoggingTools.annotations;
  * A generator for creating implementations of message bundle and logging
  * interfaces.
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class ImplementorClassGenerator extends AbstractTool {
 

@@ -26,7 +26,7 @@ import java.util.ServiceLoader;
  * This class is not thread safe. The static methods use lazy loading for static
  * variables.
  *
- * @author James R. Perkins (jrp) - 21.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 21.Feb.2011
  */
 public class LoggingTools {
 

@@ -40,7 +40,7 @@ import static org.jboss.logging.util.ElementHelper.parameterCount;
  * Checks to make sure that only one {@link org.jboss.logging.Annotations#message()}
  * annotation is present on like named methods.
  *
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class MessageAnnotationValidator extends AbstractValidator {
 

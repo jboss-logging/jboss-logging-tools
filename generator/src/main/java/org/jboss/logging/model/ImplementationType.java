@@ -23,7 +23,7 @@ package org.jboss.logging.model;
 /**
  * The implementation types.
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public enum ImplementationType {
 

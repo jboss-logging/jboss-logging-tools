@@ -38,7 +38,7 @@ import java.io.OutputStream;
  * {@linkplain javax.tools.JavaFileObject JavaFileObject}.
  * </p>
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 public class JavaFileObjectCodeWriter extends CodeWriter {

@@ -25,7 +25,7 @@ import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
 
 /**
- * @author James R. Perkins (jrp) - 19.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 19.Feb.2011
  */
 public class BaseAnnotations implements Annotations {
 

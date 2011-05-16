@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * Describes information about the return type.
  *
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class ReturnType {
 

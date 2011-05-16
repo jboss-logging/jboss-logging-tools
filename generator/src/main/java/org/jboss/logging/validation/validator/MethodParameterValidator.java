@@ -52,7 +52,7 @@ import static org.jboss.logging.util.ElementHelper.parameterCount;
  * </ul>
  * </p>
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class MethodParameterValidator extends AbstractValidator {
 

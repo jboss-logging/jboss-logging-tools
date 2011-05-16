@@ -17,6 +17,17 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <developers>
+        <developer>
+            <name>James R. Perkins</name>
+            <email>jperkins@redhat.com</email>
+        </developer>
+        <developer>
+            <name>Kevin Pollet</name>
+            <email>kevin.pollet@serli.com</email>
+        </developer>
+    </developers>
     <dependencies>
         <!--
             JBoss Logging

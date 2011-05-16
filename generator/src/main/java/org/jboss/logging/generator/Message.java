@@ -23,7 +23,7 @@ package org.jboss.logging.generator;
 import org.jboss.logging.Annotations.FormatType;
 
 /**
- * @author James R. Perkins (jrp) - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
 final class Message {
 

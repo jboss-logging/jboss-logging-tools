@@ -39,7 +39,7 @@ import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
  * Must have a return type of void.
  * </p>
  *
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class LoggerReturnTypeValidator extends AbstractValidator {
 

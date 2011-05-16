@@ -39,7 +39,7 @@ import static org.jboss.logging.util.ElementHelper.isAnnotatedWith;
  * super types, or {@link java.lang.Throwable} or one of it's subtypes.
  * </p>
  *
- * @author James R. Perkins (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class BundleReturnTypeValidator extends AbstractValidator {
 

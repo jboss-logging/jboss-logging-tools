@@ -51,7 +51,7 @@ import static org.jboss.logging.util.ElementHelper.getInterfaceMethods;
 /**
  * The main annotation processor for JBoss Logging Tooling.
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 @SupportedAnnotationTypes("*")

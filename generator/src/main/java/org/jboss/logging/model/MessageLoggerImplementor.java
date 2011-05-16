@@ -44,7 +44,7 @@ import static org.jboss.logging.model.ClassModelUtil.formatMessageId;
  * Creates an implementation of the interface passed in.
  * </p>
  *
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class MessageLoggerImplementor extends ImplementationClassModel {
 
