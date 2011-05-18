@@ -143,8 +143,12 @@ public class MethodDescriptor implements Comparable<MethodDescriptor> {
         return stringBuilder.toString();
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * This comparison does not directly adhere to the general contract in that it does not honor the {@code equals()}
+     * and {@code hashCode()} contracts.
+     * <p/>
+     * The intention of this is for sorting only. Probably better suited for {@code java.lang.Comparator}, but for state
+     * safety comparing is safer internally.
      *
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
@@ -159,7 +163,11 @@ public class MethodDescriptor implements Comparable<MethodDescriptor> {
             for (int i = 0; i < params.size(); i++) {
                 final VariableElement var1 = params.get(i);
                 final VariableElement var2 = o.method.getParameters().get(i);
-                c = var1.getKind().compareTo(var2.getKind());
+                // TypeMirror.toString() should return the qualified type, example java.lang.String
+                c = var1.asType().toString().compareTo(var2.asType().toString());
+                if (c != 0) {
+                    break;
+                }
             }
         }
         return c;
