@@ -90,7 +90,7 @@ public final class TranslationFileGenerator extends AbstractTool {
 
             for (MethodDescriptor methodDescriptor : methodDescriptors) {
                 if (processed.add(methodDescriptor.translationKey())) {
-                    writer.write(String.format("# %s", methodDescriptor.name()));
+                    writer.write(String.format("# %s", methodDescriptor.messageValue()));
                     writer.newLine();
                     writer.write(String.format("%s=", methodDescriptor.translationKey()));
                     writer.newLine();
