@@ -57,7 +57,7 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
      * Creates a new message logger code model.
      *
      * @param interfaceName      the interface name.
-     * @param methodDescriptors the method descriptions
+     * @param methodDescriptors  the method descriptions
      * @param projectCode        the project code from the annotation.
      * @param extendsBasicLogger {@code true} if extending the basic logger, otherwise {@code false}.
      */
@@ -235,13 +235,18 @@ public final class MessageLoggerImplementor extends ImplementationClassModel {
             for (Class<?> param : m.getParameterTypes()) {
                 // Reference the parameter with the code model
                 codeModel.ref(param);
-                // Create the method parameters
-                blMethod.param(JMod.FINAL, param, "arg" + argCount);
                 // Add the parameters to the body
                 blBody.append("arg").append(argCount);
+                String paramName = "arg" + argCount;
                 argCount++;
                 if (argCount < paramSize) {
+                    // Create the method parameters
+                    blMethod.param(JMod.FINAL, param, paramName);
                     blBody.append(", ");
+                } else if (m.isVarArgs()) {
+                    blMethod.varParam(param.getComponentType(), paramName);
+                } else {
+                    blMethod.param(JMod.FINAL, param, paramName);
                 }
             }
             blBody.append(");");
