@@ -20,7 +20,6 @@
  */
 package org.jboss.logging.generator.validation.validator;
 
-import org.jboss.logging.generator.LoggingTools;
 import org.jboss.logging.generator.validation.ValidationErrorMessage;
 import org.jboss.logging.generator.validation.ValidationMessage;
 
@@ -31,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.jboss.logging.generator.LoggingTools.annotations;
 
 /**
  * Validates messages id's from the {@link org.jboss.logging.generator.Annotations#message()} annotation.
@@ -61,9 +62,9 @@ public class MessageIdValidator extends AbstractValidator {
 
         // Process method descriptors
         for (ExecutableElement method : elementMethods) {
-            if (LoggingTools.annotations().hasMessageId(method) && !LoggingTools.annotations().inheritsMessageId(method)) {
-                final String projectCode = LoggingTools.annotations().projectCode(element);
-                final int messageId = LoggingTools.annotations().messageId(method);
+            if (annotations().hasMessageId(method) && !annotations().inheritsMessageId(method)) {
+                final String projectCode = annotations().projectCode(element);
+                final int messageId = annotations().messageId(method);
                 final String key = createKey(projectCode, messageId);
                 // If the id is in the map, create an error message.
                 if (messageIdMap.containsKey(key)) {

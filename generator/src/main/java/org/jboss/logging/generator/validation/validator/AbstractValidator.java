@@ -28,7 +28,6 @@ import org.jboss.logging.generator.validation.ElementValidator;
 import org.jboss.logging.generator.validation.ValidationErrorMessage;
 import org.jboss.logging.generator.validation.ValidationMessage;
 import org.jboss.logging.generator.validation.ValidationWarningMessage;
-import org.jboss.logging.generator.util.ElementHelper;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -40,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.jboss.logging.generator.util.ElementHelper.hasOrInheritsMessage;
 import static org.jboss.logging.generator.util.ElementHelper.isAssignableFrom;
 
 /**
@@ -66,14 +66,14 @@ abstract class AbstractValidator implements ElementValidator {
      */
     public final Collection<ValidationMessage> checkMessageBundleMethod(final TypeElement root, final ExecutableElement method) {
         final Collection<ValidationMessage> messages = new ArrayList<ValidationMessage>();
-        if (!ElementHelper.hasOrInheritsMessage(root, method, typeUtil)) {
+        if (!hasOrInheritsMessage(root, method, typeUtil)) {
             messages.add(ValidationErrorMessage.of(method, "Message bundle methods must be annotated with %s.", LoggingTools.annotations().message()));
         }
-        if (!(ElementHelper.isAssignableFrom(method.getReturnType(), String.class) || ElementHelper.isAssignableFrom(Throwable.class, method.getReturnType()))) {
+        if (!(isAssignableFrom(method.getReturnType(), String.class) || isAssignableFrom(Throwable.class, method.getReturnType()))) {
             messages.add(ValidationErrorMessage.of(method,
                     "Message bundle %s has a method with invalid return type, method %s has a return type of %s",
                     root, method, method.getReturnType()));
-        } else if (ElementHelper.isAssignableFrom(Throwable.class, method.getReturnType())) {
+        } else if (isAssignableFrom(Throwable.class, method.getReturnType())) {
             messages.addAll(checkExceptionConstructor(method));
         }
         return messages;

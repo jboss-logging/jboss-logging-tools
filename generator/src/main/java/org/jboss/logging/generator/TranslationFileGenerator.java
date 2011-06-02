@@ -1,7 +1,5 @@
 package org.jboss.logging.generator;
 
-import org.jboss.logging.generator.util.ElementHelper;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
@@ -12,6 +10,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.jboss.logging.generator.util.ElementHelper.getPrimaryClassNamePrefix;
 
 /**
  * The generator of skeletal
@@ -53,7 +53,7 @@ public final class TranslationFileGenerator extends AbstractTool {
             if (element.getKind().isInterface()) {
                 String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
                 String relativePath = packageName.replaceAll("\\.", FILE_SEPARATOR);
-                String fileName = ElementHelper.getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
+                String fileName = getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
                 this.generateSkeletalTranslationFile(relativePath, fileName, methodDescriptors);
             }

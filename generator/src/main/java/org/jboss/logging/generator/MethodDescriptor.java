@@ -21,6 +21,7 @@
  */
 package org.jboss.logging.generator;
 
+import org.jboss.logging.generator.Annotations.FormatType;
 import org.jboss.logging.generator.util.ElementHelper;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -33,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import static org.jboss.logging.generator.LoggingTools.annotations;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -184,7 +187,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor> {
      *
      * @return the message format.
      */
-    public Annotations.FormatType messageFormat() {
+    public FormatType messageFormat() {
         return message.format();
     }
 
@@ -332,15 +335,15 @@ public class MethodDescriptor implements Comparable<MethodDescriptor> {
      */
     private void init(final MethodDescriptors parent) {
         // Find the annotations
-        Message message = Message.of(LoggingTools.annotations().messageId(method), LoggingTools.annotations().hasMessageId(method),
-                LoggingTools.annotations().messageValue(method), LoggingTools.annotations().messageFormat(method));
+        Message message = Message.of(annotations().messageId(method), annotations().hasMessageId(method),
+                annotations().messageValue(method), annotations().messageFormat(method));
         this.returnType = ReturnType.of(method.getReturnType(), parent.typeUtil);
 
         final Collection<MethodDescriptor> methodDescriptors = parent.find(name());
         // Locate the first message with a non-null message
         for (MethodDescriptor methodDesc : methodDescriptors) {
             // Check for inherited message id's
-            if (LoggingTools.annotations().inheritsMessageId(method) && methodDesc.message.hasId()) {
+            if (annotations().inheritsMessageId(method) && methodDesc.message.hasId()) {
                 final Message current = message;
                 message = Message.of(message.id(), message.hasId(), current.value(), current.format());
             }
@@ -358,7 +361,7 @@ public class MethodDescriptor implements Comparable<MethodDescriptor> {
         // messages
         for (MethodDescriptor methodDesc : methodDescriptors) {
             // Check for inherited message id's
-            if (LoggingTools.annotations().inheritsMessageId(methodDesc.method) && message.hasId()) {
+            if (annotations().inheritsMessageId(methodDesc.method) && message.hasId()) {
                 final Message old = methodDesc.message;
                 methodDesc.message = Message.of(message.id(), message.hasId(), old.value(), old.format());
             }
@@ -369,14 +372,14 @@ public class MethodDescriptor implements Comparable<MethodDescriptor> {
         }
         // Create a list of parameters
         for (VariableElement param : method.getParameters()) {
-            if (param.getAnnotation(LoggingTools.annotations().cause()) != null) {
+            if (param.getAnnotation(annotations().cause()) != null) {
                 cause = new MethodParameter(parent.typeUtil.asElement(param.asType()).toString(), param);
             }
             String formatClass = null;
             // Format class may not yet be compiled, so get it in a roundabout way
             for (AnnotationMirror mirror : param.getAnnotationMirrors()) {
                 final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.equals(parent.typeUtil.getDeclaredType(parent.elementUtil.getTypeElement(LoggingTools.annotations().formatWith().getName())))) {
+                if (annotationType.equals(parent.typeUtil.getDeclaredType(parent.elementUtil.getTypeElement(annotations().formatWith().getName())))) {
                     final AnnotationValue value = mirror.getElementValues().values().iterator().next();
                     formatClass = ((TypeElement) (((DeclaredType) value.getValue()).asElement())).getQualifiedName().toString();
                 }

@@ -29,6 +29,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 
+import static org.jboss.logging.generator.LoggingTools.annotations;
+
 /**
  * A generator for creating implementations of message bundle and logging
  * interfaces.

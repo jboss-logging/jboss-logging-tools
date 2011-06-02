@@ -29,9 +29,11 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
-import org.jboss.logging.generator.MethodParameter;
 import org.jboss.logging.generator.MethodDescriptor;
 import org.jboss.logging.generator.MethodDescriptors;
+import org.jboss.logging.generator.MethodParameter;
+
+import static org.jboss.logging.generator.model.ClassModelUtil.formatMessageId;
 
 /**
  * Used to generate a message bundle implementation.
@@ -89,7 +91,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 // If the return type is an exception, initialize the exception.
                 if (methodDesc.returnType().isException()) {
                     if (methodDesc.hasMessageId() && projectCodeVar != null) {
-                        String formattedId = ClassModelUtil.formatMessageId(methodDesc.messageId());
+                        String formattedId = formatMessageId(methodDesc.messageId());
                         formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
                         initCause(result, returnField, body, methodDesc, formatterMethod);
                     } else {
@@ -100,7 +102,7 @@ public class MessageBundleImplementor extends ImplementationClassModel {
                 }
             } else {
                 if (methodDesc.hasMessageId() && projectCodeVar != null) {
-                    String formattedId = ClassModelUtil.formatMessageId(methodDesc.messageId());
+                    String formattedId = formatMessageId(methodDesc.messageId());
                     formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
                 } else {
                     formatterMethod.arg(JExpr.invoke(msgMethod));

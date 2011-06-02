@@ -22,7 +22,6 @@
 
 package org.jboss.logging.generator.util;
 
-import org.jboss.logging.generator.LoggingTools;
 import org.jboss.logging.generator.model.ImplementationType;
 
 import javax.lang.model.element.Element;
@@ -41,6 +40,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import static org.jboss.logging.generator.LoggingTools.annotations;
+import static org.jboss.logging.generator.LoggingTools.loggers;
 
 /**
  * An utility class to work with element.
@@ -94,9 +96,9 @@ public final class ElementHelper {
 
         String prefix = getPrimaryClassNamePrefix(element);
 
-        if (element.getAnnotation(LoggingTools.annotations().messageBundle()) != null) {
+        if (element.getAnnotation(annotations().messageBundle()) != null) {
             return prefix + ImplementationType.BUNDLE.toString();
-        } else if (element.getAnnotation(LoggingTools.annotations().messageLogger()) != null) {
+        } else if (element.getAnnotation(annotations().messageLogger()) != null) {
             return prefix + ImplementationType.LOGGER.toString();
         }
 
@@ -153,7 +155,7 @@ public final class ElementHelper {
 
         for (TypeMirror intf : element.getInterfaces()) {
             // Ignore BasicLogger methods
-            if (!intf.toString().equals(LoggingTools.loggers().basicLoggerClass().getName())) {
+            if (!intf.toString().equals(loggers().basicLoggerClass().getName())) {
                 methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types));
 
             }
@@ -179,14 +181,14 @@ public final class ElementHelper {
         Map<String, String> messages = new HashMap<String, String>();
 
         for (ExecutableElement method : methods) {
-            if (isAnnotatedWith(method, LoggingTools.annotations().message())) {
+            if (isAnnotatedWith(method, annotations().message())) {
                 final String name;
                 if (isOverloadedMethod(methods, method)) {
                     name = method.getSimpleName().toString() + parameterCount(method.getParameters());
                 } else {
                     name = method.getSimpleName().toString();
                 }
-                messages.put(name, LoggingTools.annotations().messageValue(method));
+                messages.put(name, annotations().messageValue(method));
             }
         }
 
@@ -240,7 +242,7 @@ public final class ElementHelper {
     public static boolean hasCause(final Collection<? extends VariableElement> params) {
         // Look for cause
         for (VariableElement param : params) {
-            if (param.getAnnotation(LoggingTools.annotations().cause()) != null) {
+            if (param.getAnnotation(annotations().cause()) != null) {
                 return true;
             }
         }
@@ -268,12 +270,12 @@ public final class ElementHelper {
      * @return {@code true} if the method has or inherits a message annotation, otherwise {@code false}.
      */
     public static boolean hasOrInheritsMessage(final TypeElement root, final ExecutableElement method, final Types types) {
-        if (isAnnotatedWith(method, LoggingTools.annotations().message())) {
+        if (isAnnotatedWith(method, annotations().message())) {
             return true;
         }
         final Collection<ExecutableElement> allMethods = findByName(getInterfaceMethods(root, types), method.getSimpleName(), parameterCount(method.getParameters()));
         for (ExecutableElement m : allMethods) {
-            if (isAnnotatedWith(m, LoggingTools.annotations().message())) {
+            if (isAnnotatedWith(m, annotations().message())) {
                 return true;
             }
         }

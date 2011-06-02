@@ -22,7 +22,6 @@ package org.jboss.logging.generator.validation.validator;
 
 import org.jboss.logging.generator.validation.ValidationErrorMessage;
 import org.jboss.logging.generator.validation.ValidationMessage;
-import org.jboss.logging.generator.LoggingTools;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -35,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.jboss.logging.generator.LoggingTools.annotations;
 import static org.jboss.logging.generator.util.ElementHelper.findByName;
 import static org.jboss.logging.generator.util.ElementHelper.parameterCount;
 
@@ -94,7 +94,7 @@ public class MethodParameterValidator extends AbstractValidator {
             // Finally the method is only allowed one cause parameter
             Annotation ogCause = null;
             for (VariableElement varElem : method.getParameters()) {
-                final Annotation cause = varElem.getAnnotation(LoggingTools.annotations().cause());
+                final Annotation cause = varElem.getAnnotation(annotations().cause());
                 boolean invalid = (ogCause != null && cause != null);
                 if (invalid) {
                     messages.add(ValidationErrorMessage.of(varElem, "Only one cause parameter allowed per method."));
