@@ -20,8 +20,7 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.LoggingTools;
-import org.jboss.logging.util.ElementHelper;
+import org.jboss.logging.generator.util.ElementHelper;
 
 import javax.lang.model.element.VariableElement;
 
@@ -64,7 +63,7 @@ public final class MethodParameter implements Comparable<MethodParameter> {
      * parameter, otherwise {@code false}.
      *
      * @return {@code true} if the parameter is annotated with
-     *         {@link org.jboss.logging.Annotations#cause()}, otherwise {@code false}.
+     *         {@link Annotations#cause()}, otherwise {@code false}.
      */
     public boolean isCause() {
         return ElementHelper.isAnnotatedWith(param, LoggingTools.annotations().cause());

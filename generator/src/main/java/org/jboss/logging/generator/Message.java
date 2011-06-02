@@ -20,8 +20,6 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.Annotations.FormatType;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
@@ -30,7 +28,7 @@ final class Message {
     private final int id;
     private final boolean hasId;
     private final String value;
-    private final FormatType format;
+    private final Annotations.FormatType format;
 
     /**
      * Create the message descriptor.
@@ -40,7 +38,7 @@ final class Message {
      * @param value  the message value.
      * @param format the message format type.
      */
-    private Message(int id, boolean hasId, String value, FormatType format) {
+    private Message(int id, boolean hasId, String value, Annotations.FormatType format) {
         this.id = id;
         this.hasId = hasId;
         this.value = value;
@@ -57,7 +55,7 @@ final class Message {
      *
      * @return the message that was created.
      */
-    public static Message of(int id, boolean hasId, String value, FormatType format) {
+    public static Message of(int id, boolean hasId, String value, Annotations.FormatType format) {
         return new Message(id, hasId, value, format);
     }
 
@@ -125,7 +123,7 @@ final class Message {
         return value;
     }
 
-    public FormatType format() {
+    public Annotations.FormatType format() {
         return format;
     }
 }

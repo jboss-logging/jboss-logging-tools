@@ -22,7 +22,7 @@
 
 package org.jboss.logging.generator;
 
-import org.jboss.logging.util.ElementHelper;
+import org.jboss.logging.generator.util.ElementHelper;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;

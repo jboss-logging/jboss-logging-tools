@@ -20,11 +20,10 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.AbstractTool;
-import org.jboss.logging.model.ClassModel;
-import org.jboss.logging.model.ImplementationType;
-import org.jboss.logging.model.MessageBundleTranslator;
-import org.jboss.logging.model.MessageLoggerTranslator;
+import org.jboss.logging.generator.model.ClassModel;
+import org.jboss.logging.generator.model.ImplementationType;
+import org.jboss.logging.generator.model.MessageBundleTranslator;
+import org.jboss.logging.generator.model.MessageLoggerTranslator;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -41,12 +40,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static org.jboss.logging.util.ElementHelper.getPrimaryClassName;
-import static org.jboss.logging.util.ElementHelper.getPrimaryClassNamePrefix;
-import static org.jboss.logging.util.TransformationHelper.toQualifiedClassName;
-import static org.jboss.logging.util.TranslationHelper.getEnclosingTranslationClassName;
-import static org.jboss.logging.util.TranslationHelper.getEnclosingTranslationFileName;
-import static org.jboss.logging.util.TranslationHelper.getTranslationClassNameSuffix;
+import static org.jboss.logging.generator.util.ElementHelper.getPrimaryClassName;
+import static org.jboss.logging.generator.util.ElementHelper.getPrimaryClassNamePrefix;
+import static org.jboss.logging.generator.util.TransformationHelper.toQualifiedClassName;
+import static org.jboss.logging.generator.util.TranslationHelper.getEnclosingTranslationClassName;
+import static org.jboss.logging.generator.util.TranslationHelper.getEnclosingTranslationFileName;
+import static org.jboss.logging.generator.util.TranslationHelper.getTranslationClassNameSuffix;
 
 /**
  * The translation class generator.

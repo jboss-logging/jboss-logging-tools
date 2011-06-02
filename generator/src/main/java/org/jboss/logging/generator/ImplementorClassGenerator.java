@@ -20,18 +20,14 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.AbstractTool;
-import org.jboss.logging.LoggingTools;
-import org.jboss.logging.model.ImplementationClassModel;
-import org.jboss.logging.model.MessageBundleImplementor;
-import org.jboss.logging.model.MessageLoggerImplementor;
+import org.jboss.logging.generator.model.ImplementationClassModel;
+import org.jboss.logging.generator.model.MessageBundleImplementor;
+import org.jboss.logging.generator.model.MessageLoggerImplementor;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
-
-import static org.jboss.logging.LoggingTools.annotations;
 
 /**
  * A generator for creating implementations of message bundle and logging
@@ -55,10 +51,10 @@ public final class ImplementorClassGenerator extends AbstractTool {
         try {
             final String interfaceName = elementUtils().getBinaryName(element).toString();
             if (element.getAnnotation(LoggingTools.annotations().messageLogger()) != null) {
-                createClass(new MessageLoggerImplementor(interfaceName, methodDescriptors, annotations().projectCode(element), extendsBasicLogger(element)));
+                createClass(new MessageLoggerImplementor(interfaceName, methodDescriptors, LoggingTools.annotations().projectCode(element), extendsBasicLogger(element)));
             }
             if (element.getAnnotation(LoggingTools.annotations().messageBundle()) != null) {
-                createClass(new MessageBundleImplementor(interfaceName, methodDescriptors, annotations().projectCode(element)));
+                createClass(new MessageBundleImplementor(interfaceName, methodDescriptors, LoggingTools.annotations().projectCode(element)));
             }
         } catch (IOException e) {
             logger().error(element, e);
