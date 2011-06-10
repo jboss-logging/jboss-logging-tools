@@ -86,6 +86,16 @@ public final class ToolLogger {
     }
 
     /**
+     * Prints a note message.
+     *
+     * @param element the element to print with the note.
+     * @param message the message.
+     */
+    public void note(final Element element, final String message) {
+        log(Kind.NOTE, element, message);
+    }
+
+    /**
      * Prints a formatted note message.
      *
      * @param element       the element to print with the note.
@@ -105,6 +115,18 @@ public final class ToolLogger {
     public void debug(final String messageFormat, final Object... args) {
         if (isDebugEnabled) {
             debug(null, messageFormat, args);
+        }
+    }
+
+    /**
+     * Prints a debug message.
+     *
+     * @param element the element to print with the note.
+     * @param message the message.
+     */
+    public void debug(final Element element, final String message) {
+        if (isDebugEnabled) {
+            other(element, message);
         }
     }
 
@@ -132,6 +154,16 @@ public final class ToolLogger {
     }
 
     /**
+     * Prints a warning message.
+     *
+     * @param element the element to print with the message.
+     * @param message the message.
+     */
+    public void warn(final Element element, final String message) {
+        log(Kind.WARNING, element, message);
+    }
+
+    /**
      * Prints a formatted warning message.
      *
      * @param element       the element that caused the warning.
@@ -150,6 +182,16 @@ public final class ToolLogger {
      */
     public void mandatoryWarning(final String messageFormat, final Object... args) {
         mandatoryWarning(null, messageFormat, args);
+    }
+
+    /**
+     * Prints a warning message.
+     *
+     * @param element the element to print with the message.
+     * @param message the message.
+     */
+    public void mandatoryWarning(final Element element, final String message) {
+        log(Kind.MANDATORY_WARNING, element, message);
     }
 
     /**
@@ -174,6 +216,16 @@ public final class ToolLogger {
     }
 
     /**
+     * Prints a error message.
+     *
+     * @param element the element to print with the message.
+     * @param message the message.
+     */
+    public void error(final Element element, final String message) {
+        log(Kind.ERROR, element, message);
+    }
+
+    /**
      * Prints a formatted error message.
      *
      * @param messageFormat the message format.
@@ -191,6 +243,16 @@ public final class ToolLogger {
      */
     public void error(final Exception exception) {
         error(null, exception);
+    }
+
+    /**
+     * Prints a error message.
+     *
+     * @param element the element to print with the message.
+     * @param message the message.
+     */
+    public void error(final Exception exception, final Element element, final String message) {
+        log(Kind.ERROR, element, exception, message);
     }
 
     /**
@@ -237,6 +299,16 @@ public final class ToolLogger {
     }
 
     /**
+     * Prints a message that does not fit the other types.
+     *
+     * @param element the element to print with the message.
+     * @param message the message.
+     */
+    public void other(final Element element, final String message) {
+        log(Kind.OTHER, element, message);
+    }
+
+    /**
      * Prints a formatted message that does not fit the other types.
      *
      * @param element       the element to print with the note.
@@ -247,14 +319,31 @@ public final class ToolLogger {
         log(Kind.OTHER, element, messageFormat, args);
     }
 
-    private void log(final Kind kind, final Element element, final String messageFormat, final Object... args) {
-
-        String message = String.format(messageFormat, args);
-
+    private void log(final Kind kind, final Element element, final String message) {
         if (element == null) {
             messager.printMessage(kind, message);
         } else {
             messager.printMessage(kind, message, element);
+        }
+    }
+
+
+    private void log(final Kind kind, final Element element, final String messageFormat, final Object... args) {
+        try {
+            String message = ((args == null || args.length == 0) ? messageFormat : String.format(messageFormat, args));
+
+            if (element == null) {
+                messager.printMessage(kind, message);
+            } else {
+                messager.printMessage(kind, message, element);
+            }
+            // Fail gracefully
+        } catch (Exception e) {
+            if (element == null) {
+                messager.printMessage(Kind.ERROR, "Error logging original message: " + messageFormat);
+            } else {
+                messager.printMessage(Kind.ERROR, "Error logging original message: " + messageFormat, element);
+            }
         }
     }
 
@@ -272,6 +361,20 @@ public final class ToolLogger {
 
             //Add cause to error message logging
             log(kind, element, messageWithCause, newArgs.toArray());
+        }
+
+    }
+
+    private void log(final Kind kind, final Element element, final Exception exception, final String message) {
+
+        String stringCause = TransformationHelper.stackTraceToString(exception);
+
+        if (message == null) {
+            log(kind, element, stringCause);
+        } else {
+            String messageWithCause = message.concat(", cause : %s");
+            //Add cause to error message logging
+            log(kind, element, messageWithCause);
         }
 
     }
