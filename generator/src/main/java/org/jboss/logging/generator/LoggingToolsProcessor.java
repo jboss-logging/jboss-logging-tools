@@ -60,7 +60,6 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     public static final String DEBUG_OPTION = "debug";
     private final List<AbstractTool> processors;
     private Annotations annotations;
-    private Loggers loggers;
     private ToolLogger logger;
 
     /**
@@ -79,7 +78,6 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         logger = ToolLogger.getLogger(processingEnv);
         annotations = LoggingTools.annotations();
-        loggers = LoggingTools.loggers();
 
         //Tools generator -  Note the order these are excuted in.
         processors.add(new ImplementorClassGenerator(processingEnv));

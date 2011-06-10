@@ -56,6 +56,11 @@ import static org.jboss.logging.generator.util.ElementHelper.parameterCount;
  */
 public class MethodParameterValidator extends AbstractValidator {
 
+    /**
+     * Class constructor.
+     *
+     * @param typeUtil the type utilities.
+     */
     public MethodParameterValidator(final Types typeUtil) {
         super(typeUtil);
     }
@@ -77,8 +82,6 @@ public class MethodParameterValidator extends AbstractValidator {
             final int rootParamCount = parameterCount(method.getParameters());
             // The name should be the method name, plus the number of parameters
             final String name = method.getSimpleName().toString() + rootParamCount;
-            // TODO - Find way to check if @Message was inherited.
-            // TODO - If new overloaded method, make sure a new @Message annotation was specified.
             // Only adds methods which have not been processed
             if (methodNames.add(name)) {
                 // Find all like named methods

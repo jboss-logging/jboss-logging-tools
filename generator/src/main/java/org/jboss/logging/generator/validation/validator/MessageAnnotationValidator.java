@@ -20,20 +20,24 @@
  */
 package org.jboss.logging.generator.validation.validator;
 
-import org.jboss.logging.generator.LoggingTools;
+import org.jboss.logging.generator.Annotations;
+import org.jboss.logging.generator.ToolLogger;
 import org.jboss.logging.generator.validation.ValidationErrorMessage;
 import org.jboss.logging.generator.validation.ValidationMessage;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static org.jboss.logging.generator.LoggingTools.annotations;
 import static org.jboss.logging.generator.util.ElementHelper.findByName;
+import static org.jboss.logging.generator.util.ElementHelper.findMessage;
+import static org.jboss.logging.generator.util.ElementHelper.findMessageFormat;
 import static org.jboss.logging.generator.util.ElementHelper.parameterCount;
 
 /**
@@ -46,6 +50,8 @@ public class MessageAnnotationValidator extends AbstractValidator {
 
     private static final String ERROR_MESSAGE = "Only one method with the same name and parameter count is allowed to be annotated the %s annotation.";
 
+    private final List<ValidationMessage> messages = new LinkedList<ValidationMessage>();
+
     public MessageAnnotationValidator(final Types typeUtil) {
         super(typeUtil);
     }
@@ -55,32 +61,47 @@ public class MessageAnnotationValidator extends AbstractValidator {
      */
     @Override
     public Collection<ValidationMessage> validate(final TypeElement element, final Collection<ExecutableElement> elementMethods) {
-
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
-
+         // Clear any previous messages.
+         messages.clear();
         // Set for the method names that have been processed
         final Set<String> methodNames = new HashSet<String>();
         for (ExecutableElement method : elementMethods) {
             // The name should be the method name, plus the number of parameters
             final int paramCount = parameterCount(method.getParameters());
             final String name = method.getSimpleName().toString() + paramCount;
-            // TODO - Find way to check if @Message was inherited.
-            // TODO - If new overloaded method, make sure a new @Message annotation was specified.
             // Only adds methods which have not been processed
             if (methodNames.add(name)) {
                 // Find all like named methods
                 final Collection<ExecutableElement> likeMethods = findByName(elementMethods, method.getSimpleName(), paramCount);
                 boolean foundFirst = false;
                 for (ExecutableElement m : likeMethods) {
-                    boolean found = m.getAnnotation(LoggingTools.annotations().message()) != null;
+                    boolean found = m.getAnnotation(annotations().message()) != null;
                     if (foundFirst && found) {
-                        messages.add(ValidationErrorMessage.of(m, ERROR_MESSAGE, LoggingTools.annotations().message().getName()));
+                        messages.add(ValidationErrorMessage.of(m, ERROR_MESSAGE, annotations().message().getName()));
                     }
                     foundFirst = found;
                 }
+                validateMessage(elementMethods, method);
             }
         }
 
         return messages;
+    }
+
+    private void validateMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        final String msg = findMessage(methods, method);
+        final Annotations.FormatType format = findMessageFormat(methods, method);
+        if (msg != null) {
+            final FormatValidator formatValidator = (format == Annotations.FormatType.MESSAGE_FORMAT ? MessageFormatValidator
+                    .of(msg) : StringFormatValidator.of(msg));
+            if (!formatValidator.isValid()) {
+                messages.add(ValidationErrorMessage.of(method, formatValidator.summaryMessage()));
+            }
+            final int paramCount = parameterCount(method.getParameters());
+            // Check the parameter count
+            if (paramCount != formatValidator.argumentCount()) {
+                messages.add(ValidationErrorMessage.of(method, "Parameter count does not match for format '%s'. Required: %d Provided: %d", msg, formatValidator.argumentCount(), paramCount));
+            }
+        }
     }
 }

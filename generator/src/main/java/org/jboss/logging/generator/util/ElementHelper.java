@@ -22,6 +22,7 @@
 
 package org.jboss.logging.generator.util;
 
+import org.jboss.logging.generator.Annotations;
 import org.jboss.logging.generator.model.ImplementationType;
 
 import javax.lang.model.element.Element;
@@ -65,6 +66,7 @@ public final class ElementHelper {
      * @param clazz   the annotation class
      *
      * @return true if the element is annotated, false otherwise
+     *
      * @throws NullPointerException if element parameter is null
      */
     public static boolean isAnnotatedWith(final Element element, final Class<? extends Annotation> clazz) {
@@ -83,6 +85,7 @@ public final class ElementHelper {
      * @param element the element.
      *
      * @return the translation file name prefix
+     *
      * @throws NullPointerException     if element is null
      * @throws IllegalArgumentException if element is not an interface
      */
@@ -112,6 +115,7 @@ public final class ElementHelper {
      * @param element the element
      *
      * @return the translation file name prefix
+     *
      * @throws NullPointerException     if element is null
      * @throws IllegalArgumentException if element is not an interface
      */
@@ -144,6 +148,7 @@ public final class ElementHelper {
      * @param types   the type util
      *
      * @return the collection of all methods
+     *
      * @throws IllegalArgumentException if element is not an interface
      */
     public static Collection<ExecutableElement> getInterfaceMethods(final TypeElement element, final Types types) {
@@ -280,6 +285,50 @@ public final class ElementHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Finds the method with {@link org.jboss.logging.generator.Annotations#message()} annotation. If the {@code method}
+     * parameter does not have a message, the first message that has the same name and parameter count will be returned.
+     *
+     * @param methods the method to search.
+     * @param method  the method to check.
+     *
+     * @return the message for the method, {@code null} of no message is found.
+     */
+    public static String findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        if (isAnnotatedWith(method, annotations().message())) {
+            return annotations().messageValue(method);
+        }
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+        for (ExecutableElement m : allMethods) {
+            if (isAnnotatedWith(m, annotations().message())) {
+                return annotations().messageValue(m);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds the method format with {@link org.jboss.logging.generator.Annotations#message()} annotation. If the {@code method}
+     * parameter does not have a message format, the first message format that has the same name and parameter count will be returned.
+     *
+     * @param methods the method to search.
+     * @param method  the method to check.
+     *
+     * @return the message for the method format, {@code null} of no message format is found.
+     */
+    public static Annotations.FormatType findMessageFormat(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        if (isAnnotatedWith(method, annotations().message())) {
+            return annotations().messageFormat(method);
+        }
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+        for (ExecutableElement m : allMethods) {
+            if (isAnnotatedWith(m, annotations().message())) {
+                return annotations().messageFormat(m);
+            }
+        }
+        return Annotations.FormatType.PRINTF;
     }
 
     /**
