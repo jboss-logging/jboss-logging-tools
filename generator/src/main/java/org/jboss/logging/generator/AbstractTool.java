@@ -67,9 +67,9 @@ public abstract class AbstractTool {
      *
      * @param annotation       the annotation who trigger the processing
      * @param element          the element that contains the methods.
-     * @param methodDescriptor the method descriptors.
+     * @param messageInterface the message interface to implement.
      */
-    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final MethodDescriptors methodDescriptor);
+    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface);
 
 
     /**

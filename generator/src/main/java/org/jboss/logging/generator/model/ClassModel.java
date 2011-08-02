@@ -33,7 +33,8 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JTypeVar;
-import org.jboss.logging.generator.MethodDescriptor;
+import org.jboss.logging.generator.MessageInterface;
+import org.jboss.logging.generator.MessageMethod;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -48,60 +49,36 @@ public abstract class ClassModel {
 
     private static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
-    /**
-     * Qualified interface name.
-     */
-    private String[] interfaceNames;
-
-    /**
-     * Qualified super class name.
-     */
-    private String superClassName;
-
-    /**
-     * Qualified class name.
-     */
-    private String className;
-
-    /**
-     * The corresponding model.
-     */
     private JCodeModel codeModel;
 
-    /**
-     * The defined class.
-     */
     private JDefinedClass definedClass;
 
-    /**
-     * The project code from the annotation.
-     */
-    private String projectCode;
+    private final MessageInterface messageInterface;
+
+    private final String className;
+
+    private final String superClassName;
 
     /**
      * Construct a class model.
      *
-     * @param className      the qualified class name.
-     * @param superClassName the qualified super class name.
+     * @param messageInterface the message interface to implement.
+     * @param className        the final class name.
+     * @param superClassName   the super class used for the translation implementations.
      */
-    public ClassModel(final String className, final String superClassName) {
-        this(className, null, superClassName);
+    ClassModel(final MessageInterface messageInterface, final String className, final String superClassName) {
+        this.messageInterface = messageInterface;
+        this.className = className;
+        this.superClassName = superClassName;
     }
 
     /**
-     * Construct a class model.
+     * Returns the message interface being used.
      *
-     * @param className      the qualified class name.
-     * @param projectCode    the project code.
-     * @param superClassName the super class name.
-     * @param interfaceNames an array of interfaces to implement.
+     * @return the message interface.
      */
-    protected ClassModel(final String className, final String projectCode, final String superClassName, final String... interfaceNames) {
-        this.interfaceNames = interfaceNames;
-        this.superClassName = superClassName;
-        this.className = className;
-        this.projectCode = projectCode;
-        initModel();
+    public final MessageInterface messageInterface() {
+        return messageInterface;
     }
 
     /**
@@ -126,9 +103,44 @@ public abstract class ClassModel {
      * class model
      *
      * @return the generated code
+     *
      * @throws IllegalStateException if the class has already been defined.
      */
     protected JCodeModel generateModel() throws IllegalStateException {
+        codeModel = new JCodeModel();
+
+        try {
+            definedClass = codeModel._class(qualifiedClassName());
+        } catch (JClassAlreadyExistsException e) {
+            throw new IllegalStateException("Class " + qualifiedClassName() + " has already been defined. Cannot generate the class.", e);
+        }
+
+        // Add generated annotation
+        JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
+        generatedAnnotation.param("value", getClass().getName());
+        generatedAnnotation.param("date", ClassModelUtil.generatedDateValue());
+
+        // Create the default JavaDoc
+        JDocComment docComment = definedClass.javadoc();
+        docComment.add("Warning this class consists of generated code.");
+
+        // Add extends
+        if (superClassName != null) {
+            definedClass._extends(codeModel.ref(superClassName));
+        }
+
+        // Always implement the interface
+        // TODO - Temporary fix for implementing nested interfaces.
+        definedClass._implements(codeModel.ref(messageInterface.qualifiedName().replace("$", ".")));
+
+        //Add implements
+        if (!messageInterface.extendedInterfaces().isEmpty()) {
+            for (MessageInterface intf : messageInterface.extendedInterfaces()) {
+                // TODO - Temporary fix for implementing nested interfaces.
+                final String interfaceName = intf.qualifiedName().replace("$", ".");
+                definedClass._implements(codeModel.ref(interfaceName));
+            }
+        }
         return codeModel;
     }
 
@@ -143,13 +155,14 @@ public abstract class ClassModel {
      * </p>
      * <p/>
      *
-     * @param methodDescriptor the method descriptor.
+     * @param messageMethod the message method
      *
      * @return the newly created method.
+     *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    protected JMethod addMessageMethod(final MethodDescriptor methodDescriptor) {
-        return addMessageMethod(methodDescriptor, methodDescriptor.messageValue());
+    protected JMethod addMessageMethod(final MessageMethod messageMethod) {
+        return addMessageMethod(messageMethod, messageMethod.messageValue());
     }
 
     /**
@@ -163,13 +176,14 @@ public abstract class ClassModel {
      * </p>
      * <p/>
      *
-     * @param methodDescriptor the method descriptor.
-     * @param messageValue     the message value.
+     * @param messageMethod the message method.
+     * @param messageValue  the message value.
      *
      * @return the newly created method.
+     *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    protected JMethod addMessageMethod(final MethodDescriptor methodDescriptor, final String messageValue) {
+    protected JMethod addMessageMethod(final MessageMethod messageMethod, final String messageValue) {
         if (codeModel == null || definedClass == null) {
             throw new IllegalStateException("The code model or the corresponding defined class is null");
         }
@@ -178,12 +192,12 @@ public abstract class ClassModel {
             return null;
         }
         final String methodName;
-        if (methodDescriptor.isOverloaded()) {
-            methodName = methodDescriptor.name() + methodDescriptor.relativeParameterCount();
+        if (messageMethod.isOverloaded()) {
+            methodName = messageMethod.name() + messageMethod.formatParameterCount();
         } else {
-            methodName = methodDescriptor.name();
+            methodName = messageMethod.name();
         }
-        JMethod method = definedClass.getMethod(methodDescriptor.messageMethodName(), EMPTY_TYPE_ARRAY);
+        JMethod method = definedClass.getMethod(messageMethod.messageMethodName(), EMPTY_TYPE_ARRAY);
 
         if (method == null) {
 
@@ -196,7 +210,7 @@ public abstract class ClassModel {
 
             //Create method
             JClass returnType = codeModel.ref(String.class);
-            method = definedClass.method(JMod.PROTECTED, returnType, methodDescriptor.messageMethodName());
+            method = definedClass.method(JMod.PROTECTED, returnType, messageMethod.messageMethodName());
 
             JBlock body = method.body();
             body._return(methodField);
@@ -214,7 +228,7 @@ public abstract class ClassModel {
      *
      * @return the main enclosing class.
      */
-    public final JDefinedClass getDefinedClass() {
+    protected final JDefinedClass getDefinedClass() {
         return definedClass;
     }
 
@@ -223,52 +237,8 @@ public abstract class ClassModel {
      *
      * @return the class name
      */
-    public final String getClassName() {
-        return this.className;
-    }
-
-    /**
-     * Get the project code from the annotation.
-     *
-     * @return the project code or {@code null} if one was not specified.
-     */
-    public String getProjectCode() {
-        return projectCode;
-    }
-
-    /**
-     * Initialize the model.
-     */
-    private void initModel() {
-        codeModel = new JCodeModel();
-
-        try {
-            definedClass = codeModel._class(className);
-        } catch (JClassAlreadyExistsException e) {
-            throw new IllegalStateException("Class " + className + " has already been defined. Cannot generate the class.", e);
-        }
-
-        //Add generated annotation
-        JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
-        generatedAnnotation.param("value", getClass().getName());
-        generatedAnnotation.param("date", ClassModelUtil.generatedDateValue());
-
-        //Create the default JavaDoc
-        JDocComment docComment = definedClass.javadoc();
-        docComment.add("Warning this class consists of generated code.");
-
-        //Add extends
-        if (superClassName != null) {
-            definedClass._extends(codeModel.ref(superClassName));
-        }
-
-        //Add implements
-        if (interfaceNames != null) {
-            for (String intf : interfaceNames) {
-                // TODO - Temporary fix for implementing nested interfaces.
-                definedClass._implements(codeModel.ref(intf.replace("$", ".")));
-            }
-        }
+    public final String qualifiedClassName() {
+        return className;
     }
 
 }

@@ -25,7 +25,7 @@ import org.jboss.logging.generator.Annotations.FormatType;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
-final class Message {
+public final class Message {
 
     private final int id;
     private final boolean hasId;

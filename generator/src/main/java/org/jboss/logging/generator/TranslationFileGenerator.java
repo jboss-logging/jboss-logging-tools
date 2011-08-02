@@ -20,7 +20,7 @@ import static org.jboss.logging.generator.util.ElementHelper.getPrimaryClassName
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 @SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
-public final class TranslationFileGenerator extends AbstractTool {
+final class TranslationFileGenerator extends AbstractTool {
 
     public static final String GENERATED_FILES_PATH_OPTION = "generatedTranslationFilesPath";
 
@@ -46,7 +46,7 @@ public final class TranslationFileGenerator extends AbstractTool {
      * {@inheritDoc}
      */
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MethodDescriptors methodDescriptors) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
 
         if (generatedFilesPath != null) {
 
@@ -55,7 +55,7 @@ public final class TranslationFileGenerator extends AbstractTool {
                 String relativePath = packageName.replaceAll("\\.", FILE_SEPARATOR);
                 String fileName = getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
-                this.generateSkeletalTranslationFile(relativePath, fileName, methodDescriptors);
+                this.generateSkeletalTranslationFile(relativePath, fileName, messageInterface);
             }
 
         }
@@ -66,12 +66,12 @@ public final class TranslationFileGenerator extends AbstractTool {
      * Generate the translation file containing the given
      * translations.
      *
-     * @param relativePath the relative path
-     * @param fileName     the file name
-     * @param translations the translations
+     * @param relativePath     the relative path
+     * @param fileName         the file name
+     * @param messageInterface the message interface
      */
-    public void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MethodDescriptors methodDescriptors) {
-        if (methodDescriptors == null) {
+    public void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MessageInterface messageInterface) {
+        if (messageInterface == null) {
             throw new NullPointerException("The translations parameter cannot be null");
         }
 
@@ -86,11 +86,11 @@ public final class TranslationFileGenerator extends AbstractTool {
             writer = new BufferedWriter(new FileWriter(file));
             final Set<String> processed = new HashSet<String>();
 
-            for (MethodDescriptor methodDescriptor : methodDescriptors) {
-                if (processed.add(methodDescriptor.translationKey())) {
-                    writer.write(String.format("# %s", methodDescriptor.messageValue()));
+            for (MessageMethod messageMethod : messageInterface.methods()) {
+                if (processed.add(messageMethod.translationKey())) {
+                    writer.write(String.format("# %s", messageMethod.messageValue()));
                     writer.newLine();
-                    writer.write(String.format("%s=", methodDescriptor.translationKey()));
+                    writer.write(String.format("%s=", messageMethod.translationKey()));
                     writer.newLine();
                 }
             }

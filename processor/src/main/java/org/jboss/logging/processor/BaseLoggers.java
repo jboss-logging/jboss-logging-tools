@@ -46,9 +46,4 @@ public class BaseLoggers implements Loggers {
         return BasicLogger.class;
     }
 
-    @Override
-    public List<Method> basicLoggerMethods() {
-        return Arrays.asList(basicLoggerClass().getMethods());
-    }
-
 }

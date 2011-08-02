@@ -43,11 +43,4 @@ public interface Loggers {
      */
     Class<?> basicLoggerClass();
 
-    /**
-     * The methods that need to be implemented if an interface extends a basic logger.
-     *
-     * @return the methods of the basic logger.
-     */
-    List<Method> basicLoggerMethods();
-
 }

@@ -23,6 +23,7 @@ package org.jboss.logging.generator;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import java.lang.annotation.Annotation;
 import java.text.MessageFormat;
 
@@ -106,6 +107,13 @@ public interface Annotations {
     Class<? extends Annotation> messageLogger();
 
     /**
+     * Returns the parameter annotation class.
+     *
+     * @return the parameter annotation.
+     */
+    Class<? extends Annotation> param();
+
+    /**
      * Returns the method format type.
      *
      * @param method the method with the Message annotation.
@@ -163,12 +171,12 @@ public interface Annotations {
     String messageValue(ExecutableElement method);
 
     /**
-     * Returns the logger method name to use.
+     * Returns the logger method name to use or an empty string if the method is not a logger method.
      *
      * @param method     the method used to determine the log method.
      * @param formatType the format type for the method.
      *
-     * @return the name of the logger method.
+     * @return the name of the logger method or an empty string.
      */
     String loggerMethod(ExecutableElement method, FormatType formatType);
 
@@ -179,6 +187,6 @@ public interface Annotations {
      *
      * @return the log level.
      */
-    String logLevel(final ExecutableElement method);
+    String logLevel(ExecutableElement method);
 
 }

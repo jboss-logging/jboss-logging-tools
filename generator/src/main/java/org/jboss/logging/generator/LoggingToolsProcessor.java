@@ -30,7 +30,6 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
@@ -42,7 +41,6 @@ import java.util.List;
 import java.util.Set;
 
 import static javax.lang.model.util.ElementFilter.typesIn;
-import static org.jboss.logging.generator.util.ElementHelper.getInterfaceMethods;
 
 /**
  * The main annotation processor for JBoss Logging Tooling.
@@ -80,7 +78,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         annotations = LoggingTools.annotations();
 
         //Tools generator -  Note the order these are excuted in.
-        processors.add(new ImplementorClassGenerator(processingEnv));
+        processors.add(new ImplementationClassGenerator(processingEnv));
         processors.add(new TranslationClassGenerator(processingEnv));
         processors.add(new TranslationFileGenerator(processingEnv));
     }
@@ -135,12 +133,9 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                         if (element.getKind().isInterface()
                                 && !element.getModifiers().contains(Modifier.PRIVATE)) {
 
-                            Collection<ExecutableElement> methods = getInterfaceMethods(element, typesUtil);
-                            final MethodDescriptors methodDescriptors = MethodDescriptors.of(processingEnv.getElementUtils(), typesUtil, methods);
-
                             for (AbstractTool processor : processors) {
                                 logger.debug("Executing processor %s", processor.getName());
-                                processor.processTypeElement(annotation, element, methodDescriptors);
+                                processor.processTypeElement(annotation, element, MessageInterfaceFactory.of(element, typesUtil, processingEnv.getElementUtils()));
                             }
                         }
                     }

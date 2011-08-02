@@ -23,7 +23,8 @@
 package org.jboss.logging.generator.validation.validator;
 
 import org.jboss.logging.generator.LoggingTools;
-import org.jboss.logging.generator.ReturnType;
+import org.jboss.logging.generator.ParameterType;
+import org.jboss.logging.generator.util.ElementHelper;
 import org.jboss.logging.generator.validation.ElementValidator;
 import org.jboss.logging.generator.validation.ValidationErrorMessage;
 import org.jboss.logging.generator.validation.ValidationMessage;
@@ -32,15 +33,19 @@ import org.jboss.logging.generator.validation.ValidationWarningMessage;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
+import static org.jboss.logging.generator.util.ElementHelper.hasCause;
 import static org.jboss.logging.generator.util.ElementHelper.hasOrInheritsMessage;
 import static org.jboss.logging.generator.util.ElementHelper.isAssignableFrom;
+import static org.jboss.logging.generator.ParameterType.MatchType.SUBTYPE;
+import static org.jboss.logging.generator.ParameterType.MatchType.SUPERTYPE;
 
 /**
  * User: jrp
@@ -87,25 +92,82 @@ abstract class AbstractValidator implements ElementValidator {
      * @return a collection of validation messages or an empty collection.
      */
     public final Collection<ValidationMessage> checkExceptionConstructor(final ExecutableElement method) {
-
         final Collection<ValidationMessage> result = new ArrayList<ValidationMessage>();
+
+        // Create a list of the constructor parameters
+        final List<VariableElement> annotatedParams = new LinkedList<VariableElement>();
+        for (VariableElement param : method.getParameters()) {
+            if (param.getAnnotation(LoggingTools.annotations().param()) != null) {
+                annotatedParams.add(param);
+            }
+        }
+
         final TypeMirror type = method.getReturnType();
         final Element element = typeUtil.asElement(type);
-        final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
-        final ReturnType returnType = ReturnType.of(type, typeUtil);
 
-        boolean hasValidNonDefault = (returnType.hasStringAndThrowableConstructor() || returnType.hasStringConstructor() ||
-                returnType.hasThrowableAndStringConstructor() || returnType.hasThrowableConstructor());
+        // Find the usable constructors.
+        final ExecutableElement defaultConstructor = ElementHelper.getConstructor(element);
+        final ExecutableElement stringConstructor = ElementHelper.getFuzzyConstructor(element, ParameterType.of(String.class, SUBTYPE));
+        final ExecutableElement throwableConstructor = ElementHelper.getFuzzyConstructor(element, ParameterType.of(Throwable.class, SUPERTYPE));
+        final ExecutableElement throwableStringConstructor = ElementHelper.getFuzzyConstructor(element, ParameterType.of(Throwable.class, SUPERTYPE), ParameterType.of(String.class, SUBTYPE));
+        final ExecutableElement stringThrowableConstructor = ElementHelper.getFuzzyConstructor(element, ParameterType.of(String.class, SUBTYPE), ParameterType.of(Throwable.class, SUPERTYPE));
+        final ExecutableElement otherConstructor = ElementHelper.getExceptionConstructor(element, typeUtil, method);
 
-        if (!hasValidNonDefault && returnType.hasDefaultConstructor()) {
-            result.add(ValidationWarningMessage.of(method, "Exception %s does not have a constructor to set the message. The message will be ignored.", type.toString()));
-        } else if (!hasValidNonDefault && !returnType.hasDefaultConstructor()) {
-            result.add(ValidationErrorMessage.of(method, "Type %s does not have a constructor that can be used to create the exception.", type.toString()));
-        }
-        // Warn if there are no string message parameters
-        if (!returnType.hasStringAndThrowableConstructor() && !returnType.hasStringConstructor() && !returnType.hasThrowableAndStringConstructor()) {
-            result.add(ValidationWarningMessage.of(method, "Exception %s does not have a constructor to set the message. The message will be ignored.", type.toString()));
+        // TODO - Process the list of valid constructors
+        boolean hasCause = hasCause(method.getParameters());
+        if (annotatedParams.isEmpty()) {
+            // These need to be processed in order of preference.
+            if (hasCause) {
+                if (notEmptyOrNull(stringConstructor) || notEmptyOrNull(stringThrowableConstructor) || notEmptyOrNull(throwableStringConstructor)) {
+                    // Do nothing just a test for the ideal constructor.
+                } else if (notEmptyOrNull(defaultConstructor) || notEmptyOrNull(throwableConstructor)) {
+                    result.add(ValidationWarningMessage.of(method, "Exception %s does not have a constructor to set the message. The message will be ignored.", type.toString()));
+                } else {
+                    result.add(ValidationErrorMessage.of(method, "Type %s does not have a constructor that can be used to create the exception.", type.toString()));
+                }
+            } else {
+                // TODO - These tests are all broken
+                if (notEmptyOrNull(stringConstructor)) {
+                    // Do nothing just a test for the ideal constructor.
+                } else if (notEmptyOrNull(defaultConstructor)) {
+                    result.add(ValidationWarningMessage.of(method, "Exception %s does not have a constructor to set the message. The message will be ignored.", type.toString()));
+                } else {
+                    result.add(ValidationErrorMessage.of(method, "Type %s does not have a constructor that can be used to create the exception.", type.toString()));
+                }
+            }
+        } else if (emptyOrNull(otherConstructor)) {
+            final StringBuilder sb = new StringBuilder();
+            int i = 0;
+            for (VariableElement param : annotatedParams) {
+                sb.append(param.getSimpleName()).append("[").append(param.asType().toString()).append("]");
+                if (++i < annotatedParams.size()) {
+                    sb.append(", ");
+                }
+            }
+            result.add(ValidationErrorMessage.of(method, "Exception %s does not have a valid constructor based on the annotated parameters (%s).", type.toString(), sb));
+        } else {
+            // TODO - Double check that the constructor signature if the there was a class value defined on the annotation.
         }
         return result;
+    }
+
+    private static boolean notEmptyOrNull(final Object obj) {
+        if (obj instanceof String) {
+            return (obj != null && !String.class.cast(obj).isEmpty());
+        }
+        if (obj instanceof Collection) {
+            return (obj != null && !Collection.class.cast(obj).isEmpty());
+        }
+        return (obj != null);
+    }
+
+    private static boolean emptyOrNull(final Object obj) {
+        if (obj instanceof String) {
+            return (obj == null || String.class.cast(obj).isEmpty());
+        }
+        if (obj instanceof Collection) {
+            return (obj == null || Collection.class.cast(obj).isEmpty());
+        }
+        return (obj == null);
     }
 }

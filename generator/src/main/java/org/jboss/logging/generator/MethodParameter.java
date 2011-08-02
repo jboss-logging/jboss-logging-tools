@@ -20,115 +20,59 @@
  */
 package org.jboss.logging.generator;
 
-import org.jboss.logging.generator.util.ElementHelper;
-
-import javax.lang.model.element.VariableElement;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
-public final class MethodParameter implements Comparable<MethodParameter> {
-
-    private final VariableElement param;
-    private final String fullType;
-    private final String formatterClass;
+public interface MethodParameter extends Parameter {
 
     /**
-     * Only allow construction from within the parent class.
-     *
-     * @param fullType the full type name.
-     * @param param    the parameter.
-     */
-    MethodParameter(final String fullType, final VariableElement param) {
-        this.fullType = fullType;
-        this.param = param;
-        formatterClass = null;
-    }
-
-    /**
-     * Only allow construction from within the parent class.
-     *
-     * @param fullType       the full type name.
-     * @param param          the parameter.
-     * @param formatterClass the formatter class, or {@code null} if none
-     */
-    MethodParameter(final String fullType, final VariableElement param, final String formatterClass) {
-        this.param = param;
-        this.fullType = fullType;
-        this.formatterClass = formatterClass;
-    }
-
-    /**
-     * Checks the parameter and returns {@code true} if this is a cause
-     * parameter, otherwise {@code false}.
+     * Checks the parameter and returns {@code true} if this is a cause parameter, otherwise {@code false}.
      *
      * @return {@code true} if the parameter is annotated with
-     *         {@link Annotations#cause()}, otherwise {@code false}.
+     *         {@link org.jboss.logging.generator.Annotations#cause()}, otherwise {@code false}.
      */
-    public boolean isCause() {
-        return ElementHelper.isAnnotatedWith(param, LoggingTools.annotations().cause());
-    }
+    boolean isCause();
 
     /**
-     * The full type name of the parameter. For example
-     * {@code java.lang.String} if the parameter is a string. If the
-     * parameter is a primitive, the primitive name is returned.
+     * Checks the parameter and returns {@code true} if the parameter is a message parameter, e.g. the message that will
+     * be logged or returned from a bundle. If it's not the message parameter {@code false} is returned.
      *
-     * @return the qualified type of the parameter.
+     * @return {@code true} if this is the message parameter (the message from the method), otherwise {@code false}.
      */
-    public String fullType() {
-        return fullType;
-    }
+    boolean isMessage();
+
+    /**
+     * Checks the parameter and returns {@code true} if the parameter is to be used in the construction of the
+     * exception, otherwise {@code false}.
+     *
+     * @return {@code true} if the parameter is annotated with {@link org.jboss.logging.generator.Annotations#param()},
+     *         otherwise {@code false}.
+     */
+    boolean isParam();
 
     /**
      * The formatter class, or {@code null} if there is none.
      *
      * @return the formatter class
      */
-    public String getFormatterClass() {
-        return formatterClass;
-    }
+    String getFormatterClass();
 
     /**
-     * The variable name of the parameter.
+     * Returns the class if the parameter is annotated with {@link org.jboss.logging.generator.Annotations#param()}.
+     * If the annotation is not present, {@code null} is returned.
      *
-     * @return the variable name of the parameter.
+     * @return the parameter class or {@code null}.
      */
-    public String name() {
-        return param.getSimpleName().toString();
-    }
+    Class<?> paramClass();
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int hash = 1;
-        hash = prime * hash + ((fullType == null) ? 0 : fullType.hashCode());
-        hash = prime * hash + ((param == null) ? 0 : param.hashCode());
-        return hash;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof MethodParameter)) {
-            return false;
-        }
-        final MethodParameter other = (MethodParameter) obj;
-        if ((this.param == null) ? (other.param != null) : !this.param.equals(other.param)) {
-            return false;
-        }
-        if ((this.fullType == null) ? (other.fullType != null) : !this.fullType.equals(other.fullType)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int compareTo(final MethodParameter other) {
-        int result = this.fullType.compareTo(other.fullType);
-        result = (result != 0) ? result : this.name().compareTo(other.name());
-        return result;
-    }
+    /**
+     * A convenience method for returning the type used to extract the information. This is not used internally and can
+     * have any valid return type including {@code null}.
+     * <p/>
+     * For example, in an annotation processor implementation an {@link javax.lang.model.element.ExecutableElement}
+     * might be returned.
+     *
+     * @return the raw object used to extract information.
+     */
+    Object getRawType();
 }

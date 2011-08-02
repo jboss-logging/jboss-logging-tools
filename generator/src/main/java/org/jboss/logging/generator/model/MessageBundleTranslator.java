@@ -24,7 +24,8 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.generator.MethodDescriptor;
+import org.jboss.logging.generator.MessageInterface;
+import org.jboss.logging.generator.MessageMethod;
 
 import java.util.Collections;
 import java.util.Map;
@@ -35,22 +36,22 @@ import java.util.Set;
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-public class MessageBundleTranslator extends ClassModel {
+class MessageBundleTranslator extends ClassModel {
 
     /**
      * The translation map.
      */
-    private final Map<MethodDescriptor, String> translations;
+    private final Map<MessageMethod, String> translations;
 
     /**
      * Create a MessageBundle with super class and interface.
      *
-     * @param className      the qualified class name
-     * @param superClassName the super class name
-     * @param translations   the translation map.
+     * @param messageInterface the message interface to implement.
+     * @param superClassName   the super class name
+     * @param translations     the translation map.
      */
-    public MessageBundleTranslator(final String className, final String superClassName, final Map<MethodDescriptor, String> translations) {
-        super(className, superClassName);
+    public MessageBundleTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
+        super(messageInterface, className, superClassName);
 
         if (translations != null) {
             this.translations = translations;
@@ -73,8 +74,8 @@ public class MessageBundleTranslator extends ClassModel {
         JMethod readResolve = ClassModelUtil.createReadResolveMethod(definedClass);
         readResolve.annotate(Override.class);
 
-        Set<Map.Entry<MethodDescriptor, String>> entries = translations.entrySet();
-        for (Map.Entry<MethodDescriptor, String> entry : entries) {
+        Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
+        for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             method.annotate(Override.class);
         }
