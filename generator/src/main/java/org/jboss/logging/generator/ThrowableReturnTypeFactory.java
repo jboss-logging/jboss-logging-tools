@@ -151,9 +151,9 @@ final class ThrowableReturnTypeFactory {
 
                             if (methodParameterIterator.hasNext()) {
                                 final MethodParameter methodParameter = methodParameterIterator.next();
-                                if (methodParameter.getRawType() instanceof VariableElement) {
-                                    final VariableElement rawType = (VariableElement) methodParameter.getRawType();
-                                    match = typeUtil.isAssignable(rawType.asType(), param.asType());
+                                if (methodParameter.reference() instanceof VariableElement) {
+                                    final VariableElement refType = (VariableElement) methodParameter.reference();
+                                    match = typeUtil.isAssignable(refType.asType(), param.asType());
                                 }
                                 if (match) {
                                     matchedParams.add(methodParameter);
@@ -247,6 +247,11 @@ final class ThrowableReturnTypeFactory {
                     append(throwableAndStringConstructor).
                     append(")");
             return result.toString();
+        }
+
+        @Override
+        public TypeMirror reference() {
+            return returnType;
         }
     }
 }

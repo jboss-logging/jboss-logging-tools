@@ -26,7 +26,6 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import com.sun.org.apache.regexp.internal.StringCharacterIterator;
 import org.jboss.logging.generator.LoggingTools;
 import org.jboss.logging.generator.MessageInterface;
 import org.jboss.logging.generator.MessageMethod;

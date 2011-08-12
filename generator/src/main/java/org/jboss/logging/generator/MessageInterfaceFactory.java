@@ -165,9 +165,15 @@ final class MessageInterfaceFactory {
                 simpleName = qualifiedName;
             }
         }
+
+        @Override
+        public TypeElement reference() {
+            return interfaceElement;
+        }
     }
 
     private static class BasicLoggerInterface implements MessageInterface {
+        private final TypeElement basicLogger ;
         private final Elements elements;
         private final Types types;
         private final Set<MessageMethod> methods;
@@ -176,6 +182,7 @@ final class MessageInterfaceFactory {
             this.elements = elements;
             this.types = types;
             methods = new HashSet<MessageMethod>();
+            this.basicLogger = elements.getTypeElement(loggers().basicLoggerClass().getName());
         }
 
         protected static BasicLoggerInterface of(final Elements elements, final Types types) {
@@ -186,8 +193,7 @@ final class MessageInterfaceFactory {
 
         protected void init() {
             final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types);
-            final TypeElement type = elements.getTypeElement(loggers().basicLoggerClass().getName());
-            List<ExecutableElement> methods = ElementFilter.methodsIn(type.getEnclosedElements());
+            List<ExecutableElement> methods = ElementFilter.methodsIn(basicLogger.getEnclosedElements());
             for (ExecutableElement method : methods) {
                 builder.add(method);
             }
@@ -243,6 +249,11 @@ final class MessageInterfaceFactory {
         @Override
         public int compareTo(final MessageInterface o) {
             return this.qualifiedName().compareTo(o.qualifiedName());
+        }
+
+        @Override
+        public TypeElement reference() {
+            return basicLogger;
         }
     }
 }

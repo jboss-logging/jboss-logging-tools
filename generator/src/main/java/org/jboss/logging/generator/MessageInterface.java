@@ -8,7 +8,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageInterface extends Comparable<MessageInterface> {
+public interface MessageInterface extends Comparable<MessageInterface>, MessageObject {
 
     /**
      * A set of qualified interface names this interface extends or an empty set.

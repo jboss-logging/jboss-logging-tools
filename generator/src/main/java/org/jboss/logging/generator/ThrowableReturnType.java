@@ -7,7 +7,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface ThrowableReturnType {
+public interface ThrowableReturnType extends MessageObject {
 
     /**
      * Checks to see the throwable has a default constructor.

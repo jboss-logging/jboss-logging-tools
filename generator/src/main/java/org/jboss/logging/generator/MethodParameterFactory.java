@@ -110,7 +110,7 @@ final class MethodParameterFactory {
                 return null;
             }
 
-            @Override
+            //@Override
             public Object getRawType() {
                 return null;
             }
@@ -165,10 +165,15 @@ final class MethodParameterFactory {
             }
 
             @Override
-            public int compareTo(final Parameter other) {
+            public int compareTo(final MethodParameter other) {
                 int result = this.type().compareTo(other.type());
                 result = (result != 0) ? result : this.name().compareTo(other.name());
                 return result;
+            }
+
+            @Override
+            public MessageMethod reference() {
+                return messageMethod;
             }
         };
     }
@@ -253,7 +258,7 @@ final class MethodParameterFactory {
             return paramClass;
         }
 
-        @Override
+        // @Override
         public VariableElement getRawType() {
             return param;
         }
@@ -286,10 +291,15 @@ final class MethodParameterFactory {
         }
 
         @Override
-        public int compareTo(final Parameter other) {
+        public int compareTo(final MethodParameter other) {
             int result = this.type().compareTo(other.type());
             result = (result != 0) ? result : this.name().compareTo(other.name());
             return result;
+        }
+
+        @Override
+        public VariableElement reference() {
+            return param;
         }
     }
 }

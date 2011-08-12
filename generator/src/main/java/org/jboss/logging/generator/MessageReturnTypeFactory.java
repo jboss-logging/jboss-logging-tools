@@ -2,6 +2,7 @@ package org.jboss.logging.generator;
 
 import org.jboss.logging.generator.util.ElementHelper;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -86,6 +87,11 @@ final class MessageReturnTypeFactory {
             }
             final MessageReturnTypeImpl other = (MessageReturnTypeImpl) obj;
             return (qualifiedClassName() == null ? other.qualifiedClassName() == null : qualifiedClassName().equals(other.qualifiedClassName()));
+        }
+
+        @Override
+        public TypeMirror reference() {
+            return returnType;
         }
     }
 }

@@ -1,11 +1,13 @@
 package org.jboss.logging.generator;
 
+import javax.lang.model.element.ExecutableElement;
+
 /**
  * Date: 29.07.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageReturnType {
+public interface MessageReturnType extends MessageObject {
 
     public static final MessageReturnType VOID = new VoidReturnType();
 
@@ -87,5 +89,9 @@ public interface MessageReturnType {
             return (qualifiedClassName() == null ? other.qualifiedClassName() == null : qualifiedClassName().equals(other.qualifiedClassName()));
         }
 
+        @Override
+        public Class<Void> reference() {
+            return Void.TYPE;
+        }
     }
 }

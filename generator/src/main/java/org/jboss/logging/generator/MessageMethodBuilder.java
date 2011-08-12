@@ -306,5 +306,10 @@ final class MessageMethodBuilder {
             stringBuilder.append(")");
             return stringBuilder.toString();
         }
+
+        @Override
+        public ExecutableElement reference() {
+            return method;
+        }
     }
 }
