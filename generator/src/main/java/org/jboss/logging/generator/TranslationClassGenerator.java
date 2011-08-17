@@ -124,7 +124,7 @@ final class TranslationClassGenerator extends AbstractTool {
 
     /**
      * Returns only the valid translations message corresponding
-     * to the declared {@link Message} methods in the
+     * to the declared {@link MethodMessage} methods in the
      * {@link MessageBundle} or {@link MessageLogger} interface.
      *
      * @param elementTranslations the declared element translations

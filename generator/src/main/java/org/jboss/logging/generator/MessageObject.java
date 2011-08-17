@@ -8,6 +8,16 @@ package org.jboss.logging.generator;
 public interface MessageObject {
 
     /**
+     * Returns a name for the object.
+     * <p/>
+     * For an interface or class this will return the qualified class name. For a method this will return the name of
+     * the method. For a parameter the name of the parameter will be returned.
+     *
+     * @return the name of the object.
+     */
+    String name();
+
+    /**
      * The object used to extract information for the message logger or message bundle, if applicable. The reference is
      * not used for the implementation and is provided for convenience.
      * <p/>

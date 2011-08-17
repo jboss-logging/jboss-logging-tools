@@ -1,7 +1,5 @@
 package org.jboss.logging.generator;
 
-import javax.lang.model.element.ExecutableElement;
-
 /**
  * Date: 29.07.2011
  *
@@ -28,11 +26,12 @@ public interface MessageReturnType extends MessageObject {
 
 
     /**
-     * Returns a string version of the return type.
+     * Returns the qualified class name of the return type.
      *
-     * @return a string version of the return type.
+     * @return the qualified class name fo the return type.
      */
-    String qualifiedClassName();
+    @Override
+    String name();
 
     /**
      * Returns the exception return type if {@link #isThrowable()} returns {@code true}. Otherwise {@code null} is
@@ -45,7 +44,7 @@ public interface MessageReturnType extends MessageObject {
     /**
      * Default type if the return type is void.
      */
-    public final static class VoidReturnType implements MessageReturnType {
+    final static class VoidReturnType implements MessageReturnType {
 
         private VoidReturnType() {
         }
@@ -61,7 +60,7 @@ public interface MessageReturnType extends MessageObject {
         }
 
         @Override
-        public String qualifiedClassName() {
+        public String name() {
             return "void";
         }
 
@@ -74,7 +73,7 @@ public interface MessageReturnType extends MessageObject {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            return prime * result + (qualifiedClassName() == null ? 0 : qualifiedClassName().hashCode());
+            return prime * result + (this.name() == null ? 0 : this.name().hashCode());
         }
 
         @Override
@@ -86,7 +85,7 @@ public interface MessageReturnType extends MessageObject {
                 return false;
             }
             final VoidReturnType other = (VoidReturnType) obj;
-            return (qualifiedClassName() == null ? other.qualifiedClassName() == null : qualifiedClassName().equals(other.qualifiedClassName()));
+            return (this.name() == null ? this.name() == null : this.name().equals(this.name()));
         }
 
         @Override

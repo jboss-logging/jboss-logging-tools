@@ -1,5 +1,6 @@
 package org.jboss.logging.generator;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -33,7 +34,9 @@ final class MessageInterfaceFactory {
     private MessageInterfaceFactory() {
     }
 
-    public static MessageInterface of(final TypeElement interfaceElement, final Types types, final Elements elements) {
+    public static MessageInterface of(final TypeElement interfaceElement, final ProcessingEnvironment processingEnvironment) {
+        final Types types = processingEnvironment.getTypeUtils();
+        final Elements elements = processingEnvironment.getElementUtils();
         if (types.isSameType(interfaceElement.asType(), elements.getTypeElement(loggers().basicLoggerClass().getName()).asType())) {
             if (BASIC_LOGGER_INTERFACE == null) {
                 synchronized (LOCK) {
@@ -44,10 +47,10 @@ final class MessageInterfaceFactory {
             }
             return BASIC_LOGGER_INTERFACE;
         }
-        final MessageInterfaceImpl result = new MessageInterfaceImpl(interfaceElement, types, elements);
+        final AptMessageInterface result = new AptMessageInterface(interfaceElement, types, elements);
         result.init();
         for (TypeMirror typeMirror : interfaceElement.getInterfaces()) {
-            result.extendedInterfaces.add(MessageInterfaceFactory.of((TypeElement) types.asElement(typeMirror), types, elements));
+            result.extendedInterfaces.add(MessageInterfaceFactory.of((TypeElement) types.asElement(typeMirror), processingEnvironment));
         }
         return result;
     }
@@ -55,7 +58,7 @@ final class MessageInterfaceFactory {
     /**
      * Message interface implementation.
      */
-    private static class MessageInterfaceImpl implements MessageInterface {
+    private static class AptMessageInterface implements MessageInterface {
         private final TypeElement interfaceElement;
         private final Types types;
         private final Elements elements;
@@ -66,7 +69,7 @@ final class MessageInterfaceFactory {
         private String simpleName;
         private String qualifiedName;
 
-        private MessageInterfaceImpl(final TypeElement interfaceElement, final Types types, final Elements elements) {
+        private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
             this.interfaceElement = interfaceElement;
             this.types = types;
             this.elements = elements;
@@ -90,7 +93,7 @@ final class MessageInterfaceFactory {
         }
 
         @Override
-        public String qualifiedName() {
+        public String name() {
             return qualifiedName;
         }
 
@@ -123,7 +126,7 @@ final class MessageInterfaceFactory {
         public int hashCode() {
             final int prime = 31;
             int hash = 1;
-            return (prime * hash + (qualifiedName() == null ? 0 : qualifiedName().hashCode()));
+            return (prime * hash + (name() == null ? 0 : name().hashCode()));
         }
 
         @Override
@@ -131,16 +134,16 @@ final class MessageInterfaceFactory {
             if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof MessageInterfaceImpl)) {
+            if (!(obj instanceof AptMessageInterface)) {
                 return false;
             }
-            final MessageInterfaceImpl other = (MessageInterfaceImpl) obj;
-            return (qualifiedName() == null ? other.qualifiedName() == null : qualifiedName().equals(other.qualifiedName()));
+            final AptMessageInterface other = (AptMessageInterface) obj;
+            return (name() == null ? other.name() == null : name().equals(other.name()));
         }
 
         @Override
         public int compareTo(final MessageInterface o) {
-            return this.qualifiedName().compareTo(o.qualifiedName());
+            return this.name().compareTo(o.name());
         }
 
 
@@ -173,7 +176,7 @@ final class MessageInterfaceFactory {
     }
 
     private static class BasicLoggerInterface implements MessageInterface {
-        private final TypeElement basicLogger ;
+        private final TypeElement basicLogger;
         private final Elements elements;
         private final Types types;
         private final Set<MessageMethod> methods;
@@ -217,7 +220,7 @@ final class MessageInterfaceFactory {
         }
 
         @Override
-        public String qualifiedName() {
+        public String name() {
             return loggers().basicLoggerClass().getName();
         }
 
@@ -248,7 +251,7 @@ final class MessageInterfaceFactory {
 
         @Override
         public int compareTo(final MessageInterface o) {
-            return this.qualifiedName().compareTo(o.qualifiedName());
+            return this.name().compareTo(o.name());
         }
 
         @Override

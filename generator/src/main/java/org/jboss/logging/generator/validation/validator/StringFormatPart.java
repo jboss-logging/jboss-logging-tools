@@ -153,7 +153,7 @@ class StringFormatPart extends AbstractFormatPart {
     /**
      * Initializes the flags based on the string.
      * <p/>
-     * Will set the {@link StringFormatPart#index} to {@code -1} if the {@link Flag#PREVIOUS} flag is found.
+     * Will set the {@link org.jboss.logging.generator.validation.validator.StringFormatPart#index} to {@code -1} if the {@link Flag#PREVIOUS} flag is found.
      *
      * @param s the flags in string form.
      *
@@ -280,7 +280,7 @@ class StringFormatPart extends AbstractFormatPart {
         /**
          * The result should use a conversion-dependent alternate form.
          * </p>
-         * Works on conversions {@link StringFormatPart.Conversion#OCTAL_INTEGER}, {@link StringFormatPart.Conversion#HEX_INTEGER}, all floating points
+         * Works on conversions {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#OCTAL_INTEGER}, {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#HEX_INTEGER}, all floating points
          * and most general conversions depending on the definition of {@link java.util.Formattable}.
          */
         CONVERSION_DEPENDENT_ALTERNATE('#'),
@@ -288,9 +288,9 @@ class StringFormatPart extends AbstractFormatPart {
         /**
          * The result will always include a sign.
          * </p>
-         * Works on all floating points, {@link StringFormatPart.Conversion#DECIMAL_INTEGER}, {@link StringFormatPart.Conversion#OCTAL_INTEGER},
-         * {@link StringFormatPart.Conversion#HEX_INTEGER} when applied to {@link java.math.BigInteger} or
-         * {@link StringFormatPart.Conversion#DECIMAL_INTEGER} when applied to {@code byte}, {@link Byte}, {@code short}, {@link Short},
+         * Works on all floating points, {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL_INTEGER}, {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#OCTAL_INTEGER},
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#HEX_INTEGER} when applied to {@link java.math.BigInteger} or
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL_INTEGER} when applied to {@code byte}, {@link Byte}, {@code short}, {@link Short},
          * {@code int}, {@link Integer}, {@code long} and {@link Long}.
          */
         INCLUDE_SIGN('+'),
@@ -298,9 +298,9 @@ class StringFormatPart extends AbstractFormatPart {
         /**
          * The result will include a leading space for positive values.
          * </p>
-         * Works on all floating points, {@link StringFormatPart.Conversion#DECIMAL_INTEGER}, {@link StringFormatPart.Conversion#OCTAL_INTEGER},
-         * {@link StringFormatPart.Conversion#HEX_INTEGER} when applied to {@link java.math.BigInteger} or
-         * {@link StringFormatPart.Conversion#DECIMAL_INTEGER} when applied to {@code byte}, {@link Byte}, {@code short}, {@link Short},
+         * Works on all floating points, {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL_INTEGER}, {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#OCTAL_INTEGER},
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#HEX_INTEGER} when applied to {@link java.math.BigInteger} or
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL_INTEGER} when applied to {@code byte}, {@link Byte}, {@code short}, {@link Short},
          * {@code int}, {@link Integer}, {@code long} and {@link Long}.
          */
         SPACE_FOR_POSITIVE_VALUES(' '),
@@ -315,19 +315,19 @@ class StringFormatPart extends AbstractFormatPart {
         /**
          * The result will include locale-specific grouping separators.
          * </p>
-         * Works only on {@link StringFormatPart.Conversion#DECIMAL_INTEGER} integrals and {@link StringFormatPart.Conversion#SCIENTIFIC_NOTATION},
-         * {@link StringFormatPart.Conversion#DECIMAL} and {@link StringFormatPart.Conversion#SCIENTIFIC_NOTATION_OR_DECIMAL} floating points.
+         * Works only on {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL_INTEGER} integrals and {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#SCIENTIFIC_NOTATION},
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL} and {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#SCIENTIFIC_NOTATION_OR_DECIMAL} floating points.
          */
         LOCALE_GROUPING_SEPARATOR(','),
 
         /**
          * The result will enclose negative numbers in parentheses.
          * </p>
-         * Works only on {@link StringFormatPart.Conversion#DECIMAL_INTEGER}, {@link StringFormatPart.Conversion#OCTAL_INTEGER},
-         * {@link StringFormatPart.Conversion#HEX_INTEGER} when applied to {@link java.math.BigInteger} or
-         * {@link StringFormatPart.Conversion#DECIMAL_INTEGER} when applied to {@code byte}, {@link Byte}, {@code short}, {@link Short},
-         * {@code int}, {@link Integer}, {@code long} and {@link Long} integrals and {@link StringFormatPart.Conversion#SCIENTIFIC_NOTATION},
-         * {@link StringFormatPart.Conversion#DECIMAL} and {@link StringFormatPart.Conversion#SCIENTIFIC_NOTATION_OR_DECIMAL} floating points.
+         * Works only on {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL_INTEGER}, {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#OCTAL_INTEGER},
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#HEX_INTEGER} when applied to {@link java.math.BigInteger} or
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL_INTEGER} when applied to {@code byte}, {@link Byte}, {@code short}, {@link Short},
+         * {@code int}, {@link Integer}, {@code long} and {@link Long} integrals and {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#SCIENTIFIC_NOTATION},
+         * {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#DECIMAL} and {@link org.jboss.logging.generator.validation.validator.StringFormatPart.Conversion#SCIENTIFIC_NOTATION_OR_DECIMAL} floating points.
          */
         PARENTHESES_FOR_NEGATIVES('('),
 

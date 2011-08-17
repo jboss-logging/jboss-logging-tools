@@ -23,30 +23,20 @@
 package org.jboss.logging.generator.util;
 
 import org.jboss.logging.generator.Annotations;
-import org.jboss.logging.generator.ParameterType;
-import org.jboss.logging.generator.model.ImplementationType;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import static org.jboss.logging.generator.LoggingTools.annotations;
-import static org.jboss.logging.generator.LoggingTools.loggers;
-import static org.jboss.logging.generator.ParameterType.MatchType.SUBTYPE;
-import static org.jboss.logging.generator.ParameterType.MatchType.SUPERTYPE;
 
 /**
  * An utility class to work with element.
@@ -82,36 +72,6 @@ public final class ElementHelper {
     }
 
     /**
-     * Returns the primary class simple name for an element
-     * who represents a MessageBundle or MessageLogger interface.
-     *
-     * @param element the element.
-     *
-     * @return the translation file name prefix
-     *
-     * @throws NullPointerException     if element is null
-     * @throws IllegalArgumentException if element is not an interface
-     */
-    public static String getPrimaryClassName(final TypeElement element) {
-        if (element == null) {
-            throw new NullPointerException("The element parameter cannot be null");
-        }
-        if (!element.getKind().isInterface()) {
-            throw new IllegalArgumentException("The element parameter is not an interface");
-        }
-
-        String prefix = getPrimaryClassNamePrefix(element);
-
-        if (element.getAnnotation(annotations().messageBundle()) != null) {
-            return prefix + ImplementationType.BUNDLE.toString();
-        } else if (element.getAnnotation(annotations().messageLogger()) != null) {
-            return prefix + ImplementationType.LOGGER.toString();
-        }
-
-        return prefix;
-    }
-
-    /**
      * Returns the primary class simple name prefix for an element
      * who represents a MessageBundle or MessageLogger interface.
      *
@@ -142,36 +102,23 @@ public final class ElementHelper {
         return translationFileName;
     }
 
+
     /**
-     * Returns all methods of the given interface.
-     * Include all declared and inherited methods, with the exception of any
-     * methods in the {@link org.jboss.logging.generator.Loggers#basicLoggerClass()} interface.
+     * Returns a collection of methods with the same name.
      *
-     * @param element the interface element
-     * @param types   the type util
+     * @param methods    the methods to process.
+     * @param methodName the method name to find.
      *
-     * @return the collection of all methods
-     *
-     * @throws IllegalArgumentException if element is not an interface
+     * @return a collection of methods with the same name.
      */
-    public static Collection<ExecutableElement> getInterfaceMethods(final TypeElement element, final Types types) {
-        if (!element.getKind().isInterface()) {
-            throw new IllegalArgumentException("The element parameter is not an interface");
-        }
-
-        Collection<ExecutableElement> methods = new HashSet<ExecutableElement>();
-
-        for (TypeMirror intf : element.getInterfaces()) {
-            // Ignore BasicLogger methods
-            if (!intf.toString().equals(loggers().basicLoggerClass().getName())) {
-                methods.addAll(getInterfaceMethods((TypeElement) types.asElement(intf), types));
-
+    public static Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName) {
+        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
+        for (ExecutableElement method : methods) {
+            if (methodName.equals(method.getSimpleName())) {
+                result.add(method);
             }
         }
-
-        methods.addAll(ElementFilter.methodsIn(element.getEnclosedElements()));
-
-        return methods;
+        return result;
     }
 
 
@@ -232,17 +179,16 @@ public final class ElementHelper {
     /**
      * Checks to see if the method has or inherits a {@link org.jboss.logging.generator.Annotations#message()}  annotation.
      *
-     * @param root   the interface, root element.
-     * @param method the method to check.
-     * @param types  the type util
+     * @param methods the method to search.
+     * @param method  the method to check.
      *
      * @return {@code true} if the method has or inherits a message annotation, otherwise {@code false}.
      */
-    public static boolean hasOrInheritsMessage(final TypeElement root, final ExecutableElement method, final Types types) {
+    public static boolean inheritsMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         if (isAnnotatedWith(method, annotations().message())) {
-            return true;
+            return false;
         }
-        final Collection<ExecutableElement> allMethods = findByName(getInterfaceMethods(root, types), method.getSimpleName(), parameterCount(method.getParameters()));
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
         for (ExecutableElement m : allMethods) {
             if (isAnnotatedWith(m, annotations().message())) {
                 return true;
@@ -252,47 +198,23 @@ public final class ElementHelper {
     }
 
     /**
-     * Finds the method with {@link org.jboss.logging.generator.Annotations#message()} annotation. If the {@code method}
-     * parameter does not have a message, the first message that has the same name and parameter count will be returned.
+     * Checks to see if the method is overloaded. An overloaded method has a different parameter count based on the
+     * format parameters only. Parameters annotated with {@link Annotations#cause()} or {@link Annotations#param()}
+     * are not counted.
      *
      * @param methods the method to search.
      * @param method  the method to check.
      *
-     * @return the message for the method, {@code null} of no message is found.
+     * @return {@code true} if the method is overloaded, otherwise {@code false}.
      */
-    public static String findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
-        if (isAnnotatedWith(method, annotations().message())) {
-            return annotations().messageValue(method);
-        }
-        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+    public static boolean isOverloaded(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
-            if (isAnnotatedWith(m, annotations().message())) {
-                return annotations().messageValue(m);
+            if (method.getSimpleName().equals(m.getSimpleName()) && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
+                return true;
             }
         }
-        return null;
-    }
-
-    /**
-     * Finds the method format with {@link org.jboss.logging.generator.Annotations#message()} annotation. If the {@code method}
-     * parameter does not have a message format, the first message format that has the same name and parameter count will be returned.
-     *
-     * @param methods the method to search.
-     * @param method  the method to check.
-     *
-     * @return the message for the method format, {@code null} of no message format is found.
-     */
-    public static Annotations.FormatType findMessageFormat(final Collection<ExecutableElement> methods, final ExecutableElement method) {
-        if (isAnnotatedWith(method, annotations().message())) {
-            return annotations().messageFormat(method);
-        }
-        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
-        for (ExecutableElement m : allMethods) {
-            if (isAnnotatedWith(m, annotations().message())) {
-                return annotations().messageFormat(m);
-            }
-        }
-        return Annotations.FormatType.PRINTF;
+        return false;
     }
 
     /**
@@ -377,294 +299,5 @@ public final class ElementHelper {
             return isAssignableFrom(type, typeElement);
         }
         return false;
-    }
-
-    /**
-     * Processes the constructors in the element and looks for the constructor that matches the parameter types.
-     * <p/>
-     * <b>Note:</b> Only public constructors are returned.
-     *
-     * @param element        the element to find the constructors for.
-     * @param parameterTypes the parameter types to match for the constructor.
-     *
-     * @return the constructor found, otherwise {@code null}.
-     */
-    // TODO - Delete
-    @Deprecated
-    public static ExecutableElement getConstructor(final Element element, final Class<?>... parameterTypes) {
-        final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
-        for (ExecutableElement constructor : constructors) {
-            if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
-            }
-            final List<? extends VariableElement> params = constructor.getParameters();
-            // If no parameters look for default constructor
-            if (parameterTypes.length == 0) {
-                if (params.size() == 0) {
-                    return constructor;
-                }
-            } else {
-                // If the lengths don't match, move on
-                if (parameterTypes.length == params.size()) {
-                    boolean match = true;
-                    // Must have a 1 to 1 relationship
-                    for (int i = 0; i < params.size(); i++) {
-                        final TypeMirror typeMirror = params.get(i).asType();
-                        if (typeMirror instanceof DeclaredType) {
-                            final DeclaredType dclType = (DeclaredType) typeMirror;
-                            final TypeElement typeElement = (TypeElement) dclType.asElement();
-                            if (!typeElement.getQualifiedName().toString().equals(parameterTypes[i].getName())) {
-                                match = false;
-                            }
-                        } else {
-                            match = false;
-                        }
-                    }
-                    if (match) {
-                        return constructor;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Processes the constructors in the element and looks for a constructor that best suits the the parameters passed.
-     * <p/>
-     * The parameter types are first checked to an exact match of the constructor. If the constructor was not found,
-     * the first method that can be used based on the parameter types is returned. If nothing is found {@code null} is
-     * returned.
-     * <p/>
-     * <b>Note:</b> Only public constructors are returned.
-     *
-     * @param element        the element to find the constructors for.
-     * @param parameterTypes the parameter types to match for the constructor.
-     *
-     * @return the constructor found, otherwise {@code null}.
-     */
-    // TODO - Delete
-    @Deprecated
-    public static ExecutableElement getFuzzyConstructor(final Element element, final ParameterType... parameterTypes) {
-        // First check for an exact match
-        final List<Class<?>> types = new LinkedList<Class<?>>();
-        for (ParameterType p : parameterTypes) {
-            types.add(p.type());
-        }
-        ExecutableElement result = getConstructor(element, types.toArray(new Class<?>[0]));
-        if (result == null) {
-            final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
-            for (ExecutableElement constructor : constructors) {
-                if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
-                    continue;
-                }
-                final List<? extends VariableElement> params = constructor.getParameters();
-                // If no parameters look for default constructor
-                if (parameterTypes.length == 0) {
-                    if (params.size() == 0) {
-                        result = constructor;
-                        break;
-                    }
-                } else {
-                    // If the lengths don't match, move on
-                    if (parameterTypes.length == params.size()) {
-                        boolean match = true;
-                        // Must have a 1 to 1 relationship
-                        for (int i = 0; i < params.size(); i++) {
-                            final ParameterType paramType = parameterTypes[i];
-                            final TypeMirror typeMirror = params.get(i).asType();
-                            switch (paramType.matchType()) {
-                                case EQUALS: {
-                                    if (typeMirror instanceof DeclaredType) {
-                                        final DeclaredType dclType = (DeclaredType) typeMirror;
-                                        final TypeElement typeElement = (TypeElement) dclType.asElement();
-                                        if (!typeElement.getQualifiedName().toString().equals(paramType.type())) {
-                                            match = false;
-                                        }
-                                    } else {
-                                        match = false;
-                                    }
-                                    break;
-                                }
-                                case SUBTYPE: {
-                                    if (!isAssignableFrom(typeMirror, paramType.type())) {
-                                        match = false;
-                                    }
-                                    break;
-                                }
-                                case SUPERTYPE: {
-                                    if (!isAssignableFrom(paramType.type(), typeMirror)) {
-                                        match = false;
-                                    }
-                                    break;
-                                }
-                                default:
-                                    match = false;
-                                    break;
-                            }
-                        }
-                        if (match) {
-                            result = constructor;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-
-    /**
-     * Finds the matching constructor for the exception based on information form the method.
-     * <p/>
-     * Exception messages are discovered a bit differently than other constructors. First any parameters of the method
-     * annotated with the {@link org.jboss.logging.generator.Annotations#cause()} are checked. If there are parameters
-     * found with the annotation, the parameter annotated with {@link org.jboss.logging.generator.Annotations#cause()}
-     * ,if there is one, is assumed to be the left most {@link Throwable} and the left most {@link String} parameter is
-     * assumed to be the message.
-     * <p/>
-     * If there are no parameters annotated with {@link org.jboss.logging.generator.Annotations#cause()}, then a
-     * {@link String}, {@link String} and {@link Throwable}, {@link Throwable} or {@link Throwable} and {@link String}
-     * constructors searched for.
-     * <p/>
-     * If no methods matching any of the above criteria are found, {@code null} is returned.
-     * <p/>
-     * <b>Note:</b> Only public constructors are returned.
-     *
-     * @param element    the element to find the constructors for.
-     * @param parameters the parameter types to match for the constructor.
-     *
-     * @return the constructor found, otherwise {@code null}.
-     */
-    // TODO - Delete
-    @Deprecated
-    public static ExecutableElement getExceptionConstructor(final Element element, final Types types, final ExecutableElement method) {
-        ExecutableElement result = null;
-        final List<VariableElement> params = new LinkedList<VariableElement>();
-        VariableElement cause = null;
-        for (VariableElement param : method.getParameters()) {
-            // First extract the @Param annotated parameters
-            if (isAnnotatedWith(param, annotations().param())) {
-                params.add(param);
-            }
-            // Find the @Cause parameter
-            if (isAnnotatedWith(param, annotations().cause())) {
-                cause = param;
-            }
-        }
-
-        // Check to see if we are @Param parameters
-        if (params.isEmpty()) {
-            final ExecutableElement defaultConstructor = getConstructor(element);
-            final ExecutableElement stringConstructor = getFuzzyConstructor(element, ParameterType.of(String.class, SUBTYPE));
-            final ExecutableElement throwableConstructor = getFuzzyConstructor(element, ParameterType.of(Throwable.class, SUPERTYPE));
-            final ExecutableElement throwableStringConstructor = getFuzzyConstructor(element, ParameterType.of(Throwable.class, SUPERTYPE), ParameterType.of(String.class, SUBTYPE));
-            final ExecutableElement stringThrowableConstructor = getFuzzyConstructor(element, ParameterType.of(String.class, SUBTYPE), ParameterType.of(Throwable.class, SUPERTYPE));
-            if (cause == null) {
-                // Prefer a string constructor
-                result = stringConstructor;
-            } else {
-                // Prefer throwable/string combo
-                if (throwableStringConstructor != null) {
-                    result = throwableStringConstructor;
-                } else if (stringThrowableConstructor != null) {
-                    result = stringThrowableConstructor;
-                } else if (stringConstructor != null) {
-                    result = stringConstructor;
-                } else if (throwableConstructor != null) {
-                    result = throwableConstructor;
-                }
-            }
-            // Final check if not set use the default.
-            if (result == null) {
-                // Use default
-                result = defaultConstructor;
-            }
-        } else {
-            // Search the constructors
-            final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
-            for (ExecutableElement constructor : constructors) {
-                if (!constructor.getModifiers().contains(Modifier.PUBLIC)) {
-                    continue;
-                }
-                final List<? extends VariableElement> ctorParams = constructor.getParameters();
-                boolean causeFound = false;
-                boolean messageFound = false;
-                boolean match = true;
-                boolean paramClassValueFound = false;
-                int index = 0;
-
-                // TODO - Incomplete. Need to check the @Param value and test exact matches first.
-                for (VariableElement ctorParam : ctorParams) {
-                    // Is this a throwable parameter
-                    if (cause != null && !causeFound && isAssignableFrom(Throwable.class, ctorParam.asType())) {
-                        causeFound = true;
-                        index++;
-                        continue;
-                    }
-                    // Is this a message parameter
-                    if (!messageFound && isAssignableFrom(ctorParam.asType(), String.class)) {
-                        messageFound = true;
-                        index++;
-                        continue;
-                    }
-                    if (index < params.size()) {
-                        final VariableElement annoParam = params.get(index++);
-                        final String className = Object.class.getName();
-                        if (className == null) {
-                            if (!types.isSubtype(ctorParam.asType(), annoParam.asType())) {
-                                match = false;
-                            }
-                        } else {
-                            if (!ctorParam.asType().toString().equals(className)) {
-                                match = false;
-                            }
-                        }
-                    } else {
-                        // Break from parameter loop, constructor not found
-                        break;
-                    }
-                    // Short circuit the loop.
-                    if (!match) break;
-                }
-                if (match) {
-                    result = constructor;
-                    break;
-                }
-
-                // Check to see if
-                causeFound = false;
-                messageFound = false;
-                for (VariableElement ctorParam : ctorParams) {
-                    // Is this a throwable parameter
-                    if (cause != null && !causeFound && isAssignableFrom(Throwable.class, ctorParam.asType())) {
-                        causeFound = true;
-                        index++;
-                        continue;
-                    }
-                    // Is this a message parameter
-                    if (!messageFound && isAssignableFrom(ctorParam.asType(), String.class)) {
-                        messageFound = true;
-                        index++;
-                        continue;
-                    }
-                    if (index < params.size()) {
-                        final VariableElement annoParam = params.get(index++);
-                        if (!types.isSubtype(ctorParam.asType(), annoParam.asType())) {
-                            match = false;
-                        }
-                    } else {
-                        // Break from parameter loop, constructor not found
-                        break;
-                    }
-                }
-                if (match) {
-                    result = constructor;
-                    break;
-                }
-            }
-        }
-        return result;
     }
 }

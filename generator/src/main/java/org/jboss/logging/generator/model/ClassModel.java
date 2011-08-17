@@ -131,13 +131,13 @@ public abstract class ClassModel {
 
         // Always implement the interface
         // TODO - Temporary fix for implementing nested interfaces.
-        definedClass._implements(codeModel.ref(messageInterface.qualifiedName().replace("$", ".")));
+        definedClass._implements(codeModel.ref(messageInterface.name().replace("$", ".")));
 
         //Add implements
         if (!messageInterface.extendedInterfaces().isEmpty()) {
             for (MessageInterface intf : messageInterface.extendedInterfaces()) {
                 // TODO - Temporary fix for implementing nested interfaces.
-                final String interfaceName = intf.qualifiedName().replace("$", ".");
+                final String interfaceName = intf.name().replace("$", ".");
                 definedClass._implements(codeModel.ref(interfaceName));
             }
         }
@@ -162,7 +162,7 @@ public abstract class ClassModel {
      * @throws IllegalStateException if this method is called before the generateModel method
      */
     protected JMethod addMessageMethod(final MessageMethod messageMethod) {
-        return addMessageMethod(messageMethod, messageMethod.messageValue());
+        return addMessageMethod(messageMethod, messageMethod.message().value());
     }
 
     /**

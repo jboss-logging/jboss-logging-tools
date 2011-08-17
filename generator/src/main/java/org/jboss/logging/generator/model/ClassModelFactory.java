@@ -74,10 +74,10 @@ public class ClassModelFactory {
 
     private static String getPrimaryClassName(final MessageInterface messageInterface) {
         if (messageInterface.isMessageBundle()) {
-            return messageInterface.qualifiedName() + BUNDLE.toString();
+            return messageInterface.name() + BUNDLE.toString();
         } else if (messageInterface.isMessageLogger()) {
-            return messageInterface.qualifiedName() + LOGGER.toString();
+            return messageInterface.name() + LOGGER.toString();
         }
-        return messageInterface.qualifiedName();
+        return messageInterface.name();
     }
 }

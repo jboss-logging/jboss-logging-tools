@@ -88,7 +88,7 @@ final class TranslationFileGenerator extends AbstractTool {
 
             for (MessageMethod messageMethod : messageInterface.methods()) {
                 if (processed.add(messageMethod.translationKey())) {
-                    writer.write(String.format("# %s", messageMethod.messageValue()));
+                    writer.write(String.format("# %s", messageMethod.message().value()));
                     writer.newLine();
                     writer.write(String.format("%s=", messageMethod.translationKey()));
                     writer.newLine();

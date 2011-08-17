@@ -23,7 +23,7 @@
 package org.jboss.logging.generator.validation.validator;
 
 /**
- * Abstract class that only implements Comparable for convenience. Uses the {@link FormatPart#position()} for
+ * Abstract class that only implements Comparable for convenience. Uses the {@link org.jboss.logging.generator.validation.validator.FormatPart#position()} for
  * the comparison.
  * <p/>
  * Date: 13.06.2011

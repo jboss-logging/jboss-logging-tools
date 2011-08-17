@@ -9,34 +9,22 @@ import java.util.Set;
  */
 public interface MessageMethod extends Comparable<MessageMethod>, MessageObject {
 
+    /**
+     * The {@link Message} to be used for the method.
+     *
+     * @return the message.
+     */
+    Message message();
 
     /**
-     * Returns {@code true} if the method has a message id, otherwise {@code false},
+     * Indicates whether the message was inherited from another message or not. If {@code true} is returned the
+     * {@link Message} was inherited from a different method, otherwise {@code false}.
+     * <p/>
+     * <b>Note:</b> {@code false} does not indicate the method has a {@link Annotations#message()} annotation.
      *
-     * @return {@code true} if the method has a message id, otherwise {@code false},
+     * @return {@code true} if the message was inherited from a different method, otherwise {@code false}.
      */
-    boolean hasMessageId();
-
-    /**
-     * Returns the message format.
-     *
-     * @return the message format.
-     */
-    Annotations.FormatType messageFormat();
-
-    /**
-     * Returns the Message annotation associated with this method.
-     *
-     * @return the message annotation.
-     */
-    String messageValue();
-
-    /**
-     * Returns the id of the message.
-     *
-     * @return the id of the message.
-     */
-    int messageId();
+    boolean inheritsMessage();
 
     /**
      * Returns the name of the method used to retrieve the message.
@@ -57,6 +45,7 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject 
      *
      * @return the method name.
      */
+    @Override
     String name();
 
     /**
@@ -141,4 +130,48 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject 
      * @return {@code true} if this is a logger method, otherwise {@code false}.
      */
     boolean isLoggerMethod();
+
+
+    /**
+     * Represents a {@link Annotations#message()} annotation on a method.
+     */
+    public interface Message {
+
+        /**
+         * The message id for the message to use. Any id less than 0 will be ignored.
+         *
+         * @return the message id.
+         */
+        int id();
+
+        /**
+         * Checks if the message has an id that was provided. Returns {@code true} if the message id was specified or
+         * inherited, otherwise returns {@code false}.
+         *
+         * @return {@code true} if the message id was provided, otherwise {@code false}.
+         */
+        boolean hasId();
+
+        /**
+         * Checks if the message id was inherited. Returns {@code true} only if the message id is inherited, otherwise
+         * {@code false} is returned.
+         *
+         * @return {@code true} if the message id was inherited, otherwise {@code false}.
+         */
+        boolean inheritsId();
+
+        /**
+         * A format string that can be used with the {@link #format()}.
+         *
+         * @return a format string.
+         */
+        String value();
+
+        /**
+         * The message format type for the message.
+         *
+         * @return the format type.
+         */
+        Annotations.FormatType format();
+    }
 }

@@ -100,7 +100,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             methods.addAll(messageInterface.methods());
         }
         for (MessageMethod messageMethod : methods) {
-            final JClass returnType = codeModel.ref(messageMethod.returnType().qualifiedClassName());
+            final JClass returnType = codeModel.ref(messageMethod.returnType().name());
             // Create the method
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, messageMethod.name());
             jMethod.annotate(Override.class);
@@ -142,8 +142,9 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         }
         // The next parameter is the message. Should be accessed via the
         // message retrieval method.
-        if (messageMethod.hasMessageId() && projectCodeVar != null) {
-            String formattedId = formatMessageId(messageMethod.messageId());
+        final MessageMethod.Message message = messageMethod.message();
+        if (message.hasId() && projectCodeVar != null) {
+            String formattedId = formatMessageId(message.id());
             logInv.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
         } else {
             logInv.arg(JExpr.invoke(msgMethod));
@@ -170,9 +171,9 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 returnType = codeModel.VOID;
             } else {
                 if (method.returnType().isPrimitive()) {
-                    returnType = JClass.parse(codeModel, method.returnType().qualifiedClassName());
+                    returnType = JClass.parse(codeModel, method.returnType().name());
                 } else {
-                    returnType = codeModel.ref(method.returnType().qualifiedClassName());
+                    returnType = codeModel.ref(method.returnType().name());
                 }
             }
             final JMethod blMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, method.name());

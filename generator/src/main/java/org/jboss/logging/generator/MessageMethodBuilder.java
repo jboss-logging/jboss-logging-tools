@@ -3,6 +3,7 @@ package org.jboss.logging.generator;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -12,7 +13,10 @@ import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
 import static org.jboss.logging.generator.LoggingTools.annotations;
+import static org.jboss.logging.generator.util.ElementHelper.findByName;
+import static org.jboss.logging.generator.util.ElementHelper.inheritsMessage;
 import static org.jboss.logging.generator.util.ElementHelper.isAnnotatedWith;
+import static org.jboss.logging.generator.util.ElementHelper.isOverloaded;
 import static org.jboss.logging.generator.util.ElementHelper.parameterCount;
 
 /**
@@ -43,48 +47,12 @@ final class MessageMethodBuilder {
     }
 
     Set<? extends MessageMethod> build() {
-        final Set<MessageMethodImpl> result = new LinkedHashSet<MessageMethodImpl>();
+        final Set<AptMessageMethod> result = new LinkedHashSet<AptMessageMethod>();
         for (ExecutableElement elementMethod : methods) {
-            final MessageMethodImpl resultMethod = new MessageMethodImpl(elementMethod);
-            // Find the annotations
-            Message message = Message.of(annotations().messageId(elementMethod), annotations().hasMessageId(elementMethod),
-                    annotations().messageValue(elementMethod), annotations().messageFormat(elementMethod));
-
-            // Find the first method with non-null @Message
-            for (MessageMethodImpl method : result) {
-                // Check for inherited message id's
-                if (annotations().inheritsMessageId(elementMethod) && method.message.hasId()) {
-                    final Message current = message;
-                    message = Message.of(message.id(), message.hasId(), current.value(), current.format());
-                }
-                // If the message is not null, no need to process further.
-                if (message.value() != null) {
-                    continue;
-                }
-
-                if (method.message.value() != null && message.value() == null &&
-                        parameterCount(elementMethod.getParameters()) == parameterCount(method.method.getParameters())) {
-                    message = method.message;
-                }
-            }
-            // Process through the collection and update any currently null messages
-            final Set<MessageMethodImpl> toProcess = new LinkedHashSet<MessageMethodImpl>(result);
-            toProcess.addAll(result);
-            for (MessageMethodImpl method : toProcess) {
-                // Check for inherited message id's
-                if (annotations().inheritsMessageId(method.method) && message.hasId()) {
-                    final Message old = method.message;
-                    method.message = Message.of(message.id(), message.hasId(), old.value(), old.format());
-                }
-                if (method.message.value() == null) {
-                    method.message = message;
-                    result.remove(method);
-                    result.add(method);
-                }
-                if (elementMethod.getSimpleName().equals(method.method.getSimpleName()) && parameterCount(method.method.getParameters()) != parameterCount(elementMethod.getParameters())) {
-                    resultMethod.isOverloaded = true;
-                }
-            }
+            final AptMessageMethod resultMethod = new AptMessageMethod(elementMethod);
+            resultMethod.inheritsMessage = inheritsMessage(methods, elementMethod);
+            resultMethod.message = findMessage(methods, elementMethod);
+            resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
 
             // Create a list of parameters
             for (MethodParameter methodParameter : MethodParameterFactory.of(elements, types, resultMethod.method)) {
@@ -98,9 +66,9 @@ final class MessageMethodBuilder {
                 resultMethod.allParameters.add(methodParameter);
             }
             // Setup the global variables for the result
-            resultMethod.message = message;
+
             // Check to see if the method is overloaded
-            if (resultMethod.isOverloaded) {
+            if (resultMethod.isOverloaded()) {
                 resultMethod.messageMethodName = resultMethod.name() + resultMethod.formatParameterCount() + MESSAGE_METHOD_SUFFIX;
                 resultMethod.translationKey = resultMethod.name() + "." + resultMethod.formatParameterCount();
             } else {
@@ -114,13 +82,61 @@ final class MessageMethodBuilder {
         return Collections.unmodifiableSet(result);
     }
 
+    private static MessageMethod.Message findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        AptMessage result = null;
+        if (isAnnotatedWith(method, annotations().message())) {
+            result = new AptMessage();
+            result.hasId = annotations().hasMessageId(method);
+            result.value = annotations().messageValue(method);
+            result.formatType = annotations().messageFormat(method);
+            result.inheritsId = annotations().inheritsMessageId(method);
+            if (result.inheritsId()) {
+                result.id = findMessageId(methods, method);
+            } else {
+                result.id = annotations().messageId(method);
+            }
+        } else {
+            final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+            for (ExecutableElement m : allMethods) {
+                if (isAnnotatedWith(m, annotations().message())) {
+                    result = new AptMessage();
+                    result.hasId = annotations().hasMessageId(m);
+                    result.value = annotations().messageValue(m);
+                    result.formatType = annotations().messageFormat(m);
+                    result.inheritsId = annotations().inheritsMessageId(m);
+                    if (result.inheritsId()) {
+                        result.id = findMessageId(methods, m);
+                    } else {
+                        result.id = annotations().messageId(m);
+                    }
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private static int findMessageId(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        int result = -2;
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+        for (ExecutableElement m : allMethods) {
+            if (isAnnotatedWith(m, annotations().message())) {
+                if (!annotations().inheritsMessageId(m)) {
+                    result = annotations().messageId(m);
+                }
+            }
+        }
+        return result;
+    }
+
 
     /**
      * An implementation for the MessageMethod interface.
      */
-    private static class MessageMethodImpl implements MessageMethod {
+    private static class AptMessageMethod implements MessageMethod {
 
         private MethodParameter cause;
+        private boolean inheritsMessage;
         private boolean isOverloaded;
         private MessageReturnType returnType;
         private Message message;
@@ -136,8 +152,9 @@ final class MessageMethodBuilder {
          *
          * @param method the method to describe.
          */
-        MessageMethodImpl(final ExecutableElement method) {
+        AptMessageMethod(final ExecutableElement method) {
             this.method = method;
+            inheritsMessage = false;
             isOverloaded = false;
             allParameters = new LinkedHashSet<MethodParameter>();
             formatParameters = new LinkedHashSet<MethodParameter>();
@@ -145,23 +162,13 @@ final class MessageMethodBuilder {
         }
 
         @Override
-        public boolean hasMessageId() {
-            return message.hasId();
+        public Message message() {
+            return message;
         }
 
         @Override
-        public Annotations.FormatType messageFormat() {
-            return message.format();
-        }
-
-        @Override
-        public String messageValue() {
-            return message.value();
-        }
-
-        @Override
-        public int messageId() {
-            return message.id();
+        public boolean inheritsMessage() {
+            return inheritsMessage;
         }
 
         @Override
@@ -255,10 +262,10 @@ final class MessageMethodBuilder {
             if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof MessageMethodImpl)) {
+            if (!(obj instanceof AptMessageMethod)) {
                 return false;
             }
-            final MessageMethodImpl other = (MessageMethodImpl) obj;
+            final AptMessageMethod other = (AptMessageMethod) obj;
             if ((name() == null) ? other.name() != null : !name().equals(other.name())) {
                 return false;
             }
@@ -271,7 +278,7 @@ final class MessageMethodBuilder {
         @Override
         public int compareTo(final MessageMethod o) {
             int result = name().compareTo(o.name());
-            result = (result != 0) ? result : returnType.qualifiedClassName().compareTo(o.returnType().qualifiedClassName());
+            result = (result != 0) ? result : returnType.name().compareTo(o.returnType().name());
             // Size does matter
             result = allParameters.size() - o.allParameters().size();
             if (result == 0) {
@@ -310,6 +317,43 @@ final class MessageMethodBuilder {
         @Override
         public ExecutableElement reference() {
             return method;
+        }
+    }
+
+    private static class AptMessage implements MessageMethod.Message {
+
+        private boolean hasId;
+        private int id;
+        private boolean inheritsId;
+        private String value;
+        private Annotations.FormatType formatType;
+
+        private AptMessage() {
+        }
+
+        @Override
+        public int id() {
+            return id;
+        }
+
+        @Override
+        public boolean hasId() {
+            return hasId;
+        }
+
+        @Override
+        public boolean inheritsId() {
+            return inheritsId;
+        }
+
+        @Override
+        public String value() {
+            return value;
+        }
+
+        @Override
+        public Annotations.FormatType format() {
+            return formatType;
         }
     }
 }

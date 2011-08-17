@@ -65,4 +65,13 @@ public interface ThrowableReturnType extends MessageObject {
      */
     Set<MethodParameter> constructionParameters();
 
+
+    /**
+     * Returns the qualified class name of the return type.
+     *
+     * @return the qualified class name fo the return type.
+     */
+    @Override
+    String name();
+
 }

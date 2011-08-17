@@ -20,8 +20,8 @@
  */
 package org.jboss.logging.generator;
 
+import org.jboss.logging.generator.validation.AptValidator;
 import org.jboss.logging.generator.validation.ValidationMessage;
-import org.jboss.logging.generator.validation.Validator;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -30,6 +30,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
@@ -111,40 +112,64 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
         boolean process = true;
 
-        Types typesUtil = processingEnv.getTypeUtils();
-        Validator validator = Validator.buildValidator(processingEnv);
+        final Types typesUtil = processingEnv.getTypeUtils();
+        final AptValidator validator = new AptValidator();
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
             if (isValidAnnotation(annotation)) {
-                Set<? extends TypeElement> elements = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
-                Collection<ValidationMessage> errorMessages = validator.validate(elements);
-                for (ValidationMessage error : errorMessages) {
-                    if (error.type() == ValidationMessage.MessageType.ERROR) {
-                        logger.error(error.getElement(), error.getMessage());
-                        process = false;
-                    } else {
-                        logger.warn(error.getElement(), error.getMessage());
-                    }
-                }
-                if (process) {
-                    for (TypeElement element : elements) {
-
-                        if (element.getKind().isInterface()
-                                && !element.getModifiers().contains(Modifier.PRIVATE)) {
-
-                            for (AbstractTool processor : processors) {
-                                logger.debug("Executing processor %s", processor.getName());
-                                processor.processTypeElement(annotation, element, MessageInterfaceFactory.of(element, typesUtil, processingEnv.getElementUtils()));
+                final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
+                for (TypeElement interfaceElement : interfaces) {
+                    final MessageInterface messageInterface = MessageInterfaceFactory.of(interfaceElement, processingEnv);
+                    final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
+                    for (ValidationMessage message : validationMessages) {
+                        final Object reference = message.getMessageObject().reference();
+                        if (reference instanceof Element) {
+                            final Element element = Element.class.cast(reference);
+                            switch (message.messageType()) {
+                                case ERROR: {
+                                    logger.error(element, message.getMessage());
+                                    process = false;
+                                    break;
+                                }
+                                case WARN: {
+                                    logger.warn(element, message.getMessage());
+                                    break;
+                                }
+                                default: {
+                                    logger.note(element, message.getMessage());
+                                }
+                            }
+                        } else {
+                            switch (message.messageType()) {
+                                case ERROR: {
+                                    logger.error(message.getMessage());
+                                    process = false;
+                                    break;
+                                }
+                                case WARN: {
+                                    logger.warn(message.getMessage());
+                                    break;
+                                }
+                                default: {
+                                    logger.note(message.getMessage());
+                                }
                             }
                         }
                     }
+                    if (process) {
+                        if (interfaceElement.getKind().isInterface()
+                                && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
 
+                            for (AbstractTool processor : processors) {
+                                logger.debug("Executing processor %s", processor.getName());
+                                processor.processTypeElement(annotation, interfaceElement, messageInterface);
+                            }
+                        }
+                    }
                 }
             }
-
         }
-
         return process;
     }
 

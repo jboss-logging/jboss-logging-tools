@@ -39,6 +39,7 @@ public interface MethodParameter extends Comparable<MethodParameter>, MessageObj
      *
      * @return the variable name of the parameter.
      */
+    @Override
     String name();
 
     /**

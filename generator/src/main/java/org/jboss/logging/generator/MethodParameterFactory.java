@@ -75,9 +75,9 @@ final class MethodParameterFactory {
                 }
             }
             if (method.isVarArgs()) {
-                result.add(new MethodParameterImpl(qualifiedType, param, formatClass, (++index == params.size())));
+                result.add(new AptMethodParameter(qualifiedType, param, formatClass, (++index == params.size())));
             } else {
-                result.add(new MethodParameterImpl(qualifiedType, param, formatClass, false));
+                result.add(new AptMethodParameter(qualifiedType, param, formatClass, false));
             }
         }
         return result;
@@ -154,10 +154,10 @@ final class MethodParameterFactory {
                 if (obj == this) {
                     return true;
                 }
-                if (!(obj instanceof MethodParameterImpl)) {
+                if (!(obj instanceof AptMethodParameter)) {
                     return false;
                 }
-                final MethodParameterImpl other = (MethodParameterImpl) obj;
+                final AptMethodParameter other = (AptMethodParameter) obj;
                 if ((this.type() == null) ? (other.type() != null) : !type().equals(other.type())) {
                     return false;
                 }
@@ -178,7 +178,7 @@ final class MethodParameterFactory {
         };
     }
 
-    private static class MethodParameterImpl implements MethodParameter {
+    private static class AptMethodParameter implements MethodParameter {
 
         private final VariableElement param;
         private final String qualifiedType;
@@ -194,7 +194,7 @@ final class MethodParameterFactory {
          * @param param          the parameter.
          * @param formatterClass the formatter class, or {@code null} if none
          */
-        MethodParameterImpl(final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
+        AptMethodParameter(final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
             this.qualifiedType = qualifiedType;
             this.param = param;
             this.formatterClass = formatterClass;
@@ -277,10 +277,10 @@ final class MethodParameterFactory {
             if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof MethodParameterImpl)) {
+            if (!(obj instanceof AptMethodParameter)) {
                 return false;
             }
-            final MethodParameterImpl other = (MethodParameterImpl) obj;
+            final AptMethodParameter other = (AptMethodParameter) obj;
             if ((this.param == null) ? (other.param != null) : !this.param.equals(other.param)) {
                 return false;
             }

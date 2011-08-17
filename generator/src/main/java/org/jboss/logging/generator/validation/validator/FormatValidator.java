@@ -27,7 +27,7 @@ package org.jboss.logging.generator.validation.validator;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-interface FormatValidator {
+public interface FormatValidator {
 
     /**
      * The number of arguments needed for the format.
@@ -35,6 +35,13 @@ interface FormatValidator {
      * @return the number of arguments needed.
      */
     int argumentCount();
+
+    /**
+     * Returns the format string used for validation.
+     *
+     * @return the format string.
+     */
+    String format();
 
     /**
      * Returns {@code true} of the format is valid, otherwise {@code false}.

@@ -15,23 +15,20 @@ import java.util.regex.Pattern;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class MessageFormatValidator implements FormatValidator {
+class MessageFormatValidator extends AbstractFormatValidator {
     public final String PATTERN = "\\{}|\\{.+?}";
 
     private final Set<FormatPart> formatParts = new TreeSet<FormatPart>();
     private final Set<MessageFormatPart> formats = new TreeSet<MessageFormatPart>();
     private int argumentCount;
     private boolean valid;
-    private String summary;
-    private String detail;
     private final String format;
 
 
-    MessageFormatValidator(final String format) {
+    private MessageFormatValidator(final String format) {
+        super();
         this.format = format;
         valid = true;
-        detail = "";
-        summary = "";
     }
 
     public static MessageFormatValidator of(final String format) {
@@ -63,18 +60,13 @@ class MessageFormatValidator implements FormatValidator {
     }
 
     @Override
+    public String format() {
+        return format;
+    }
+
+    @Override
     public boolean isValid() {
         return valid;
-    }
-
-    @Override
-    public String detailMessage() {
-        return detail;
-    }
-
-    @Override
-    public String summaryMessage() {
-        return summary;
     }
 
     private void validate() {
@@ -84,8 +76,7 @@ class MessageFormatValidator implements FormatValidator {
         while (start != -1 && valid) {
             if (end < start) {
                 valid = false;
-                summary = String.format("Format %s appears to be missing an ending bracket.", format);
-                detail = summary;
+                setSummaryMessage("Format %s appears to be missing an ending bracket.", format);
             }
             start = format.indexOf("{", end);
             if (start > 0) {
@@ -97,8 +88,8 @@ class MessageFormatValidator implements FormatValidator {
     private void parameterCheck(final Object... parameters) {
         if (argumentCount > 0 && parameters == null) {
             valid = false;
-            summary = String.format("Invalid parameter count. Required %d provided null for format '%s'.", argumentCount, format);
-            detail = String.format("Required %d parameters, but none were provided for format %s.", argumentCount, format);
+            setSummaryMessage("Invalid parameter count. Required %d provided null for format '%s'.", argumentCount, format);
+            setDetailMessage("Required %d parameters, but none were provided for format %s.", argumentCount, format);
         } else {
             parameterCheck(parameters.length);
         }
@@ -108,8 +99,8 @@ class MessageFormatValidator implements FormatValidator {
     private void parameterCheck(final int parameterCount) {
         if (argumentCount != parameterCount) {
             valid = false;
-            summary = String.format("Invalid parameter count. Required: %d provided %d for format '%s'.", argumentCount, parameterCount, format);
-            detail = String.format("Required %d parameters, but %d were provided for format %s.", argumentCount, parameterCount, format);
+            setSummaryMessage("Invalid parameter count. Required: %d provided %d for format '%s'.", argumentCount, parameterCount, format);
+            setDetailMessage("Required %d parameters, but %d were provided for format %s.", argumentCount, parameterCount, format);
         }
 
     }

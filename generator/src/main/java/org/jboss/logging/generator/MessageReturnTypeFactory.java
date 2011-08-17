@@ -2,7 +2,6 @@ package org.jboss.logging.generator;
 
 import org.jboss.logging.generator.util.ElementHelper;
 
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -25,7 +24,7 @@ final class MessageReturnTypeFactory {
         if (returnType.getKind() == TypeKind.VOID) {
             return MessageReturnType.VOID;
         }
-        final MessageReturnTypeImpl result = new MessageReturnTypeImpl(returnType, messageMethod);
+        final AptMessageReturnType result = new AptMessageReturnType(returnType, messageMethod);
         result.init(elements, types);
         return result;
     }
@@ -33,12 +32,12 @@ final class MessageReturnTypeFactory {
     /**
      * Implementation of return type.
      */
-    private static class MessageReturnTypeImpl implements MessageReturnType {
+    private static class AptMessageReturnType implements MessageReturnType {
         private final TypeMirror returnType;
         private final MessageMethod messageMethod;
         private ThrowableReturnType throwableReturnType;
 
-        private MessageReturnTypeImpl(final TypeMirror returnType, final MessageMethod messageMethod) {
+        private AptMessageReturnType(final TypeMirror returnType, final MessageMethod messageMethod) {
             this.returnType = returnType;
             this.messageMethod = messageMethod;
             throwableReturnType = null;
@@ -55,7 +54,7 @@ final class MessageReturnTypeFactory {
         }
 
         @Override
-        public String qualifiedClassName() {
+        public String name() {
             return returnType.toString();
         }
 
@@ -74,7 +73,7 @@ final class MessageReturnTypeFactory {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            return prime * result + (qualifiedClassName() == null ? 0 : qualifiedClassName().hashCode());
+            return prime * result + (name() == null ? 0 : name().hashCode());
         }
 
         @Override
@@ -82,11 +81,11 @@ final class MessageReturnTypeFactory {
             if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof MessageReturnTypeImpl)) {
+            if (!(obj instanceof AptMessageReturnType)) {
                 return false;
             }
-            final MessageReturnTypeImpl other = (MessageReturnTypeImpl) obj;
-            return (qualifiedClassName() == null ? other.qualifiedClassName() == null : qualifiedClassName().equals(other.qualifiedClassName()));
+            final AptMessageReturnType other = (AptMessageReturnType) obj;
+            return (name() == null ? other.name() == null : name().equals(other.name()));
         }
 
         @Override

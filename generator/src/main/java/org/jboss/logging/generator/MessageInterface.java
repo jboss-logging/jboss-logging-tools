@@ -36,7 +36,8 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
      *
      * @return the qualified name.
      */
-    String qualifiedName();
+    @Override
+    String name();
 
     /**
      * The package name of the message interface.

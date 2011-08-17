@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class StringFormatValidator implements FormatValidator {
+class StringFormatValidator extends AbstractFormatValidator {
     /**
      * The Regex pattern.
      */
@@ -51,8 +51,6 @@ class StringFormatValidator implements FormatValidator {
     private final Set<StringFormatPart> formats = new TreeSet<StringFormatPart>();
     private int argumentCount;
     private boolean valid;
-    private String summary;
-    private String detail;
     private final String format;
 
     /**
@@ -61,6 +59,7 @@ class StringFormatValidator implements FormatValidator {
      * @param format the format.
      */
     private StringFormatValidator(final String format) {
+        super();
         this.format = format;
         this.valid = true;
     }
@@ -80,8 +79,7 @@ class StringFormatValidator implements FormatValidator {
         } catch (RuntimeException e) {
             if (result.isValid()) {
                 result.valid = false;
-                result.summary = String.format("Format '%s' appears to be invalid. Error: %s", format, e.getMessage());
-                result.detail = result.summary;
+                result.setDetailMessage("Format '%s' appears to be invalid. Error: %s", format, e.getMessage());
             }
         }
         return result;
@@ -103,8 +101,7 @@ class StringFormatValidator implements FormatValidator {
         } catch (RuntimeException e) {
             if (result.isValid()) {
                 result.valid = false;
-                result.summary = String.format("Format '%s' appears to be invalid. Error: %s", format, e.getMessage());
-                result.detail = result.summary;
+                result.setSummaryMessage("Format '%s' appears to be invalid. Error: %s", format, e.getMessage());
             }
         }
         return result;
@@ -116,8 +113,8 @@ class StringFormatValidator implements FormatValidator {
     private void validate() {
         if (!format.equalsIgnoreCase(asFormat())) {
             valid = false;
-            summary = String.format("Formats don't match. Internal error: %s Reconstructed: %s", format, asFormat());
-            detail = String.format("The original is '%s' and the reconstructed format is '%s'. This is likely an internal error and should be reported.", format, asFormat());
+            setSummaryMessage("Formats don't match. Internal error: %s Reconstructed: %s", format, asFormat());
+            setDetailMessage("The original is '%s' and the reconstructed format is '%s'. This is likely an internal error and should be reported.", format, asFormat());
         } else {
             // Attempt to use String.format() with default values
             final List<Object> params = new LinkedList<Object>();
@@ -160,8 +157,7 @@ class StringFormatValidator implements FormatValidator {
                         break;
                     default:
                         valid = false;
-                        summary = String.format("Format not found: %s", stringFormatPart);
-                        detail = summary;
+                        setSummaryMessage("Format not found: %s", stringFormatPart);
                 }
             }
             if (valid) {
@@ -169,9 +165,8 @@ class StringFormatValidator implements FormatValidator {
                     String.format(format, params.toArray());
                 } catch (final IllegalFormatException e) {
                     valid = false;
-                    summary = String.format("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, params, e
-                            .getMessage());
-                    detail = String.format("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, params, this);
+                    setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, params, e.getMessage());
+                    setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, params, this);
                 }
             }
         }
@@ -184,8 +179,7 @@ class StringFormatValidator implements FormatValidator {
         final int paramCount = (parameters == null ? 0 : parameters.length);
         if (argumentCount != paramCount) {
             valid = false;
-            summary = String.format("Parameter lengths do not match. Format (%s) requires %d arguments, supplied %d.", format, argumentCount, paramCount);
-            detail = summary;
+            setSummaryMessage("Parameter lengths do not match. Format (%s) requires %d arguments, supplied %d.", format, argumentCount, paramCount);
         }
         // Create a parameter list based on the parameters passed
         if (valid) {
@@ -193,11 +187,8 @@ class StringFormatValidator implements FormatValidator {
                 String.format(format, parameters);
             } catch (final IllegalFormatException e) {
                 valid = false;
-                summary = String.format("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, Arrays
-                        .asList(parameters), e
-                        .getMessage());
-                detail = String.format("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, Arrays
-                        .asList(parameters), this);
+                setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, Arrays.asList(parameters), e.getMessage());
+                setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, Arrays.asList(parameters), this);
             }
         }
     }
@@ -208,18 +199,13 @@ class StringFormatValidator implements FormatValidator {
     }
 
     @Override
+    public String format() {
+        return format;
+    }
+
+    @Override
     public boolean isValid() {
         return valid;
-    }
-
-    @Override
-    public String detailMessage() {
-        return detail;
-    }
-
-    @Override
-    public String summaryMessage() {
-        return summary;
     }
 
     /**

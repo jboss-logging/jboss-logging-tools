@@ -59,7 +59,7 @@ abstract class ImplementationClassModel extends ClassModel {
      * @param type             the type of the implementation.
      */
     protected ImplementationClassModel(final MessageInterface messageInterface, final ImplementationType type) {
-        super(messageInterface, messageInterface.qualifiedName() + type, null);
+        super(messageInterface, messageInterface.name() + type, null);
     }
 
     /**
@@ -89,13 +89,14 @@ abstract class ImplementationClassModel extends ClassModel {
         final JBlock body = method.body();
         final JClass returnField = getCodeModel().ref(method.type().fullName());
         final JVar result = body.decl(returnField, "result");
-        final JClass formatter = getCodeModel().ref(messageMethod.messageFormat().formatClass());
-        final JInvocation formatterMethod = formatter.staticInvoke(messageMethod.messageFormat().staticMethod());
+        final MessageMethod.Message message = messageMethod.message();
+        final JClass formatter = getCodeModel().ref(message.format().formatClass());
+        final JInvocation formatterMethod = formatter.staticInvoke(message.format().staticMethod());
         if (messageMethod.allParameters().isEmpty()) {
             // If the return type is an exception, initialize the exception.
             if (messageMethod.returnType().isThrowable()) {
-                if (messageMethod.hasMessageId() && projectCodeVar != null) {
-                    String formattedId = formatMessageId(messageMethod.messageId());
+                if (message.hasId() && projectCodeVar != null) {
+                    String formattedId = formatMessageId(message.id());
                     formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
                     initCause(result, returnField, body, messageMethod, formatterMethod);
                 } else {
@@ -105,8 +106,8 @@ abstract class ImplementationClassModel extends ClassModel {
                 result.init(JExpr.invoke(msgMethod));
             }
         } else {
-            if (messageMethod.hasMessageId() && projectCodeVar != null) {
-                String formattedId = formatMessageId(messageMethod.messageId());
+            if (message.hasId() && projectCodeVar != null) {
+                String formattedId = formatMessageId(message.id());
                 formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
             } else {
                 formatterMethod.arg(JExpr.invoke(msgMethod));

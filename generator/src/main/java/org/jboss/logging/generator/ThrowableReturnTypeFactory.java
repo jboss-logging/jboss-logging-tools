@@ -54,12 +54,12 @@ final class ThrowableReturnTypeFactory {
      * @return the return type descriptor.
      */
     public static ThrowableReturnType of(final TypeMirror returnType, final MessageMethod messageMethod, final Elements elementUtil, final Types typeUtil) {
-        final ThrowableReturnTypeImpl result = new ThrowableReturnTypeImpl(messageMethod, returnType);
+        final AptThrowableReturnType result = new AptThrowableReturnType(messageMethod, returnType);
         result.init(typeUtil, elementUtil);
         return result;
     }
 
-    private static class ThrowableReturnTypeImpl implements ThrowableReturnType {
+    private static class AptThrowableReturnType implements ThrowableReturnType {
 
         private final TypeMirror returnType;
 
@@ -85,7 +85,7 @@ final class ThrowableReturnTypeFactory {
          * @param messageMethod the message method.
          * @param returnType    the class name of the return type.
          */
-        private ThrowableReturnTypeImpl(final MessageMethod messageMethod, final TypeMirror returnType) {
+        private AptThrowableReturnType(final MessageMethod messageMethod, final TypeMirror returnType) {
             this.returnType = returnType;
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<MethodParameter>();
@@ -209,6 +209,11 @@ final class ThrowableReturnTypeFactory {
         }
 
         @Override
+        public String name() {
+            return returnType.toString();
+        }
+
+        @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -221,10 +226,10 @@ final class ThrowableReturnTypeFactory {
             if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof ThrowableReturnTypeImpl)) {
+            if (!(obj instanceof AptThrowableReturnType)) {
                 return false;
             }
-            final ThrowableReturnTypeImpl other = (ThrowableReturnTypeImpl) obj;
+            final AptThrowableReturnType other = (AptThrowableReturnType) obj;
             if ((this.returnType == null) ? other.returnType != null : this.returnType.equals(other.returnType)) {
                 return false;
             }
