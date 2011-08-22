@@ -31,6 +31,7 @@ import org.jboss.logging.generator.MessageInterface;
 import org.jboss.logging.generator.MessageMethod;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,10 +84,13 @@ class MessageLoggerTranslator extends ClassModel {
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
 
-        Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
+        final Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
+        final Set<String> methodNames = new HashSet<String>();
         for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
-            method.annotate(Override.class);
+            if (methodNames.add(method.name())) {
+                method.annotate(Override.class);
+            }
         }
 
         return model;

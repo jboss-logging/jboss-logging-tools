@@ -28,6 +28,7 @@ import org.jboss.logging.generator.MessageInterface;
 import org.jboss.logging.generator.MessageMethod;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,10 +75,13 @@ class MessageBundleTranslator extends ClassModel {
         JMethod readResolve = ClassModelUtil.createReadResolveMethod(definedClass);
         readResolve.annotate(Override.class);
 
-        Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
+        final Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
+        final Set<String> methodNames = new HashSet<String>();
         for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
-            method.annotate(Override.class);
+            if (methodNames.add(method.name())) {
+                method.annotate(Override.class);
+            }
         }
 
         return model;
