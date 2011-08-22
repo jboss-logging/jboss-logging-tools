@@ -35,6 +35,7 @@ import org.jboss.logging.generator.MethodParameter;
 import org.jboss.logging.generator.ThrowableReturnType;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static org.jboss.logging.generator.model.ClassModelUtil.formatMessageId;
 
@@ -62,9 +63,6 @@ abstract class ImplementationClassModel extends ClassModel {
         super(messageInterface, messageInterface.name() + type, null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         JCodeModel codeModel = super.generateModel();
@@ -115,7 +113,7 @@ abstract class ImplementationClassModel extends ClassModel {
             // Create the parameters
             for (MethodParameter param : messageMethod.allParameters()) {
                 final JClass paramType = getCodeModel().ref(param.type());
-                JVar paramVar = method.param(JMod.FINAL, paramType, param.name());
+                method.param(JMod.FINAL, paramType, param.name());
             }
             // Create the parameters
             for (MethodParameter param : messageMethod.formatParameters()) {
@@ -164,8 +162,8 @@ abstract class ImplementationClassModel extends ClassModel {
         } else if (returnType.hasStringConstructor()) {
             result.init(JExpr._new(returnField).arg(formatterMethod));
             if (messageMethod.hasCause()) {
-                JInvocation resultInv = body.invoke(result, "initCause");
-                resultInv.arg(JExpr.ref(messageMethod.cause().name()));
+                JInvocation initCause = body.invoke(result, "initCause");
+                initCause.arg(JExpr.ref(messageMethod.cause().name()));
             }
         } else if (returnType.hasThrowableConstructor() && messageMethod.hasCause()) {
             result.init(JExpr._new(returnField).arg(JExpr.ref(messageMethod.cause().name())));
@@ -175,10 +173,16 @@ abstract class ImplementationClassModel extends ClassModel {
             result.init(JExpr._new(returnField).arg(JExpr._null()).arg(formatterMethod));
         } else if (messageMethod.hasCause()) {
             result.init(JExpr._new(returnField));
-            JInvocation resultInv = body.invoke(result, "initCause");
-            resultInv.arg(JExpr.ref(messageMethod.cause().name()));
+            JInvocation initCause = body.invoke(result, "initCause");
+            initCause.arg(JExpr.ref(messageMethod.cause().name()));
         } else {
             result.init(JExpr._new(returnField));
         }
+        final JClass arrays = getCodeModel().ref(Arrays.class);
+        final JClass stClass = getCodeModel().ref(StackTraceElement.class).array();
+        final JVar st = body.decl(stClass, "st").init(result.invoke("getStackTrace"));
+        final JInvocation setStackTrace = result.invoke("setStackTrace");
+        setStackTrace.arg(arrays.staticInvoke("copyOfRange").arg(st).arg(JExpr.lit(1)).arg(st.ref("length")));
+        body.add(setStackTrace);
     }
 }
