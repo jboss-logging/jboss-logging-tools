@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.logging.generator.LoggingTools.annotations;
 import static org.jboss.logging.generator.validation.ValidationMessageFactory.createError;
 import static org.jboss.logging.generator.validation.ValidationMessageFactory.createWarning;
 
@@ -95,7 +94,7 @@ public abstract class AbstractValidator {
         for (MessageMethod method : methods) {
             final MessageMethod.Message message = method.message();
             if (message == null) {
-                messages.add(createError(method, "All message bundles and message logger methods must have or inherit a %s annotation.", annotations().message().getName()));
+                messages.add(createError(method, "All message bundles and message logger methods must have or inherit a message."));
                 continue;
             }
             // Check the message id
@@ -121,8 +120,8 @@ public abstract class AbstractValidator {
                 final String key = method.name() + method.formatParameterCount();
                 if (methodNames.containsKey(key)) {
                     final MessageMethod previousMethod = methodNames.get(key);
-                    messages.add(createError(previousMethod, "Only one method with the same name and parameter count is allowed to be annotated the %s annotation.", annotations().message().getName()));
-                    messages.add(createError(method, "Only one method with the same name and parameter count is allowed to be annotated the %s annotation.", annotations().message().getName()));
+                    messages.add(createError(previousMethod, "Only one message with the same format parameters is allowed."));
+                    messages.add(createError(method, "Only one message with the same format parameters is allowed."));
                 } else {
                     methodNames.put(key, method);
                 }
@@ -139,7 +138,7 @@ public abstract class AbstractValidator {
         for (MethodParameter parameter : method.allParameters()) {
             if (parameter.isCause()) {
                 if (foundCause) {
-                    messages.add(createError(method, "Only one parameter annotated with %s is allowed.", annotations().cause().getName()));
+                    messages.add(createError(method, "Only one cause parameter is allowed."));
                     break; // TODO - May need to remove if other validation is required.
                 } else {
                     foundCause = true;
@@ -222,7 +221,7 @@ public abstract class AbstractValidator {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         // The return type must be void
         if (!MessageReturnType.VOID.equals(method.returnType())) {
-            messages.add(createError(method, "Methods annotated with %s must have a void return type.", annotations().logMessage().getName()));
+            messages.add(createError(method, "Message logger methods can only have a void return type."));
         }
         return messages;
     }

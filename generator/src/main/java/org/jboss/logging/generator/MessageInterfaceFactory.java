@@ -20,11 +20,11 @@ import static org.jboss.logging.generator.LoggingTools.loggers;
 import static org.jboss.logging.generator.util.ElementHelper.isAnnotatedWith;
 
 /**
- * Date: 28.07.2011
+ * A factory to create a {@link MessageInterface} for annotation processors.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-final class MessageInterfaceFactory {
+public final class MessageInterfaceFactory {
     private static volatile BasicLoggerInterface BASIC_LOGGER_INTERFACE = null;
     private static final Object LOCK = new Object();
 

@@ -23,7 +23,6 @@ package org.jboss.logging.generator;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import java.lang.annotation.Annotation;
 import java.text.MessageFormat;
 
@@ -33,6 +32,12 @@ import java.text.MessageFormat;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 19.Feb.2011
  */
 public interface Annotations {
+
+    /**
+     * A simple annotation to allow an annotation to be ignored.
+     */
+    public @interface Void {
+    }
 
     /**
      * The message format type.
