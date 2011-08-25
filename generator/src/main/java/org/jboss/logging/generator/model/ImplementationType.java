@@ -50,9 +50,6 @@ public enum ImplementationType {
         this.extension = extension;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
         return extension;

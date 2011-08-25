@@ -21,9 +21,6 @@
 
 package org.jboss.logging.generator;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */

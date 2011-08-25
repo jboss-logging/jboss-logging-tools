@@ -1,7 +1,7 @@
 package org.jboss.logging.generator.model;
 
-import org.jboss.logging.generator.MessageInterface;
-import org.jboss.logging.generator.MessageMethod;
+import org.jboss.logging.generator.intf.model.MessageInterface;
+import org.jboss.logging.generator.intf.model.Method;
 
 import java.util.Map;
 
@@ -31,8 +31,8 @@ public class ClassModelFactory {
      *
      * @return the class model used to implement the interface.
      *
-     * @throws IllegalArgumentException if {@link org.jboss.logging.generator.MessageInterface#isMessageBundle()} or
-     *                                  {@link org.jboss.logging.generator.MessageInterface#isMessageLogger()} returns
+     * @throws IllegalArgumentException if {@link MessageInterface#isMessageBundle()} or
+     *                                  {@link MessageInterface#isMessageLogger()} returns
      *                                  {@code false.}
      */
     public static ClassModel implementation(final MessageInterface messageInterface) throws IllegalArgumentException {
@@ -55,11 +55,11 @@ public class ClassModelFactory {
      *
      * @return the class model used to create translation implementations of the interface.
      *
-     * @throws IllegalArgumentException if {@link org.jboss.logging.generator.MessageInterface#isMessageBundle()} or
-     *                                  {@link org.jboss.logging.generator.MessageInterface#isMessageLogger()} returns
+     * @throws IllegalArgumentException if {@link MessageInterface#isMessageBundle()} or
+     *                                  {@link MessageInterface#isMessageLogger()} returns
      *                                  {@code false.}
      */
-    public static ClassModel translation(final MessageInterface messageInterface, final String translationFileName, final Map<MessageMethod, String> translations) throws IllegalArgumentException {
+    public static ClassModel translation(final MessageInterface messageInterface, final String translationFileName, final Map<Method, String> translations) throws IllegalArgumentException {
         final String primaryClassName = getPrimaryClassName(messageInterface);
         final String generatedClassName = primaryClassName.concat(getTranslationClassNameSuffix(translationFileName));
         final String superClassName = getEnclosingTranslationClassName(generatedClassName);

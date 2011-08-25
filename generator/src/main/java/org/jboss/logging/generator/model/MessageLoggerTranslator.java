@@ -26,14 +26,15 @@ import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.generator.LoggingTools;
-import org.jboss.logging.generator.MessageInterface;
-import org.jboss.logging.generator.MessageMethod;
+import org.jboss.logging.generator.intf.model.MessageInterface;
+import org.jboss.logging.generator.intf.model.Method;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.jboss.logging.generator.Tools.loggers;
 
 
 /**
@@ -51,16 +52,17 @@ class MessageLoggerTranslator extends ClassModel {
     /**
      * The translation map.
      */
-    private final Map<MessageMethod, String> translations;
+    private final Map<Method, String> translations;
 
     /**
      * Create a MessageLogger with super class and interface.
      *
      * @param messageInterface the message interface to implement.
+     * @param className        the implementation class name.
      * @param superClassName   the super class name
      * @param translations     the translation map.
      */
-    public MessageLoggerTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
+    public MessageLoggerTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<Method, String> translations) {
         super(messageInterface, className, superClassName);
 
         if (translations != null) {
@@ -70,23 +72,20 @@ class MessageLoggerTranslator extends ClassModel {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public JCodeModel generateModel() throws IllegalStateException {
         JCodeModel model = super.generateModel();
         JDefinedClass definedClass = getDefinedClass();
 
         JMethod constructor = definedClass.constructor(JMod.PUBLIC);
-        constructor.param(JMod.FINAL, LoggingTools.loggers().loggerClass(), LOGGER_PARAMETER_NAME);
+        constructor.param(JMod.FINAL, loggers().loggerClass(), LOGGER_PARAMETER_NAME);
 
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
 
-        final Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
+        final Set<Map.Entry<Method, String>> entries = this.translations.entrySet();
         final Set<String> methodNames = new HashSet<String>();
-        for (Map.Entry<MessageMethod, String> entry : entries) {
+        for (Map.Entry<Method, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             if (methodNames.add(method.name())) {
                 method.annotate(Override.class);

@@ -1,6 +1,6 @@
 package org.jboss.logging.generator.validation;
 
-import org.jboss.logging.generator.MessageObject;
+import org.jboss.logging.generator.intf.model.MessageObject;
 
 /**
  * Date: 12.08.2011
@@ -12,7 +12,7 @@ public interface ValidationMessage {
     /**
      * Validation message type enum.
      */
-    public enum MessageType {
+    public enum Type {
         ERROR,
         WARN
     }
@@ -22,7 +22,7 @@ public interface ValidationMessage {
      *
      * @return the type of the message.
      */
-    MessageType messageType();
+    Type type();
 
     /**
      * Returns the message object that caused the error.

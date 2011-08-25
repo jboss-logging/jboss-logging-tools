@@ -1,6 +1,6 @@
 package org.jboss.logging.generator.validation;
 
-import org.jboss.logging.generator.MessageObject;
+import org.jboss.logging.generator.intf.model.MessageObject;
 
 /**
  * Date: 12.08.2011
@@ -36,7 +36,7 @@ public final class ValidationMessageFactory {
         private final MessageObject messageObject;
         private final String message;
 
-        protected AbstractValidationMessage(final MessageObject messageObject, final String message) {
+        AbstractValidationMessage(final MessageObject messageObject, final String message) {
             this.messageObject = messageObject;
             this.message = message;
         }
@@ -59,8 +59,8 @@ public final class ValidationMessageFactory {
         }
 
         @Override
-        public MessageType messageType() {
-            return MessageType.ERROR;
+        public Type type() {
+            return Type.ERROR;
         }
     }
 
@@ -71,8 +71,8 @@ public final class ValidationMessageFactory {
         }
 
         @Override
-        public MessageType messageType() {
-            return MessageType.WARN;
+        public Type type() {
+            return Type.WARN;
         }
     }
 

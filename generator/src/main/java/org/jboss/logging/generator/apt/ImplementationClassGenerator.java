@@ -18,46 +18,40 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.jboss.logging.generator.util;
+package org.jboss.logging.generator.apt;
 
+import org.jboss.logging.generator.intf.model.MessageInterface;
+import org.jboss.logging.generator.model.ClassModel;
+import org.jboss.logging.generator.model.ClassModelFactory;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.TypeElement;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 /**
- * Various transformation utilities.
+ * A generator for creating implementations of message bundle and logging
+ * interfaces.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
- * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-public final class TransformationHelper {
+final class ImplementationClassGenerator extends AbstractGenerator {
 
     /**
-     * Constructor for singleton.
+     * @param processingEnv the processing environment.
      */
-    private TransformationHelper() {
+    public ImplementationClassGenerator(ProcessingEnvironment processingEnv) {
+        super(processingEnv);
     }
 
-    /**
-     * Converts a stack trace to string output.
-     *
-     * @param t the stack trace to convert.
-     *
-     * @return a string version of the stack trace.
-     */
-    public static String stackTraceToString(final Throwable t) {
-        final StringWriter stringWriter = new StringWriter();
-        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
-        t.printStackTrace(printWriter);
-        printWriter.flush();
-        stringWriter.flush();
-        printWriter.close();
+    @Override
+    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
-            stringWriter.close();
+            final ClassModel classModel = ClassModelFactory.implementation(messageInterface);
+            classModel.create(filer().createSourceFile(classModel.qualifiedClassName()));
         } catch (IOException e) {
-            // Do nothing
+            logger().error(element, e);
+        } catch (IllegalStateException e) {
+            logger().error(element, e);
         }
-        return stringWriter.toString();
     }
-
 }

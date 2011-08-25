@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.jboss.logging.generator.LoggingTools.annotations;
+import static org.jboss.logging.generator.Tools.annotations;
 
 /**
  * An utility class to work with element.

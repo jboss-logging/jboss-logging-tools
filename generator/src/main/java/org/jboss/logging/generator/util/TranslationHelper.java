@@ -46,6 +46,7 @@ public final class TranslationHelper {
      * @param translationFileName the translation file name
      *
      * @return the class name suffix corresponding to the given translation filename
+     *
      * @throws NullPointerException if translationFileName is null or not valid
      */
     public static String getTranslationClassNameSuffix(final String translationFileName) {
@@ -74,6 +75,7 @@ public final class TranslationHelper {
      * @param translationFileName the translation file name
      *
      * @return the enclosing file name
+     *
      * @throws NullPointerException if translationFileName is null
      */
     public static String getEnclosingTranslationFileName(final String translationFileName) {
@@ -99,6 +101,7 @@ public final class TranslationHelper {
      * @param translationClassName the translation class name
      *
      * @return the enclosing class name
+     *
      * @throws NullPointerException if translationClassName is null
      */
     public static String getEnclosingTranslationClassName(final String translationClassName) {

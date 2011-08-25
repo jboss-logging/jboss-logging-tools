@@ -33,8 +33,8 @@ import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JTypeVar;
-import org.jboss.logging.generator.MessageInterface;
-import org.jboss.logging.generator.MessageMethod;
+import org.jboss.logging.generator.intf.model.MessageInterface;
+import org.jboss.logging.generator.intf.model.Method;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -49,7 +49,7 @@ public abstract class ClassModel {
 
     private static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
-    private JCodeModel codeModel;
+    private final JCodeModel codeModel;
 
     private JDefinedClass definedClass;
 
@@ -70,6 +70,7 @@ public abstract class ClassModel {
         this.messageInterface = messageInterface;
         this.className = className;
         this.superClassName = superClassName;
+        codeModel = new JCodeModel();
     }
 
     /**
@@ -106,9 +107,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if the class has already been defined.
      */
-    protected JCodeModel generateModel() throws IllegalStateException {
-        codeModel = new JCodeModel();
-
+    JCodeModel generateModel() throws IllegalStateException {
         try {
             definedClass = codeModel._class(qualifiedClassName());
         } catch (JClassAlreadyExistsException e) {
@@ -118,7 +117,7 @@ public abstract class ClassModel {
         // Add generated annotation
         JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
         generatedAnnotation.param("value", getClass().getName());
-        generatedAnnotation.param("date", ClassModelUtil.generatedDateValue());
+        generatedAnnotation.param("date", ClassModelHelper.generatedDateValue());
 
         // Create the default JavaDoc
         JDocComment docComment = definedClass.javadoc();
@@ -161,7 +160,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    protected JMethod addMessageMethod(final MessageMethod messageMethod) {
+    JMethod addMessageMethod(final Method messageMethod) {
         return addMessageMethod(messageMethod, messageMethod.message().value());
     }
 
@@ -183,7 +182,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    protected JMethod addMessageMethod(final MessageMethod messageMethod, final String messageValue) {
+    JMethod addMessageMethod(final Method messageMethod, final String messageValue) {
         if (codeModel == null || definedClass == null) {
             throw new IllegalStateException("The code model or the corresponding defined class is null");
         }
@@ -219,7 +218,7 @@ public abstract class ClassModel {
         return method;
     }
 
-    public JCodeModel getCodeModel() {
+    final JCodeModel getCodeModel() {
         return codeModel;
     }
 
@@ -228,7 +227,7 @@ public abstract class ClassModel {
      *
      * @return the main enclosing class.
      */
-    protected final JDefinedClass getDefinedClass() {
+    final JDefinedClass getDefinedClass() {
         return definedClass;
     }
 

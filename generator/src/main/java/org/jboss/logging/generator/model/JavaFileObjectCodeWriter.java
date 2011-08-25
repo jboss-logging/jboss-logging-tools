@@ -41,7 +41,7 @@ import java.io.OutputStream;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-public class JavaFileObjectCodeWriter extends CodeWriter {
+class JavaFileObjectCodeWriter extends CodeWriter {
 
     /**
      * The java file object.
@@ -72,9 +72,6 @@ public class JavaFileObjectCodeWriter extends CodeWriter {
         return out;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void close() throws IOException {
         if (out != null) {
