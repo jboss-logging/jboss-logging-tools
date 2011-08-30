@@ -36,8 +36,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.jboss.logging.generator.util.ElementHelper.getPrimaryClassNamePrefix;
@@ -139,7 +141,16 @@ final class TranslationClassGenerator extends AbstractGenerator {
             //Load translations
             Properties translations = new Properties();
             translations.load(new FileInputStream(file));
-            for (Method method : messageInterface.methods()) {
+            final Set<Method> methods = new HashSet<Method>();
+            methods.addAll(messageInterface.methods());
+            for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
+                // Handle basic logger
+                if (msgIntf.isBasicLogger()) {
+                    continue;
+                }
+                methods.addAll(msgIntf.methods());
+            }
+            for (Method method : methods) {
                 final String key = method.translationKey();
                 if (translations.containsKey(key)) {
                     String message = translations.getProperty(key);

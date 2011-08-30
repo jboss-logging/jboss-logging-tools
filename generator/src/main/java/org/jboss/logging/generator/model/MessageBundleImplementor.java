@@ -29,6 +29,9 @@ import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.Method;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Used to generate a message bundle implementation.
  * <p>
@@ -61,9 +64,18 @@ class MessageBundleImplementor extends ImplementationClassModel {
         // Add default constructor
         getDefinedClass().constructor(JMod.PROTECTED);
         ClassModelHelper.createReadResolveMethod(getDefinedClass());
+        final Set<Method> methods = new HashSet<Method>();
+        methods.addAll(messageInterface().methods());
+        for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
+            // Handle basic logger
+            if (messageInterface.isBasicLogger()) {
+                continue;
+            }
+            methods.addAll(messageInterface.methods());
+        }
         // Process the method descriptors and add to the model before
         // writing.
-        for (Method method : messageInterface().methods()) {
+        for (Method method : methods) {
             final JClass returnType = codeModel.ref(method.returnType().name());
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, method.name());
             jMethod.annotate(Override.class);

@@ -62,7 +62,9 @@ public final class MessageInterfaceFactory {
         final AptMessageInterface result = new AptMessageInterface(interfaceElement, types, elements);
         result.init();
         for (TypeMirror typeMirror : interfaceElement.getInterfaces()) {
-            result.extendedInterfaces.add(MessageInterfaceFactory.of(processingEnvironment, (TypeElement) types.asElement(typeMirror)));
+            final MessageInterface extended = MessageInterfaceFactory.of(processingEnvironment, (TypeElement) types.asElement(typeMirror));
+            result.extendedInterfaces.add(extended);
+            result.extendedInterfaces.addAll(extended.extendedInterfaces());
         }
         return result;
     }
