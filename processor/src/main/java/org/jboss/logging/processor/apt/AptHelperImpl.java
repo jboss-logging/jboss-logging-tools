@@ -74,7 +74,7 @@ public class AptHelperImpl implements AptHelper {
     }
 
     @Override
-    public String loggerMethod(final ExecutableElement method, final FormatType formatType) {
+    public String loggerMethod(final FormatType formatType) {
         return "log" + (formatType == null ? "" : formatType.logType());
     }
 

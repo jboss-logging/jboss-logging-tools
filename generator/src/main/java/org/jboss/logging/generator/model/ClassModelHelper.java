@@ -20,27 +20,21 @@
  */
 package org.jboss.logging.generator.model;
 
-import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JFieldVar;
-import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
+import org.jboss.logging.generator.intf.model.MessageInterface;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static org.jboss.logging.generator.util.TranslationHelper.getTranslationClassNameSuffix;
 
 /**
  * Utilities for the code model.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-final class ClassModelHelper {
+public final class ClassModelHelper {
 
     private static final String STRING_ID_FORMAT = "%06d: ";
-
-    private static final String INSTANCE_FIELD_NAME = "INSTANCE";
-
-    private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
 
     /**
      * Constructor for singleton model.
@@ -54,28 +48,8 @@ final class ClassModelHelper {
      * @return the current date formatted in ISO 8601.
      */
     static String generatedDateValue() {
-        final SimpleDateFormat sdf = new SimpleDateFormat(
-                "yyyy-MM-dd'T'HH:mm:ssZ");
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
         return sdf.format(new Date());
-    }
-
-    /**
-     * Creates the read resolve method and instance field.
-     *
-     * @param definedClass the class to create the methods for.
-     *
-     * @return the read resolve method.
-     */
-    public static JMethod createReadResolveMethod(
-            final JDefinedClass definedClass) {
-        final JFieldVar instance = definedClass.field(
-                JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass,
-                INSTANCE_FIELD_NAME);
-        instance.init(JExpr._new(definedClass));
-        final JMethod readResolveMethod = definedClass.method(JMod.PROTECTED,
-                definedClass, GET_INSTANCE_METHOD_NAME);
-        readResolveMethod.body()._return(instance);
-        return readResolveMethod;
     }
 
     /**
@@ -87,5 +61,42 @@ final class ClassModelHelper {
      */
     public static String formatMessageId(final int messageId) {
         return String.format(STRING_ID_FORMAT, messageId);
+    }
+
+    /**
+     * Creates the implementation class name for the message interface.
+     *
+     * @param messageInterface the message interface to generate the implementation name for.
+     *
+     * @return the implementation class name
+     *
+     * @throws IllegalArgumentException if the message interface is not a message bundle or a message logger.
+     */
+    public static String implementationClassName(final MessageInterface messageInterface) throws IllegalArgumentException {
+        final StringBuilder result = new StringBuilder(messageInterface.name());
+        if (messageInterface.isMessageBundle()) {
+            result.append("_$bundle");
+        } else if (messageInterface.isMessageLogger()) {
+            result.append("_$logger");
+        } else {
+            throw new IllegalArgumentException(String.format("Message interface %s is not a message bundle or message logger.", messageInterface));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Creates the implementation class name for the message interface.
+     *
+     * @param messageInterface    the message interface to generate the implementation name for.
+     * @param translationFileName the file name of the translations.
+     *
+     * @return the implementation class name
+     *
+     * @throws IllegalArgumentException if the message interface is not a message bundle or a message logger.
+     */
+    public static String implementationClassName(final MessageInterface messageInterface, final String translationFileName) throws IllegalArgumentException {
+        final StringBuilder result = new StringBuilder(implementationClassName(messageInterface));
+        result.append(getTranslationClassNameSuffix(translationFileName));
+        return result.toString();
     }
 }

@@ -1,6 +1,8 @@
 package org.jboss.logging.generator.validation;
 
 import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.util.Comparison;
+import org.jboss.logging.generator.util.Objects;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
+import static org.jboss.logging.generator.util.Objects.areEqual;
 import static org.jboss.logging.generator.validation.ValidationMessageFactory.createError;
 
 /**
@@ -60,11 +64,9 @@ public final class MessageIdValidator {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + (projectCode == null ? 0 : projectCode.hashCode());
-            result = prime * result + id;
-            return result;
+            return HashCodeBuilder.builder()
+                    .add(projectCode)
+                    .add(id).toHashCode();
         }
 
         @Override
@@ -76,15 +78,14 @@ public final class MessageIdValidator {
                 return false;
             }
             final MessageKey other = (MessageKey) obj;
-            return ((projectCode == null ? other.projectCode == null : projectCode.equals(other.projectCode))
-                    && id == other.id);
+            return areEqual(projectCode, other.projectCode) && areEqual(id, other.id);
         }
 
         @Override
         public int compareTo(final MessageKey other) {
-            int result = projectCode.compareTo(other.projectCode);
-            result = (result != 0) ? result : (id - other.id);
-            return result;
+            return Comparison.begin()
+                    .compare(projectCode, other.projectCode)
+                    .compare(id, other.id).result();
         }
     }
 }

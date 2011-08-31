@@ -48,7 +48,7 @@ public interface Annotations {
         private final Class<?> formatClass;
         private final String staticMethod;
 
-        FormatType(final char logType, final Class<?> formatClass, final String staticMethod) {
+        private FormatType(final char logType, final Class<?> formatClass, final String staticMethod) {
             this.logType = logType;
             this.formatClass = formatClass;
             this.staticMethod = staticMethod;

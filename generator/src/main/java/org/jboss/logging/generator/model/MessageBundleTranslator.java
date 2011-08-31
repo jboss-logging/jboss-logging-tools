@@ -70,7 +70,7 @@ class MessageBundleTranslator extends ClassModel {
         JMethod constructor = definedClass.constructor(JMod.PROTECTED);
         constructor.body().invoke("super");
 
-        JMethod readResolve = ClassModelHelper.createReadResolveMethod(definedClass);
+        JMethod readResolve = createReadResolveMethod();
         readResolve.annotate(Override.class);
 
         final Set<Map.Entry<Method, String>> entries = translations.entrySet();

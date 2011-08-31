@@ -61,7 +61,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param messageInterface the message interface to implement.
      */
     public MessageLoggerImplementor(final MessageInterface messageInterface) {
-        super(messageInterface, ImplementationType.LOGGER);
+        super(messageInterface);
     }
 
     @Override
@@ -82,8 +82,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         // Add default constructor
         final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
         final JVar constructorParam = constructor.param(JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
-        final JBlock body = constructor.body();
-        body.directStatement("this." + log.name() + " = " + constructorParam.name() + ";");
+        final JBlock constructorBody = constructor.body();
+        constructorBody.assign(JExpr._this().ref(log), constructorParam);
 
         // Process the method descriptors and add to the model before writing.
         final Set<Method> methods = new HashSet<Method>();

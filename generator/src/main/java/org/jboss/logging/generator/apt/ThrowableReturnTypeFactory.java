@@ -25,6 +25,7 @@ import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ReturnType;
 import org.jboss.logging.generator.util.ElementHelper;
+import org.jboss.logging.generator.util.Objects;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -39,6 +40,9 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
+import static org.jboss.logging.generator.util.Objects.areEqual;
 
 /**
  * Describes information about the return type.
@@ -225,10 +229,7 @@ final class ThrowableReturnTypeFactory {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((returnType == null) ? 0 : returnType.hashCode());
-            return result;
+            return HashCodeBuilder.builder().add(returnType).toHashCode();
         }
 
         @Override
@@ -240,28 +241,17 @@ final class ThrowableReturnTypeFactory {
                 return false;
             }
             final AptThrowableReturnType other = (AptThrowableReturnType) obj;
-            if ((this.returnType == null) ? other.returnType != null : this.returnType.equals(other.returnType)) {
-                return false;
-            }
-            return true;
+            return areEqual(this.returnType, other.returnType);
         }
 
         @Override
         public String toString() {
-            final StringBuilder result = new StringBuilder();
-            result.append(getClass().getName()).
-                    append("(returnType=").
-                    append(returnType).
-                    append(", stringConstructor=").
-                    append(stringConstructor).
-                    append(", throwableConstructor=").
-                    append(throwableConstructor).
-                    append(", stringAndThrowableConstructor=").
-                    append(stringAndThrowableConstructor).
-                    append(", throwableAndStringConstructor=").
-                    append(throwableAndStringConstructor).
-                    append(")");
-            return result.toString();
+            return Objects.ToStringBuilder.of(this)
+                    .add("returnType", returnType)
+                    .add("stringConstructor", stringConstructor)
+                    .add("throwableConstructor", throwableConstructor)
+                    .add("stringAndThrowableConstructor", stringAndThrowableConstructor)
+                    .add("throwableAndStringConstructor", throwableAndStringConstructor).toString();
         }
 
         @Override

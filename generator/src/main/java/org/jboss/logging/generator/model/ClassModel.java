@@ -49,9 +49,13 @@ public abstract class ClassModel {
 
     private static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
 
+    private static final String INSTANCE_FIELD_NAME = "INSTANCE";
+
+    private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
+
     private final JCodeModel codeModel;
 
-    private JDefinedClass definedClass;
+    private volatile JDefinedClass definedClass;
 
     private final MessageInterface messageInterface;
 
@@ -108,11 +112,7 @@ public abstract class ClassModel {
      * @throws IllegalStateException if the class has already been defined.
      */
     JCodeModel generateModel() throws IllegalStateException {
-        try {
-            definedClass = codeModel._class(qualifiedClassName());
-        } catch (JClassAlreadyExistsException e) {
-            throw new IllegalStateException("Class " + qualifiedClassName() + " has already been defined. Cannot generate the class.", e);
-        }
+        final JDefinedClass definedClass = getDefinedClass();
 
         // Add generated annotation
         JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
@@ -183,9 +183,7 @@ public abstract class ClassModel {
      * @throws IllegalStateException if this method is called before the generateModel method
      */
     JMethod addMessageMethod(final Method messageMethod, final String messageValue) {
-        if (codeModel == null || definedClass == null) {
-            throw new IllegalStateException("The code model or the corresponding defined class is null");
-        }
+        final JDefinedClass definedClass = getDefinedClass();
         // Values could be null and we shouldn't create message methods for null values.
         if (messageValue == null) {
             return null;
@@ -228,7 +226,23 @@ public abstract class ClassModel {
      * @return the main enclosing class.
      */
     final JDefinedClass getDefinedClass() {
-        return definedClass;
+        JDefinedClass result = definedClass;
+        if (result == null) {
+            synchronized (codeModel) {
+                result = definedClass;
+                if (result == null) {
+                    try {
+                        definedClass = codeModel._class(qualifiedClassName());
+                        result = definedClass;
+                    } catch (JClassAlreadyExistsException e) {
+                        throw new IllegalStateException("Class " + qualifiedClassName() + " has already been defined. Cannot generate the class.", e);
+                    }
+
+                }
+
+            }
+        }
+        return result;
     }
 
     /**
@@ -240,4 +254,18 @@ public abstract class ClassModel {
         return className;
     }
 
+
+    /**
+     * Creates the read resolve method and instance field.
+     *
+     * @return the read resolve method.
+     */
+    protected JMethod createReadResolveMethod() {
+        final JDefinedClass definedClass = getDefinedClass();
+        final JFieldVar instance = definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass, INSTANCE_FIELD_NAME);
+        instance.init(JExpr._new(definedClass));
+        final JMethod readResolveMethod = definedClass.method(JMod.PROTECTED, definedClass, GET_INSTANCE_METHOD_NAME);
+        readResolveMethod.body()._return(instance);
+        return readResolveMethod;
+    }
 }

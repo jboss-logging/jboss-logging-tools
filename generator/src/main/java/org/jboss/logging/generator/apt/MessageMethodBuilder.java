@@ -4,6 +4,8 @@ import org.jboss.logging.generator.Annotations.FormatType;
 import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ReturnType;
+import org.jboss.logging.generator.util.Comparison;
+import org.jboss.logging.generator.util.Objects;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
@@ -24,6 +26,9 @@ import static org.jboss.logging.generator.util.ElementHelper.inheritsMessage;
 import static org.jboss.logging.generator.util.ElementHelper.isAnnotatedWith;
 import static org.jboss.logging.generator.util.ElementHelper.isOverloaded;
 import static org.jboss.logging.generator.util.ElementHelper.parameterCount;
+import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
+import static org.jboss.logging.generator.util.Objects.ToStringBuilder;
+import static org.jboss.logging.generator.util.Objects.areEqual;
 
 /**
  * Date: 29.07.2011
@@ -214,7 +219,7 @@ final class MessageMethodBuilder {
 
         @Override
         public String loggerMethod() {
-            return aptHelper().loggerMethod(method, message.format());
+            return aptHelper().loggerMethod(message.format());
         }
 
         @Override
@@ -249,18 +254,10 @@ final class MessageMethodBuilder {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + (name() == null ? 0 : name().hashCode());
-            if (allParameters == null) {
-                result = prime * result;
-            } else {
-                for (Parameter param : allParameters) {
-                    result = prime * result + (param.hashCode());
-                }
-            }
-            result = prime * result + (returnType == null ? 0 : returnType.hashCode());
-            return result;
+            return HashCodeBuilder.builder()
+                    .add(name())
+                    .add(allParameters)
+                    .add(returnType).toHashCode();
         }
 
         @Override
@@ -272,22 +269,18 @@ final class MessageMethodBuilder {
                 return false;
             }
             final AptMethod other = (AptMethod) obj;
-            if ((name() == null) ? other.name() != null : !name().equals(other.name())) {
-                return false;
-            }
-            if ((allParameters == null) ? other.allParameters != null : !(allParameters.equals(other.allParameters))) {
-                return false;
-            }
-            return !((returnType == null) ? other.returnType != null : !returnType.equals(other.returnType));
+            return areEqual(name(), other.name()) &&
+                    areEqual(allParameters, other.allParameters) &&
+                    areEqual(returnType, other.returnType);
         }
 
         @Override
         public int compareTo(final Method o) {
             int result = name().compareTo(o.name());
-            result = (result != 0) ? result : returnType.name().compareTo(o.returnType().name());
+            result = (result != Comparison.EQUAL) ? result : returnType.name().compareTo(o.returnType().name());
             // Size does matter
-            result = allParameters.size() - o.allParameters().size();
-            if (result == 0) {
+            result = (result != Comparison.EQUAL) ? result : allParameters.size() - o.allParameters().size();
+            if (result == Comparison.EQUAL) {
                 // Check element by element
                 final Iterator<Parameter> params1 = allParameters.iterator();
                 final Iterator<Parameter> params2 = o.allParameters().iterator();
@@ -297,10 +290,10 @@ final class MessageMethodBuilder {
                         final Parameter param2 = params2.next();
                         result = param1.compareTo(param2);
                     } else {
-                        result = 1;
+                        result = Comparison.GREATER;
                     }
                     // Short circuit
-                    if (result != 0) break;
+                    if (result != Comparison.EQUAL) break;
                 }
             }
             return result;
@@ -308,16 +301,10 @@ final class MessageMethodBuilder {
 
         @Override
         public String toString() {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(getClass().getSimpleName());
-            stringBuilder.append("(name=");
-            stringBuilder.append(name());
-            stringBuilder.append(",message=");
-            stringBuilder.append(message);
-            stringBuilder.append(",loggerMethod=");
-            stringBuilder.append(loggerMethod());
-            stringBuilder.append(")");
-            return stringBuilder.toString();
+            return ToStringBuilder.of(this)
+                    .add("name", name())
+                    .add("message", message)
+                    .add("loggerMethod", loggerMethod()).toString();
         }
 
         @Override
@@ -360,6 +347,16 @@ final class MessageMethodBuilder {
         @Override
         public FormatType format() {
             return formatType;
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.of(this)
+                    .add("hasId", hasId)
+                    .add("id", id)
+                    .add("inheritsId", inheritsId)
+                    .add("value", value)
+                    .add("formatType", formatType).toString();
         }
     }
 }

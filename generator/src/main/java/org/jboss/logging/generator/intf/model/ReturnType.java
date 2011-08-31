@@ -1,6 +1,12 @@
 package org.jboss.logging.generator.intf.model;
 
+import org.jboss.logging.generator.util.Objects;
+
 import java.util.Set;
+
+import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
+import static org.jboss.logging.generator.util.Objects.ToStringBuilder;
+import static org.jboss.logging.generator.util.Objects.areEqual;
 
 /**
  * Date: 29.07.2011
@@ -73,9 +79,7 @@ public interface ReturnType extends MessageObject, MessageObjectType {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            return prime * result + (this.name() == null ? 0 : this.name().hashCode());
+            return HashCodeBuilder.builder().add(name()).toHashCode();
         }
 
         @Override
@@ -87,7 +91,12 @@ public interface ReturnType extends MessageObject, MessageObjectType {
                 return false;
             }
             final VoidReturnType other = (VoidReturnType) obj;
-            return (this.name() == null ? this.name() == null : this.name().equals(other.name()));
+            return areEqual(this.name(), other.name());
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.of(this).add(name()).toString();
         }
 
         @Override

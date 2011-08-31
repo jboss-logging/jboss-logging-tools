@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import static org.jboss.logging.generator.model.ClassModelHelper.formatMessageId;
+import static org.jboss.logging.generator.model.ClassModelHelper.implementationClassName;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -57,10 +58,9 @@ abstract class ImplementationClassModel extends ClassModel {
      * Class constructor.
      *
      * @param messageInterface the message interface to implement.
-     * @param type             the type of the implementation.
      */
-    ImplementationClassModel(final MessageInterface messageInterface, final ImplementationType type) {
-        super(messageInterface, messageInterface.name() + type, null);
+    ImplementationClassModel(final MessageInterface messageInterface) {
+        super(messageInterface, implementationClassName(messageInterface), null);
     }
 
     @Override

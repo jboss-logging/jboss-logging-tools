@@ -5,8 +5,7 @@ import org.jboss.logging.generator.intf.model.Method;
 
 import java.util.Map;
 
-import static org.jboss.logging.generator.model.ImplementationType.BUNDLE;
-import static org.jboss.logging.generator.model.ImplementationType.LOGGER;
+import static org.jboss.logging.generator.model.ClassModelHelper.implementationClassName;
 import static org.jboss.logging.generator.util.TranslationHelper.getEnclosingTranslationClassName;
 import static org.jboss.logging.generator.util.TranslationHelper.getTranslationClassNameSuffix;
 
@@ -60,8 +59,7 @@ public class ClassModelFactory {
      *                                  {@code false.}
      */
     public static ClassModel translation(final MessageInterface messageInterface, final String translationFileName, final Map<Method, String> translations) throws IllegalArgumentException {
-        final String primaryClassName = getPrimaryClassName(messageInterface);
-        final String generatedClassName = primaryClassName.concat(getTranslationClassNameSuffix(translationFileName));
+        final String generatedClassName = implementationClassName(messageInterface, translationFileName);
         final String superClassName = getEnclosingTranslationClassName(generatedClassName);
         if (messageInterface.isMessageBundle()) {
             return new MessageBundleTranslator(messageInterface, generatedClassName, superClassName, translations);
@@ -69,15 +67,5 @@ public class ClassModelFactory {
             return new MessageLoggerTranslator(messageInterface, generatedClassName, superClassName, translations);
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
-    }
-
-
-    private static String getPrimaryClassName(final MessageInterface messageInterface) {
-        if (messageInterface.isMessageBundle()) {
-            return messageInterface.name() + BUNDLE.toString();
-        } else if (messageInterface.isMessageLogger()) {
-            return messageInterface.name() + LOGGER.toString();
-        }
-        return messageInterface.name();
     }
 }

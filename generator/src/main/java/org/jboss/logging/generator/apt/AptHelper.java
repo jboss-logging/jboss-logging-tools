@@ -72,12 +72,11 @@ public interface AptHelper {
     /**
      * Returns the logger method name to use or an empty string if the method is not a logger method.
      *
-     * @param method     the method used to determine the log method.
      * @param formatType the format type for the method.
      *
      * @return the name of the logger method or an empty string.
      */
-    String loggerMethod(ExecutableElement method, FormatType formatType);
+    String loggerMethod(FormatType formatType);
 
     /**
      * Returns the log level enum. For example Logger.Level.INFO.

@@ -22,6 +22,7 @@ package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.Parameter;
+import org.jboss.logging.generator.util.Comparison;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -39,6 +40,9 @@ import java.util.Set;
 
 import static org.jboss.logging.generator.Tools.annotations;
 import static org.jboss.logging.generator.util.ElementHelper.isAnnotatedWith;
+import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
+import static org.jboss.logging.generator.util.Objects.ToStringBuilder;
+import static org.jboss.logging.generator.util.Objects.areEqual;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
@@ -141,11 +145,9 @@ final class ParameterFactory {
 
             @Override
             public int hashCode() {
-                final int prime = 31;
-                int result = 1;
-                result = prime * result + (type() == null ? 0 : type().hashCode());
-                result = prime * result + (name() == null ? 0 : name().hashCode());
-                return result;
+                return HashCodeBuilder.builder()
+                        .add(type())
+                        .add(name()).toHashCode();
             }
 
             @Override
@@ -157,17 +159,21 @@ final class ParameterFactory {
                     return false;
                 }
                 final AptParameter other = (AptParameter) obj;
-                if ((this.type() == null) ? (other.type() != null) : !type().equals(other.type())) {
-                    return false;
-                }
-                return !((this.name() == null) ? (other.name() != null) : !name().equals(other.name()));
+                return areEqual(type(), other.type()) && areEqual(name(), other.name());
             }
 
             @Override
             public int compareTo(final Parameter other) {
-                int result = this.type().compareTo(other.type());
-                result = (result != 0) ? result : this.name().compareTo(other.name());
-                return result;
+                return Comparison.begin()
+                        .compare(this.type(), other.type())
+                        .compare(this.name(), other.name()).result();
+            }
+
+            @Override
+            public String toString() {
+                return ToStringBuilder.of(this)
+                        .add("name", name())
+                        .add("type", type()).toString();
             }
 
             @Override
@@ -276,11 +282,9 @@ final class ParameterFactory {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int hash = 1;
-            hash = prime * hash + ((qualifiedType == null) ? 0 : qualifiedType.hashCode());
-            hash = prime * hash + ((param == null) ? 0 : param.hashCode());
-            return hash;
+            return HashCodeBuilder.builder()
+                    .add(qualifiedType)
+                    .add(param).toHashCode();
         }
 
         @Override
@@ -292,20 +296,21 @@ final class ParameterFactory {
                 return false;
             }
             final AptParameter other = (AptParameter) obj;
-            if ((this.param == null) ? (other.param != null) : !this.param.equals(other.param)) {
-                return false;
-            }
-            if ((this.qualifiedType == null) ? (other.qualifiedType != null) : !this.qualifiedType.equals(other.qualifiedType)) {
-                return false;
-            }
-            return true;
+            return areEqual(this.param, other.param) && areEqual(this.qualifiedType, other.qualifiedType);
         }
 
         @Override
         public int compareTo(final Parameter other) {
-            int result = this.type().compareTo(other.type());
-            result = (result != 0) ? result : this.name().compareTo(other.name());
-            return result;
+            return Comparison.begin()
+                    .compare(this.type(), other.type())
+                    .compare(this.name(), other.name()).result();
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.of(this)
+                    .add("name", name())
+                    .add("type", type()).toString();
         }
 
         @Override

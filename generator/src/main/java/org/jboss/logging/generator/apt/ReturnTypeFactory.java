@@ -2,11 +2,15 @@ package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.ReturnType;
+import org.jboss.logging.generator.util.Objects;
 
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+
+import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
+import static org.jboss.logging.generator.util.Objects.areEqual;
 
 /**
  * Date: 29.07.2011
@@ -76,9 +80,7 @@ final class ReturnTypeFactory {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            return prime * result + (name() == null ? 0 : name().hashCode());
+            return HashCodeBuilder.builder().add(name()).toHashCode();
         }
 
         @Override
@@ -90,7 +92,16 @@ final class ReturnTypeFactory {
                 return false;
             }
             final AptReturnType other = (AptReturnType) obj;
-            return (name() == null ? other.name() == null : name().equals(other.name()));
+            return areEqual(name(), other.name());
+        }
+
+        @Override
+        public String toString() {
+            return Objects.ToStringBuilder.of(this)
+                    .add("name", name())
+                    .add("primitive", isPrimitive())
+                    .add("throwable", isThrowable())
+                    .add("throwableReturnType", throwableReturnType).toString();
         }
 
         @Override

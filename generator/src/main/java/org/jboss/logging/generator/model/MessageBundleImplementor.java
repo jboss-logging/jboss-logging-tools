@@ -49,7 +49,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
      * @param messageInterface the message interface to implement.
      */
     public MessageBundleImplementor(final MessageInterface messageInterface) {
-        super(messageInterface, ImplementationType.BUNDLE);
+        super(messageInterface);
     }
 
     @Override
@@ -63,7 +63,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
         }
         // Add default constructor
         getDefinedClass().constructor(JMod.PROTECTED);
-        ClassModelHelper.createReadResolveMethod(getDefinedClass());
+        createReadResolveMethod();
         final Set<Method> methods = new HashSet<Method>();
         methods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {

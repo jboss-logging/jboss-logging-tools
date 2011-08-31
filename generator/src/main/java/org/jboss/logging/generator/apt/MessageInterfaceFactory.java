@@ -22,6 +22,9 @@ import static org.jboss.logging.generator.Tools.annotations;
 import static org.jboss.logging.generator.Tools.aptHelper;
 import static org.jboss.logging.generator.Tools.loggers;
 import static org.jboss.logging.generator.util.ElementHelper.isAnnotatedWith;
+import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
+import static org.jboss.logging.generator.util.Objects.ToStringBuilder;
+import static org.jboss.logging.generator.util.Objects.areEqual;
 
 /**
  * A factory to create a {@link org.jboss.logging.generator.intf.model.MessageInterface} for annotation processors.
@@ -50,14 +53,17 @@ public final class MessageInterfaceFactory {
         final Types types = processingEnvironment.getTypeUtils();
         final Elements elements = processingEnvironment.getElementUtils();
         if (types.isSameType(interfaceElement.asType(), elements.getTypeElement(loggers().basicLoggerClass().getName()).asType())) {
-            if (BASIC_LOGGER_INTERFACE == null) {
+            MessageInterface result = BASIC_LOGGER_INTERFACE;
+            if (result == null) {
                 synchronized (LOCK) {
-                    if (BASIC_LOGGER_INTERFACE == null) {
+                    result = BASIC_LOGGER_INTERFACE;
+                    if (result == null) {
                         BASIC_LOGGER_INTERFACE = BasicLoggerInterface.of(elements, types);
+                        result = BASIC_LOGGER_INTERFACE;
                     }
                 }
             }
-            return BASIC_LOGGER_INTERFACE;
+            return result;
         }
         final AptMessageInterface result = new AptMessageInterface(interfaceElement, types, elements);
         result.init();
@@ -138,9 +144,7 @@ public final class MessageInterfaceFactory {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int hash = 1;
-            return (prime * hash + (name() == null ? 0 : name().hashCode()));
+            return HashCodeBuilder.builder().add(name()).toHashCode();
         }
 
         @Override
@@ -152,12 +156,17 @@ public final class MessageInterfaceFactory {
                 return false;
             }
             final AptMessageInterface other = (AptMessageInterface) obj;
-            return (name() == null ? other.name() == null : name().equals(other.name()));
+            return areEqual(name(), other.name());
         }
 
         @Override
         public int compareTo(final MessageInterface o) {
             return this.name().compareTo(o.name());
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.of(this).add(qualifiedName).toString();
         }
 
 
@@ -276,11 +285,6 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public int compareTo(final MessageInterface o) {
-            return this.name().compareTo(o.name());
-        }
-
-        @Override
         public TypeElement reference() {
             return basicLogger;
         }
@@ -295,6 +299,33 @@ public final class MessageInterfaceFactory {
         public boolean isSubtypeOf(final Class<?> type) {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
             return types.isSubtype(basicLogger.asType(), typeMirror);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.builder().add(name()).toHashCode();
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof AptMessageInterface)) {
+                return false;
+            }
+            final AptMessageInterface other = (AptMessageInterface) obj;
+            return areEqual(name(), other.name());
+        }
+
+        @Override
+        public int compareTo(final MessageInterface o) {
+            return this.name().compareTo(o.name());
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.of(this).add(name()).toString();
         }
     }
 }
