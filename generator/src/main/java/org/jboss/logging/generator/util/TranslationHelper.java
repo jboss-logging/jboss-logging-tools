@@ -20,6 +20,7 @@
  */
 package org.jboss.logging.generator.util;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,17 +73,17 @@ public final class TranslationHelper {
      * If the given translation file name is InterfaceName.i18n_locale
      * the given translation file name is returned.
      *
-     * @param translationFileName the translation file name
+     * @param translationFile the translation file
      *
      * @return the enclosing file name
      *
-     * @throws NullPointerException if translationFileName is null
+     * @throws IllegalArgumentException if translationFileName is null
      */
-    public static String getEnclosingTranslationFileName(final String translationFileName) {
-        if (translationFileName == null) {
-            throw new NullPointerException("The translationClassName parameter cannot be null");
+    public static String getEnclosingTranslationFileName(final File translationFile) {
+        if (translationFile == null) {
+            throw new IllegalArgumentException("The translationClassName parameter cannot be null");
         }
-
+        final String translationFileName = translationFile.getAbsolutePath();
         int lastUnderscore = translationFileName.lastIndexOf('_');
 
         if (translationFileName.indexOf('_') == lastUnderscore) {

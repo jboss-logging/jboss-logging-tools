@@ -42,8 +42,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static org.jboss.logging.generator.util.ElementHelper.getPrimaryClassNamePrefix;
 import static org.jboss.logging.generator.util.TranslationHelper.getEnclosingTranslationFileName;
+import static org.jboss.logging.generator.util.TranslationHelper.getTranslationClassNameSuffix;
 
 /**
  * The translation class generator.
@@ -88,39 +88,49 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
-        final String packageName = messageInterface.packageName();
-        final String interfaceName = messageInterface.simpleName();
-        //String primaryClassName = toQualifiedClassName(packageName, getPrimaryClassName(element));
-        String primaryClassNamePrefix = getPrimaryClassNamePrefix(element);
-        // Map<String, String> elementTranslations = getAllMessageMethods(methods);
-
         try {
-
-            final String classTranslationFilesPath;
-
-            //User defined
-            if (translationFilesPath != null) {
-                classTranslationFilesPath = translationFilesPath + packageName.replace('.', File.separatorChar);
-
-                //By default use the class output folder
-            } else {
-                FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-                classTranslationFilesPath = fObj.toUri().getPath().replaceAll(Pattern.quote(interfaceName), "");
-            }
-
-            File dir = new File(classTranslationFilesPath);
-            File[] files = dir.listFiles(new TranslationFileFilter(primaryClassNamePrefix));
-
+            final File[] files = findTranslationFiles(messageInterface);
+            final Map<Method, String> validTranslations = allInterfaceTranslations(messageInterface, files);
             if (files != null) {
                 for (File file : files) {
-                    Map<Method, String> translations = validateTranslationMessages(messageInterface, file);
-                    generateSourceFileFor(messageInterface, classTranslationFilesPath, file.getName(), translations);
+                    generateSourceFileFor(messageInterface, file, validTranslations);
                 }
             }
-
         } catch (IOException e) {
-            logger().error(e, "Cannot read %s package files", packageName);
+            logger().error(e, "Cannot read %s package files", messageInterface.packageName());
         }
+    }
+
+    private Map<Method, String> allInterfaceTranslations(final MessageInterface messageInterface, final File[] files) throws IOException {
+        final Map<Method, String> validTranslations = new HashMap<Method, String>();
+        for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
+            validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
+        }
+        if (files != null) {
+            for (File file : files) {
+                validTranslations.putAll(validateTranslationMessages(messageInterface, file));
+            }
+        }
+        return validTranslations;
+    }
+
+    private File[] findTranslationFiles(final MessageInterface messageInterface) throws IOException {
+        final String packageName = messageInterface.packageName();
+        final String interfaceName = messageInterface.simpleName();
+
+        final String classTranslationFilesPath;
+
+        //User defined
+        if (translationFilesPath != null) {
+            classTranslationFilesPath = translationFilesPath + packageName.replace('.', File.separatorChar);
+
+            //By default use the class output folder
+        } else {
+            FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
+            classTranslationFilesPath = fObj.toUri().getPath().replace(interfaceName, "");
+        }
+        return new File(classTranslationFilesPath).listFiles(new TranslationFileFilter(interfaceName));
+
     }
 
     /**
@@ -175,24 +185,23 @@ final class TranslationClassGenerator extends AbstractGenerator {
     /**
      * Generate a class for the given translation file.
      *
-     * @param messageInterface    the message interface
-     * @param translationFilePath the translation file path
-     * @param translationFileName the translation file name
-     * @param translations        the translations message
+     * @param messageInterface the message interface
+     * @param translationFile  the translation file
+     * @param translations     the translations message
      */
-    private void generateSourceFileFor(final MessageInterface messageInterface, final String translationFilePath, final String translationFileName, final Map<Method, String> translations) {
-        logger().note("Generating translation class for %s.", translationFileName);
+    private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<Method, String> translations) {
+        logger().note("Generating translation class for %s.", translationFile.getAbsolutePath());
 
         //Generate empty translation super class if needed
         //Check if enclosing translation file exists, if not generate an empty super class
-        String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFileName);
-        File enclosingTranslationFile = new File(translationFilePath, enclosingTranslationFileName);
-        if (!enclosingTranslationFileName.equals(translationFileName) && !enclosingTranslationFile.exists()) {
-            generateSourceFileFor(messageInterface, translationFilePath, enclosingTranslationFileName, Collections.<Method, String>emptyMap());
+        final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
+        final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
+        if (!enclosingTranslationFileName.equals(translationFile.getAbsolutePath()) && !enclosingTranslationFile.exists()) {
+            generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<Method, String>emptyMap());
         }
 
         //Create source file
-        final ClassModel classModel = ClassModelFactory.translation(messageInterface, translationFileName, translations);
+        final ClassModel classModel = ClassModelFactory.translation(messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
 
         try {
 

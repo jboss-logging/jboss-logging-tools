@@ -87,16 +87,14 @@ public final class ClassModelHelper {
     /**
      * Creates the implementation class name for the message interface.
      *
-     * @param messageInterface    the message interface to generate the implementation name for.
-     * @param translationFileName the file name of the translations.
+     * @param messageInterface  the message interface to generate the implementation name for.
+     * @param translationSuffix the local suffix for the translation.
      *
      * @return the implementation class name
      *
      * @throws IllegalArgumentException if the message interface is not a message bundle or a message logger.
      */
-    public static String implementationClassName(final MessageInterface messageInterface, final String translationFileName) throws IllegalArgumentException {
-        final StringBuilder result = new StringBuilder(implementationClassName(messageInterface));
-        result.append(getTranslationClassNameSuffix(translationFileName));
-        return result.toString();
+    public static String implementationClassName(final MessageInterface messageInterface, final String translationSuffix) throws IllegalArgumentException {
+        return implementationClassName(messageInterface) + translationSuffix;
     }
 }

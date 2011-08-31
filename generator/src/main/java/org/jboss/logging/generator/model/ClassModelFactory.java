@@ -7,7 +7,6 @@ import java.util.Map;
 
 import static org.jboss.logging.generator.model.ClassModelHelper.implementationClassName;
 import static org.jboss.logging.generator.util.TranslationHelper.getEnclosingTranslationClassName;
-import static org.jboss.logging.generator.util.TranslationHelper.getTranslationClassNameSuffix;
 
 /**
  * Creates a class model for the message interface.
@@ -48,9 +47,9 @@ public class ClassModelFactory {
      * <p/>
      * <b>Note:</b> The implementation class must exist before the translation implementations can be created.
      *
-     * @param messageInterface    the message interface to implement
-     * @param translationFileName the translation file name.
-     * @param translations        a map of the translations for the methods.
+     * @param messageInterface  the message interface to implement.
+     * @param translationSuffix the translation locale suffix.
+     * @param translations      a map of the translations for the methods.
      *
      * @return the class model used to create translation implementations of the interface.
      *
@@ -58,8 +57,8 @@ public class ClassModelFactory {
      *                                  {@link MessageInterface#isMessageLogger()} returns
      *                                  {@code false.}
      */
-    public static ClassModel translation(final MessageInterface messageInterface, final String translationFileName, final Map<Method, String> translations) throws IllegalArgumentException {
-        final String generatedClassName = implementationClassName(messageInterface, translationFileName);
+    public static ClassModel translation(final MessageInterface messageInterface, final String translationSuffix, final Map<Method, String> translations) throws IllegalArgumentException {
+        final String generatedClassName = implementationClassName(messageInterface, translationSuffix);
         final String superClassName = getEnclosingTranslationClassName(generatedClassName);
         if (messageInterface.isMessageBundle()) {
             return new MessageBundleTranslator(messageInterface, generatedClassName, superClassName, translations);
