@@ -154,6 +154,7 @@ class StringFormatValidator extends AbstractFormatValidator {
                         break;
                     case LINE_SEPARATOR:
                     case PERCENT:
+                        counter--;
                         break;
                     default:
                         valid = false;
