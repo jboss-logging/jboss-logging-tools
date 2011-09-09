@@ -52,7 +52,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
             if (element.getKind().isInterface()) {
                 String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
-                String relativePath = packageName.replaceAll("\\.", FILE_SEPARATOR);
+                String relativePath = packageName.replace('.', File.separatorChar);
                 String fileName = getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
                 this.generateSkeletalTranslationFile(relativePath, fileName, messageInterface);
