@@ -2,6 +2,7 @@ package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.util.Strings;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -34,6 +35,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
     public static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
 
     public static final String DEFAULT_FILE_EXTENSION = ".i18n.properties";
+
+    private static final String DEFAULT_FILE_COMMENT = "# This file is for reference only, changes have no effect on the generated interface implementations.";
 
     private final String generatedFilesPath;
 
@@ -124,11 +127,26 @@ final class TranslationFileGenerator extends AbstractGenerator {
         try {
             final FileObject fileObject = filer().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
             writer = new BufferedWriter(new OutputStreamWriter(fileObject.openOutputStream()));
+            // Write comments
+            writer.write(Strings.fill("#", DEFAULT_FILE_COMMENT.length()));
+            writer.newLine();
+            writer.write("#");
+            writer.newLine();
+            writer.write(DEFAULT_FILE_COMMENT);
+            writer.newLine();
+            writer.write("#");
+            writer.newLine();
+            writer.write(Strings.fill("#", DEFAULT_FILE_COMMENT.length()));
+            writer.newLine();
+            writer.newLine();
             final Set<String> processed = new HashSet<String>();
 
             for (Method method : messageInterface.methods()) {
                 if (processed.add(method.translationKey())) {
-                    writer.write(String.format("# %s", method.message().value()));
+                    final Method.Message msg = method.message();
+                    writer.write(String.format("# Id: %s", (msg.hasId() ? msg.id() : "none")));
+                    writer.newLine();
+                    writer.write(String.format("# Message: %s", msg.value()));
                     writer.newLine();
                     writer.write(String.format("%s=", method.translationKey()));
                     writer.write(method.message().value());
