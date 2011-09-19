@@ -6,10 +6,13 @@ import org.jboss.logging.generator.intf.model.Method;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +24,7 @@ import static org.jboss.logging.generator.util.ElementHelper.getPrimaryClassName
  * translations files.
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
 final class TranslationFileGenerator extends AbstractGenerator {
@@ -29,7 +33,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
     public static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
 
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    public static final String DEFAULT_FILE_EXTENSION = ".i18n.properties";
 
     private final String generatedFilesPath;
 
@@ -47,9 +51,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
-
         if (generatedFilesPath != null) {
-
             if (element.getKind().isInterface()) {
                 String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
                 String relativePath = packageName.replace('.', File.separatorChar);
@@ -57,9 +59,9 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
                 this.generateSkeletalTranslationFile(relativePath, fileName, messageInterface);
             }
-
         }
-
+        // Always generate an Interface.i18n.properties file.
+        generateDefaultTranslationFile(messageInterface);
     }
 
     /**
@@ -104,6 +106,45 @@ final class TranslationFileGenerator extends AbstractGenerator {
                 }
             } catch (IOException e) {
                 logger().error(e, "Cannot close generated skeletal translation file %s", fileName);
+            }
+        }
+
+
+    }
+
+    /**
+     * Generates a default i18n properties file.
+     *
+     * @param messageInterface the message interface
+     */
+    private void generateDefaultTranslationFile(final MessageInterface messageInterface) {
+        final String fileName = messageInterface.simpleName() + DEFAULT_FILE_EXTENSION;
+        BufferedWriter writer = null;
+
+        try {
+            final FileObject fileObject = filer().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
+            writer = new BufferedWriter(new OutputStreamWriter(fileObject.openOutputStream()));
+            final Set<String> processed = new HashSet<String>();
+
+            for (Method method : messageInterface.methods()) {
+                if (processed.add(method.translationKey())) {
+                    writer.write(String.format("# %s", method.message().value()));
+                    writer.newLine();
+                    writer.write(String.format("%s=", method.translationKey()));
+                    writer.write(method.message().value());
+                    writer.newLine();
+                }
+            }
+
+        } catch (IOException e) {
+            logger().error(e, "Cannot write generated default translation file %s", fileName);
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (IOException e) {
+                logger().error(e, "Cannot write generated default translation file %s", fileName);
             }
         }
 
