@@ -83,7 +83,7 @@ public final class TranslationHelper {
         if (translationFile == null) {
             throw new IllegalArgumentException("The translationClassName parameter cannot be null");
         }
-        final String translationFileName = translationFile.getAbsolutePath();
+        final String translationFileName = translationFile.getName();
         int lastUnderscore = translationFileName.lastIndexOf('_');
 
         if (translationFileName.indexOf('_') == lastUnderscore) {

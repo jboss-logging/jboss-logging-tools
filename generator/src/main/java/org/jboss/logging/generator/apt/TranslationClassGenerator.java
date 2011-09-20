@@ -34,9 +34,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -89,7 +92,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
-            final File[] files = findTranslationFiles(messageInterface);
+            final List<File> files = findTranslationFiles(messageInterface);
             final Map<Method, String> validTranslations = allInterfaceTranslations(messageInterface, files);
             if (files != null) {
                 for (File file : files) {
@@ -101,7 +104,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
     }
 
-    private Map<Method, String> allInterfaceTranslations(final MessageInterface messageInterface, final File[] files) throws IOException {
+    private Map<Method, String> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
         final Map<Method, String> validTranslations = new HashMap<Method, String>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
@@ -114,7 +117,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
         return validTranslations;
     }
 
-    private File[] findTranslationFiles(final MessageInterface messageInterface) throws IOException {
+    private List<File> findTranslationFiles(final MessageInterface messageInterface) throws IOException {
         final String packageName = messageInterface.packageName();
         final String interfaceName = messageInterface.simpleName();
 
@@ -129,7 +132,21 @@ final class TranslationClassGenerator extends AbstractGenerator {
             FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
             classTranslationFilesPath = fObj.toUri().getPath().replace(interfaceName, "");
         }
-        return new File(classTranslationFilesPath).listFiles(new TranslationFileFilter(interfaceName));
+        final List<File> result;
+        File[] files = new File(classTranslationFilesPath).listFiles(new TranslationFileFilter(interfaceName));
+        if (files == null) {
+            result = Collections.emptyList();
+        } else {
+            result = Arrays.asList(files);
+            Collections.sort(result, new Comparator<File>() {
+                public int compare(final File o1, final File o2) {
+                    int result = o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+                    result = (result != 0 ? result : Integer.signum(o1.getName().length() - o2.getName().length()));
+                    return result;
+                }
+            });
+        }
+        return result;
 
     }
 
@@ -196,7 +213,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
         //Check if enclosing translation file exists, if not generate an empty super class
         final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
         final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
-        if (!enclosingTranslationFileName.equals(translationFile.getAbsolutePath()) && !enclosingTranslationFile.exists()) {
+        if (!enclosingTranslationFileName.equals(translationFile.getName()) && !enclosingTranslationFile.exists()) {
             generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<Method, String>emptyMap());
         }
 
