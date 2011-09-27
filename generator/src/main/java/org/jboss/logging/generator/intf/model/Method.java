@@ -2,6 +2,7 @@ package org.jboss.logging.generator.intf.model;
 
 import org.jboss.logging.generator.Annotations;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -132,6 +133,14 @@ public interface Method extends Comparable<Method>, MessageObject {
      * @return {@code true} if this is a logger method, otherwise {@code false}.
      */
     boolean isLoggerMethod();
+
+    /**
+     * Returns a collection of throwable types the method throws. If the method throws no exceptions an empty
+     * collection is returned.
+     *
+     * @return a collection of throwable types or an empty collection.
+     */
+    Collection<ThrowableType> thrownTypes();
 
 
     /**

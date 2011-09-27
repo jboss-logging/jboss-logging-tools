@@ -104,56 +104,62 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
-            if (isValidAnnotation(annotation)) {
-                final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
-                for (TypeElement interfaceElement : interfaces) {
-                    final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
-                    final Collection<ValidationMessage> validationMessages = Validator.INSTANCE.validate(messageInterface);
-                    for (ValidationMessage message : validationMessages) {
-                        final Object reference = message.getMessageObject().reference();
-                        if (reference instanceof Element) {
-                            final Element element = Element.class.cast(reference);
-                            switch (message.type()) {
-                                case ERROR: {
-                                    logger.error(element, message.getMessage());
-                                    process = false;
-                                    break;
+            try {
+                if (isValidAnnotation(annotation)) {
+                    final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
+                    for (TypeElement interfaceElement : interfaces) {
+                        final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
+                        final Collection<ValidationMessage> validationMessages = Validator.INSTANCE.validate(messageInterface);
+                        for (ValidationMessage message : validationMessages) {
+                            final Object reference = message.getMessageObject().reference();
+                            if (reference instanceof Element) {
+                                final Element element = Element.class.cast(reference);
+                                switch (message.type()) {
+                                    case ERROR: {
+                                        logger.error(element, message.getMessage());
+                                        process = false;
+                                        break;
+                                    }
+                                    case WARN: {
+                                        logger.warn(element, message.getMessage());
+                                        break;
+                                    }
+                                    default: {
+                                        logger.note(element, message.getMessage());
+                                    }
                                 }
-                                case WARN: {
-                                    logger.warn(element, message.getMessage());
-                                    break;
-                                }
-                                default: {
-                                    logger.note(element, message.getMessage());
-                                }
-                            }
-                        } else {
-                            switch (message.type()) {
-                                case ERROR: {
-                                    logger.error(message.getMessage());
-                                    process = false;
-                                    break;
-                                }
-                                case WARN: {
-                                    logger.warn(message.getMessage());
-                                    break;
-                                }
-                                default: {
-                                    logger.note(message.getMessage());
+                            } else {
+                                switch (message.type()) {
+                                    case ERROR: {
+                                        logger.error(message.getMessage());
+                                        process = false;
+                                        break;
+                                    }
+                                    case WARN: {
+                                        logger.warn(message.getMessage());
+                                        break;
+                                    }
+                                    default: {
+                                        logger.note(message.getMessage());
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (process) {
-                        if (interfaceElement.getKind().isInterface()
-                                && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
-                            for (AbstractGenerator processor : processors) {
-                                logger.debug("Executing processor %s", processor.getName());
-                                processor.processTypeElement(annotation, interfaceElement, messageInterface);
+                        if (process) {
+                            if (interfaceElement.getKind().isInterface()
+                                    && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
+                                for (AbstractGenerator processor : processors) {
+                                    logger.debug("Executing processor %s", processor.getName());
+                                    processor.processTypeElement(annotation, interfaceElement, messageInterface);
+                                }
                             }
                         }
                     }
                 }
+            } catch (AtpException e) {
+                logger.error(e.getElement(), e);
+            } catch (Throwable t) {
+                logger.error(annotation, t);
             }
         }
         return process;

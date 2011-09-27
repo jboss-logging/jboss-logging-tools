@@ -64,7 +64,7 @@ final class ParameterFactory {
             // Format class may not yet be compiled, so get it in a roundabout way
             for (AnnotationMirror mirror : param.getAnnotationMirrors()) {
                 final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.equals(types.getDeclaredType(elements.getTypeElement(annotations().formatWith().getName())))) {
+                if (annotationType.toString().equals(types.getDeclaredType(elements.getTypeElement(annotations().formatWith().getName())).toString())) {
                     final AnnotationValue value = mirror.getElementValues().values().iterator().next();
                     formatClass = ((TypeElement) (((DeclaredType) value.getValue()).asElement())).getQualifiedName().toString();
                 }
@@ -106,6 +106,11 @@ final class ParameterFactory {
             @Override
             public boolean isParam() {
                 return false;
+            }
+
+            @Override
+            public boolean isFormatParam() {
+                return true;
             }
 
             @Override
@@ -243,6 +248,11 @@ final class ParameterFactory {
         @Override
         public boolean isParam() {
             return isParam;
+        }
+
+        @Override
+        public boolean isFormatParam() {
+            return !(isCause() || isParam() || isMessage());
         }
 
         @Override

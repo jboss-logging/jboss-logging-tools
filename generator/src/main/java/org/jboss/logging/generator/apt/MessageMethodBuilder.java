@@ -4,10 +4,11 @@ import org.jboss.logging.generator.Annotations.FormatType;
 import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ReturnType;
+import org.jboss.logging.generator.intf.model.ThrowableType;
 import org.jboss.logging.generator.util.Comparison;
-import org.jboss.logging.generator.util.Objects;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.Collection;
@@ -65,14 +66,20 @@ final class MessageMethodBuilder {
             resultMethod.message = findMessage(methods, elementMethod);
             resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
 
+            for (TypeMirror thrownType : elementMethod.getThrownTypes()) {
+                resultMethod.thrownTypes.add(ThrowableTypeFactory.of(elements, types, thrownType));
+            }
+
             // Create a list of parameters
             for (Parameter parameter : ParameterFactory.of(elements, types, resultMethod.method)) {
                 if (parameter.isParam()) {
                     resultMethod.constructorParameters.add(parameter);
                 } else if (parameter.isCause()) {
                     resultMethod.cause = parameter;
-                } else {
+                } else if (parameter.isFormatParam()) {
                     resultMethod.formatParameters.add(parameter);
+                } else {
+                    throw AtpException.of(elementMethod, "Parameter %s is not a format parameter, a cause parameter or a throwable construction parameter.", parameter);
                 }
                 resultMethod.allParameters.add(parameter);
             }
@@ -156,6 +163,7 @@ final class MessageMethodBuilder {
         private final Set<Parameter> allParameters;
         private final Set<Parameter> formatParameters;
         private final Set<Parameter> constructorParameters;
+        private final Set<ThrowableType> thrownTypes;
         private String translationKey;
 
         /**
@@ -170,6 +178,7 @@ final class MessageMethodBuilder {
             allParameters = new LinkedHashSet<Parameter>();
             formatParameters = new LinkedHashSet<Parameter>();
             constructorParameters = new LinkedHashSet<Parameter>();
+            thrownTypes = new LinkedHashSet<ThrowableType>();
         }
 
         @Override
@@ -250,6 +259,11 @@ final class MessageMethodBuilder {
         @Override
         public boolean isLoggerMethod() {
             return isAnnotatedWith(method, annotations().logMessage());
+        }
+
+        @Override
+        public Collection<ThrowableType> thrownTypes() {
+            return thrownTypes;
         }
 
         @Override

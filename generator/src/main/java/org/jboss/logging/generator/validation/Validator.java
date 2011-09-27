@@ -4,7 +4,7 @@ import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ReturnType;
-import org.jboss.logging.generator.intf.model.ReturnType.ThrowableReturnType;
+import org.jboss.logging.generator.intf.model.ThrowableType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +68,12 @@ public final class Validator {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         final Map<String, Method> methodNames = new HashMap<String, Method>();
         for (Method method : methods) {
+            // Check for checked exceptions thrown on the interface method
+            for (ThrowableType throwableType : method.thrownTypes()) {
+                if (throwableType.isChecked()) {
+                    messages.add(createError(method, "Interface methods cannot throw checked exceptions."));
+                }
+            }
             final Method.Message message = method.message();
             if (message == null) {
                 messages.add(createError(method, "All message bundles and message logger methods must have or inherit a message."));
@@ -151,7 +157,7 @@ public final class Validator {
                 // if (!returnType.isSubtypeOf(Throwable.class)) {
                 messages.add(createError(method, "Message bundle method %s has an invalid return type of %s.", method.name(), returnType.name()));
             }
-            final ThrowableReturnType throwableReturnType = returnType.throwableReturnType();
+            final ThrowableType throwableReturnType = returnType.throwableReturnType();
             if (throwableReturnType.useConstructionParameters()) {
                 // TODO - Check the return type constructor. Currently handled via the ThrowableReturnTypeFactory.
             } else if (!throwableReturnType.useConstructionParameters() && !method.constructorParameters().isEmpty()) {

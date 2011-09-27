@@ -24,6 +24,7 @@ import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
+import com.sun.codemodel.internal.JExpression;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
@@ -123,6 +124,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param projectCodeVar the project code variable
      */
     private void createLoggerMethod(final Method messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
+        addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
 
@@ -150,8 +152,13 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         for (Parameter param : messageMethod.allParameters()) {
             final JClass paramType = getCodeModel().ref(param.type());
             final JVar var = method.param(JMod.FINAL, paramType, param.name());
-            if (!param.isCause() && !param.isParam()) {
-                logInv.arg(var);
+            final String formatterClass = param.getFormatterClass();
+            if (param.isFormatParam()) {
+                if (formatterClass == null) {
+                    logInv.arg(var);
+                } else {
+                    logInv.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(var));
+                }
             }
         }
     }

@@ -89,6 +89,14 @@ public interface Parameter extends Comparable<Parameter>, MessageObject, Message
     boolean isParam();
 
     /**
+     * Checks the parameter and returns {@code true} if the parameter is to be used as a format parameter, otherwise
+     * {@code false}.
+     *
+     * @return {@code true} if a format parameter, otherwise {@code false}.
+     */
+    boolean isFormatParam();
+
+    /**
      * The formatter class, or {@code null} if there is none.
      *
      * @return the formatter class

@@ -32,7 +32,7 @@ import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.Parameter;
-import org.jboss.logging.generator.intf.model.ReturnType.ThrowableReturnType;
+import org.jboss.logging.generator.intf.model.ThrowableType;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -83,6 +83,7 @@ abstract class ImplementationClassModel extends ClassModel {
      * @param projectCodeVar the project code variable
      */
     void createBundleMethod(final Method messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
+        addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
         final JClass returnField = getCodeModel().ref(method.type().fullName());
@@ -113,15 +114,14 @@ abstract class ImplementationClassModel extends ClassModel {
             // Create the parameters
             for (Parameter param : messageMethod.allParameters()) {
                 final JClass paramType = getCodeModel().ref(param.type());
-                method.param(JMod.FINAL, paramType, param.name());
-            }
-            // Create the parameters
-            for (Parameter param : messageMethod.formatParameters()) {
+                final JVar var = method.param(JMod.FINAL, paramType, param.name());
                 final String formatterClass = param.getFormatterClass();
-                if (formatterClass == null) {
-                    formatterMethod.arg(JExpr.direct(param.name()));
-                } else {
-                    formatterMethod.arg(JExpr._new(JClass.parse(getCodeModel(), formatterClass)).arg(JExpr.direct(param.name())));
+                if (param.isFormatParam()) {
+                    if (formatterClass == null) {
+                        formatterMethod.arg(var);
+                    } else {
+                        formatterMethod.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(var));
+                    }
                 }
             }
             // Setup the return type
@@ -144,7 +144,7 @@ abstract class ImplementationClassModel extends ClassModel {
      * @param formatterMethod the formatter method used to format the string cause
      */
     private void initCause(final JVar result, final JClass returnField, final JBlock body, final Method method, final JInvocation formatterMethod) {
-        final ThrowableReturnType returnType = method.returnType().throwableReturnType();
+        final ThrowableType returnType = method.returnType().throwableReturnType();
         if (returnType.useConstructionParameters()) {
             final JInvocation invocation = JExpr._new(returnField);
             for (Parameter param : returnType.constructionParameters()) {
@@ -184,5 +184,11 @@ abstract class ImplementationClassModel extends ClassModel {
         final JInvocation setStackTrace = result.invoke("setStackTrace");
         setStackTrace.arg(arrays.staticInvoke("copyOfRange").arg(st).arg(JExpr.lit(1)).arg(st.ref("length")));
         body.add(setStackTrace);
+    }
+
+    protected final void addThrownTypes(final Method method, final JMethod jMethod) {
+        for (ThrowableType thrownType : method.thrownTypes()) {
+            jMethod._throws(getCodeModel().ref(thrownType.name()));
+        }
     }
 }

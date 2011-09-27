@@ -2,6 +2,7 @@ package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.ReturnType;
+import org.jboss.logging.generator.intf.model.ThrowableType;
 import org.jboss.logging.generator.util.Objects;
 
 import javax.lang.model.type.TypeKind;
@@ -42,14 +43,14 @@ final class ReturnTypeFactory {
         private final Types types;
         private final TypeMirror returnType;
         private final Method messageMethod;
-        private ThrowableReturnType throwableReturnType;
+        private ThrowableType throwableType;
 
         private AptReturnType(final Elements elements, final Types types, final TypeMirror returnType, final Method messageMethod) {
             this.elements = elements;
             this.types = types;
             this.returnType = returnType;
             this.messageMethod = messageMethod;
-            throwableReturnType = null;
+            throwableType = null;
         }
 
         @Override
@@ -68,13 +69,13 @@ final class ReturnTypeFactory {
         }
 
         @Override
-        public ThrowableReturnType throwableReturnType() {
-            return throwableReturnType;
+        public ThrowableType throwableReturnType() {
+            return throwableType;
         }
 
         private void init() {
             if (isThrowable()) {
-                throwableReturnType = ThrowableReturnTypeFactory.of(elements, types, returnType, messageMethod);
+                throwableType = ThrowableTypeFactory.forReturnType(elements, types, returnType, messageMethod);
             }
         }
 
@@ -101,7 +102,7 @@ final class ReturnTypeFactory {
                     .add("name", name())
                     .add("primitive", isPrimitive())
                     .add("throwable", isThrowable())
-                    .add("throwableReturnType", throwableReturnType).toString();
+                    .add("throwableType", throwableType).toString();
         }
 
         @Override

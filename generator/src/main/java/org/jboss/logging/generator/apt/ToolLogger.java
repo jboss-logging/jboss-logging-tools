@@ -239,54 +239,54 @@ public final class ToolLogger {
     /**
      * Prints an error message.
      *
-     * @param exception the cause of the error.
+     * @param cause the cause of the error.
      */
-    public void error(final Exception exception) {
-        error(null, exception);
+    public void error(final Throwable cause) {
+        error(null, cause);
     }
 
     /**
      * Prints a error message.
      *
-     * @param exception the cause of the error.
-     * @param element   the element to print with the message.
-     * @param message   the message.
+     * @param cause   the cause of the error.
+     * @param element the element to print with the message.
+     * @param message the message.
      */
-    public void error(final Exception exception, final Element element, final String message) {
-        log(Kind.ERROR, element, exception, message);
+    public void error(final Throwable cause, final Element element, final String message) {
+        log(Kind.ERROR, element, cause, message);
     }
 
     /**
      * Prints an error message.
      *
-     * @param exception     the cause of the error.
+     * @param cause         the cause of the error.
      * @param messageFormat the message format.
      * @param args          the format arguments.
      */
-    public void error(final Exception exception, final String messageFormat, final Object... args) {
-        error(null, exception, messageFormat, args);
+    public void error(final Throwable cause, final String messageFormat, final Object... args) {
+        error(null, cause, messageFormat, args);
     }
 
     /**
      * Prints an error message.
      *
-     * @param exception the cause of the error.
-     * @param element   the element that caused the error.
+     * @param cause   the cause of the error.
+     * @param element the element that caused the error.
      */
-    public void error(final Element element, final Exception exception) {
-        log(Kind.ERROR, element, exception, null);
+    public void error(final Element element, final Throwable cause) {
+        log(Kind.ERROR, element, cause, null);
     }
 
     /**
      * Prints an error message.
      *
-     * @param exception     the cause of the error.
+     * @param cause         the cause of the error.
      * @param messageFormat the message format.
      * @param element       the element that caused the warning.
      * @param args          the format arguments.
      */
-    public void error(final Element element, final Exception exception, final String messageFormat, final Object... args) {
-        log(Kind.ERROR, element, exception, messageFormat, args);
+    public void error(final Element element, final Throwable cause, final String messageFormat, final Object... args) {
+        log(Kind.ERROR, element, cause, messageFormat, args);
     }
 
     /**
@@ -339,7 +339,7 @@ public final class ToolLogger {
                 messager.printMessage(kind, message, element);
             }
             // Fail gracefully
-        } catch (Exception e) {
+        } catch (Throwable t) {
             if (element == null) {
                 messager.printMessage(Kind.ERROR, "Error logging original message: " + messageFormat);
             } else {
@@ -348,9 +348,9 @@ public final class ToolLogger {
         }
     }
 
-    private void log(final Kind kind, final Element element, final Exception exception, final String messageFormat, final Object... args) {
+    private void log(final Kind kind, final Element element, final Throwable cause, final String messageFormat, final Object... args) {
 
-        String stringCause = TransformationHelper.stackTraceToString(exception);
+        String stringCause = TransformationHelper.stackTraceToString(cause);
 
         if (messageFormat == null) {
             log(kind, element, stringCause);
@@ -366,9 +366,9 @@ public final class ToolLogger {
 
     }
 
-    private void log(final Kind kind, final Element element, final Exception exception, final String message) {
+    private void log(final Kind kind, final Element element, final Throwable cause, final String message) {
 
-        String stringCause = TransformationHelper.stackTraceToString(exception);
+        String stringCause = TransformationHelper.stackTraceToString(cause);
 
         if (message == null) {
             log(kind, element, stringCause);
