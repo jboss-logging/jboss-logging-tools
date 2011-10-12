@@ -26,4 +26,14 @@ public interface MessageObjectType {
      * @return {@code true} if this type is a subtype of the class, otherwise {@code false}.
      */
     boolean isSubtypeOf(Class<?> type);
+
+    /**
+     * Determines if this type is the same type as the class represented by the {@code type} parameter. If this type is
+     * the same type as the class {@code true} is returned, otherwise {@code false}.
+     *
+     * @param type the class type to check.
+     *
+     * @return {@code true} if this type is the same type as the class, otherwise {@code false}.
+     */
+    boolean isSameAs(Class<?> type);
 }

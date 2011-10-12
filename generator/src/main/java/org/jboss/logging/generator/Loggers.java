@@ -34,6 +34,13 @@ public interface Loggers {
     Class<?> loggerClass();
 
     /**
+     * The log level class.
+     *
+     * @return the log level class.
+     */
+    Class<?> logLevelClass();
+
+    /**
      * Returns the basic logger class.
      *
      * @return the basic logger class.

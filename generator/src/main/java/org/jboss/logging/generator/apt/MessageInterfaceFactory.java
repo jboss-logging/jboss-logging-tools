@@ -208,6 +208,11 @@ public final class MessageInterfaceFactory {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
             return types.isSubtype(interfaceElement.asType(), typeMirror);
         }
+
+        @Override
+        public boolean isSameAs(final Class<?> type) {
+            return qualifiedName.equals(type.getName());
+        }
     }
 
     private static class BasicLoggerInterface implements MessageInterface {
@@ -299,6 +304,11 @@ public final class MessageInterfaceFactory {
         public boolean isSubtypeOf(final Class<?> type) {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
             return types.isSubtype(basicLogger.asType(), typeMirror);
+        }
+
+        @Override
+        public boolean isSameAs(final Class<?> type) {
+            return name().equals(type.getName());
         }
 
         @Override

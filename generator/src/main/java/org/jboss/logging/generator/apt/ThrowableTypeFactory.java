@@ -254,6 +254,11 @@ final class ThrowableTypeFactory {
         }
 
         @Override
+        public boolean isSameAs(final Class<?> type) {
+            return name().equals(type.getName());
+        }
+
+        @Override
         public int compareTo(final ThrowableType o) {
             return name().compareTo(o.name());
         }

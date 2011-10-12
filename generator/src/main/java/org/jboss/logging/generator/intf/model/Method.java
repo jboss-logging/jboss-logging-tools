@@ -81,7 +81,7 @@ public interface Method extends Comparable<Method>, MessageObject {
     ReturnType returnType();
 
     /**
-     * Returns the LogMessage annotation associated with this methodonly if {@link #isLoggerMethod()} returns
+     * Returns the LogMessage annotation associated with this method only if {@link #isLoggerMethod()} returns
      * {@code true}.
      *
      * @return the log message annotation

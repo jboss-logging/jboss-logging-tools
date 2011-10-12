@@ -36,7 +36,11 @@ import org.jboss.logging.generator.intf.model.Method;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ReturnType;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import static org.jboss.logging.generator.Tools.loggers;
@@ -183,25 +187,132 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             final JMethod blMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, method.name());
             blMethod.annotate(Override.class);
+            // Create the method body
             final JBlock body = blMethod.body();
-            final JInvocation logInv = JExpr.invoke(log, method.name());
+            // Create the delegate method
+            final DelegateLogMethod delegateLogMethod = DelegateLogMethod.of(method);
+            // Create the invocation for the delegate
+            final JInvocation logInv = JExpr.invoke(log, delegateLogMethod.methodName);
+            final Map<Parameter, JExpression> args = new LinkedHashMap<Parameter, JExpression>();
+            // Create sequenced parameters
+            final Map<DelegateParameter, JExpression> delegateParameters = new HashMap<DelegateParameter, JExpression>();
+            delegateParameters.put(DelegateParameter.FQCN, JExpr.ref(FQCN_FIELD_NAME));
+            if (delegateLogMethod.level != null) {
+                delegateParameters.put(DelegateParameter.LEVEL, JExpr.direct(delegateLogMethod.level));
+            }
+            boolean first = true;
             for (Parameter parameter : method.allParameters()) {
                 final JType param = codeModel.ref(parameter.type());
-                final JVar methodParam;
-                if (parameter.isVarArgs()) {
-                    methodParam = blMethod.varParam(param, parameter.name());
-                } else if (parameter.isArray()) {
-                    methodParam = blMethod.param(JMod.FINAL, param.array(), parameter.name());
-                } else {
-                    methodParam = blMethod.param(JMod.FINAL, param, parameter.name());
+                // Assume if first parameter is a String and it's not a format method, it's th FQCN
+                if (first) {
+                    first = false;
+                    if (!delegateLogMethod.isFormatMethod && parameter.isSameAs(String.class)) {
+                        delegateParameters.put(DelegateParameter.FQCN, blMethod.param(JMod.FINAL, param, parameter.name()));
+                        continue;
+                    }
                 }
-                logInv.arg(methodParam);
+                // Check the parameter types
+                if (parameter.isSameAs(loggers().logLevelClass())) {
+                    delegateParameters.put(DelegateParameter.LEVEL, blMethod.param(JMod.FINAL, param, parameter.name()));
+                } else if (parameter.isAssignableFrom(Throwable.class)) {
+                    delegateParameters.put(DelegateParameter.THROWABLE, blMethod.param(JMod.FINAL, param, parameter.name()));
+                } else if (parameter.isVarArgs()) {
+                    args.put(parameter, blMethod.varParam(param, parameter.name()));
+                } else if (parameter.isArray()) {
+                    args.put(parameter, blMethod.param(JMod.FINAL, param.array(), parameter.name()));
+                } else {
+                    args.put(parameter, blMethod.param(JMod.FINAL, param, parameter.name()));
+                }
             }
+            // Void return types should be logging methods.
             if (ReturnType.VOID.equals(method.returnType())) {
+                if (!delegateParameters.isEmpty()) {
+                    logInv.arg(delegateParameters.get(DelegateParameter.FQCN));
+                    if (delegateParameters.containsKey(DelegateParameter.LEVEL)) {
+                        logInv.arg(delegateParameters.get(DelegateParameter.LEVEL));
+                    }
+                    if (delegateParameters.containsKey(DelegateParameter.THROWABLE)) {
+                        logInv.arg(delegateParameters.get(DelegateParameter.THROWABLE));
+                    } else {
+                        logInv.arg(JExpr._null());
+                    }
+                    first = true;
+                    for (Map.Entry<Parameter, JExpression> entry : args.entrySet()) {
+                        final Parameter parameter = entry.getKey();
+                        final JExpression methodParameter = entry.getValue();
+                        // Kind of hacky, but if the parameter is an object we need to get it's string value or pass null
+                        if (first && parameter.isSameAs(Object.class)) {
+                            first = false;
+                            final StringBuilder sb = new StringBuilder();
+                            sb.append(parameter.name()).
+                                    append(" == null ? null : ").
+                                    append(parameter.name())
+                                    .append(".toString()");
+                            logInv.arg(JExpr.direct(sb.toString()));
+                        } else {
+                            logInv.arg(methodParameter);
+                        }
+                    }
+                }
+                // Add the delegate invocation to the body
                 body.add(logInv);
             } else {
+                // Should be boolean and only, optionally, have a level parameter
+                if (delegateParameters.containsKey(DelegateParameter.LEVEL)) {
+                    logInv.arg(delegateParameters.get(DelegateParameter.LEVEL));
+                }
                 body._return(logInv);
             }
         }
+    }
+
+    /**
+     * Simple enum in the sequence order
+     */
+    private static enum DelegateParameter {
+        FQCN,
+        LEVEL,
+        THROWABLE
+    }
+
+    /**
+     * Simple holder and parser for which method the log should delegate to.
+     */
+    private static class DelegateLogMethod {
+        final String level;
+        final String methodName;
+        final boolean isFormatMethod;
+
+        private DelegateLogMethod(final Method method) {
+            final String methodName = method.name();
+            final char lastChar = methodName.charAt(methodName.length() - 1);
+            isFormatMethod = (lastChar == 'f' || lastChar == 'v');
+            final String logMethod;
+            if (methodName.startsWith("log")) {
+                if (isFormatMethod) {
+                    logMethod = methodName;
+                } else {
+                    logMethod = methodName + "v";
+                }
+                level = null;
+            } else if (ReturnType.VOID.equals(method.returnType())) {
+                if (isFormatMethod) {
+                    logMethod = "log" + lastChar;
+                    level = "Logger.Level." + methodName.substring(0, methodName.length() - 1).toUpperCase(Locale.US);
+                } else {
+                    logMethod = "logv";
+                    level = "Logger.Level." + methodName.substring(0, methodName.length()).toUpperCase(Locale.US);
+                }
+            } else {
+                logMethod = methodName;
+                level = null;
+            }
+            this.methodName = logMethod;
+        }
+
+        public static DelegateLogMethod of(final Method method) {
+            return new DelegateLogMethod(method);
+        }
+
     }
 }

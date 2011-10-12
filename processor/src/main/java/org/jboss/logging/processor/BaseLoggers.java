@@ -33,12 +33,17 @@ import org.jboss.logging.generator.Loggers;
 public class BaseLoggers implements Loggers {
 
     @Override
-    public Class<?> loggerClass() {
+    public Class<Logger> loggerClass() {
         return Logger.class;
     }
 
     @Override
-    public Class<?> basicLoggerClass() {
+    public Class<Logger.Level> logLevelClass() {
+        return Logger.Level.class;
+    }
+
+    @Override
+    public Class<BasicLogger> basicLoggerClass() {
         return BasicLogger.class;
     }
 

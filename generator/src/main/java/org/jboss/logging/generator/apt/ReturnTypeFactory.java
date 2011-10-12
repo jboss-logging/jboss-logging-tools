@@ -121,5 +121,10 @@ final class ReturnTypeFactory {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
             return types.isSubtype(returnType, typeMirror);
         }
+
+        @Override
+        public boolean isSameAs(final Class<?> type) {
+            return name().equals(type.getName());
+        }
     }
 }

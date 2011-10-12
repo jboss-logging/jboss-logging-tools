@@ -113,5 +113,10 @@ public interface ReturnType extends MessageObject, MessageObjectType {
         public boolean isSubtypeOf(final Class<?> type) {
             return false;
         }
+
+        @Override
+        public boolean isSameAs(final Class<?> type) {
+            return type.equals(Void.TYPE);
+        }
     }
 }

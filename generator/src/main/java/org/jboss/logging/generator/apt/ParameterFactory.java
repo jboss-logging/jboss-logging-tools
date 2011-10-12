@@ -195,6 +195,11 @@ final class ParameterFactory {
             public boolean isSubtypeOf(final Class<?> type) {
                 return type.isAssignableFrom(String.class);
             }
+
+            @Override
+            public boolean isSameAs(final Class<?> type) {
+                return type().equals(type.getName());
+            }
         };
     }
 
@@ -330,14 +335,19 @@ final class ParameterFactory {
 
         @Override
         public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isAssignable(typeMirror, param.asType());
+            final TypeMirror typeMirror = elements.getTypeElement(type.getName().replace("$", ".")).asType();
+            return types.isAssignable(param.asType(), typeMirror);
         }
 
         @Override
         public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isSubtype(param.asType(), typeMirror);
+            final TypeMirror typeMirror = elements.getTypeElement(type.getName().replace("$", ".")).asType();
+            return types.isSubtype(typeMirror, param.asType());
+        }
+
+        @Override
+        public boolean isSameAs(final Class<?> type) {
+            return type().equals(type.getName().replace("$", "."));
         }
     }
 }
