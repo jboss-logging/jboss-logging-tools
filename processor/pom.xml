@@ -6,7 +6,7 @@
     <parent>
         <artifactId>jboss-logging-tools-parent</artifactId>
         <groupId>org.jboss.logging</groupId>
-        <version>1.0.0.CR2-SNAPSHOT</version>
+        <version>1.0.0.CR2</version>
     </parent>
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging-processor</artifactId>
