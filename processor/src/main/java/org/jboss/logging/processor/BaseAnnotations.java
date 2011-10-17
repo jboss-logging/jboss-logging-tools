@@ -26,6 +26,7 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
+import org.jboss.logging.Param;
 import org.jboss.logging.generator.Annotations;
 
 import java.lang.annotation.Annotation;
@@ -41,7 +42,7 @@ public class BaseAnnotations implements Annotations {
     public static final Class<MessageLogger> MESSAGE_LOGGER_ANNOTATION = MessageLogger.class;
     public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
     public static final Class<Message> MESSAGE_ANNOTATION = Message.class;
-    public static final Class<? extends Annotation> PARAM_ANNOTATION = Annotations.Void.class;
+    public static final Class<? extends Annotation> PARAM_ANNOTATION = Param.class;
 
     @Override
     public Class<? extends Annotation> cause() {
