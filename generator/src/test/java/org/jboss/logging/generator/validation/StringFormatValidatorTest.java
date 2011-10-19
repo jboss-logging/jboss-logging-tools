@@ -58,4 +58,20 @@ public class StringFormatValidatorTest {
         validator = StringFormatValidator.of("Duke's Birthday: %1$tm %<te,%<tY", new Date(), new Date());
         assertFalse(validator.isValid());
     }
+
+    @Test
+    public void validateParameterTypePerPosition() {
+        StringFormatValidator validator = StringFormatValidator.of("%1$s %2$d %3$s", "Test", 10, "Again");
+        assertTrue(validator.detailMessage(), validator.isValid());
+
+        validator = StringFormatValidator.of("%3$s %1$d %2$s", "Test", 42, "order");
+        assertFalse(validator.detailMessage(), validator.isValid());
+
+        validator = StringFormatValidator.of("%2$d %1$s", "Test", 42);
+        assertTrue(validator.detailMessage(), validator.isValid());
+
+        validator = StringFormatValidator.of("%3$s %1$d %3$s %2tm", 42, new Date(), "Test");
+        assertTrue(validator.detailMessage(), validator.isValid());
+
+    }
 }
