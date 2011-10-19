@@ -10,6 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -171,9 +172,30 @@ final class ReturnTypeFactory {
 
         private boolean checkType(final Parameter parameter, final TypeMirror type) {
             if (parameter.isPrimitive()) {
-                return parameter.type().equalsIgnoreCase(type.getKind().name());
+                if (type.getKind().isPrimitive()) {
+                    return parameter.type().equalsIgnoreCase(type.getKind().name());
+                }
+                return types.isAssignable(elements.getTypeElement(unbox(parameter)).asType(), type);
+            }
+            if (type.getKind().isPrimitive()) {
+                final TypeElement primitiveType = types.boxedClass((PrimitiveType) type);
+                return types.isAssignable(elements.getTypeElement(parameter.type()).asType(), primitiveType.asType());
             }
             return types.isAssignable(elements.getTypeElement(parameter.type()).asType(), type);
+        }
+
+        private String unbox(final Parameter parameter) {
+            String result = parameter.type();
+            if (parameter.isPrimitive()) {
+                if ("int".equals(result)) {
+                    result = Integer.class.getName();
+                } else if ("char".equals(result)) {
+                    result = Character.class.getName();
+                } else {
+                    result = "java.lang." + Character.toUpperCase(result.charAt(0)) + result.substring(1);
+                }
+            }
+            return result;
         }
     }
 }

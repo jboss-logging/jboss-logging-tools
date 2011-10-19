@@ -39,6 +39,8 @@ import org.jboss.logging.generator.intf.model.MessageMethod;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
+import static org.jboss.logging.generator.util.ElementHelper.typeToString;
+
 /**
  * The basic java class model.
  *
@@ -130,13 +132,13 @@ public abstract class ClassModel {
 
         // Always implement the interface
         // TODO - Temporary fix for implementing nested interfaces.
-        definedClass._implements(codeModel.ref(messageInterface.name().replace("$", ".")));
+        definedClass._implements(codeModel.ref(typeToString(messageInterface.name())));
 
         //Add implements
         if (!messageInterface.extendedInterfaces().isEmpty()) {
             for (MessageInterface intf : messageInterface.extendedInterfaces()) {
                 // TODO - Temporary fix for implementing nested interfaces.
-                final String interfaceName = intf.name().replace("$", ".");
+                final String interfaceName = typeToString(intf.name());
                 definedClass._implements(codeModel.ref(interfaceName));
             }
         }

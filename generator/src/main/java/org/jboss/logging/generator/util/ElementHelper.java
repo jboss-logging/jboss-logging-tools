@@ -169,7 +169,8 @@ public final class ElementHelper {
     public static int parameterCount(final Collection<? extends VariableElement> params) {
         int result = params.size();
         for (VariableElement param : params) {
-            if (isAnnotatedWith(param, annotations().param())) {
+            if (isAnnotatedWith(param, annotations().param()) || isAnnotatedWith(param, annotations().field()) ||
+                    isAnnotatedWith(param, annotations().property())) {
                 --result;
             }
         }
@@ -299,5 +300,31 @@ public final class ElementHelper {
             return isAssignableFrom(type, typeElement);
         }
         return false;
+    }
+
+    /**
+     * Converts a class type to a string recognizable by the
+     * {@link javax.lang.model.util.Elements#getTypeElement(CharSequence)}. Essentially replaces any {@literal $}'s to
+     * {@literal .} (dots).
+     *
+     * @param type the type to convert.
+     *
+     * @return the qualified name of the type.
+     */
+    public static String typeToString(final Class<?> type) {
+        return typeToString(type.getName());
+    }
+
+    /**
+     * Converts a qualified type name to a string recognizable by the
+     * {@link javax.lang.model.util.Elements#getTypeElement(CharSequence)}. Essentially replaces any {@literal $}'s to
+     * {@literal .} (dots).
+     *
+     * @param qualifiedType the qualified type name.
+     *
+     * @return the qualified name of the type.
+     */
+    public static String typeToString(final String qualifiedType) {
+        return qualifiedType.replace("$", ".");
     }
 }

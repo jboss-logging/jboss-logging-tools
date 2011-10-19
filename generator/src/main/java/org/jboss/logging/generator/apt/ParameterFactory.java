@@ -41,6 +41,7 @@ import java.util.Set;
 import static org.jboss.logging.generator.Tools.annotations;
 import static org.jboss.logging.generator.Tools.aptHelper;
 import static org.jboss.logging.generator.util.ElementHelper.isAnnotatedWith;
+import static org.jboss.logging.generator.util.ElementHelper.typeToString;
 import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.generator.util.Objects.ToStringBuilder;
 import static org.jboss.logging.generator.util.Objects.areEqual;
@@ -326,13 +327,13 @@ final class ParameterFactory {
 
         @Override
         public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName().replace("$", ".")).asType();
+            final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
             return types.isAssignable(param.asType(), typeMirror);
         }
 
         @Override
         public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName().replace("$", ".")).asType();
+            final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
             return types.isSubtype(typeMirror, param.asType());
         }
 
