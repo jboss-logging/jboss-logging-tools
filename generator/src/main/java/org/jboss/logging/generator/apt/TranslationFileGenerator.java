@@ -1,7 +1,7 @@
 package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.util.Strings;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -91,11 +91,11 @@ final class TranslationFileGenerator extends AbstractGenerator {
             writer = new BufferedWriter(new FileWriter(file));
             final Set<String> processed = new HashSet<String>();
 
-            for (Method method : messageInterface.methods()) {
-                if (processed.add(method.translationKey())) {
-                    writer.write(String.format("# %s", method.message().value()));
+            for (MessageMethod messageMethod : messageInterface.methods()) {
+                if (processed.add(messageMethod.translationKey())) {
+                    writer.write(String.format("# %s", messageMethod.message().value()));
                     writer.newLine();
-                    writer.write(String.format("%s=", method.translationKey()));
+                    writer.write(String.format("%s=", messageMethod.translationKey()));
                     writer.newLine();
                 }
             }
@@ -141,15 +141,15 @@ final class TranslationFileGenerator extends AbstractGenerator {
             writer.newLine();
             final Set<String> processed = new HashSet<String>();
 
-            for (Method method : messageInterface.methods()) {
-                if (processed.add(method.translationKey())) {
-                    final Method.Message msg = method.message();
+            for (MessageMethod messageMethod : messageInterface.methods()) {
+                if (processed.add(messageMethod.translationKey())) {
+                    final MessageMethod.Message msg = messageMethod.message();
                     writer.write(String.format("# Id: %s", (msg.hasId() ? msg.id() : "none")));
                     writer.newLine();
                     writer.write(String.format("# Message: %s", msg.value()));
                     writer.newLine();
-                    writer.write(String.format("%s=", method.translationKey()));
-                    writer.write(method.message().value());
+                    writer.write(String.format("%s=", messageMethod.translationKey()));
+                    writer.write(messageMethod.message().value());
                     writer.newLine();
                 }
             }

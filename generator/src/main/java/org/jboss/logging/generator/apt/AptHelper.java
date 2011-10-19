@@ -4,6 +4,7 @@ import org.jboss.logging.generator.Annotations.FormatType;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 
 /**
  * Date: 24.08.2011
@@ -86,4 +87,20 @@ public interface AptHelper {
      * @return the log level.
      */
     String logLevel(ExecutableElement method);
+
+    /**
+     * Returns the target field or method name for the annotated parameter. If the parameter is not annotated with
+     * either {@link org.jboss.logging.generator.Annotations#field()} or
+     * {@link org.jboss.logging.generator.Annotations#property()} an empty string should be returned.
+     * <p/>
+     * If the parameter is annotated with {@link org.jboss.logging.generator.Annotations#property()}, the name should
+     * be prepended with {@code set}. For example a property name of {@code value} should return {@code setValue}.
+     * <p/>
+     * If the annotation does not have a defined value, the parameter name should be returned.
+     *
+     * @param param the parameter to check for the annotation.
+     *
+     * @return the field, method name or an empty string.
+     */
+    String targetName(VariableElement param);
 }

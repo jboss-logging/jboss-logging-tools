@@ -24,18 +24,21 @@ import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JCodeModel;
 import com.sun.codemodel.internal.JExpr;
+import com.sun.codemodel.internal.JExpression;
 import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ThrowableType;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.jboss.logging.generator.model.ClassModelHelper.formatMessageId;
 import static org.jboss.logging.generator.model.ClassModelHelper.implementationClassName;
@@ -82,54 +85,70 @@ abstract class ImplementationClassModel extends ClassModel {
      * @param msgMethod      the message method for retrieving the message.
      * @param projectCodeVar the project code variable
      */
-    void createBundleMethod(final Method messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
+    void createBundleMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
         addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
         final JClass returnField = getCodeModel().ref(method.type().fullName());
         final JVar result = body.decl(returnField, "result");
-        final Method.Message message = messageMethod.message();
+        final MessageMethod.Message message = messageMethod.message();
+        final JExpression format;
         final JClass formatter = getCodeModel().ref(message.format().formatClass());
         final JInvocation formatterMethod = formatter.staticInvoke(message.format().staticMethod());
-        if (messageMethod.allParameters().isEmpty()) {
-            // If the return type is an exception, initialize the exception.
-            if (messageMethod.returnType().isThrowable()) {
-                if (message.hasId() && projectCodeVar != null) {
-                    String formattedId = formatMessageId(message.id());
-                    formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-                    initCause(result, returnField, body, messageMethod, formatterMethod);
-                } else {
-                    initCause(result, returnField, body, messageMethod, JExpr.invoke(msgMethod));
-                }
-            } else {
-                result.init(JExpr.invoke(msgMethod));
-            }
+        final boolean hasFormatParameters = messageMethod.formatParameters().isEmpty();
+        if (message.hasId() && projectCodeVar != null && hasFormatParameters) {
+            final String formattedId = formatMessageId(message.id());
+            format = projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod));
+        } else if (message.hasId() && projectCodeVar != null) {
+            final String formattedId = formatMessageId(message.id());
+            formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+            format = formatterMethod;
+        } else if (hasFormatParameters) {
+            format = JExpr.invoke(msgMethod);
         } else {
-            if (message.hasId() && projectCodeVar != null) {
-                String formattedId = formatMessageId(message.id());
-                formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-            } else {
-                formatterMethod.arg(JExpr.invoke(msgMethod));
-            }
-            // Create the parameters
-            for (Parameter param : messageMethod.allParameters()) {
-                final JClass paramType = getCodeModel().ref(param.type());
-                final JVar var = method.param(JMod.FINAL, paramType, param.name());
-                final String formatterClass = param.getFormatterClass();
-                if (param.isFormatParam()) {
+            formatterMethod.arg(JExpr.invoke(msgMethod));
+            format = formatterMethod;
+        }
+        // Create maps for the fields and properties. Key is the field or setter method, value is the parameter to set
+        // the value to.
+        final Map<String, JVar> fields = new HashMap<String, JVar>();
+        final Map<String, JVar> properties = new HashMap<String, JVar>();
+        // Create the parameters
+        for (Parameter param : messageMethod.allParameters()) {
+            final JClass paramType = getCodeModel().ref(param.type());
+            final JVar var = method.param(JMod.FINAL, paramType, param.name());
+            final String formatterClass = param.formatterClass();
+            switch (param.parameterType()) {
+                case FORMAT: {
                     if (formatterClass == null) {
                         formatterMethod.arg(var);
                     } else {
                         formatterMethod.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(var));
                     }
+                    break;
+                }
+                case FIELD: {
+                    fields.put(param.targetName(), var);
+                    break;
+                }
+                case PROPERTY: {
+                    properties.put(param.targetName(), var);
+                    break;
                 }
             }
-            // Setup the return type
-            if (messageMethod.returnType().isThrowable()) {
-                initCause(result, returnField, body, messageMethod, formatterMethod);
-            } else {
-                result.init(formatterMethod);
-            }
+        }
+        // Setup the return type
+        if (messageMethod.returnType().isThrowable()) {
+            initCause(result, returnField, body, messageMethod, format);
+        } else {
+            result.init(format);
+        }
+        // Set the fields and properties of the return type
+        for (Map.Entry<String, JVar> entry : fields.entrySet()) {
+            body.assign(result.ref(entry.getKey()), entry.getValue());
+        }
+        for (Map.Entry<String, JVar> entry : properties.entrySet()) {
+            body.add(result.invoke(entry.getKey()).arg(entry.getValue()));
         }
         body._return(result);
     }
@@ -137,44 +156,48 @@ abstract class ImplementationClassModel extends ClassModel {
     /**
      * Initialize the cause (Throwable) return type.
      *
-     * @param result          the return variable
-     * @param returnField     the return field
-     * @param body            the body of the method
-     * @param method          the message method
-     * @param formatterMethod the formatter method used to format the string cause
+     * @param result      the return variable
+     * @param returnField the return field
+     * @param body        the body of the messageMethod
+     * @param messageMethod      the message messageMethod
+     * @param format      the format used to format the string cause
      */
-    private void initCause(final JVar result, final JClass returnField, final JBlock body, final Method method, final JInvocation formatterMethod) {
-        final ThrowableType returnType = method.returnType().throwableReturnType();
+    private void initCause(final JVar result, final JClass returnField, final JBlock body, final MessageMethod messageMethod, final JExpression format) {
+        final ThrowableType returnType = messageMethod.returnType().throwableReturnType();
         if (returnType.useConstructionParameters()) {
             final JInvocation invocation = JExpr._new(returnField);
             for (Parameter param : returnType.constructionParameters()) {
-                if (param.isMessage()) {
-                    invocation.arg(formatterMethod);
-                } else {
-                    invocation.arg(JExpr.ref(param.name()));
+                switch (param.parameterType()) {
+                    case MESSAGE:
+                        invocation.arg(format);
+                        break;
+                    default:
+                        invocation.arg(JExpr.ref(param.name()));
+                        break;
+
                 }
             }
             result.init(invocation);
-        } else if (returnType.hasStringAndThrowableConstructor() && method.hasCause()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr.ref(method.cause().name())));
-        } else if (returnType.hasThrowableAndStringConstructor() && method.hasCause()) {
-            result.init(JExpr._new(returnField).arg(JExpr.ref(method.cause().name())).arg(formatterMethod));
+        } else if (returnType.hasStringAndThrowableConstructor() && messageMethod.hasCause()) {
+            result.init(JExpr._new(returnField).arg(format).arg(JExpr.ref(messageMethod.cause().name())));
+        } else if (returnType.hasThrowableAndStringConstructor() && messageMethod.hasCause()) {
+            result.init(JExpr._new(returnField).arg(JExpr.ref(messageMethod.cause().name())).arg(format));
         } else if (returnType.hasStringConstructor()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod));
-            if (method.hasCause()) {
+            result.init(JExpr._new(returnField).arg(format));
+            if (messageMethod.hasCause()) {
                 JInvocation initCause = body.invoke(result, "initCause");
-                initCause.arg(JExpr.ref(method.cause().name()));
+                initCause.arg(JExpr.ref(messageMethod.cause().name()));
             }
-        } else if (returnType.hasThrowableConstructor() && method.hasCause()) {
-            result.init(JExpr._new(returnField).arg(JExpr.ref(method.cause().name())));
-        } else if (returnType.hasStringAndThrowableConstructor() && !method.hasCause()) {
-            result.init(JExpr._new(returnField).arg(formatterMethod).arg(JExpr._null()));
-        } else if (returnType.hasThrowableAndStringConstructor() && !method.hasCause()) {
-            result.init(JExpr._new(returnField).arg(JExpr._null()).arg(formatterMethod));
-        } else if (method.hasCause()) {
+        } else if (returnType.hasThrowableConstructor() && messageMethod.hasCause()) {
+            result.init(JExpr._new(returnField).arg(JExpr.ref(messageMethod.cause().name())));
+        } else if (returnType.hasStringAndThrowableConstructor() && !messageMethod.hasCause()) {
+            result.init(JExpr._new(returnField).arg(format).arg(JExpr._null()));
+        } else if (returnType.hasThrowableAndStringConstructor() && !messageMethod.hasCause()) {
+            result.init(JExpr._new(returnField).arg(JExpr._null()).arg(format));
+        } else if (messageMethod.hasCause()) {
             result.init(JExpr._new(returnField));
             JInvocation initCause = body.invoke(result, "initCause");
-            initCause.arg(JExpr.ref(method.cause().name()));
+            initCause.arg(JExpr.ref(messageMethod.cause().name()));
         } else {
             result.init(JExpr._new(returnField));
         }
@@ -186,8 +209,8 @@ abstract class ImplementationClassModel extends ClassModel {
         body.add(setStackTrace);
     }
 
-    protected final void addThrownTypes(final Method method, final JMethod jMethod) {
-        for (ThrowableType thrownType : method.thrownTypes()) {
+    protected final void addThrownTypes(final MessageMethod messageMethod, final JMethod jMethod) {
+        for (ThrowableType thrownType : messageMethod.thrownTypes()) {
             jMethod._throws(getCodeModel().ref(thrownType.name()));
         }
     }

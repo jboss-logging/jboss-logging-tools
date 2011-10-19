@@ -21,7 +21,7 @@
  */
 package org.jboss.logging.generator.apt;
 
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ThrowableType;
 import org.jboss.logging.generator.util.ElementHelper;
@@ -64,7 +64,7 @@ final class ThrowableTypeFactory {
      *
      * @return the return type descriptor.
      */
-    public static ThrowableType forReturnType(final Elements elements, final Types types, final TypeMirror type, final Method messageMethod) {
+    public static ThrowableType forReturnType(final Elements elements, final Types types, final TypeMirror type, final MessageMethod messageMethod) {
         final AptReturnThrowableType result = new AptReturnThrowableType(elements, types, messageMethod, type);
         result.init();
         return result;
@@ -242,6 +242,11 @@ final class ThrowableTypeFactory {
         }
 
         @Override
+        public String type() {
+            return name();
+        }
+
+        @Override
         public boolean isAssignableFrom(final Class<?> type) {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
             return types.isAssignable(typeMirror, this.type);
@@ -268,7 +273,7 @@ final class ThrowableTypeFactory {
 
         private final Types types;
 
-        private final Method messageMethod;
+        private final MessageMethod messageMethod;
 
         private final Set<Parameter> constructionParameters;
 
@@ -282,7 +287,7 @@ final class ThrowableTypeFactory {
          * @param messageMethod the message method.
          * @param type          the class name of the return type.
          */
-        private AptReturnThrowableType(final Elements elements, final Types types, final Method messageMethod, final TypeMirror type) {
+        private AptReturnThrowableType(final Elements elements, final Types types, final MessageMethod messageMethod, final TypeMirror type) {
             super(elements, types, type);
             this.types = types;
             this.messageMethod = messageMethod;

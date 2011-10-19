@@ -1,7 +1,7 @@
 package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
@@ -83,7 +83,7 @@ public final class MessageInterfaceFactory {
         private final Types types;
         private final Elements elements;
         private final Set<MessageInterface> extendedInterfaces;
-        private final List<Method> methods;
+        private final List<MessageMethod> messageMethods;
         private String projectCode;
         private String packageName;
         private String simpleName;
@@ -93,7 +93,7 @@ public final class MessageInterfaceFactory {
             this.interfaceElement = interfaceElement;
             this.types = types;
             this.elements = elements;
-            this.methods = new LinkedList<Method>();
+            this.messageMethods = new LinkedList<MessageMethod>();
             this.extendedInterfaces = new LinkedHashSet<MessageInterface>();
         }
 
@@ -103,8 +103,8 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public Collection<Method> methods() {
-            return methods;
+        public Collection<MessageMethod> methods() {
+            return messageMethods;
         }
 
         @Override
@@ -177,9 +177,9 @@ public final class MessageInterfaceFactory {
             for (ExecutableElement param : methods) {
                 builder.add(param);
             }
-            final Collection<? extends Method> m = builder.build();
+            final Collection<? extends MessageMethod> m = builder.build();
             if (m != null)
-                this.methods.addAll(m);
+                this.messageMethods.addAll(m);
             projectCode = aptHelper().projectCode(interfaceElement);
             qualifiedName = elements.getBinaryName(interfaceElement).toString();
             final int lastDot = qualifiedName.lastIndexOf(".");
@@ -195,6 +195,11 @@ public final class MessageInterfaceFactory {
         @Override
         public TypeElement reference() {
             return interfaceElement;
+        }
+
+        @Override
+        public String type() {
+            return name();
         }
 
         @Override
@@ -219,12 +224,12 @@ public final class MessageInterfaceFactory {
         private final TypeElement basicLogger;
         private final Elements elements;
         private final Types types;
-        private final Set<Method> methods;
+        private final Set<MessageMethod> messageMethods;
 
         private BasicLoggerInterface(final Elements elements, final Types types) {
             this.elements = elements;
             this.types = types;
-            methods = new HashSet<Method>();
+            messageMethods = new HashSet<MessageMethod>();
             this.basicLogger = elements.getTypeElement(loggers().basicLoggerClass().getName());
         }
 
@@ -240,8 +245,8 @@ public final class MessageInterfaceFactory {
             for (ExecutableElement method : methods) {
                 builder.add(method);
             }
-            final Collection<? extends Method> m = builder.build();
-            this.methods.addAll(m);
+            final Collection<? extends MessageMethod> m = builder.build();
+            this.messageMethods.addAll(m);
         }
 
         @Override
@@ -250,8 +255,8 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public Collection<Method> methods() {
-            return methods;
+        public Collection<MessageMethod> methods() {
+            return messageMethods;
         }
 
         @Override
@@ -292,6 +297,11 @@ public final class MessageInterfaceFactory {
         @Override
         public TypeElement reference() {
             return basicLogger;
+        }
+
+        @Override
+        public String type() {
+            return name();
         }
 
         @Override

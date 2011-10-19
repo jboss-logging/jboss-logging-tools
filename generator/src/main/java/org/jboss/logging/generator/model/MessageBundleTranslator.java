@@ -25,7 +25,7 @@ import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,7 +42,7 @@ class MessageBundleTranslator extends ClassModel {
     /**
      * The translation map.
      */
-    private final Map<Method, String> translations;
+    private final Map<MessageMethod, String> translations;
 
     /**
      * Create a MessageBundle with super class and interface.
@@ -52,7 +52,7 @@ class MessageBundleTranslator extends ClassModel {
      * @param superClassName   the super class name
      * @param translations     the translation map.
      */
-    public MessageBundleTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<Method, String> translations) {
+    public MessageBundleTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
         super(messageInterface, className, superClassName);
 
         if (translations != null) {
@@ -73,9 +73,9 @@ class MessageBundleTranslator extends ClassModel {
         JMethod readResolve = createReadResolveMethod();
         readResolve.annotate(Override.class);
 
-        final Set<Map.Entry<Method, String>> entries = translations.entrySet();
+        final Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
         final Set<String> methodNames = new HashSet<String>();
-        for (Map.Entry<Method, String> entry : entries) {
+        for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             if (methodNames.add(method.name())) {
                 method.annotate(Override.class);

@@ -21,7 +21,7 @@
 package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.model.ClassModel;
 import org.jboss.logging.generator.model.ClassModelFactory;
 
@@ -93,7 +93,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
             final List<File> files = findTranslationFiles(messageInterface);
-            final Map<Method, String> validTranslations = allInterfaceTranslations(messageInterface, files);
+            final Map<MessageMethod, String> validTranslations = allInterfaceTranslations(messageInterface, files);
             if (files != null) {
                 for (File file : files) {
                     generateSourceFileFor(messageInterface, file, validTranslations);
@@ -104,8 +104,8 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
     }
 
-    private Map<Method, String> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
-        final Map<Method, String> validTranslations = new HashMap<Method, String>();
+    private Map<MessageMethod, String> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
+        final Map<MessageMethod, String> validTranslations = new HashMap<MessageMethod, String>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
         }
@@ -152,7 +152,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
     /**
      * Returns only the valid translations message corresponding
-     * to the declared {@link Method} methods in the
+     * to the declared {@link org.jboss.logging.generator.intf.model.MessageMethod} methods in the
      * {@link org.jboss.logging.generator.Annotations#messageBundle()} or {@link org.jboss.logging.generator.Annotations#messageLogger()} interface.
      *
      * @param messageInterface the message interface.
@@ -160,35 +160,35 @@ final class TranslationClassGenerator extends AbstractGenerator {
      *
      * @return the valid translations messages
      */
-    private Map<Method, String> validateTranslationMessages(final MessageInterface messageInterface, final File file) {
-        Map<Method, String> validTranslations = new HashMap<Method, String>();
+    private Map<MessageMethod, String> validateTranslationMessages(final MessageInterface messageInterface, final File file) {
+        Map<MessageMethod, String> validTranslations = new HashMap<MessageMethod, String>();
 
         try {
 
             //Load translations
             Properties translations = new Properties();
             translations.load(new FileInputStream(file));
-            final Set<Method> methods = new HashSet<Method>();
-            methods.addAll(messageInterface.methods());
+            final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
+            messageMethods.addAll(messageInterface.methods());
             for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
                 // Handle basic logger
                 if (msgIntf.isBasicLogger()) {
                     continue;
                 }
-                methods.addAll(msgIntf.methods());
+                messageMethods.addAll(msgIntf.methods());
             }
-            for (Method method : methods) {
-                final String key = method.translationKey();
+            for (MessageMethod messageMethod : messageMethods) {
+                final String key = messageMethod.translationKey();
                 if (translations.containsKey(key)) {
                     String message = translations.getProperty(key);
                     if (!message.trim().isEmpty()) {
-                        validTranslations.put(method, translations.getProperty(key));
+                        validTranslations.put(messageMethod, translations.getProperty(key));
                     } else {
                         logger().warn("The translation message with key %s is ignored because value is empty or contains only whitespace", key);
                     }
 
                 } else {
-                    logger().warn("The translation message with key %s have no corresponding method.", key);
+                    logger().warn("The translation message with key %s have no corresponding messageMethod.", key);
                 }
             }
 
@@ -206,7 +206,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
      * @param translationFile  the translation file
      * @param translations     the translations message
      */
-    private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<Method, String> translations) {
+    private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<MessageMethod, String> translations) {
         logger().note("Generating translation class for %s.", translationFile.getAbsolutePath());
 
         //Generate empty translation super class if needed
@@ -214,7 +214,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
         final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
         final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
         if (!enclosingTranslationFileName.equals(translationFile.getName()) && !enclosingTranslationFile.exists()) {
-            generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<Method, String>emptyMap());
+            generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<MessageMethod, String>emptyMap());
         }
 
         //Create source file

@@ -20,7 +20,7 @@
  */
 package org.jboss.logging.generator.apt;
 
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.util.Comparison;
 
@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.jboss.logging.generator.Tools.annotations;
+import static org.jboss.logging.generator.Tools.aptHelper;
 import static org.jboss.logging.generator.util.ElementHelper.isAnnotatedWith;
 import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.generator.util.Objects.ToStringBuilder;
@@ -91,36 +92,22 @@ final class ParameterFactory {
         return result;
     }
 
-    public static Parameter forMessageMethod(final Method messageMethod) {
+    public static Parameter forMessageMethod(final MessageMethod messageMethod) {
         return new Parameter() {
-            @Override
-            public boolean isCause() {
-                return false;
-            }
 
             @Override
-            public boolean isMessage() {
-                return true;
-            }
-
-            @Override
-            public boolean isParam() {
-                return false;
-            }
-
-            @Override
-            public boolean isFormatParam() {
-                return true;
-            }
-
-            @Override
-            public String getFormatterClass() {
+            public String formatterClass() {
                 return null;
             }
 
             @Override
             public Class<?> paramClass() {
                 return null;
+            }
+
+            @Override
+            public String targetName() {
+                return "";
             }
 
             @Override
@@ -146,6 +133,11 @@ final class ParameterFactory {
             @Override
             public boolean isVarArgs() {
                 return false;
+            }
+
+            @Override
+            public ParameterType parameterType() {
+                return ParameterType.MESSAGE;
             }
 
             @Override
@@ -182,7 +174,7 @@ final class ParameterFactory {
             }
 
             @Override
-            public Method reference() {
+            public MessageMethod reference() {
                 return messageMethod;
             }
 
@@ -211,8 +203,8 @@ final class ParameterFactory {
         private final String qualifiedType;
         private final String formatterClass;
         private final Class<?> paramClass;
-        private final boolean isParam;
         private final boolean isVarArgs;
+        private final ParameterType parameterType;
 
         /**
          * Only allow construction from within the parent class.
@@ -232,32 +224,21 @@ final class ParameterFactory {
             this.formatterClass = formatterClass;
             if (isAnnotatedWith(param, annotations().param())) {
                 paramClass = Object.class;
-                isParam = true;
+                parameterType = ParameterType.CONSTRUCTION;
+            } else if (isAnnotatedWith(param, annotations().cause())) {
+                paramClass = null;
+                parameterType = ParameterType.CAUSE;
+            } else if (isAnnotatedWith(param, annotations().field())) {
+                paramClass = null;
+                parameterType = ParameterType.FIELD;
+            } else if (isAnnotatedWith(param, annotations().property())) {
+                paramClass = null;
+                parameterType = ParameterType.PROPERTY;
             } else {
-                isParam = false;
+                parameterType = ParameterType.FORMAT;
                 paramClass = null;
             }
             this.isVarArgs = isVarArgs;
-        }
-
-        @Override
-        public boolean isCause() {
-            return isAnnotatedWith(param, annotations().cause());
-        }
-
-        @Override
-        public boolean isMessage() {
-            return false;
-        }
-
-        @Override
-        public boolean isParam() {
-            return isParam;
-        }
-
-        @Override
-        public boolean isFormatParam() {
-            return !(isCause() || isParam() || isMessage());
         }
 
         @Override
@@ -266,7 +247,7 @@ final class ParameterFactory {
         }
 
         @Override
-        public String getFormatterClass() {
+        public String formatterClass() {
             return formatterClass;
         }
 
@@ -291,8 +272,18 @@ final class ParameterFactory {
         }
 
         @Override
+        public ParameterType parameterType() {
+            return parameterType;
+        }
+
+        @Override
         public Class<?> paramClass() {
             return paramClass;
+        }
+
+        @Override
+        public String targetName() {
+            return aptHelper().targetName(param);
         }
 
         @Override

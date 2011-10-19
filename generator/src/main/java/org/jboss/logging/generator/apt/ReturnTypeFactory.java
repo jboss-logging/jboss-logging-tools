@@ -1,14 +1,23 @@
 package org.jboss.logging.generator.apt;
 
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
+import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ReturnType;
 import org.jboss.logging.generator.intf.model.ThrowableType;
 import org.jboss.logging.generator.util.Objects;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.generator.util.Objects.areEqual;
@@ -26,11 +35,11 @@ final class ReturnTypeFactory {
     }
 
 
-    public static ReturnType of(final Elements elements, final Types types, final TypeMirror returnType, final Method messageMethod) {
+    public static ReturnType of(final Elements elements, final Types types, final TypeMirror returnType, final MessageMethod method) {
         if (returnType.getKind() == TypeKind.VOID) {
             return ReturnType.VOID;
         }
-        final AptReturnType result = new AptReturnType(elements, types, returnType, messageMethod);
+        final AptReturnType result = new AptReturnType(elements, types, returnType, method);
         result.init();
         return result;
     }
@@ -40,17 +49,31 @@ final class ReturnTypeFactory {
      */
     private static class AptReturnType implements ReturnType {
         private final Elements elements;
+        private final Map<String, TypeMirror> fields;
+        private final Map<String, TypeMirror> methods;
         private final Types types;
         private final TypeMirror returnType;
-        private final Method messageMethod;
+        private final MessageMethod method;
         private ThrowableType throwableType;
 
-        private AptReturnType(final Elements elements, final Types types, final TypeMirror returnType, final Method messageMethod) {
+        AptReturnType(final Elements elements, final Types types, final TypeMirror returnType, final MessageMethod method) {
             this.elements = elements;
             this.types = types;
             this.returnType = returnType;
-            this.messageMethod = messageMethod;
+            this.method = method;
             throwableType = null;
+            fields = new HashMap<String, TypeMirror>();
+            methods = new HashMap<String, TypeMirror>();
+        }
+
+        @Override
+        public boolean hasFieldFor(final Parameter parameter) {
+            return fields.containsKey(parameter.targetName()) && checkType(parameter, fields.get(parameter.targetName()));
+        }
+
+        @Override
+        public boolean hasMethodFor(final Parameter parameter) {
+            return methods.containsKey(parameter.targetName()) && checkType(parameter, methods.get(parameter.targetName()));
         }
 
         @Override
@@ -75,7 +98,21 @@ final class ReturnTypeFactory {
 
         private void init() {
             if (isThrowable()) {
-                throwableType = ThrowableTypeFactory.forReturnType(elements, types, returnType, messageMethod);
+                throwableType = ThrowableTypeFactory.forReturnType(elements, types, returnType, method);
+            }
+            final Element e = types.asElement(returnType);
+            if (e instanceof TypeElement) {
+                final List<ExecutableElement> returnTypeMethods = ElementFilter.methodsIn(elements.getAllMembers((TypeElement) e));
+                for (ExecutableElement executableElement : returnTypeMethods) {
+                    if (executableElement.getModifiers().contains(Modifier.PUBLIC) && executableElement.getParameters().size() == 1) {
+                        methods.put(executableElement.getSimpleName().toString(), executableElement.getParameters().get(0).asType());
+                    }
+                }
+                for (Element element : ElementFilter.fieldsIn(elements.getAllMembers((TypeElement) e))) {
+                    if (element.getModifiers().contains(Modifier.PUBLIC) && !element.getModifiers().contains(Modifier.FINAL)) {
+                        fields.put(element.getSimpleName().toString(), element.asType());
+                    }
+                }
             }
         }
 
@@ -111,6 +148,11 @@ final class ReturnTypeFactory {
         }
 
         @Override
+        public String type() {
+            return name();
+        }
+
+        @Override
         public boolean isAssignableFrom(final Class<?> type) {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
             return types.isAssignable(typeMirror, returnType);
@@ -124,7 +166,14 @@ final class ReturnTypeFactory {
 
         @Override
         public boolean isSameAs(final Class<?> type) {
-            return name().equals(type.getName());
+            return type().equals(type.getName());
+        }
+
+        private boolean checkType(final Parameter parameter, final TypeMirror type) {
+            if (parameter.isPrimitive()) {
+                return parameter.type().equalsIgnoreCase(type.getKind().name());
+            }
+            return types.isAssignable(elements.getTypeElement(parameter.type()).asType(), type);
         }
     }
 }

@@ -1,8 +1,7 @@
 package org.jboss.logging.generator.validation;
 
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.util.Comparison;
-import org.jboss.logging.generator.util.Objects;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,26 +21,26 @@ import static org.jboss.logging.generator.validation.ValidationMessageFactory.cr
 public final class MessageIdValidator {
     public static final MessageIdValidator INSTANCE = new MessageIdValidator();
 
-    private final Map<MessageKey, Method> usedMessageIds = new HashMap<MessageKey, Method>();
+    private final Map<MessageKey, MessageMethod> usedMessageIds = new HashMap<MessageKey, MessageMethod>();
 
     private MessageIdValidator() {
     }
 
-    public Collection<ValidationMessage> validate(final String projectCode, final Method method) {
+    public Collection<ValidationMessage> validate(final String projectCode, final MessageMethod messageMethod) {
         final List<ValidationMessage> messages = new LinkedList<ValidationMessage>();
-        final Method.Message message = method.message();
+        final MessageMethod.Message message = messageMethod.message();
         if (message == null) {
-            messages.add(createError(method, "No message annotation found."));
+            messages.add(createError(messageMethod, "No message annotation found."));
         } else {
             final MessageKey key = createMessageKey(projectCode, message.id());
-            if (!method.inheritsMessage()) {
+            if (!messageMethod.inheritsMessage()) {
                 synchronized (this) {
                     if (usedMessageIds.containsKey(key)) {
-                        final Method previousMethod = usedMessageIds.get(key);
-                        messages.add(createError(previousMethod, "Message id %s is not unique for method %s with project code %s.", message.id(), previousMethod.name(), projectCode));
-                        messages.add(createError(method, "Message id %s is not unique for method %s with project code %s.", message.id(), method.name(), projectCode));
+                        final MessageMethod previousMethod = usedMessageIds.get(key);
+                        messages.add(createError(previousMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), previousMethod.name(), projectCode));
+                        messages.add(createError(messageMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), messageMethod.name(), projectCode));
                     } else {
-                        usedMessageIds.put(key, method);
+                        usedMessageIds.put(key, messageMethod);
                     }
                 }
             }

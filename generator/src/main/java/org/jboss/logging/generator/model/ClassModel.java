@@ -34,7 +34,7 @@ import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JTypeVar;
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -160,7 +160,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    JMethod addMessageMethod(final Method messageMethod) {
+    JMethod addMessageMethod(final MessageMethod messageMethod) {
         return addMessageMethod(messageMethod, messageMethod.message().value());
     }
 
@@ -182,7 +182,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    JMethod addMessageMethod(final Method messageMethod, final String messageValue) {
+    JMethod addMessageMethod(final MessageMethod messageMethod, final String messageValue) {
         final JDefinedClass definedClass = getDefinedClass();
         // Values could be null and we shouldn't create message methods for null values.
         if (messageValue == null) {

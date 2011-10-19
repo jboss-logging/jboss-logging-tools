@@ -1,9 +1,5 @@
 package org.jboss.logging.generator.intf.model;
 
-import org.jboss.logging.generator.util.Objects;
-
-import java.util.Set;
-
 import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.generator.util.Objects.ToStringBuilder;
 import static org.jboss.logging.generator.util.Objects.areEqual;
@@ -16,6 +12,28 @@ import static org.jboss.logging.generator.util.Objects.areEqual;
 public interface ReturnType extends MessageObject, MessageObjectType {
 
     public static final ReturnType VOID = new VoidReturnType();
+
+    /**
+     * Checks to see if the return type has a field with the name with the same name and type as the
+     * {@link Parameter parameter}.
+     *
+     * @param parameter the parameter to check.
+     *
+     * @return {@code true} if the field exists, is accessible,  mutable and is assignable from the type otherwise
+     *         {@code false}.
+     */
+    boolean hasFieldFor(final Parameter parameter);
+
+    /**
+     * Checks to see if the return type has a method with the name with the same name and parameter type as the
+     * {@link Parameter parameter}.
+     *
+     * @param parameter the parameter to check.
+     *
+     * @return {@code true} if the method exists, is accessible and its parameter is assignable from the type, otherwise
+     *         {@code false}.
+     */
+    boolean hasMethodFor(final Parameter parameter);
 
     /**
      * Checks to see if the return type is an exception, extends Throwable.
@@ -31,7 +49,6 @@ public interface ReturnType extends MessageObject, MessageObjectType {
      * @return {@code true} if a primitive, otherwise {@code false}.
      */
     boolean isPrimitive();
-
 
     /**
      * Returns the qualified class name of the return type.
@@ -55,6 +72,16 @@ public interface ReturnType extends MessageObject, MessageObjectType {
     final static class VoidReturnType implements ReturnType {
 
         private VoidReturnType() {
+        }
+
+        @Override
+        public boolean hasFieldFor(final Parameter parameter) {
+            return false;
+        }
+
+        @Override
+        public boolean hasMethodFor(final Parameter parameter) {
+            return false;
         }
 
         @Override
@@ -102,6 +129,11 @@ public interface ReturnType extends MessageObject, MessageObjectType {
         @Override
         public Class<Void> reference() {
             return Void.TYPE;
+        }
+
+        @Override
+        public String type() {
+            return "void";
         }
 
         @Override

@@ -22,7 +22,7 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
      *
      * @return a collection of methods.
      */
-    Collection<Method> methods();
+    Collection<MessageMethod> methods();
 
     /**
      * The project code for the message interface or {@code null} if {@link #isBasicLogger()} returns {@code true}.

@@ -1,16 +1,19 @@
 package org.jboss.logging.processor.apt;
 
+import org.jboss.logging.Field;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
+import org.jboss.logging.Property;
 import org.jboss.logging.generator.Annotations.FormatType;
 import org.jboss.logging.generator.apt.AptHelper;
 import org.jboss.logging.processor.BaseAnnotations;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 
 /**
  * Date: 24.08.2011
@@ -85,6 +88,30 @@ public class AptHelperImpl implements AptHelper {
         if (logMessage != null) {
             final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
             result = String.format("%s.%s.%s", Logger.class.getSimpleName(), Logger.Level.class.getSimpleName(), logLevel.name());
+        }
+        return result;
+    }
+
+    @Override
+    public String targetName(final VariableElement param) {
+        String result = "";
+        final Field field = param.getAnnotation(Field.class);
+        final Property property = param.getAnnotation(Property.class);
+        if (field != null) {
+            final String name = field.name();
+            if (name.isEmpty()) {
+                result = param.getSimpleName().toString();
+            } else {
+                result = name;
+            }
+        } else if (property != null) {
+            final String name = property.name();
+            if (name.isEmpty()) {
+                result = param.getSimpleName().toString();
+            } else {
+                result = name;
+            }
+            result = "set" + Character.toUpperCase(result.charAt(0)) + result.substring(1);
         }
         return result;
     }

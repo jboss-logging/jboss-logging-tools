@@ -1,7 +1,7 @@
 package org.jboss.logging.generator.validation;
 
 import org.jboss.logging.generator.Annotations;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 
 /**
  * Date: 12.08.2011
@@ -12,12 +12,12 @@ public final class FormatValidatorFactory {
     private FormatValidatorFactory() {
     }
 
-    public static FormatValidator create(final Method method) throws IllegalStateException {
-        if (method.message() == null) {
+    public static FormatValidator create(final MessageMethod messageMethod) throws IllegalStateException {
+        if (messageMethod.message() == null) {
             return InvalidFormatValidator.of("No message annotation found.");
         }
-        final String msg = method.message().value();
-        final Annotations.FormatType format = method.message().format();
+        final String msg = messageMethod.message().value();
+        final Annotations.FormatType format = messageMethod.message().format();
         if (msg == null) {
             return InvalidFormatValidator.of("A message is required for the format.");
         }

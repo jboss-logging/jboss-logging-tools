@@ -21,12 +21,14 @@
 package org.jboss.logging.processor;
 
 import org.jboss.logging.Cause;
+import org.jboss.logging.Field;
 import org.jboss.logging.FormatWith;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
 import org.jboss.logging.Param;
+import org.jboss.logging.Property;
 import org.jboss.logging.generator.Annotations;
 
 import java.lang.annotation.Annotation;
@@ -36,17 +38,24 @@ import java.lang.annotation.Annotation;
  */
 public class BaseAnnotations implements Annotations {
 
-    public static final Class<FormatWith> FORMAT_WITH_ANNOTATION = FormatWith.class;
     public static final Class<Cause> CAUSE_ANNOTATION = Cause.class;
+    public static final Class<Field> FIELD_ANNOTATION = Field.class;
+    public static final Class<FormatWith> FORMAT_WITH_ANNOTATION = FormatWith.class;
+    public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
     public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
     public static final Class<MessageLogger> MESSAGE_LOGGER_ANNOTATION = MessageLogger.class;
-    public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
     public static final Class<Message> MESSAGE_ANNOTATION = Message.class;
-    public static final Class<? extends Annotation> PARAM_ANNOTATION = Param.class;
+    public static final Class<Param> PARAM_ANNOTATION = Param.class;
+    public static final Class<Property> PROPERTY_ANNOTATION = Property.class;
 
     @Override
     public Class<? extends Annotation> cause() {
         return CAUSE_ANNOTATION;
+    }
+
+    @Override
+    public Class<? extends Annotation> field() {
+        return FIELD_ANNOTATION;
     }
 
     @Override
@@ -77,6 +86,11 @@ public class BaseAnnotations implements Annotations {
     @Override
     public Class<? extends Annotation> param() {
         return PARAM_ANNOTATION;
+    }
+
+    @Override
+    public Class<? extends Annotation> property() {
+        return PROPERTY_ANNOTATION;
     }
 
 }

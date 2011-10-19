@@ -5,7 +5,16 @@ package org.jboss.logging.generator.intf.model;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageObjectType {
+public interface MessageObjectType extends MessageObject {
+
+    /**
+     * Returns the qualified type name of the object.
+     * <p/>
+     * Equivalent to {@code Object.class.getName()}
+     *
+     * @return the qualified class name.
+     */
+    String type();
 
     /**
      * Determines if this type is either the same as, or is a supertype of, the class represented by the {@code type}

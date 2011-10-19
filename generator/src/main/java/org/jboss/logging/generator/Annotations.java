@@ -75,6 +75,13 @@ public interface Annotations {
     Class<? extends Annotation> cause();
 
     /**
+     * Returns the field annotation class.
+     *
+     * @return the field annotation.
+     */
+    Class<? extends Annotation> field();
+
+    /**
      * Returns the format with annotation class.
      *
      * @return the format with annotation.
@@ -115,5 +122,12 @@ public interface Annotations {
      * @return the parameter annotation.
      */
     Class<? extends Annotation> param();
+
+    /**
+     * Returns the property annotation class.
+     *
+     * @return the property annotation.
+     */
+    Class<? extends Annotation> property();
 
 }

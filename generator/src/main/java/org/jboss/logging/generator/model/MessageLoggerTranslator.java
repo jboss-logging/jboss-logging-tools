@@ -27,7 +27,7 @@ import com.sun.codemodel.internal.JDefinedClass;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,7 +52,7 @@ class MessageLoggerTranslator extends ClassModel {
     /**
      * The translation map.
      */
-    private final Map<Method, String> translations;
+    private final Map<MessageMethod, String> translations;
 
     /**
      * Create a MessageLogger with super class and interface.
@@ -62,7 +62,7 @@ class MessageLoggerTranslator extends ClassModel {
      * @param superClassName   the super class name
      * @param translations     the translation map.
      */
-    public MessageLoggerTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<Method, String> translations) {
+    public MessageLoggerTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
         super(messageInterface, className, superClassName);
 
         if (translations != null) {
@@ -83,9 +83,9 @@ class MessageLoggerTranslator extends ClassModel {
         JBlock constructorBody = constructor.body();
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
 
-        final Set<Map.Entry<Method, String>> entries = this.translations.entrySet();
+        final Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
         final Set<String> methodNames = new HashSet<String>();
-        for (Map.Entry<Method, String> entry : entries) {
+        for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             if (methodNames.add(method.name())) {
                 method.annotate(Override.class);

@@ -2,7 +2,6 @@ package org.jboss.logging.generator.intf.model;
 
 import org.jboss.logging.generator.Annotations;
 
-import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -10,7 +9,37 @@ import java.util.Set;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface Method extends Comparable<Method>, MessageObject {
+public interface MessageMethod extends Comparable<MessageMethod>, MessageObject {
+
+    /**
+     * Returns the method name.
+     *
+     * @return the method name.
+     */
+    @Override
+    String name();
+
+    /**
+     * Returns an unmodifiable collection of the all parameters.
+     *
+     * @return a collection of the all parameters.
+     */
+    Set<Parameter> allParameters();
+
+    /**
+     * Returns the return type for the method.
+     *
+     * @return the return type for the method.
+     */
+    ReturnType returnType();
+
+    /**
+     * Returns a collection of throwable types the method throws. If the method throws no exceptions an empty
+     * collection is returned.
+     *
+     * @return a collection of throwable types or an empty collection.
+     */
+    Set<ThrowableType> thrownTypes();
 
     /**
      * The {@link Message} to be used for the method.
@@ -44,14 +73,6 @@ public interface Method extends Comparable<Method>, MessageObject {
     String translationKey();
 
     /**
-     * Returns the method name.
-     *
-     * @return the method name.
-     */
-    @Override
-    String name();
-
-    /**
      * Returns {@code true} if there is a cause element, otherwise {@code false}.
      *
      * @return {@code true} if there is a cause element, otherwise {@code false}
@@ -74,13 +95,6 @@ public interface Method extends Comparable<Method>, MessageObject {
     Parameter cause();
 
     /**
-     * Returns the return type for the method.
-     *
-     * @return the return type for the method.
-     */
-    ReturnType returnType();
-
-    /**
      * Returns the LogMessage annotation associated with this method only if {@link #isLoggerMethod()} returns
      * {@code true}.
      *
@@ -95,13 +109,6 @@ public interface Method extends Comparable<Method>, MessageObject {
      * @return the log level annotation
      */
     String logLevelParameter();
-
-    /**
-     * Returns an unmodifiable collection of the all parameters.
-     *
-     * @return a collection of the all parameters.
-     */
-    Set<Parameter> allParameters();
 
     /**
      * Returns an unmodifiable collection of all the parameters used for the formatting of the message.
@@ -133,14 +140,6 @@ public interface Method extends Comparable<Method>, MessageObject {
      * @return {@code true} if this is a logger method, otherwise {@code false}.
      */
     boolean isLoggerMethod();
-
-    /**
-     * Returns a collection of throwable types the method throws. If the method throws no exceptions an empty
-     * collection is returned.
-     *
-     * @return a collection of throwable types or an empty collection.
-     */
-    Collection<ThrowableType> thrownTypes();
 
 
     /**

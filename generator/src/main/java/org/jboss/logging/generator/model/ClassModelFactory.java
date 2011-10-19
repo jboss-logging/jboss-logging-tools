@@ -1,7 +1,7 @@
 package org.jboss.logging.generator.model;
 
 import org.jboss.logging.generator.intf.model.MessageInterface;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 
 import java.util.Map;
 
@@ -57,7 +57,7 @@ public class ClassModelFactory {
      *                                  {@link MessageInterface#isMessageLogger()} returns
      *                                  {@code false.}
      */
-    public static ClassModel translation(final MessageInterface messageInterface, final String translationSuffix, final Map<Method, String> translations) throws IllegalArgumentException {
+    public static ClassModel translation(final MessageInterface messageInterface, final String translationSuffix, final Map<MessageMethod, String> translations) throws IllegalArgumentException {
         final String generatedClassName = implementationClassName(messageInterface, translationSuffix);
         final String superClassName = getEnclosingTranslationClassName(generatedClassName);
         if (messageInterface.isMessageBundle()) {

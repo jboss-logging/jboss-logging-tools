@@ -23,7 +23,40 @@ package org.jboss.logging.generator.intf.model;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
-public interface Parameter extends Comparable<Parameter>, MessageObject, MessageObjectType {
+public interface Parameter extends Comparable<Parameter>, MessageObjectType {
+
+    /**
+     * The types of parameters.
+     */
+    public enum ParameterType {
+        /**
+         * Indicates the parameter is a cause parameter and needs to be set in the {@link Throwable throwable} return
+         * type.
+         */
+        CAUSE,
+        /**
+         * Indicates the parameter should be used as a format parameter.
+         */
+        FORMAT,
+        /**
+         * Indicates the parameter is the message.
+         */
+        MESSAGE,
+        /**
+         * Indicates the parameter should be used in the construction of a {@link Throwable throwable} return type.
+         */
+        CONSTRUCTION,
+        /**
+         * Indicates the parameter is a instance field that should be set in the {@link Throwable throwable} return
+         * type.
+         */
+        FIELD,
+        /**
+         * Indicates the parameter is a property and should be set via its setter in the {@link Throwable throwable}
+         * return type.
+         */
+        PROPERTY
+    }
 
     /**
      * The full type name of the parameter. For example
@@ -32,6 +65,7 @@ public interface Parameter extends Comparable<Parameter>, MessageObject, Message
      *
      * @return the qualified type of the parameter.
      */
+    @Override
     String type();
 
     /**
@@ -64,44 +98,18 @@ public interface Parameter extends Comparable<Parameter>, MessageObject, Message
     boolean isVarArgs();
 
     /**
-     * Checks the parameter and returns {@code true} if this is a cause parameter, otherwise {@code false}.
+     * Returns the {@link ParameterType parameter type} of the parameter.
      *
-     * @return {@code true} if the parameter is annotated with
-     *         {@link org.jboss.logging.generator.Annotations#cause()}, otherwise {@code false}.
+     * @return the parameter type of the parameter.
      */
-    boolean isCause();
-
-    /**
-     * Checks the parameter and returns {@code true} if the parameter is a message parameter, e.g. the message that will
-     * be logged or returned from a bundle. If it's not the message parameter {@code false} is returned.
-     *
-     * @return {@code true} if this is the message parameter (the message from the method), otherwise {@code false}.
-     */
-    boolean isMessage();
-
-    /**
-     * Checks the parameter and returns {@code true} if the parameter is to be used in the construction of the
-     * exception, otherwise {@code false}.
-     *
-     * @return {@code true} if the parameter is annotated with {@link org.jboss.logging.generator.Annotations#param()},
-     *         otherwise {@code false}.
-     */
-    boolean isParam();
-
-    /**
-     * Checks the parameter and returns {@code true} if the parameter is to be used as a format parameter, otherwise
-     * {@code false}.
-     *
-     * @return {@code true} if a format parameter, otherwise {@code false}.
-     */
-    boolean isFormatParam();
+    ParameterType parameterType();
 
     /**
      * The formatter class, or {@code null} if there is none.
      *
      * @return the formatter class
      */
-    String getFormatterClass();
+    String formatterClass();
 
     /**
      * Returns the class if the parameter is annotated with {@link org.jboss.logging.generator.Annotations#param()}.
@@ -110,4 +118,13 @@ public interface Parameter extends Comparable<Parameter>, MessageObject, Message
      * @return the parameter class or {@code null}.
      */
     Class<?> paramClass();
+
+    /**
+     * Returns the name of the target field or method. For example if the {@link #parameterType()} returns
+     * {@link ParameterType#FIELD}, the target name is the name of the field to set on the
+     * {@link ReturnType return type}. If no target name is defined an empty String is returned.
+     *
+     * @return the target field name, method name or an empty string.
+     */
+    String targetName();
 }

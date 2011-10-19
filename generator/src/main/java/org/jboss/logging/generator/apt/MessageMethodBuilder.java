@@ -1,7 +1,7 @@
 package org.jboss.logging.generator.apt;
 
 import org.jboss.logging.generator.Annotations.FormatType;
-import org.jboss.logging.generator.intf.model.Method;
+import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
 import org.jboss.logging.generator.intf.model.ReturnType;
 import org.jboss.logging.generator.intf.model.ThrowableType;
@@ -58,33 +58,44 @@ final class MessageMethodBuilder {
         return this;
     }
 
-    Set<? extends Method> build() {
-        final Set<AptMethod> result = new LinkedHashSet<AptMethod>();
+    Set<? extends MessageMethod> build() {
+        final Set<AptMessageMethod> result = new LinkedHashSet<AptMessageMethod>();
         for (ExecutableElement elementMethod : methods) {
-            final AptMethod resultMethod = new AptMethod(elementMethod);
+            final AptMessageMethod resultMethod = new AptMessageMethod(elementMethod);
             resultMethod.inheritsMessage = inheritsMessage(methods, elementMethod);
             resultMethod.message = findMessage(methods, elementMethod);
             resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
-
             for (TypeMirror thrownType : elementMethod.getThrownTypes()) {
                 resultMethod.thrownTypes.add(ThrowableTypeFactory.of(elements, types, thrownType));
             }
 
             // Create a list of parameters
             for (Parameter parameter : ParameterFactory.of(elements, types, resultMethod.method)) {
-                if (parameter.isParam()) {
-                    resultMethod.constructorParameters.add(parameter);
-                } else if (parameter.isCause()) {
-                    resultMethod.cause = parameter;
-                } else if (parameter.isFormatParam()) {
-                    resultMethod.formatParameters.add(parameter);
-                } else {
-                    throw AtpException.of(elementMethod, "Parameter %s is not a format parameter, a cause parameter or a throwable construction parameter.", parameter);
+                switch (parameter.parameterType()) {
+                    case CAUSE: {
+                        resultMethod.cause = parameter;
+                        break;
+                    }
+                    case CONSTRUCTION: {
+                        resultMethod.constructorParameters.add(parameter);
+                        break;
+                    }
+                    case FORMAT: {
+                        resultMethod.formatParameters.add(parameter);
+                        break;
+                    }
+                    case FIELD:
+                    case MESSAGE:
+                    case PROPERTY: {
+                        // Do nothing
+                        break;
+                    }
+                    default: {
+                        throw AtpException.of(elementMethod, "Parameter %s is not a format parameter, a cause parameter or a throwable construction parameter.", parameter);
+                    }
                 }
                 resultMethod.allParameters.add(parameter);
             }
-            // Setup the global variables for the result
-
             // Check to see if the method is overloaded
             if (resultMethod.isOverloaded()) {
                 resultMethod.messageMethodName = resultMethod.name() + resultMethod.formatParameterCount() + MESSAGE_METHOD_SUFFIX;
@@ -100,7 +111,7 @@ final class MessageMethodBuilder {
         return Collections.unmodifiableSet(result);
     }
 
-    private static Method.Message findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+    private static MessageMethod.Message findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         AptMessage result = null;
         if (isAnnotatedWith(method, annotations().message())) {
             result = new AptMessage();
@@ -149,21 +160,22 @@ final class MessageMethodBuilder {
 
 
     /**
-     * An implementation for the Method interface.
+     * An implementation for the MessageMethod interface.
      */
-    private static class AptMethod implements Method {
+    private static class AptMessageMethod implements MessageMethod {
+
+        private ReturnType returnType;
 
         private Parameter cause;
         private boolean inheritsMessage;
         private boolean isOverloaded;
-        private ReturnType returnType;
         private Message message;
+        private final Set<Parameter> allParameters;
+        private final Set<ThrowableType> thrownTypes;
         private String messageMethodName;
         private final ExecutableElement method;
-        private final Set<Parameter> allParameters;
         private final Set<Parameter> formatParameters;
         private final Set<Parameter> constructorParameters;
-        private final Set<ThrowableType> thrownTypes;
         private String translationKey;
 
         /**
@@ -171,7 +183,7 @@ final class MessageMethodBuilder {
          *
          * @param method the method to describe.
          */
-        AptMethod(final ExecutableElement method) {
+        AptMessageMethod(final ExecutableElement method) {
             this.method = method;
             inheritsMessage = false;
             isOverloaded = false;
@@ -262,16 +274,16 @@ final class MessageMethodBuilder {
         }
 
         @Override
-        public Collection<ThrowableType> thrownTypes() {
-            return thrownTypes;
+        public Set<ThrowableType> thrownTypes() {
+            return unmodifiableSet(thrownTypes);
         }
 
         @Override
         public int hashCode() {
             return HashCodeBuilder.builder()
                     .add(name())
-                    .add(allParameters)
-                    .add(returnType).toHashCode();
+                    .add(allParameters())
+                    .add(returnType()).toHashCode();
         }
 
         @Override
@@ -279,17 +291,31 @@ final class MessageMethodBuilder {
             if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof AptMethod)) {
+            if (!(obj instanceof AptMessageMethod)) {
                 return false;
             }
-            final AptMethod other = (AptMethod) obj;
+            final AptMessageMethod other = (AptMessageMethod) obj;
             return areEqual(name(), other.name()) &&
-                    areEqual(allParameters, other.allParameters) &&
-                    areEqual(returnType, other.returnType);
+                    areEqual(allParameters(), other.allParameters()) &&
+                    areEqual(returnType(), other.returnType());
         }
 
         @Override
-        public int compareTo(final Method o) {
+        public String toString() {
+            return ToStringBuilder.of(this)
+                    .add("name", name())
+                    .add("returnType", returnType())
+                    .add("parameters", allParameters())
+                    .add("loggerMethod", loggerMethod()).toString();
+        }
+
+        @Override
+        public ExecutableElement reference() {
+            return method;
+        }
+
+        @Override
+        public int compareTo(final MessageMethod o) {
             int result = name().compareTo(o.name());
             result = (result != Comparison.EQUAL) ? result : returnType.name().compareTo(o.returnType().name());
             // Size does matter
@@ -312,22 +338,9 @@ final class MessageMethodBuilder {
             }
             return result;
         }
-
-        @Override
-        public String toString() {
-            return ToStringBuilder.of(this)
-                    .add("name", name())
-                    .add("message", message)
-                    .add("loggerMethod", loggerMethod()).toString();
-        }
-
-        @Override
-        public ExecutableElement reference() {
-            return method;
-        }
     }
 
-    private static class AptMessage implements Method.Message {
+    private static class AptMessage implements MessageMethod.Message {
 
         private boolean hasId;
         private int id;
