@@ -171,8 +171,8 @@ final class TranslationClassGenerator extends AbstractGenerator {
             final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
             messageMethods.addAll(messageInterface.methods());
             for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
-                // Handle basic logger
-                if (msgIntf.isBasicLogger()) {
+                // Handle logger interface
+                if (msgIntf.isLoggerInterface()) {
                     continue;
                 }
                 messageMethods.addAll(msgIntf.methods());

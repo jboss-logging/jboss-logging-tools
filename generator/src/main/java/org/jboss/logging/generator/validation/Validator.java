@@ -40,13 +40,13 @@ public final class Validator {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         if (messageInterface.isMessageBundle()) {
             final String projectCode = messageInterface.projectCode();
-            // Get all messageMethods except basic logger messageMethods
+            // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(projectCode, messageMethods));
             messages.addAll(validateBundle(messageMethods));
         } else if (messageInterface.isMessageLogger()) {
             final String projectCode = messageInterface.projectCode();
-            // Get all messageMethods except basic logger messageMethods
+            // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(projectCode, messageMethods));
             messages.addAll(validateLogger(messageMethods));
@@ -225,14 +225,14 @@ public final class Validator {
     }
 
     /**
-     * Finds all methods for the given interface, but ignores basic logger methods.
+     * Finds all methods for the given interface, but ignores logger interface methods.
      *
      * @param messageInterface the interface to find all methods for.
      *
-     * @return a set of all the methods (exception basic logger methods) the interface must implement.
+     * @return a set of all the methods (exception logger interface methods) the interface must implement.
      */
     private Set<MessageMethod> getAllMethods(final MessageInterface messageInterface) {
-        if (messageInterface.isBasicLogger()) {
+        if (messageInterface.isLoggerInterface()) {
             return Collections.emptySet();
         }
         final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();

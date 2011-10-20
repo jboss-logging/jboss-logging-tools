@@ -22,6 +22,7 @@
 package org.jboss.logging.processor;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.generator.Loggers;
 
@@ -43,8 +44,13 @@ public class BaseLoggers implements Loggers {
     }
 
     @Override
-    public Class<BasicLogger> basicLoggerClass() {
+    public Class<BasicLogger> loggerInterface() {
         return BasicLogger.class;
+    }
+
+    @Override
+    public Class<DelegatingBasicLogger> delegatingLogger() {
+        return DelegatingBasicLogger.class;
     }
 
 }

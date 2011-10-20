@@ -32,7 +32,7 @@ import static org.jboss.logging.generator.util.Objects.areEqual;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class MessageInterfaceFactory {
-    private static volatile BasicLoggerInterface BASIC_LOGGER_INTERFACE = null;
+    private static volatile LoggerInterface LOGGER_INTERFACE = null;
     private static final Object LOCK = new Object();
 
     /**
@@ -52,14 +52,14 @@ public final class MessageInterfaceFactory {
     public static MessageInterface of(final ProcessingEnvironment processingEnvironment, final TypeElement interfaceElement) {
         final Types types = processingEnvironment.getTypeUtils();
         final Elements elements = processingEnvironment.getElementUtils();
-        if (types.isSameType(interfaceElement.asType(), elements.getTypeElement(loggers().basicLoggerClass().getName()).asType())) {
-            MessageInterface result = BASIC_LOGGER_INTERFACE;
+        if (types.isSameType(interfaceElement.asType(), elements.getTypeElement(loggers().loggerInterface().getName()).asType())) {
+            MessageInterface result = LOGGER_INTERFACE;
             if (result == null) {
                 synchronized (LOCK) {
-                    result = BASIC_LOGGER_INTERFACE;
+                    result = LOGGER_INTERFACE;
                     if (result == null) {
-                        BASIC_LOGGER_INTERFACE = BasicLoggerInterface.of(elements, types);
-                        result = BASIC_LOGGER_INTERFACE;
+                        LOGGER_INTERFACE = LoggerInterface.of(elements, types);
+                        result = LOGGER_INTERFACE;
                     }
                 }
             }
@@ -95,6 +95,11 @@ public final class MessageInterfaceFactory {
             this.elements = elements;
             this.messageMethods = new LinkedList<MessageMethod>();
             this.extendedInterfaces = new LinkedHashSet<MessageInterface>();
+        }
+
+        @Override
+        public boolean extendsLoggerInterface() {
+            return LOGGER_INTERFACE != null && extendedInterfaces.contains(LOGGER_INTERFACE);
         }
 
         @Override
@@ -138,7 +143,7 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public boolean isBasicLogger() {
+        public boolean isLoggerInterface() {
             return false;
         }
 
@@ -220,33 +225,38 @@ public final class MessageInterfaceFactory {
         }
     }
 
-    private static class BasicLoggerInterface implements MessageInterface {
-        private final TypeElement basicLogger;
+    private static class LoggerInterface implements MessageInterface {
+        private final TypeElement loggerInterface;
         private final Elements elements;
         private final Types types;
         private final Set<MessageMethod> messageMethods;
 
-        private BasicLoggerInterface(final Elements elements, final Types types) {
+        private LoggerInterface(final Elements elements, final Types types) {
             this.elements = elements;
             this.types = types;
             messageMethods = new HashSet<MessageMethod>();
-            this.basicLogger = elements.getTypeElement(loggers().basicLoggerClass().getName());
+            this.loggerInterface = elements.getTypeElement(loggers().loggerInterface().getName());
         }
 
-        static BasicLoggerInterface of(final Elements elements, final Types types) {
-            final BasicLoggerInterface result = new BasicLoggerInterface(elements, types);
+        static LoggerInterface of(final Elements elements, final Types types) {
+            final LoggerInterface result = new LoggerInterface(elements, types);
             result.init();
             return result;
         }
 
         private void init() {
             final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types);
-            List<ExecutableElement> methods = ElementFilter.methodsIn(basicLogger.getEnclosedElements());
+            List<ExecutableElement> methods = ElementFilter.methodsIn(loggerInterface.getEnclosedElements());
             for (ExecutableElement method : methods) {
                 builder.add(method);
             }
             final Collection<? extends MessageMethod> m = builder.build();
             this.messageMethods.addAll(m);
+        }
+
+        @Override
+        public boolean extendsLoggerInterface() {
+            return false;
         }
 
         @Override
@@ -266,17 +276,17 @@ public final class MessageInterfaceFactory {
 
         @Override
         public String name() {
-            return loggers().basicLoggerClass().getName();
+            return loggers().loggerInterface().getName();
         }
 
         @Override
         public String packageName() {
-            return loggers().basicLoggerClass().getPackage().getName();
+            return loggers().loggerInterface().getPackage().getName();
         }
 
         @Override
         public String simpleName() {
-            return loggers().basicLoggerClass().getSimpleName();
+            return loggers().loggerInterface().getSimpleName();
         }
 
         @Override
@@ -290,13 +300,13 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public boolean isBasicLogger() {
+        public boolean isLoggerInterface() {
             return true;
         }
 
         @Override
         public TypeElement reference() {
-            return basicLogger;
+            return loggerInterface;
         }
 
         @Override
@@ -307,13 +317,13 @@ public final class MessageInterfaceFactory {
         @Override
         public boolean isAssignableFrom(final Class<?> type) {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isAssignable(typeMirror, basicLogger.asType());
+            return types.isAssignable(typeMirror, loggerInterface.asType());
         }
 
         @Override
         public boolean isSubtypeOf(final Class<?> type) {
             final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isSubtype(basicLogger.asType(), typeMirror);
+            return types.isSubtype(loggerInterface.asType(), typeMirror);
         }
 
         @Override

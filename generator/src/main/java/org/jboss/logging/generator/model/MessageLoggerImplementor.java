@@ -29,18 +29,12 @@ import com.sun.codemodel.internal.JFieldVar;
 import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JType;
 import com.sun.codemodel.internal.JVar;
 import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
-import org.jboss.logging.generator.intf.model.ReturnType;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import static org.jboss.logging.generator.Tools.loggers;
@@ -58,7 +52,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
     private static final String LOG_FIELD_NAME = "log";
     private static final String FQCN_FIELD_NAME = "FQCN";
-    private JFieldVar log;
 
     /**
      * Creates a new message logger code model.
@@ -72,7 +65,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        log = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
         //Add a project code constant
         JFieldVar projectCodeVar = null;
         if (!messageInterface().projectCode().isEmpty()) {
@@ -88,15 +80,23 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
         final JVar constructorParam = constructor.param(JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
         final JBlock constructorBody = constructor.body();
-        constructorBody.assign(JExpr._this().ref(log), constructorParam);
+        final JExpression logger;
+        if (messageInterface().extendsLoggerInterface()) {
+            getDefinedClass()._extends(loggers().delegatingLogger());
+            constructorBody.add(JExpr.invoke("super").arg(constructorParam));
+            logger = JExpr._super().ref("log");
+        } else {
+            JFieldVar logVar = getDefinedClass().field(JMod.PROTECTED | JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
+            constructorBody.assign(JExpr._this().ref(logVar), constructorParam);
+            logger = logVar;
+        }
 
         // Process the method descriptors and add to the model before writing.
         final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
-            // Handle basic logger
-            if (messageInterface.isBasicLogger()) {
-                implementBasicLogger(codeModel, messageInterface);
+            // Handle logger interface
+            if (messageInterface.isLoggerInterface()) {
                 continue;
             }
             messageMethods.addAll(messageInterface.methods());
@@ -111,7 +111,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
             // Create the messageMethod body
             if (messageMethod.isLoggerMethod()) {
-                createLoggerMethod(messageMethod, jMethod, msgMethod, projectCodeVar);
+                createLoggerMethod(messageMethod, jMethod, msgMethod, projectCodeVar, logger);
             } else {
                 createBundleMethod(messageMethod, jMethod, msgMethod, projectCodeVar);
             }
@@ -126,15 +126,15 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param method         the method to create the body for.
      * @param msgMethod      the message method for retrieving the message.
      * @param projectCodeVar the project code variable
+     * @param logger         the logger to use.
      */
-    private void createLoggerMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
+    private void createLoggerMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar, final JExpression logger) {
         addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
 
-        // Determine the log method
-        final StringBuilder logMethod = new StringBuilder(messageMethod.loggerMethod());
-        final JInvocation logInv = body.invoke(log, logMethod.toString());
+        // Determine which logger method to invoke
+        final JInvocation logInv = body.invoke(logger, messageMethod.loggerMethod());
         logInv.arg(JExpr.ref(FQCN_FIELD_NAME));
         logInv.arg(JExpr.direct(messageMethod.logLevelParameter()));
         // The clause must be first if there is one.
@@ -167,154 +167,5 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     break;
             }
         }
-    }
-
-    /**
-     * Implements the basic logger methods.
-     *
-     * @param codeModel        the code model to implement to.
-     * @param messageInterface the message interface to implement.
-     */
-    private void implementBasicLogger(final JCodeModel codeModel, final MessageInterface messageInterface) {
-        for (MessageMethod messageMethod : messageInterface.methods()) {
-            final JType returnType;
-            if (messageMethod.returnType().equals(ReturnType.VOID)) {
-                returnType = codeModel.VOID;
-            } else {
-                if (messageMethod.returnType().isPrimitive()) {
-                    returnType = JClass.parse(codeModel, messageMethod.returnType().name());
-                } else {
-                    returnType = codeModel.ref(messageMethod.returnType().name());
-                }
-            }
-            final JMethod blMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, messageMethod.name());
-            blMethod.annotate(Override.class);
-            // Create the messageMethod body
-            final JBlock body = blMethod.body();
-            // Create the delegate messageMethod
-            final DelegateLogMethod delegateLogMethod = DelegateLogMethod.of(messageMethod);
-            // Create the invocation for the delegate
-            final JInvocation logInv = JExpr.invoke(log, delegateLogMethod.methodName);
-            final Map<Parameter, JExpression> args = new LinkedHashMap<Parameter, JExpression>();
-            // Create sequenced parameters
-            final Map<DelegateParameter, JExpression> delegateParameters = new HashMap<DelegateParameter, JExpression>();
-            delegateParameters.put(DelegateParameter.FQCN, JExpr.ref(FQCN_FIELD_NAME));
-            if (delegateLogMethod.level != null) {
-                delegateParameters.put(DelegateParameter.LEVEL, JExpr.direct(delegateLogMethod.level));
-            }
-            boolean first = true;
-            for (Parameter parameter : messageMethod.allParameters()) {
-                final JType param = codeModel.ref(parameter.type());
-                // Assume if first parameter is a String and it's not a format messageMethod, it's th FQCN
-                if (first) {
-                    first = false;
-                    if (!delegateLogMethod.isFormatMethod && parameter.isSameAs(String.class)) {
-                        delegateParameters.put(DelegateParameter.FQCN, blMethod.param(JMod.FINAL, param, parameter.name()));
-                        continue;
-                    }
-                }
-                // Check the parameter types
-                if (parameter.isSameAs(loggers().logLevelClass())) {
-                    delegateParameters.put(DelegateParameter.LEVEL, blMethod.param(JMod.FINAL, param, parameter.name()));
-                } else if (parameter.isAssignableFrom(Throwable.class)) {
-                    delegateParameters.put(DelegateParameter.THROWABLE, blMethod.param(JMod.FINAL, param, parameter.name()));
-                } else if (parameter.isVarArgs()) {
-                    args.put(parameter, blMethod.varParam(param, parameter.name()));
-                } else if (parameter.isArray()) {
-                    args.put(parameter, blMethod.param(JMod.FINAL, param.array(), parameter.name()));
-                } else {
-                    args.put(parameter, blMethod.param(JMod.FINAL, param, parameter.name()));
-                }
-            }
-            // Void return types should be logging methods.
-            if (ReturnType.VOID.equals(messageMethod.returnType())) {
-                if (!delegateParameters.isEmpty()) {
-                    logInv.arg(delegateParameters.get(DelegateParameter.FQCN));
-                    if (delegateParameters.containsKey(DelegateParameter.LEVEL)) {
-                        logInv.arg(delegateParameters.get(DelegateParameter.LEVEL));
-                    }
-                    if (delegateParameters.containsKey(DelegateParameter.THROWABLE)) {
-                        logInv.arg(delegateParameters.get(DelegateParameter.THROWABLE));
-                    } else {
-                        logInv.arg(JExpr._null());
-                    }
-                    first = true;
-                    for (Map.Entry<Parameter, JExpression> entry : args.entrySet()) {
-                        final Parameter parameter = entry.getKey();
-                        final JExpression methodParameter = entry.getValue();
-                        // Kind of hacky, but if the parameter is an object we need to get it's string value or pass null
-                        if (first && parameter.isSameAs(Object.class)) {
-                            first = false;
-                            final StringBuilder sb = new StringBuilder();
-                            sb.append(parameter.name()).
-                                    append(" == null ? null : ").
-                                    append(parameter.name())
-                                    .append(".toString()");
-                            logInv.arg(JExpr.direct(sb.toString()));
-                        } else {
-                            logInv.arg(methodParameter);
-                        }
-                    }
-                }
-                // Add the delegate invocation to the body
-                body.add(logInv);
-            } else {
-                // Should be boolean and only, optionally, have a level parameter
-                if (delegateParameters.containsKey(DelegateParameter.LEVEL)) {
-                    logInv.arg(delegateParameters.get(DelegateParameter.LEVEL));
-                }
-                body._return(logInv);
-            }
-        }
-    }
-
-    /**
-     * Simple enum in the sequence order
-     */
-    private static enum DelegateParameter {
-        FQCN,
-        LEVEL,
-        THROWABLE
-    }
-
-    /**
-     * Simple holder and parser for which method the log should delegate to.
-     */
-    private static class DelegateLogMethod {
-        final String level;
-        final String methodName;
-        final boolean isFormatMethod;
-
-        private DelegateLogMethod(final MessageMethod messageMethod) {
-            final String methodName = messageMethod.name();
-            final char lastChar = methodName.charAt(methodName.length() - 1);
-            isFormatMethod = (lastChar == 'f' || lastChar == 'v');
-            final String logMethod;
-            if (methodName.startsWith("log")) {
-                if (isFormatMethod) {
-                    logMethod = methodName;
-                } else {
-                    logMethod = methodName + "v";
-                }
-                level = null;
-            } else if (ReturnType.VOID.equals(messageMethod.returnType())) {
-                if (isFormatMethod) {
-                    logMethod = "log" + lastChar;
-                    level = "Logger.Level." + methodName.substring(0, methodName.length() - 1).toUpperCase(Locale.US);
-                } else {
-                    logMethod = "logv";
-                    level = "Logger.Level." + methodName.substring(0, methodName.length()).toUpperCase(Locale.US);
-                }
-            } else {
-                logMethod = methodName;
-                level = null;
-            }
-            this.methodName = logMethod;
-        }
-
-        public static DelegateLogMethod of(final MessageMethod messageMethod) {
-            return new DelegateLogMethod(messageMethod);
-        }
-
     }
 }

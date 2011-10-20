@@ -41,10 +41,19 @@ public interface Loggers {
     Class<?> logLevelClass();
 
     /**
-     * Returns the basic logger class.
+     * Returns the logger interface to implement.
+     * <p/>
+     * Note this will be implemented via the {@link #delegatingLogger()}.
      *
-     * @return the basic logger class.
+     * @return the logger interface.
      */
-    Class<?> basicLoggerClass();
+    Class<?> loggerInterface();
+
+    /**
+     * Returns the logger to delegate log methods to if the message interface implements the {@link #loggerInterface()}.
+     *
+     * @return the delegate logger class.
+     */
+    Class<?> delegatingLogger();
 
 }

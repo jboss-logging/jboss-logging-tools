@@ -67,8 +67,8 @@ class MessageBundleImplementor extends ImplementationClassModel {
         final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
-            // Handle basic logger
-            if (messageInterface.isBasicLogger()) {
+            // Handle logger interface
+            if (messageInterface.isLoggerInterface()) {
                 continue;
             }
             messageMethods.addAll(messageInterface.methods());

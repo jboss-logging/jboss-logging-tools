@@ -11,6 +11,14 @@ import java.util.Set;
 public interface MessageInterface extends Comparable<MessageInterface>, MessageObject, MessageObjectType {
 
     /**
+     * Checks the interface to see if the {@link org.jboss.logging.generator.Loggers#loggerInterface() logger interface}
+     * is being extended in this interface.
+     *
+     * @return {@code true} if this interface extends the logger interface, otherwise {@code false}.
+     */
+    boolean extendsLoggerInterface();
+
+    /**
      * A set of qualified interface names this interface extends or an empty set.
      *
      * @return a set of interface names or an empty set.
@@ -25,9 +33,9 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     Collection<MessageMethod> methods();
 
     /**
-     * The project code for the message interface or {@code null} if {@link #isBasicLogger()} returns {@code true}.
+     * The project code for the message interface or {@code null} if {@link #isLoggerInterface()} returns {@code true}.
      *
-     * @return the project code or {@code null} if {@link #isBasicLogger()} returns {@code true}.
+     * @return the project code or {@code null} if {@link #isLoggerInterface()} returns {@code true}.
      */
     String projectCode();
 
@@ -68,13 +76,14 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     boolean isMessageBundle();
 
     /**
-     * This is a special type of {@code MessageInterface} and will only return {@code true} if this is a basic logger
-     * ({@link org.jboss.logging.generator.Loggers#basicLoggerClass()}). Otherwise {@code false} is returned.
+     * This is a special type of {@code MessageInterface} and will only return {@code true} if this is a
+     * {@link org.jboss.logging.generator.Loggers#loggerInterface() logger interface}. Otherwise {@code false} is
+     * returned.
      * <p/>
      * <b>Note:</b> {@link #isMessageBundle()} and {@link #isMessageLogger()} will return {@code false} if this is
      * {@code true}.
      *
-     * @return {@code true} if this is a basic logger, otherwise {@code false}.
+     * @return {@code true} if this is a logger interface, otherwise {@code false}.
      */
-    boolean isBasicLogger();
+    boolean isLoggerInterface();
 }
