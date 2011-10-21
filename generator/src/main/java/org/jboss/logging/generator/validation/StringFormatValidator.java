@@ -22,13 +22,15 @@
 
 package org.jboss.logging.generator.validation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.IllegalFormatException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UnknownFormatConversionException;
 import java.util.regex.Matcher;
@@ -116,15 +118,35 @@ class StringFormatValidator extends AbstractFormatValidator {
             setSummaryMessage("Formats don't match. Internal error: %s Reconstructed: %s", format, asFormat());
             setDetailMessage("The original is '%s' and the reconstructed format is '%s'. This is likely an internal error and should be reported.", format, asFormat());
         } else {
-            // Attempt to use String.format() with default values
-            final List<Object> params = new LinkedList<Object>();
+            // Create a multimap to hold the parameter values for sorting
+            final Map<Integer, List<Object>> paramMap = new TreeMap<Integer, List<Object>>();
             int counter = 0;
+            int index = 0;
             // Initialize the argument count
             for (StringFormatPart stringFormatPart : formats) {
                 if (counter == argumentCount) {
                     break;
                 }
+                // Check the index and set appropriately
+                if (stringFormatPart.index() > 0 || stringFormatPart.index() == 0) {
+                    index = stringFormatPart.index();
+                } else if (stringFormatPart.index() < -1) {
+                    index = 0;
+                }
+                // Find or create the list for the multimap.
+                final List<Object> params;
+                if (paramMap.containsKey(index)) {
+                    params = paramMap.get(index);
+                    // Skip positional if already defined.
+                    if (index > 0) {
+                        continue;
+                    }
+                } else {
+                    params = new ArrayList<Object>();
+                    paramMap.put(index, params);
+                }
                 counter++;
+                // Add the type.
                 switch (stringFormatPart.conversion()) {
                     case BOOLEAN:
                         params.add(true);
@@ -163,11 +185,17 @@ class StringFormatValidator extends AbstractFormatValidator {
             }
             if (valid) {
                 try {
+                    // Copy the results in order to a new list.
+                    final List<Object> params = new ArrayList<Object>();
+                    for (Map.Entry<Integer, List<Object>> entry : paramMap.entrySet()) {
+                        params.addAll(entry.getValue());
+                    }
+                    // Test the format
                     String.format(format, params.toArray());
                 } catch (final IllegalFormatException e) {
                     valid = false;
-                    setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, params, e.getMessage());
-                    setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, params, this);
+                    setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, paramMap, e.getMessage());
+                    setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, paramMap, this);
                 }
             }
         }

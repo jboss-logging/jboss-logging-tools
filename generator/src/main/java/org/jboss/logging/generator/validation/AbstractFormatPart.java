@@ -22,6 +22,8 @@
 
 package org.jboss.logging.generator.validation;
 
+import org.jboss.logging.generator.util.Comparison;
+
 /**
  * Abstract class that only implements Comparable for convenience. Uses the {@link FormatPart#position()} for
  * the comparison.
@@ -34,7 +36,8 @@ abstract class AbstractFormatPart implements FormatPart {
 
     @Override
     public int compareTo(final FormatPart other) {
-        return position() - other.position();
+        return Comparison.begin().
+                compare(position(), other.position()).result();
     }
 
     @Override

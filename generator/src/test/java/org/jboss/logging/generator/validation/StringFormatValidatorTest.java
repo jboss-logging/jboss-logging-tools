@@ -70,7 +70,10 @@ public class StringFormatValidatorTest {
         validator = StringFormatValidator.of("%2$d %1$s", "Test", 42);
         assertTrue(validator.detailMessage(), validator.isValid());
 
-        validator = StringFormatValidator.of("%3$s %1$d %3$s %2tm", 42, new Date(), "Test");
+        validator = StringFormatValidator.of("%3$s %1$d %3$s %2$tm", 42, new Date(), "Test");
+        assertTrue(validator.detailMessage(), validator.isValid());
+
+        validator = StringFormatValidator.of("%2$d %<d %s", "Test", 42);
         assertTrue(validator.detailMessage(), validator.isValid());
 
     }
