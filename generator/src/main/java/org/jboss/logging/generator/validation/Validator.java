@@ -71,12 +71,12 @@ public final class Validator {
             // Check for checked exceptions thrown on the interface messageMethod
             for (ThrowableType throwableType : messageMethod.thrownTypes()) {
                 if (throwableType.isChecked()) {
-                    messages.add(createError(messageMethod, "Interface messageMethods cannot throw checked exceptions."));
+                    messages.add(createError(messageMethod, "Interface message methods cannot throw checked exceptions."));
                 }
             }
             final MessageMethod.Message message = messageMethod.message();
             if (message == null) {
-                messages.add(createError(messageMethod, "All message bundles and message logger messageMethods must have or inherit a message."));
+                messages.add(createError(messageMethod, "All message bundles and message logger message methods must have or inherit a message."));
                 continue;
             }
             // Check the message id
