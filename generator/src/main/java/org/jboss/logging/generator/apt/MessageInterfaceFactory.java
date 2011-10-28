@@ -4,8 +4,11 @@ import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.MessageMethod;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -16,6 +19,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.jboss.logging.generator.Tools.annotations;
@@ -88,6 +92,7 @@ public final class MessageInterfaceFactory {
         private String packageName;
         private String simpleName;
         private String qualifiedName;
+        private String fqcn;
 
         private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
             this.interfaceElement = interfaceElement;
@@ -130,6 +135,11 @@ public final class MessageInterfaceFactory {
         @Override
         public String simpleName() {
             return simpleName;
+        }
+
+        @Override
+        public String loggingFQCN() {
+            return fqcn;
         }
 
         @Override
@@ -182,7 +192,7 @@ public final class MessageInterfaceFactory {
             for (ExecutableElement param : methods) {
                 builder.add(param);
             }
-            final Collection<? extends MessageMethod> m = builder.build();
+            final Collection<MessageMethod> m = builder.build();
             if (m != null)
                 this.messageMethods.addAll(m);
             projectCode = aptHelper().projectCode(interfaceElement);
@@ -194,6 +204,20 @@ public final class MessageInterfaceFactory {
             } else {
                 packageName = null;
                 simpleName = qualifiedName;
+            }
+            // Format class may not yet be compiled, so get it in a roundabout way
+            for (AnnotationMirror mirror : interfaceElement.getAnnotationMirrors()) {
+                final DeclaredType annotationType = mirror.getAnnotationType();
+                if (annotationType.toString().equals(types.getDeclaredType(elements.getTypeElement(annotations().messageLogger().getName())).toString())) {
+                    final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
+                    for (ExecutableElement key : map.keySet()) {
+                        if (key.getSimpleName().contentEquals("loggingClass")) {
+                            final String value = map.get(key).getValue().toString();
+                            if (!value.equals(Void.class.getName()))
+                                fqcn = value.toString();
+                        }
+                    }
+                }
             }
         }
 
@@ -250,7 +274,7 @@ public final class MessageInterfaceFactory {
             for (ExecutableElement method : methods) {
                 builder.add(method);
             }
-            final Collection<? extends MessageMethod> m = builder.build();
+            final Collection<MessageMethod> m = builder.build();
             this.messageMethods.addAll(m);
         }
 
@@ -287,6 +311,11 @@ public final class MessageInterfaceFactory {
         @Override
         public String simpleName() {
             return loggers().loggerInterface().getSimpleName();
+        }
+
+        @Override
+        public String loggingFQCN() {
+            return null;
         }
 
         @Override

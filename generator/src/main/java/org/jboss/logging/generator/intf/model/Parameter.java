@@ -30,6 +30,10 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
      */
     public enum ParameterType {
         /**
+         * Indicates the parameter can be any other type. All parameters fall under this category.
+         */
+        ANY,
+        /**
          * Indicates the parameter is a cause parameter and needs to be set in the {@link Throwable throwable} return
          * type.
          */
@@ -38,6 +42,10 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
          * Indicates the parameter should be used as a format parameter.
          */
         FORMAT,
+        /**
+         * Indicates the parameter should be used as the fully qualified class name for the logger.
+         */
+        FQCN,
         /**
          * Indicates the parameter is the message.
          */

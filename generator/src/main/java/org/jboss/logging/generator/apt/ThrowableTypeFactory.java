@@ -42,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.jboss.logging.generator.intf.model.Parameter.ParameterType;
 import static org.jboss.logging.generator.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.generator.util.Objects.areEqual;
 
@@ -297,10 +298,10 @@ final class ThrowableTypeFactory {
         @Override
         protected void init(final List<? extends VariableElement> params) {
             // Check to see if message has @Param annotated arguments.
-            if (!messageMethod.constructorParameters().isEmpty() && !useConstructionParameters) {
+            if (!messageMethod.parameters(ParameterType.CONSTRUCTION).isEmpty() && !useConstructionParameters) {
                 // Checks for the first constructor that can be used. The compiler will end-up determining the constructor
                 // to use, so a best guess should work.
-                final Iterator<Parameter> methodParameterIterator = messageMethod.constructorParameters().iterator();
+                final Iterator<Parameter> methodParameterIterator = messageMethod.parameters(ParameterType.CONSTRUCTION).iterator();
                 final Set<Parameter> matchedParams = new LinkedHashSet<Parameter>();
                 boolean match = false;
                 boolean causeFound = false;

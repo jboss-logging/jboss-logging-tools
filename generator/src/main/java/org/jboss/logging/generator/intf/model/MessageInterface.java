@@ -62,6 +62,13 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     String simpleName();
 
     /**
+     * The fully qualified class name to use for log methods. This will generally be the same result as {@link #name()}.
+     *
+     * @return the fully qualified class name to use for logging.
+     */
+    String loggingFQCN();
+
+    /**
      * Returns {@code true} if the interface is annotated as a message logger, otherwise {@code false}.
      *
      * @return {@code true} if a message logger, otherwise {@code false}.

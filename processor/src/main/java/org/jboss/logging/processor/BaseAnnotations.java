@@ -24,6 +24,7 @@ import org.jboss.logging.Cause;
 import org.jboss.logging.Field;
 import org.jboss.logging.FormatWith;
 import org.jboss.logging.LogMessage;
+import org.jboss.logging.LoggingClass;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.MessageLogger;
@@ -41,6 +42,7 @@ public class BaseAnnotations implements Annotations {
     public static final Class<Cause> CAUSE_ANNOTATION = Cause.class;
     public static final Class<Field> FIELD_ANNOTATION = Field.class;
     public static final Class<FormatWith> FORMAT_WITH_ANNOTATION = FormatWith.class;
+    public static final Class<LoggingClass> LOGGER_CLASS_ANNOTATION = LoggingClass.class;
     public static final Class<LogMessage> LOG_MESSAGE_ANNOTATION = LogMessage.class;
     public static final Class<MessageBundle> MESSAGE_BUNDLE_ANNOTATION = MessageBundle.class;
     public static final Class<MessageLogger> MESSAGE_LOGGER_ANNOTATION = MessageLogger.class;
@@ -61,6 +63,11 @@ public class BaseAnnotations implements Annotations {
     @Override
     public Class<? extends Annotation> formatWith() {
         return FORMAT_WITH_ANNOTATION;
+    }
+
+    @Override
+    public Class<? extends Annotation> loggingClass() {
+        return LOGGER_CLASS_ANNOTATION;
     }
 
     @Override

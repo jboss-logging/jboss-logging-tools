@@ -89,6 +89,13 @@ public interface Annotations {
     Class<? extends Annotation> formatWith();
 
     /**
+     * Returns the logging class annotation class.
+     *
+     * @return the logging class annotation.
+     */
+    Class<? extends Annotation> loggingClass();
+
+    /**
      * Returns the log message annotation class.
      *
      * @return the log message annotation.

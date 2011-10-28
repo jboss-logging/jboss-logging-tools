@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.jboss.logging.generator.intf.model.Parameter.ParameterType;
 import static org.jboss.logging.generator.model.ClassModelHelper.formatMessageId;
 import static org.jboss.logging.generator.model.ClassModelHelper.implementationClassName;
 
@@ -95,7 +96,7 @@ abstract class ImplementationClassModel extends ClassModel {
         final JExpression format;
         final JClass formatter = getCodeModel().ref(message.format().formatClass());
         final JInvocation formatterMethod = formatter.staticInvoke(message.format().staticMethod());
-        final boolean hasFormatParameters = messageMethod.formatParameters().isEmpty();
+        final boolean hasFormatParameters = messageMethod.parameters(ParameterType.ANY).isEmpty();
         if (message.hasId() && projectCodeVar != null && hasFormatParameters) {
             final String formattedId = formatMessageId(message.id());
             format = projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod));
@@ -114,7 +115,7 @@ abstract class ImplementationClassModel extends ClassModel {
         final Map<String, JVar> fields = new HashMap<String, JVar>();
         final Map<String, JVar> properties = new HashMap<String, JVar>();
         // Create the parameters
-        for (Parameter param : messageMethod.allParameters()) {
+        for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
             final JClass paramType = getCodeModel().ref(param.type());
             final JVar var = method.param(JMod.FINAL, paramType, param.name());
             final String formatterClass = param.formatterClass();
@@ -156,11 +157,11 @@ abstract class ImplementationClassModel extends ClassModel {
     /**
      * Initialize the cause (Throwable) return type.
      *
-     * @param result      the return variable
-     * @param returnField the return field
-     * @param body        the body of the messageMethod
-     * @param messageMethod      the message messageMethod
-     * @param format      the format used to format the string cause
+     * @param result        the return variable
+     * @param returnField   the return field
+     * @param body          the body of the messageMethod
+     * @param messageMethod the message messageMethod
+     * @param format        the format used to format the string cause
      */
     private void initCause(final JVar result, final JClass returnField, final JBlock body, final MessageMethod messageMethod, final JExpression format) {
         final ThrowableType returnType = messageMethod.returnType().throwableReturnType();

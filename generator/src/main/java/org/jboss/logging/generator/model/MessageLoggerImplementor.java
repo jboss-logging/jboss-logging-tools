@@ -38,9 +38,11 @@ import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.jboss.logging.generator.Tools.loggers;
+import static org.jboss.logging.generator.intf.model.Parameter.ParameterType;
 import static org.jboss.logging.generator.model.ClassModelHelper.formatMessageId;
 
 /**
@@ -100,7 +102,11 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Add FQCN
         final JFieldVar fqcn = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, FQCN_FIELD_NAME);
-        fqcn.init(getDefinedClass().dotclass().invoke("getName"));
+        if (messageInterface().loggingFQCN() == null) {
+            fqcn.init(getDefinedClass().dotclass().invoke("getName"));
+        } else {
+            fqcn.init(codeModel.ref(messageInterface().loggingFQCN()).dotclass().invoke("getName"));
+        }
 
         // Add default constructor
         final JMethod constructor = getDefinedClass().constructor(JMod.PUBLIC);
@@ -397,10 +403,16 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
+        // Initialize the method parameters
+        final Map<Parameter, JVar> params = createParameters(messageMethod, method);
 
         // Determine which logger method to invoke
         final JInvocation logInv = body.invoke(logger, messageMethod.loggerMethod());
-        logInv.arg(JExpr.ref(FQCN_FIELD_NAME));
+        if (messageMethod.parameters(ParameterType.FQCN).isEmpty()) {
+            logInv.arg(JExpr.ref(FQCN_FIELD_NAME));
+        } else {
+            logInv.arg(params.get(messageMethod.parameters(ParameterType.FQCN).iterator().next()).invoke("getName"));
+        }
         logInv.arg(JExpr.direct(messageMethod.logLevelParameter()));
         // The clause must be first if there is one.
         if (messageMethod.hasCause()) {
@@ -418,19 +430,29 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             logInv.arg(JExpr.invoke(msgMethod));
         }
         // Create the parameters
-        for (Parameter param : messageMethod.allParameters()) {
-            final JClass paramType = getCodeModel().ref(param.type());
-            final JVar var = method.param(JMod.FINAL, paramType, param.name());
+        for (Map.Entry<Parameter, JVar> entry : params.entrySet()) {
+            final Parameter param = entry.getKey();
             final String formatterClass = param.formatterClass();
             switch (param.parameterType()) {
                 case FORMAT:
                     if (formatterClass == null) {
-                        logInv.arg(var);
+                        logInv.arg(entry.getValue());
                     } else {
-                        logInv.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(var));
+                        logInv.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(entry.getValue()));
                     }
                     break;
             }
         }
+    }
+
+    private Map<Parameter, JVar> createParameters(final MessageMethod messageMethod, final JMethod method) {
+        final Map<Parameter, JVar> result = new LinkedHashMap();
+        // Create the parameters
+        for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
+            final JClass paramType = getCodeModel().ref(param.type());
+            final JVar var = method.param(JMod.FINAL, paramType, param.name());
+            result.put(param, var);
+        }
+        return result;
     }
 }

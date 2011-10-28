@@ -3,6 +3,7 @@ package org.jboss.logging.generator.apt;
 import org.jboss.logging.generator.Annotations.FormatType;
 import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
+import org.jboss.logging.generator.intf.model.Parameter.ParameterType;
 import org.jboss.logging.generator.intf.model.ReturnType;
 import org.jboss.logging.generator.intf.model.ThrowableType;
 import org.jboss.logging.generator.util.Comparison;
@@ -13,10 +14,12 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
@@ -58,8 +61,8 @@ final class MessageMethodBuilder {
         return this;
     }
 
-    Set<? extends MessageMethod> build() {
-        final Set<AptMessageMethod> result = new LinkedHashSet<AptMessageMethod>();
+    Set<MessageMethod> build() {
+        final Set<MessageMethod> result = new LinkedHashSet<MessageMethod>();
         for (ExecutableElement elementMethod : methods) {
             final AptMessageMethod resultMethod = new AptMessageMethod(elementMethod);
             resultMethod.inheritsMessage = inheritsMessage(methods, elementMethod);
@@ -71,30 +74,7 @@ final class MessageMethodBuilder {
 
             // Create a list of parameters
             for (Parameter parameter : ParameterFactory.of(elements, types, resultMethod.method)) {
-                switch (parameter.parameterType()) {
-                    case CAUSE: {
-                        resultMethod.cause = parameter;
-                        break;
-                    }
-                    case CONSTRUCTION: {
-                        resultMethod.constructorParameters.add(parameter);
-                        break;
-                    }
-                    case FORMAT: {
-                        resultMethod.formatParameters.add(parameter);
-                        break;
-                    }
-                    case FIELD:
-                    case MESSAGE:
-                    case PROPERTY: {
-                        // Do nothing
-                        break;
-                    }
-                    default: {
-                        throw AtpException.of(elementMethod, "Parameter %s is not a format parameter, a cause parameter or a throwable construction parameter.", parameter);
-                    }
-                }
-                resultMethod.allParameters.add(parameter);
+                resultMethod.add(parameter);
             }
             // Check to see if the method is overloaded
             if (resultMethod.isOverloaded()) {
@@ -170,12 +150,10 @@ final class MessageMethodBuilder {
         private boolean inheritsMessage;
         private boolean isOverloaded;
         private Message message;
-        private final Set<Parameter> allParameters;
+        private final Map<ParameterType, Set<Parameter>> parameters;
         private final Set<ThrowableType> thrownTypes;
         private String messageMethodName;
         private final ExecutableElement method;
-        private final Set<Parameter> formatParameters;
-        private final Set<Parameter> constructorParameters;
         private String translationKey;
 
         /**
@@ -187,10 +165,28 @@ final class MessageMethodBuilder {
             this.method = method;
             inheritsMessage = false;
             isOverloaded = false;
-            allParameters = new LinkedHashSet<Parameter>();
-            formatParameters = new LinkedHashSet<Parameter>();
-            constructorParameters = new LinkedHashSet<Parameter>();
+            parameters = new EnumMap<ParameterType, Set<Parameter>>(ParameterType.class);
             thrownTypes = new LinkedHashSet<ThrowableType>();
+        }
+
+        void add(final Parameter parameter) {
+            if (parameters.containsKey(ParameterType.ANY)) {
+                parameters.get(ParameterType.ANY).add(parameter);
+            } else {
+                final Set<Parameter> any = new LinkedHashSet<Parameter>();
+                any.add(parameter);
+                parameters.put(ParameterType.ANY, any);
+            }
+            if (parameters.containsKey(parameter.parameterType())) {
+                parameters.get(parameter.parameterType()).add(parameter);
+            } else {
+                final Set<Parameter> set = new LinkedHashSet<Parameter>();
+                set.add(parameter);
+                parameters.put(parameter.parameterType(), set);
+            }
+            if (parameter.parameterType() == ParameterType.CAUSE) {
+                cause = parameter;
+            }
         }
 
         @Override
@@ -216,6 +212,14 @@ final class MessageMethodBuilder {
         @Override
         public String name() {
             return method.getSimpleName().toString();
+        }
+
+        @Override
+        public Set<Parameter> parameters(final ParameterType parameterType) {
+            if (parameters.containsKey(parameterType)) {
+                return parameters.get(parameterType);
+            }
+            return Collections.emptySet();
         }
 
         @Override
@@ -249,23 +253,11 @@ final class MessageMethodBuilder {
         }
 
         @Override
-        public Set<Parameter> allParameters() {
-            return unmodifiableSet(allParameters);
-        }
-
-        @Override
-        public Set<Parameter> formatParameters() {
-            return unmodifiableSet(formatParameters);
-        }
-
-        @Override
-        public Set<Parameter> constructorParameters() {
-            return unmodifiableSet(constructorParameters);
-        }
-
-        @Override
         public int formatParameterCount() {
-            return formatParameters.size();
+            if (parameters.containsKey(ParameterType.FORMAT)) {
+                return parameters.get(ParameterType.FORMAT).size();
+            }
+            return 0;
         }
 
         @Override
@@ -282,7 +274,7 @@ final class MessageMethodBuilder {
         public int hashCode() {
             return HashCodeBuilder.builder()
                     .add(name())
-                    .add(allParameters())
+                    .add(parameters(ParameterType.ANY))
                     .add(returnType()).toHashCode();
         }
 
@@ -296,8 +288,8 @@ final class MessageMethodBuilder {
             }
             final AptMessageMethod other = (AptMessageMethod) obj;
             return areEqual(name(), other.name()) &&
-                    areEqual(allParameters(), other.allParameters()) &&
-                    areEqual(returnType(), other.returnType());
+                    areEqual(parameters, parameters) &&
+                    areEqual(returnType, other.returnType);
         }
 
         @Override
@@ -305,7 +297,7 @@ final class MessageMethodBuilder {
             return ToStringBuilder.of(this)
                     .add("name", name())
                     .add("returnType", returnType())
-                    .add("parameters", allParameters())
+                    .add("parameters", parameters(ParameterType.ANY))
                     .add("loggerMethod", loggerMethod()).toString();
         }
 
@@ -319,11 +311,11 @@ final class MessageMethodBuilder {
             int result = name().compareTo(o.name());
             result = (result != Comparison.EQUAL) ? result : returnType.name().compareTo(o.returnType().name());
             // Size does matter
-            result = (result != Comparison.EQUAL) ? result : allParameters.size() - o.allParameters().size();
+            result = (result != Comparison.EQUAL) ? result : parameters(ParameterType.ANY).size() - o.parameters(ParameterType.ANY).size();
             if (result == Comparison.EQUAL) {
                 // Check element by element
-                final Iterator<Parameter> params1 = allParameters.iterator();
-                final Iterator<Parameter> params2 = o.allParameters().iterator();
+                final Iterator<Parameter> params1 = parameters(ParameterType.ANY).iterator();
+                final Iterator<Parameter> params2 = o.parameters(ParameterType.ANY).iterator();
                 while (params1.hasNext()) {
                     if (params2.hasNext()) {
                         final Parameter param1 = params1.next();

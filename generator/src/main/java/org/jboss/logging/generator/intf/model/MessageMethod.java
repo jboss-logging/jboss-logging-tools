@@ -23,6 +23,7 @@
 package org.jboss.logging.generator.intf.model;
 
 import org.jboss.logging.generator.Annotations;
+import org.jboss.logging.generator.intf.model.Parameter.ParameterType;
 
 import java.util.Set;
 
@@ -42,11 +43,13 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject 
     String name();
 
     /**
-     * Returns an unmodifiable collection of the all parameters.
+     * Returns an unmodifiable collection of the parameters specified by the parameter type or an empty set.
      *
-     * @return a collection of the all parameters.
+     * @param parameterType the parameter type to look-up the parameters for.
+     *
+     * @return a collection of the parameters or an empty set.
      */
-    Set<Parameter> allParameters();
+    Set<Parameter> parameters(ParameterType parameterType);
 
     /**
      * Returns the return type for the method.
@@ -131,23 +134,6 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject 
      * @return the log level annotation
      */
     String logLevelParameter();
-
-    /**
-     * Returns an unmodifiable collection of all the parameters used for the formatting of the message.
-     *
-     * @return a collection of the formatter parameters.
-     */
-    Set<Parameter> formatParameters();
-
-    /**
-     * Returns an unmodifiable collection of all the parameters used to construct the result.
-     * <p/>
-     * <b>Note:</b> this does not include the cause parameter or the message, only methods annotated with
-     * {@link org.jboss.logging.generator.Annotations#param()}.
-     *
-     * @return a collection of parameters used to construct the result.
-     */
-    Set<Parameter> constructorParameters();
 
     /**
      * Returns the number of parameters minus the cause parameter count for the method.

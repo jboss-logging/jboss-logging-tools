@@ -235,6 +235,9 @@ final class ParameterFactory {
             } else if (isAnnotatedWith(param, annotations().property())) {
                 paramClass = null;
                 parameterType = ParameterType.PROPERTY;
+            } else if (isAnnotatedWith(param, annotations().loggingClass())) {
+                paramClass = null;
+                parameterType = ParameterType.FQCN;
             } else {
                 parameterType = ParameterType.FORMAT;
                 paramClass = null;

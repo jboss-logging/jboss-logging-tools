@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jboss.logging.generator.Tools.annotations;
+import static org.jboss.logging.generator.intf.model.Parameter.ParameterType;
 import static org.jboss.logging.generator.validation.ValidationMessageFactory.createError;
 import static org.jboss.logging.generator.validation.ValidationMessageFactory.createWarning;
 
@@ -118,7 +120,7 @@ public final class Validator {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         boolean foundCause = false;
         final ReturnType returnType = messageMethod.returnType();
-        for (Parameter parameter : messageMethod.allParameters()) {
+        for (Parameter parameter : messageMethod.parameters(ParameterType.ANY)) {
             switch (parameter.parameterType()) {
                 case CAUSE: {
                     if (foundCause) {
@@ -128,6 +130,11 @@ public final class Validator {
                     }
                     break;
                 }
+                case FQCN:
+                    if (parameter.type().equals(Class.class.getName())) {
+                        messages.add(createError(parameter, "Parameter %s annotated with %s on method %s must be of type %s.", parameter.name(), annotations().loggingClass().getName(), messageMethod.name(), Class.class.getName()));
+                    }
+                    break;
                 case FIELD: {
                     if (!returnType.hasFieldFor(parameter)) {
                         messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", returnType.type(), parameter.targetName(), parameter.type()));
@@ -175,7 +182,7 @@ public final class Validator {
             final ThrowableType throwableReturnType = returnType.throwableReturnType();
             if (throwableReturnType.useConstructionParameters()) {
                 // TODO - Check the return type constructor. Currently handled via the ThrowableReturnTypeFactory.
-            } else if (!throwableReturnType.useConstructionParameters() && !messageMethod.constructorParameters().isEmpty()) {
+            } else if (!throwableReturnType.useConstructionParameters() && !messageMethod.parameters(ParameterType.CONSTRUCTION).isEmpty()) {
                 messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
             } else {
                 final boolean hasMessageConstructor = (throwableReturnType.hasStringAndThrowableConstructor() || throwableReturnType.hasThrowableAndStringConstructor() ||
