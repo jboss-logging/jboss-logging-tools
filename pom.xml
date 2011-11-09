@@ -33,7 +33,7 @@
 
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging-tools-parent</artifactId>
-    <version>1.0.0.CR4-SNAPSHOT</version>
+    <version>1.0.0.CR4</version>
     <packaging>pom</packaging>
 
     <name>JBoss Logging I18n Tools</name>
@@ -68,7 +68,7 @@
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
-                <version>3.1.0.Beta4-SNAPSHOT</version>
+                <version>3.1.0.CR1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
