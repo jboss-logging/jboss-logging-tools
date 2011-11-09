@@ -20,6 +20,10 @@
  */
 package org.jboss.logging.generator.model;
 
+import static org.jboss.logging.generator.intf.model.Parameter.ParameterType;
+import static org.jboss.logging.generator.model.ClassModelHelper.formatMessageId;
+import static org.jboss.logging.generator.model.ClassModelHelper.implementationClassName;
+
 import com.sun.codemodel.internal.JBlock;
 import com.sun.codemodel.internal.JClass;
 import com.sun.codemodel.internal.JCodeModel;
@@ -30,6 +34,7 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
+import org.jboss.logging.generator.Annotations;
 import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.MessageMethod;
 import org.jboss.logging.generator.intf.model.Parameter;
@@ -39,10 +44,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.jboss.logging.generator.intf.model.Parameter.ParameterType;
-import static org.jboss.logging.generator.model.ClassModelHelper.formatMessageId;
-import static org.jboss.logging.generator.model.ClassModelHelper.implementationClassName;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -96,19 +97,31 @@ abstract class ImplementationClassModel extends ClassModel {
         final JExpression format;
         final JClass formatter = getCodeModel().ref(message.format().formatClass());
         final JInvocation formatterMethod = formatter.staticInvoke(message.format().staticMethod());
-        final boolean hasFormatParameters = messageMethod.parameters(ParameterType.ANY).isEmpty();
-        if (message.hasId() && projectCodeVar != null && hasFormatParameters) {
-            final String formattedId = formatMessageId(message.id());
-            format = projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod));
-        } else if (message.hasId() && projectCodeVar != null) {
-            final String formattedId = formatMessageId(message.id());
-            formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-            format = formatterMethod;
-        } else if (hasFormatParameters) {
-            format = JExpr.invoke(msgMethod);
+        final boolean noFormatParameters = messageMethod.parameters(ParameterType.FORMAT).isEmpty();
+        // Get the format options
+        if (message.format() == Annotations.FormatType.MESSAGE_FORMAT) {
+            if (message.hasId() && projectCodeVar != null && noFormatParameters) {
+                final String formattedId = formatMessageId(message.id());
+                format = projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod));
+            } else if (message.hasId() && projectCodeVar != null) {
+                final String formattedId = formatMessageId(message.id());
+                formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+                format = formatterMethod;
+            } else if (noFormatParameters) {
+                format = JExpr.invoke(msgMethod);
+            } else {
+                formatterMethod.arg(JExpr.invoke(msgMethod));
+                format = formatterMethod;
+            }
         } else {
-            formatterMethod.arg(JExpr.invoke(msgMethod));
-            format = formatterMethod;
+            if (message.hasId() && projectCodeVar != null) {
+                final String formattedId = formatMessageId(message.id());
+                formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+                format = formatterMethod;
+            } else {
+                formatterMethod.arg(JExpr.invoke(msgMethod));
+                format = formatterMethod;
+            }
         }
         // Create maps for the fields and properties. Key is the field or setter method, value is the parameter to set
         // the value to.
