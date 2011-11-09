@@ -37,7 +37,7 @@ public class ClassModelFactory {
         if (messageInterface.isMessageBundle()) {
             return new MessageBundleImplementor(messageInterface);
         } else if (messageInterface.isMessageLogger()) {
-            return new MessageLoggerImplementor(messageInterface);
+            return new MessageLoggerImplementor(messageInterface, false);
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
     }
