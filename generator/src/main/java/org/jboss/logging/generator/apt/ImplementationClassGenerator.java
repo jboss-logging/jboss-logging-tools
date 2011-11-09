@@ -23,10 +23,12 @@ package org.jboss.logging.generator.apt;
 import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.model.ClassModel;
 import org.jboss.logging.generator.model.ClassModelFactory;
+import org.jboss.logging.generator.util.VersionComparator;
 
+import java.io.IOException;
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
-import java.io.IOException;
 
 /**
  * A generator for creating implementations of message bundle and logging
@@ -36,17 +38,27 @@ import java.io.IOException;
  */
 final class ImplementationClassGenerator extends AbstractGenerator {
 
+    private static final String LOGGING_VERSION = "loggingVersion";
+    private final boolean useLogging31;
+
     /**
      * @param processingEnv the processing environment.
      */
     public ImplementationClassGenerator(ProcessingEnvironment processingEnv) {
         super(processingEnv);
+        final Map<String, String> options = processingEnv.getOptions();
+        if (options.containsKey(LOGGING_VERSION)) {
+            final String loggingVersion = options.get(LOGGING_VERSION);
+            useLogging31 = (VersionComparator.compareVersion(loggingVersion, "3.1") >= 0);
+        } else {
+            useLogging31 = true;
+        }
     }
 
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
-            final ClassModel classModel = ClassModelFactory.implementation(messageInterface);
+            final ClassModel classModel = ClassModelFactory.implementation(messageInterface, useLogging31);
             classModel.create(filer().createSourceFile(classModel.qualifiedClassName()));
         } catch (IOException e) {
             logger().error(element, e);

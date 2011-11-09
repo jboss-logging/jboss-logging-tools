@@ -32,6 +32,7 @@ import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import org.jboss.logging.generator.intf.model.MessageInterface;
 import org.jboss.logging.generator.intf.model.MessageMethod;
@@ -59,7 +60,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     private static final String LOG_FIELD_NAME = "log";
     private static final String FQCN_FIELD_NAME = "FQCN";
 
-    private boolean useLogging31;
+    private final boolean useLogging31;
 
     /**
      * Creates a new message logger code model.
@@ -79,15 +80,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      */
     public boolean isUseLogging31() {
         return useLogging31;
-    }
-
-    /**
-     * Specify whether to use JBoss Logging 3.1 constructs.
-     *
-     * @param useLogging31 {@code true} to use JBoss Logging 3.1 constructs, {@code false} to remain compatible with 3.0
-     */
-    public void setUseLogging31(final boolean useLogging31) {
-        this.useLogging31 = useLogging31;
     }
 
     @Override
@@ -230,7 +222,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     final JVar xxx1xParams = xxx1x.varParam(codeModel.ref(Object.class), "params");
                     final JInvocation xxx1xInv = xxx1x.body().invoke(logVar, name);
                     xxx1xInv.arg(fqcn);
-                    xxx1xInv.arg(codeModel.ref("org.jboss.logging.Logger.Level").staticRef(level));
+                    xxx1xInv.arg(codeModel.ref(loggers().logLevelClass()).staticRef(level));
                     xxx1xInv.arg(JExpr._null());
                     if (renderThr) xxx1xInv.arg(thr);
                     xxx1xInv.arg(xxx1xFormat);
@@ -248,7 +240,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         }
                         final JInvocation xxx2xInv = xxx2x.body().invoke(logVar, name);
                         xxx2xInv.arg(fqcn);
-                        xxx2xInv.arg(codeModel.ref("org.jboss.logging.Logger.Level").staticRef(level));
+                        xxx2xInv.arg(codeModel.ref(loggers().logLevelClass()).staticRef(level));
                         xxx2xInv.arg(JExpr._null());
                         xxx2xInv.arg(xxx2xFormat);
                         for (int j = 0; j < i; j ++) {
@@ -263,7 +255,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // isEnabled...
         final JMethod isEnabled = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.BOOLEAN, "isEnabled");
-        final JVar isEnabledLevel = isEnabled.param(codeModel.ref("org.jboss.logging.Logger.Level"), "level");
+        final JVar isEnabledLevel = isEnabled.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JInvocation isEnabledInv = JExpr.invoke(logVar, "isEnabled");
         isEnabledInv.arg(isEnabledLevel);
         isEnabled.body()._return(isEnabledInv);
@@ -271,7 +263,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         // now, the four "raw" log methods
         final JMethod log1 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
         log1.annotate(Override.class);
-        final JVar log1Level = log1.param(codeModel.ref("org.jboss.logging.Logger.Level"), "level");
+        final JVar log1Level = log1.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log1Message = log1.param(codeModel.ref(Object.class), "message");
         final JInvocation log1inv = log1.body().invoke(logVar, "log");
         log1inv.arg(fqcn);
@@ -282,7 +274,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         final JMethod log2 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
         log2.annotate(Override.class);
-        final JVar log2Level = log2.param(codeModel.ref("org.jboss.logging.Logger.Level"), "level");
+        final JVar log2Level = log2.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log2message = log2.param(codeModel.ref(Object.class), "message");
         final JVar log2t = log2.param(codeModel.ref(Throwable.class), "t");
         final JInvocation log2inv = log2.body().invoke(logVar, "log");
@@ -294,7 +286,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         final JMethod log3 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
         log3.annotate(Override.class);
-        final JVar log3Level = log3.param(codeModel.ref("org.jboss.logging.Logger.Level"), "level");
+        final JVar log3Level = log3.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log3loggerFqcn = log3.param(codeModel.ref(String.class), "loggerFqcn");
         final JVar log3message = log3.param(codeModel.ref(Object.class), "message");
         final JVar log3t = log3.param(codeModel.ref(Throwable.class), "t");
@@ -307,7 +299,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final JMethod log4 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
         log4.annotate(Override.class);
         final JVar log4loggerFqcn = log4.param(codeModel.ref(String.class), "loggerFqcn");
-        final JVar log4Level = log4.param(codeModel.ref("org.jboss.logging.Logger.Level"), "level");
+        final JVar log4Level = log4.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log4message = log4.param(codeModel.ref(Object.class), "message");
         final JVar log4params = log4.param(codeModel.ref(Object[].class), "params");
         final JVar log4t = log4.param(codeModel.ref(Throwable.class), "t");
@@ -332,7 +324,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 final JMethod log1x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
                 log1x.annotate(Override.class);
                 if (renderFqcn) logFqcn = log1x.param(codeModel.ref(String.class), "loggerFqcn");
-                final JVar log1xLevel = log1x.param(codeModel.ref("org.jboss.logging.Logger.Level"), "level");
+                final JVar log1xLevel = log1x.param(codeModel.ref(loggers().logLevelClass()), "level");
                 if (renderThr) thr = log1x.param(codeModel.ref(Throwable.class), "t");
                 final JVar log1xFormat = log1x.param(codeModel.ref(String.class), "format");
                 final JVar log1xParams = log1x.varParam(codeModel.ref(Object.class), "params");
@@ -348,7 +340,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     final JMethod log2x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
                     log2x.annotate(Override.class);
                     if (renderFqcn) logFqcn = log2x.param(codeModel.ref(String.class), "loggerFqcn");
-                    final JVar log2xLevel = log2x.param(codeModel.ref("org.jboss.logging.Logger.Level"), "level");
+                    final JVar log2xLevel = log2x.param(codeModel.ref(loggers().logLevelClass()), "level");
                     if (renderThr) thr = log2x.param(codeModel.ref(Throwable.class), "t");
                     final JVar log2xFormat = log2x.param(codeModel.ref(String.class), "format");
                     final JVar[] params = new JVar[i];
@@ -446,7 +438,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     }
 
     private Map<Parameter, JVar> createParameters(final MessageMethod messageMethod, final JMethod method) {
-        final Map<Parameter, JVar> result = new LinkedHashMap();
+        final Map<Parameter, JVar> result = new LinkedHashMap<Parameter, JVar>();
         // Create the parameters
         for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
             final JClass paramType = getCodeModel().ref(param.type());

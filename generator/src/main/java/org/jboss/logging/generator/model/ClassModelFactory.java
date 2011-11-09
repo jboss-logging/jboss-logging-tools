@@ -33,11 +33,11 @@ public class ClassModelFactory {
      *                                  {@link MessageInterface#isMessageLogger()} returns
      *                                  {@code false.}
      */
-    public static ClassModel implementation(final MessageInterface messageInterface) throws IllegalArgumentException {
+    public static ClassModel implementation(final MessageInterface messageInterface, final boolean useLogging31) throws IllegalArgumentException {
         if (messageInterface.isMessageBundle()) {
             return new MessageBundleImplementor(messageInterface);
         } else if (messageInterface.isMessageLogger()) {
-            return new MessageLoggerImplementor(messageInterface, false);
+            return new MessageLoggerImplementor(messageInterface, useLogging31);
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
     }

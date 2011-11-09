@@ -131,7 +131,7 @@ public final class Validator {
                     break;
                 }
                 case FQCN:
-                    if (parameter.type().equals(Class.class.getName())) {
+                    if (!parameter.type().equals(Class.class.getName())) {
                         messages.add(createError(parameter, "Parameter %s annotated with %s on method %s must be of type %s.", parameter.name(), annotations().loggingClass().getName(), messageMethod.name(), Class.class.getName()));
                     }
                     break;
