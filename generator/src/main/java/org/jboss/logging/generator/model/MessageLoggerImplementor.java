@@ -210,6 +210,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             // 8 methods each for v and f
             for (String affix : Arrays.asList("v", "f")) {
                 final String name = lowered + affix;
+                final String target = "log" + affix;
 
                 // 4 methods each for with- and without-throwable
                 for (boolean renderThr : new boolean[] { false, true }) {
@@ -220,11 +221,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     if (renderThr) thr = xxx1x.param(codeModel.ref(Throwable.class), "t");
                     final JVar xxx1xFormat = xxx1x.param(codeModel.ref(String.class), "format");
                     final JVar xxx1xParams = xxx1x.varParam(codeModel.ref(Object.class), "params");
-                    final JInvocation xxx1xInv = xxx1x.body().invoke(logVar, name);
+                    final JInvocation xxx1xInv = xxx1x.body().invoke(logVar, target);
                     xxx1xInv.arg(fqcn);
                     xxx1xInv.arg(codeModel.ref(loggers().logLevelClass()).staticRef(level));
-                    xxx1xInv.arg(JExpr._null());
-                    if (renderThr) xxx1xInv.arg(thr);
+                    xxx1xInv.arg(renderThr ? thr : JExpr._null());
                     xxx1xInv.arg(xxx1xFormat);
                     xxx1xInv.arg(xxx1xParams);
 
@@ -238,10 +238,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         for (int j = 0; j < i; j ++) {
                             params[j] = xxx2x.param(codeModel.ref(Object.class), "param" + (j + 1));
                         }
-                        final JInvocation xxx2xInv = xxx2x.body().invoke(logVar, name);
+                        final JInvocation xxx2xInv = xxx2x.body().invoke(logVar, target);
                         xxx2xInv.arg(fqcn);
                         xxx2xInv.arg(codeModel.ref(loggers().logLevelClass()).staticRef(level));
-                        xxx2xInv.arg(JExpr._null());
+                        xxx2xInv.arg(renderThr ? thr : JExpr._null());
                         xxx2xInv.arg(xxx2xFormat);
                         for (int j = 0; j < i; j ++) {
                             xxx2xInv.arg(params[j]);
@@ -318,6 +318,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
             // 4 methods each for with- and without-throwable and fqcn
             for (RenderLog render : RenderLog.values()) {
+                thr = null;
                 final boolean renderThr = render.isThr();
                 final boolean renderFqcn = render.isFqcn();
 
