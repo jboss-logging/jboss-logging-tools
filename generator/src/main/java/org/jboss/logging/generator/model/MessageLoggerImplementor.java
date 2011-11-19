@@ -406,7 +406,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         } else {
             logInv.arg(params.get(messageMethod.parameters(ParameterType.FQCN).iterator().next()).invoke("getName"));
         }
-        logInv.arg(JExpr.direct(messageMethod.logLevelParameter()));
+        logInv.arg(JExpr.direct(messageMethod.logLevel()));
         // The clause must be first if there is one.
         if (messageMethod.hasCause()) {
             logInv.arg(JExpr.direct(messageMethod.cause().name()));

@@ -133,7 +133,7 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject 
      *
      * @return the log level annotation
      */
-    String logLevelParameter();
+    String logLevel();
 
     /**
      * Returns the number of parameters minus the cause parameter count for the method.

@@ -248,7 +248,7 @@ final class MessageMethodBuilder {
         }
 
         @Override
-        public String logLevelParameter() {
+        public String logLevel() {
             return aptHelper().logLevel(method);
         }
 
