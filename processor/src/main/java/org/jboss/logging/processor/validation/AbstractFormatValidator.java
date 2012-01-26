@@ -20,37 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor;
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.DelegatingBasicLogger;
-import org.jboss.logging.Logger;
+package org.jboss.logging.processor.validation;
 
 /**
- * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
+ * Date: 12.08.2011
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class BaseLoggers implements Loggers {
+abstract class AbstractFormatValidator implements FormatValidator {
+    private String summaryMessage;
+    private String detailMessage;
 
-    @Override
-    public Class<Logger> loggerClass() {
-        return Logger.class;
+    AbstractFormatValidator() {
+        detailMessage = "";
+        summaryMessage = "";
+    }
+
+    final void setDetailMessage(final String detailMessage) {
+        this.detailMessage = detailMessage;
+    }
+
+    final void setDetailMessage(final String format, final Object... args) {
+        this.detailMessage = String.format(format, args);
+    }
+
+    final void setSummaryMessage(final String summaryMessage) {
+        this.summaryMessage = summaryMessage;
+    }
+
+    final void setSummaryMessage(final String format, final Object... args) {
+        this.summaryMessage = String.format(format, args);
     }
 
     @Override
-    public Class<Logger.Level> logLevelClass() {
-        return Logger.Level.class;
+    public final String detailMessage() {
+        return (detailMessage.isEmpty() ? summaryMessage : detailMessage);
     }
 
     @Override
-    public Class<BasicLogger> loggerInterface() {
-        return BasicLogger.class;
+    public final String summaryMessage() {
+        return summaryMessage;
     }
-
-    @Override
-    public Class<DelegatingBasicLogger> delegatingLogger() {
-        return DelegatingBasicLogger.class;
-    }
-
 }

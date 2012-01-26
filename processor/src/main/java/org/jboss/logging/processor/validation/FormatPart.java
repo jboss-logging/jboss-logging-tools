@@ -20,37 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor;
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.DelegatingBasicLogger;
-import org.jboss.logging.Logger;
+package org.jboss.logging.processor.validation;
 
 /**
- * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
+ * Date: 13.06.2011
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class BaseLoggers implements Loggers {
+interface FormatPart extends Comparable<FormatPart> {
 
-    @Override
-    public Class<Logger> loggerClass() {
-        return Logger.class;
-    }
+    /**
+     * The default string index.
+     */
+    int STRING = -2;
 
-    @Override
-    public Class<Logger.Level> logLevelClass() {
-        return Logger.Level.class;
-    }
+    /**
+     * The parameter index. For default strings (non-parameters) the value is {@code -2}.
+     *
+     * @return the index.
+     */
+    int index();
 
-    @Override
-    public Class<BasicLogger> loggerInterface() {
-        return BasicLogger.class;
-    }
+    /**
+     * The position for the part.
+     *
+     * @return the position.
+     */
+    int position();
 
-    @Override
-    public Class<DelegatingBasicLogger> delegatingLogger() {
-        return DelegatingBasicLogger.class;
-    }
-
+    /**
+     * The part of the format.
+     *
+     * @return the part of the format.
+     */
+    String part();
 }

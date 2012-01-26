@@ -37,13 +37,14 @@
             <artifactId>jboss-logging</artifactId>
             <optional>true</optional>
         </dependency>
+
         <!--
-            JBoss Logging
+            Test
         -->
         <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>jboss-logging-generator</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -71,4 +72,24 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>tools</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>system</groupId>
+                    <artifactId>jdk-tools</artifactId>
+                    <version>jdk</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

@@ -20,37 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor;
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.DelegatingBasicLogger;
-import org.jboss.logging.Logger;
+package org.jboss.logging.processor.validation;
 
 /**
- * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
+ * Date: 14.06.2011
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class BaseLoggers implements Loggers {
+public interface FormatValidator {
 
-    @Override
-    public Class<Logger> loggerClass() {
-        return Logger.class;
-    }
+    /**
+     * The number of arguments needed for the format.
+     *
+     * @return the number of arguments needed.
+     */
+    int argumentCount();
 
-    @Override
-    public Class<Logger.Level> logLevelClass() {
-        return Logger.Level.class;
-    }
+    /**
+     * Returns the format string used for validation.
+     *
+     * @return the format string.
+     */
+    String format();
 
-    @Override
-    public Class<BasicLogger> loggerInterface() {
-        return BasicLogger.class;
-    }
+    /**
+     * Returns {@code true} of the format is valid, otherwise {@code false}.
+     *
+     * @return {@code true} of the format is valid, otherwise {@code false}.
+     */
+    boolean isValid();
 
-    @Override
-    public Class<DelegatingBasicLogger> delegatingLogger() {
-        return DelegatingBasicLogger.class;
-    }
+    /**
+     * A detail message if {@link #isValid()} returns {@code false}, otherwise an empty string.
+     *
+     * @return a detailed message.
+     */
+    String detailMessage();
 
+    /**
+     * A summary message if {@link #isValid()} returns {@code false}, otherwise an empty string.
+     *
+     * @return a summary message.
+     */
+    String summaryMessage();
 }

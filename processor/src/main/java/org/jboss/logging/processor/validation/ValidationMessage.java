@@ -20,37 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor;
+package org.jboss.logging.processor.validation;
 
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.DelegatingBasicLogger;
-import org.jboss.logging.Logger;
+import org.jboss.logging.processor.intf.model.MessageObject;
 
 /**
- * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
+ * Date: 12.08.2011
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class BaseLoggers implements Loggers {
+public interface ValidationMessage {
 
-    @Override
-    public Class<Logger> loggerClass() {
-        return Logger.class;
+    /**
+     * Validation message type enum.
+     */
+    public enum Type {
+        ERROR,
+        WARN
     }
 
-    @Override
-    public Class<Logger.Level> logLevelClass() {
-        return Logger.Level.class;
-    }
+    /**
+     * The type of the message.
+     *
+     * @return the type of the message.
+     */
+    Type type();
 
-    @Override
-    public Class<BasicLogger> loggerInterface() {
-        return BasicLogger.class;
-    }
+    /**
+     * Returns the message object that caused the error.
+     *
+     * @return the message object that caused the error.
+     */
+    MessageObject getMessageObject();
 
-    @Override
-    public Class<DelegatingBasicLogger> delegatingLogger() {
-        return DelegatingBasicLogger.class;
-    }
-
+    /**
+     * Returns the error message.
+     *
+     * @return the error message.
+     */
+    String getMessage();
 }

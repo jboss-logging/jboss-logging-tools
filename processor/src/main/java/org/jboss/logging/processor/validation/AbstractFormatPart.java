@@ -20,37 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor;
+package org.jboss.logging.processor.validation;
 
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.DelegatingBasicLogger;
-import org.jboss.logging.Logger;
+import org.jboss.logging.processor.util.Comparison;
 
 /**
- * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
+ * Abstract class that only implements Comparable for convenience. Uses the {@link org.jboss.logging.processor.validation.FormatPart#position()} for
+ * the comparison.
+ * <p/>
+ * Date: 13.06.2011
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class BaseLoggers implements Loggers {
+abstract class AbstractFormatPart implements FormatPart {
 
     @Override
-    public Class<Logger> loggerClass() {
-        return Logger.class;
+    public int compareTo(final FormatPart other) {
+        return Comparison.begin().
+                compare(position(), other.position()).result();
     }
 
     @Override
-    public Class<Logger.Level> logLevelClass() {
-        return Logger.Level.class;
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName()).append("[")
+                .append("index=")
+                .append(index())
+                .append(", position=")
+                .append(position())
+                .append(", part=")
+                .append(part())
+                .toString();
     }
-
-    @Override
-    public Class<BasicLogger> loggerInterface() {
-        return BasicLogger.class;
-    }
-
-    @Override
-    public Class<DelegatingBasicLogger> delegatingLogger() {
-        return DelegatingBasicLogger.class;
-    }
-
 }

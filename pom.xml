@@ -39,7 +39,6 @@
     <name>JBoss Logging I18n Tools</name>
     <modules>
         <module>processor</module>
-        <module>generator</module>
     </modules>
 
     <developers>

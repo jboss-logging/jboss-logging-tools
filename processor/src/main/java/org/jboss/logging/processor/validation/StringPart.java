@@ -20,37 +20,55 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor;
-
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.DelegatingBasicLogger;
-import org.jboss.logging.Logger;
+package org.jboss.logging.processor.validation;
 
 /**
- * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
+ * Represents the string portions of a format string.
+ * <p/>
+ * Date: 13.06.2011
  *
- * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class BaseLoggers implements Loggers {
+class StringPart extends AbstractFormatPart {
 
-    @Override
-    public Class<Logger> loggerClass() {
-        return Logger.class;
+    private final int position;
+    private final String part;
+
+    /**
+     * Creates a new string part.
+     *
+     * @param position the position.
+     * @param part     the string.
+     */
+    public StringPart(final int position, final String part) {
+        this.position = position;
+        this.part = part;
+    }
+
+    /**
+     * Creates a new string part.
+     *
+     * @param position the position.
+     * @param part     the string.
+     *
+     * @return the string part.
+     */
+    public static StringPart of(final int position, final String part) {
+        return new StringPart(position, part);
     }
 
     @Override
-    public Class<Logger.Level> logLevelClass() {
-        return Logger.Level.class;
+    public int index() {
+        return STRING;
     }
 
     @Override
-    public Class<BasicLogger> loggerInterface() {
-        return BasicLogger.class;
+    public int position() {
+        return position;
     }
 
     @Override
-    public Class<DelegatingBasicLogger> delegatingLogger() {
-        return DelegatingBasicLogger.class;
+    public String part() {
+        return part;
     }
-
 }

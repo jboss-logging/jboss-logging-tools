@@ -22,35 +22,39 @@
 
 package org.jboss.logging.processor;
 
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.DelegatingBasicLogger;
-import org.jboss.logging.Logger;
-
 /**
- * Defines information about the {@link org.jboss.logging.Logger} and {@link org.jboss.logging.BasicLogger}.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
-public class BaseLoggers implements Loggers {
+public interface Loggers {
 
-    @Override
-    public Class<Logger> loggerClass() {
-        return Logger.class;
-    }
+    /**
+     * The class of main logger.
+     *
+     * @return the main logger class.
+     */
+    Class<?> loggerClass();
 
-    @Override
-    public Class<Logger.Level> logLevelClass() {
-        return Logger.Level.class;
-    }
+    /**
+     * The log level class.
+     *
+     * @return the log level class.
+     */
+    Class<?> logLevelClass();
 
-    @Override
-    public Class<BasicLogger> loggerInterface() {
-        return BasicLogger.class;
-    }
+    /**
+     * Returns the logger interface to implement.
+     * <p/>
+     * Note this will be implemented via the {@link #delegatingLogger()}.
+     *
+     * @return the logger interface.
+     */
+    Class<?> loggerInterface();
 
-    @Override
-    public Class<DelegatingBasicLogger> delegatingLogger() {
-        return DelegatingBasicLogger.class;
-    }
+    /**
+     * Returns the logger to delegate log methods to if the message interface implements the {@link #loggerInterface()}.
+     *
+     * @return the delegate logger class.
+     */
+    Class<?> delegatingLogger();
 
 }
