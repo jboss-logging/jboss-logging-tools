@@ -32,11 +32,11 @@
     </parent>
 
     <groupId>org.jboss.logging</groupId>
-    <artifactId>jboss-logging-tools</artifactId>
+    <artifactId>jboss-logging-processor</artifactId>
     <version>1.0.0.CR6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>JBoss Logging I18n Tools</name>
+    <name>JBoss Logging I18n Annotation Processor</name>
 
     <developers>
         <developer>
