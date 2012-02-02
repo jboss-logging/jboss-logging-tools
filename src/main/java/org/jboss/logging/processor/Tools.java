@@ -22,7 +22,6 @@
 
 package org.jboss.logging.processor;
 
-import java.util.Arrays;
 import java.util.ServiceLoader;
 
 import org.jboss.logging.processor.apt.AptHelper;
