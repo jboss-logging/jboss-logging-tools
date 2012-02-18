@@ -268,7 +268,7 @@ public abstract class ClassModel {
         final JDefinedClass definedClass = getDefinedClass();
         final JFieldVar instance = definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass, INSTANCE_FIELD_NAME);
         instance.init(JExpr._new(definedClass));
-        final JMethod readResolveMethod = definedClass.method(JMod.PROTECTED, definedClass, GET_INSTANCE_METHOD_NAME);
+        final JMethod readResolveMethod = definedClass.method(JMod.PROTECTED, Object.class, GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return(instance);
         return readResolveMethod;
     }
