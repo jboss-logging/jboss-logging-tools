@@ -95,10 +95,10 @@ final class TranslationClassGenerator extends AbstractGenerator {
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
             final List<File> files = findTranslationFiles(messageInterface);
-            final Map<MessageMethod, String> validTranslations = allInterfaceTranslations(messageInterface, files);
+            final Map<File, Map<MessageMethod, String>> validTranslations = allInterfaceTranslations(messageInterface, files);
             if (files != null) {
                 for (File file : files) {
-                    generateSourceFileFor(messageInterface, file, validTranslations);
+                    generateSourceFileFor(messageInterface, file, validTranslations.get(file));
                 }
             }
         } catch (IOException e) {
@@ -106,14 +106,14 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
     }
 
-    private Map<MessageMethod, String> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
-        final Map<MessageMethod, String> validTranslations = new HashMap<MessageMethod, String>();
+    private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
+        final Map<File, Map<MessageMethod, String>>  validTranslations = new HashMap<File, Map<MessageMethod, String>>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
         }
         if (files != null) {
             for (File file : files) {
-                validTranslations.putAll(validateTranslationMessages(messageInterface, file));
+                validTranslations.put(file, validateTranslationMessages(messageInterface, file));
             }
         }
         return validTranslations;
