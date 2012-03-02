@@ -1,8 +1,8 @@
 package org.jboss.logging.processor.validation;
 
-import static org.junit.Assert.*;
+import static org.testng.Assert.*;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 /**
  * Date: 14.06.2011
@@ -14,10 +14,10 @@ public class MessageFormatValidatorTest {
     @Test
     public void validFormats() {
         MessageFormatValidator validator = MessageFormatValidator.of("Message {} is valid.");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = MessageFormatValidator.of("Parameter {1} is not compatible with {2}.");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
     }
 
     @Test
@@ -29,12 +29,12 @@ public class MessageFormatValidatorTest {
     @Test
     public void validateParameterCount() {
         MessageFormatValidator validator = MessageFormatValidator.of("{}", "Test");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = MessageFormatValidator.of("{1} {0}", "Test", "Test2");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = MessageFormatValidator.of("{0} {0}", "Test");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
     }
 }

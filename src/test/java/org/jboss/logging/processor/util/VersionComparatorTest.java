@@ -1,7 +1,7 @@
 package org.jboss.logging.processor.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 /**
  * Date: 09.11.2011
