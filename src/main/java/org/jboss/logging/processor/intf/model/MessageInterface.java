@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageInterface extends Comparable<MessageInterface>, MessageObject, MessageObjectType {
+public interface MessageInterface extends Comparable<MessageInterface>, MessageObject, MessageObjectType, JavaDocComment {
 
     /**
      * Checks the interface to see if the {@link org.jboss.logging.processor.Loggers#loggerInterface() logger interface}

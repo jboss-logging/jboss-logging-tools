@@ -269,6 +269,11 @@ public final class MessageInterfaceFactory {
         public boolean isSameAs(final Class<?> type) {
             return qualifiedName.equals(type.getName());
         }
+
+        @Override
+        public String getComment() {
+            return elements.getDocComment(interfaceElement);
+        }
     }
 
     private static class LoggerInterface implements MessageInterface {
@@ -407,6 +412,11 @@ public final class MessageInterfaceFactory {
         @Override
         public String toString() {
             return ToStringBuilder.of(this).add(name()).toString();
+        }
+
+        @Override
+        public String getComment() {
+            return elements.getDocComment(loggerInterface);
         }
     }
 }
