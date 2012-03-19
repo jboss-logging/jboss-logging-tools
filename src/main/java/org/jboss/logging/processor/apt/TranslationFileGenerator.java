@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
@@ -43,6 +45,8 @@ import javax.tools.StandardLocation;
 
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
+import org.jboss.logging.processor.intf.model.Parameter;
+import org.jboss.logging.processor.intf.model.Parameter.ParameterType;
 import org.jboss.logging.processor.util.Strings;
 
 /**
@@ -55,6 +59,9 @@ import org.jboss.logging.processor.util.Strings;
 @SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
 final class TranslationFileGenerator extends AbstractGenerator {
     private static final Map<String, Integer> levels = new HashMap<String, Integer>();
+
+    public static final String EMPTY_STRING = "";
+    public static final String JAVA_DOC_PARAM = "@param";
 
     public static final String GENERATED_FILES_PATH_OPTION = "generatedTranslationFilesPath";
 
@@ -155,16 +162,9 @@ final class TranslationFileGenerator extends AbstractGenerator {
             final Set<String> processed = new HashSet<String>();
 
             for (MessageMethod messageMethod : messageInterface.methods()) {
-                if (writeMessage(messageMethod)) {
+                if (isMethodWritable(messageMethod)) {
                     if (processed.add(messageMethod.translationKey())) {
-                        if (messageMethod.isLoggerMethod()) {
-                            writer.write(String.format("# Level: %s", messageMethod.logLevel()));
-                            writer.newLine();
-                        }
-                        writer.write(String.format("# Message: %s", messageMethod.message().value()));
-                        writer.newLine();
-                        writer.write(String.format("%s=", messageMethod.translationKey()));
-                        writer.newLine();
+                        writeSkeletonMessageMethod(writer, messageMethod);
                     }
                 }
             }
@@ -211,20 +211,9 @@ final class TranslationFileGenerator extends AbstractGenerator {
             final Set<String> processed = new HashSet<String>();
 
             for (MessageMethod messageMethod : messageInterface.methods()) {
-                if (writeMessage(messageMethod)) {
+                if (isMethodWritable(messageMethod)) {
                     if (processed.add(messageMethod.translationKey())) {
-                        final MessageMethod.Message msg = messageMethod.message();
-                        writer.write(String.format("# Id: %s", (msg.hasId() ? msg.id() : "none")));
-                        writer.newLine();
-                        if (messageMethod.isLoggerMethod()) {
-                            writer.write(String.format("# Level: %s", messageMethod.logLevel()));
-                            writer.newLine();
-                        }
-                        writer.write(String.format("# Message: %s", msg.value()));
-                        writer.newLine();
-                        writer.write(String.format("%s=", messageMethod.translationKey()));
-                        writer.write(messageMethod.message().value());
-                        writer.newLine();
+                        writeSkeletonMessageMethod(writer, messageMethod);
                     }
                 }
             }
@@ -244,7 +233,48 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
     }
 
-    private boolean writeMessage(final MessageMethod method) {
+    private void writeSkeletonMessageMethod(final BufferedWriter writer, final MessageMethod messageMethod) throws IOException {
+        final MessageMethod.Message msg = messageMethod.message();
+        writer.write(String.format("# Id: %s", (msg.hasId() ? msg.id() : "none")));
+        writer.newLine();
+        if (messageMethod.isLoggerMethod()) {
+            writer.write(String.format("# Level: %s", messageMethod.logLevel()));
+            writer.newLine();
+        }
+        writer.write(String.format("# Message: %s", msg.value()));
+        writer.newLine();
+        final Map<String, String> parameterComments = parseParameterComments(messageMethod);
+        final Set<Parameter> parameters = messageMethod.parameters(ParameterType.FORMAT);
+        int i = 0;
+        for (Parameter parameter : parameters) {
+            final String name = parameter.name();
+            final String comment = (parameterComments.containsKey(name) ? parameterComments.get(name) : EMPTY_STRING);
+            writer.write(String.format("# @param %d: %s - %s", ++i, name, comment));
+            writer.newLine();
+        }
+        writer.write(String.format("%s=", messageMethod.translationKey()));
+        writer.write(messageMethod.message().value());
+        writer.newLine();
+    }
+
+    private Map<String, String> parseParameterComments(final MessageMethod messageMethod) throws IOException {
+        final Map<String, String> result = new HashMap<String, String>();
+        final String comment = messageMethod.getComment();
+        if (comment != null) {
+            final Pattern pattern = Pattern.compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
+            final Matcher matcher = pattern.matcher(comment);
+            while (matcher.find()) {
+                if (matcher.groupCount() > 3) {
+                    final String annotation = matcher.group(2);
+                    if (annotation != null && annotation.trim().equals(JAVA_DOC_PARAM))
+                        result.put(matcher.group(3), matcher.group(4));
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean isMethodWritable(final MessageMethod method) {
         return !(comparator != null && method.isLoggerMethod()) || (comparator.compareTo(method.logLevel()) >= 0);
     }
 

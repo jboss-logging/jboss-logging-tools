@@ -32,7 +32,7 @@ import org.jboss.logging.processor.intf.model.Parameter.ParameterType;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageMethod extends Comparable<MessageMethod>, MessageObject {
+public interface MessageMethod extends Comparable<MessageMethod>, MessageObject, JavaDocComment {
 
     /**
      * Returns the method name.

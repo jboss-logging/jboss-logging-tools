@@ -86,7 +86,7 @@ final class MessageMethodBuilder {
     Set<MessageMethod> build() {
         final Set<MessageMethod> result = new LinkedHashSet<MessageMethod>();
         for (ExecutableElement elementMethod : methods) {
-            final AptMessageMethod resultMethod = new AptMessageMethod(elementMethod);
+            final AptMessageMethod resultMethod = new AptMessageMethod(elements, elementMethod);
             resultMethod.inheritsMessage = inheritsMessage(methods, elementMethod);
             resultMethod.message = findMessage(methods, elementMethod);
             resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
@@ -166,6 +166,7 @@ final class MessageMethodBuilder {
      */
     private static class AptMessageMethod implements MessageMethod {
 
+        private final Elements elements;
         private ReturnType returnType;
 
         private Parameter cause;
@@ -181,9 +182,11 @@ final class MessageMethodBuilder {
         /**
          * Private constructor for the
          *
-         * @param method the method to describe.
+         * @param elements the elements utility.
+         * @param method   the method to describe.
          */
-        AptMessageMethod(final ExecutableElement method) {
+        AptMessageMethod(final Elements elements, final ExecutableElement method) {
+            this.elements = elements;
             this.method = method;
             inheritsMessage = false;
             isOverloaded = false;
@@ -351,6 +354,11 @@ final class MessageMethodBuilder {
                 }
             }
             return result;
+        }
+
+        @Override
+        public String getComment() {
+            return elements.getDocComment(method);
         }
     }
 
