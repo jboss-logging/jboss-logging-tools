@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class MessageFormatValidator extends AbstractFormatValidator {
-    public final String PATTERN = "\\{}|\\{.+?}";
+    public static final Pattern PATTERN = Pattern.compile("\\{}|\\{.+?}");
 
     private final Set<FormatPart> formatParts = new TreeSet<FormatPart>();
     private final Set<MessageFormatPart> formats = new TreeSet<MessageFormatPart>();
@@ -128,8 +128,7 @@ class MessageFormatValidator extends AbstractFormatValidator {
     }
 
     private void init() {
-        final Pattern pattern = Pattern.compile(PATTERN);
-        final Matcher matcher = pattern.matcher(format);
+        final Matcher matcher = PATTERN.matcher(format);
         int position = 0;
         int i = 0;
         while (i < format.length()) {
