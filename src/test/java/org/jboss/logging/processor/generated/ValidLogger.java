@@ -55,6 +55,6 @@ public interface ValidLogger {
      * @param moduleName the module that caused the error.
      */
     @LogMessage(level = Level.ERROR)
-    @Message(id = 204, value = "Processing error in module '%s'")
+    @Message(id = Message.INHERIT, value = "Processing error in module '%s'")
     void processingError(@Cause Throwable cause, String moduleName);
 }

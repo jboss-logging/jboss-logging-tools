@@ -187,7 +187,7 @@ public final class ElementHelper {
         if (isAnnotatedWith(method, annotations().message())) {
             return false;
         }
-        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
             if (isAnnotatedWith(m, annotations().message())) {
                 return true;

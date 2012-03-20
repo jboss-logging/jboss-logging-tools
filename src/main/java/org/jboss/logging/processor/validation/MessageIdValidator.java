@@ -54,8 +54,8 @@ public final class MessageIdValidator {
         if (message == null) {
             messages.add(createError(messageMethod, "No message annotation found."));
         } else {
-            final MessageKey key = createMessageKey(projectCode, message.id());
-            if (!messageMethod.inheritsMessage()) {
+            if (!messageMethod.inheritsMessage() && !message.inheritsId()) {
+                final MessageKey key = createMessageKey(projectCode, message.id());
                 synchronized (this) {
                     if (usedMessageIds.containsKey(key)) {
                         final MessageMethod previousMethod = usedMessageIds.get(key);

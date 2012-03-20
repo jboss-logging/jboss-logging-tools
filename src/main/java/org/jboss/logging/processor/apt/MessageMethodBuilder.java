@@ -123,6 +123,9 @@ final class MessageMethodBuilder {
             result.inheritsId = aptHelper().inheritsMessageId(method);
             if (result.inheritsId()) {
                 result.id = findMessageId(methods, method);
+                if (result.id > 0) {
+                    result.hasId = true;
+                }
             } else {
                 result.id = aptHelper().messageId(method);
             }
@@ -137,6 +140,9 @@ final class MessageMethodBuilder {
                     result.inheritsId = aptHelper().inheritsMessageId(m);
                     if (result.inheritsId()) {
                         result.id = findMessageId(methods, m);
+                        if (result.id > 0) {
+                            result.hasId = true;
+                        }
                     } else {
                         result.id = aptHelper().messageId(m);
                     }
@@ -149,7 +155,7 @@ final class MessageMethodBuilder {
 
     private static int findMessageId(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         int result = -2;
-        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
             if (isAnnotatedWith(m, annotations().message())) {
                 if (!aptHelper().inheritsMessageId(m)) {
