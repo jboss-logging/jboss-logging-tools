@@ -47,7 +47,8 @@ class StringFormatValidator extends AbstractFormatValidator {
     /**
      * The Regex pattern.
      */
-    public static final String PATTERN = "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
+
+    public static final Pattern PATTERN = Pattern.compile("%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])");
 
     private final Set<FormatPart> formatParts = new TreeSet<FormatPart>();
     private final Set<StringFormatPart> formats = new TreeSet<StringFormatPart>();
@@ -264,8 +265,7 @@ class StringFormatValidator extends AbstractFormatValidator {
      * Initialize the string format.
      */
     private void init() {
-        final Pattern pattern = Pattern.compile(PATTERN);
-        final Matcher matcher = pattern.matcher(format);
+        final Matcher matcher = PATTERN.matcher(format);
         int position = 0;
         int i = 0;
         while (i < format.length()) {

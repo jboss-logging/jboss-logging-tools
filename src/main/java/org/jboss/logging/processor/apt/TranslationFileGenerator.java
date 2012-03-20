@@ -60,6 +60,8 @@ import org.jboss.logging.processor.util.Strings;
 final class TranslationFileGenerator extends AbstractGenerator {
     private static final Map<String, Integer> levels = new HashMap<String, Integer>();
 
+    private static final Pattern PATTERN = Pattern.compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
+
     public static final String EMPTY_STRING = "";
     public static final String JAVA_DOC_PARAM = "@param";
 
@@ -261,8 +263,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
         final Map<String, String> result = new HashMap<String, String>();
         final String comment = messageMethod.getComment();
         if (comment != null) {
-            final Pattern pattern = Pattern.compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
-            final Matcher matcher = pattern.matcher(comment);
+            final Matcher matcher = PATTERN.matcher(comment);
             while (matcher.find()) {
                 if (matcher.groupCount() > 3) {
                     final String annotation = matcher.group(2);
