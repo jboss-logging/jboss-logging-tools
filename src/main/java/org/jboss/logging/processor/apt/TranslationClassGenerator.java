@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -169,7 +170,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
             //Load translations
             Properties translations = new Properties();
-            translations.load(new FileInputStream(file));
+            translations.load(new InputStreamReader(new FileInputStream(file), "utf-8"));
             final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
             messageMethods.addAll(messageInterface.methods());
             for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
