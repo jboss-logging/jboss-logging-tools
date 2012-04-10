@@ -139,7 +139,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             final JClass returnType = codeModel.ref(messageMethod.returnType().name());
             // Create the messageMethod
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, messageMethod.name());
-            jMethod.annotate(Override.class);
             // Add the message messageMethod.
             final JMethod msgMethod = addMessageMethod(messageMethod);
 
@@ -164,13 +163,11 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 // isXxxEnabled...
                 final String isXxxEnabledStr = "is" + firstUppered + "Enabled";
                 final JMethod isXxxEnabled = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.BOOLEAN, isXxxEnabledStr);
-                isXxxEnabled.annotate(Override.class);
                 isXxxEnabled.body()._return(JExpr.invoke(logVar, isXxxEnabledStr));
             }
 
             // now, the four "raw" level-specific methods
             final JMethod xxx1 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, lowered);
-            xxx1.annotate(Override.class);
             final JVar xxx1message = xxx1.param(codeModel.ref(Object.class), "message");
             final JInvocation xxx1inv = xxx1.body().invoke(logVar, lowered);
             xxx1inv.arg(fqcn);
@@ -178,7 +175,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             xxx1inv.arg(JExpr._null());
 
             final JMethod xxx2 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, lowered);
-            xxx2.annotate(Override.class);
             final JVar xxx2message = xxx2.param(codeModel.ref(Object.class), "message");
             final JVar xxx2t = xxx2.param(codeModel.ref(Throwable.class), "t");
             final JInvocation xxx2inv = xxx2.body().invoke(logVar, lowered);
@@ -187,7 +183,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             xxx2inv.arg(xxx2t);
 
             final JMethod xxx3 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, lowered);
-            xxx3.annotate(Override.class);
             final JVar xxx3loggerFqcn = xxx3.param(codeModel.ref(String.class), "loggerFqcn");
             final JVar xxx3message = xxx3.param(codeModel.ref(Object.class), "message");
             final JVar xxx3t = xxx3.param(codeModel.ref(Throwable.class), "t");
@@ -197,7 +192,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             xxx3inv.arg(xxx3t);
 
             final JMethod xxx4 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, lowered);
-            xxx4.annotate(Override.class);
             final JVar xxx4loggerFqcn = xxx4.param(codeModel.ref(String.class), "loggerFqcn");
             final JVar xxx4message = xxx4.param(codeModel.ref(Object.class), "message");
             final JVar xxx4params = xxx4.param(codeModel.ref(Object[].class), "params");
@@ -218,7 +212,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     JVar thr = null;
 
                     final JMethod xxx1x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
-                    xxx1x.annotate(Override.class);
                     if (renderThr) thr = xxx1x.param(codeModel.ref(Throwable.class), "t");
                     final JVar xxx1xFormat = xxx1x.param(codeModel.ref(String.class), "format");
                     final JVar xxx1xParams = xxx1x.varParam(codeModel.ref(Object.class), "params");
@@ -232,7 +225,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     // 3 methods for 3 parameter counts
                     for (int i = 1; i <= 3; i++) {
                         final JMethod xxx2x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
-                        xxx2x.annotate(Override.class);
                         if (renderThr) thr = xxx2x.param(codeModel.ref(Throwable.class), "t");
                         final JVar xxx2xFormat = xxx2x.param(codeModel.ref(String.class), "format");
                         final JVar[] params = new JVar[i];
@@ -263,7 +255,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // now, the four "raw" log methods
         final JMethod log1 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
-        log1.annotate(Override.class);
         final JVar log1Level = log1.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log1Message = log1.param(codeModel.ref(Object.class), "message");
         final JInvocation log1inv = log1.body().invoke(logVar, "log");
@@ -274,7 +265,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         log1inv.arg(JExpr._null());
 
         final JMethod log2 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
-        log2.annotate(Override.class);
         final JVar log2Level = log2.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log2message = log2.param(codeModel.ref(Object.class), "message");
         final JVar log2t = log2.param(codeModel.ref(Throwable.class), "t");
@@ -286,7 +276,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         log2inv.arg(log2t);
 
         final JMethod log3 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
-        log3.annotate(Override.class);
         final JVar log3Level = log3.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log3loggerFqcn = log3.param(codeModel.ref(String.class), "loggerFqcn");
         final JVar log3message = log3.param(codeModel.ref(Object.class), "message");
@@ -298,7 +287,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         log3inv.arg(log3t);
 
         final JMethod log4 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
-        log4.annotate(Override.class);
         final JVar log4loggerFqcn = log4.param(codeModel.ref(String.class), "loggerFqcn");
         final JVar log4Level = log4.param(codeModel.ref(loggers().logLevelClass()), "level");
         final JVar log4message = log4.param(codeModel.ref(Object.class), "message");
@@ -324,7 +312,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 final boolean renderFqcn = render.isFqcn();
 
                 final JMethod log1x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
-                log1x.annotate(Override.class);
                 if (renderFqcn) logFqcn = log1x.param(codeModel.ref(String.class), "loggerFqcn");
                 final JVar log1xLevel = log1x.param(codeModel.ref(loggers().logLevelClass()), "level");
                 if (renderThr) thr = log1x.param(codeModel.ref(Throwable.class), "t");
@@ -340,7 +327,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 // 3 methods for 3 parameter counts
                 for (int i = 1; i <= 3; i++) {
                     final JMethod log2x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
-                    log2x.annotate(Override.class);
                     if (renderFqcn) logFqcn = log2x.param(codeModel.ref(String.class), "loggerFqcn");
                     final JVar log2xLevel = log2x.param(codeModel.ref(loggers().logLevelClass()), "level");
                     if (renderThr) thr = log2x.param(codeModel.ref(Throwable.class), "t");

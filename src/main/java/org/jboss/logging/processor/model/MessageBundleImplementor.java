@@ -80,7 +80,6 @@ class MessageBundleImplementor extends ImplementationClassModel {
         for (MessageMethod messageMethod : messageMethods) {
             final JClass returnType = codeModel.ref(messageMethod.returnType().name());
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, messageMethod.name());
-            jMethod.annotate(Override.class);
 
             // Add the message messageMethod.
             final JMethod msgMethod = addMessageMethod(messageMethod);
