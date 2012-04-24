@@ -51,6 +51,8 @@ public final class FormatValidatorFactory {
                 return MessageFormatValidator.of(msg);
             case PRINTF:
                 return StringFormatValidator.of(msg);
+            case NO_FORMAT:
+                return NoFormatValidator.INSTANCE;
         }
         return InvalidFormatValidator.of(String.format("Format %s is invalid.", format));
     }

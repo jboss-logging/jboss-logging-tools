@@ -50,10 +50,14 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
     public void defaultTest() throws Exception {
         DefaultLogger.LOGGER.hello(NAME);
         DefaultLogger.LOGGER.howAreYou(NAME);
+        DefaultLogger.LOGGER.noFormat();
+        DefaultLogger.LOGGER.noFormatWithCause(new IllegalArgumentException("No format cause"));
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
         Assert.assertEquals(properties.size(), HANDLER.size());
         compare(0, "hello", properties, NAME);
         compare(1, "howAreYou", properties, NAME);
+        compare(2, "noFormat", properties);
+        compare(3, "noFormatWithCause", properties);
     }
 
     @Test
@@ -115,7 +119,9 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         if (format == null) {
             return null;
         }
-        return String.format(format, params);
+        if (params != null && params.length > 0)
+            return String.format(format, params);
+        return format;
     }
 
     private static Properties findFile(final String fileName) throws IOException {

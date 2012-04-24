@@ -20,45 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- *
- */
 package org.jboss.logging.processor.generated;
 
 import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
 import org.jboss.logging.Message;
 import org.jboss.logging.Message.Format;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Messages;
 
 /**
- * @author James R. Perkins Jr. (jrp)
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
-interface DefaultLogger {
+@MessageBundle(projectCode = "MSG")
+public interface ValidMessages {
+    final String TEST_MSG = "Test%n";
 
-    final String TEST_MSG = "No format%n";
+    final ValidMessages MESSAGES = Messages.getBundle(ValidMessages.class);
 
-    /**
-     * The default logger.
-     */
-    DefaultLogger LOGGER = Logger.getMessageLogger(DefaultLogger.class, AbstractLoggerTest.CATEGORY);
+    @Message(value = TEST_MSG)
+    String testWithNewLine();
 
-    @LogMessage(level = Level.INFO)
-    @Message(id = 100, value = "Hello %s.")
-    void hello(String name);
+    @Message(format = Format.NO_FORMAT, value = TEST_MSG)
+    String noFormat();
 
-    @LogMessage(level = Level.INFO)
-    @Message(id = 101, value = "How are you %s?")
-    void howAreYou(String name);
-
-    @LogMessage(level = Level.INFO)
-    @Message(id = 102, format = Format.NO_FORMAT, value = TEST_MSG)
-    void noFormat();
-
-    @LogMessage(level = Level.INFO)
-    @Message(id = 103, format = Format.NO_FORMAT, value = TEST_MSG)
-    void noFormatWithCause(@Cause Throwable cause);
+    @Message(format = Format.NO_FORMAT, value = TEST_MSG)
+    RuntimeException noFormatException(@Cause Throwable cause);
 }

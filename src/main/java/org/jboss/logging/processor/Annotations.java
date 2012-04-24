@@ -44,7 +44,8 @@ public interface Annotations {
     public static enum FormatType {
 
         MESSAGE_FORMAT('v', MessageFormat.class, "format"),
-        PRINTF('f', String.class, "format");
+        PRINTF('f', String.class, "format"),
+        NO_FORMAT(Character.MIN_VALUE, Void.class, null);
         private final char logType;
         private final Class<?> formatClass;
         private final String staticMethod;

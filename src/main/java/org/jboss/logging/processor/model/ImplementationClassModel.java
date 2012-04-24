@@ -41,7 +41,6 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
-import org.jboss.logging.processor.Annotations;
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 import org.jboss.logging.processor.intf.model.Parameter;
@@ -96,35 +95,52 @@ abstract class ImplementationClassModel extends ClassModel {
         final JClass returnField = getCodeModel().ref(method.type().fullName());
         final JVar result = body.decl(returnField, "result");
         final MessageMethod.Message message = messageMethod.message();
-        final JExpression format;
-        final JClass formatter = getCodeModel().ref(message.format().formatClass());
-        final JInvocation formatterMethod = formatter.staticInvoke(message.format().staticMethod());
+        final JExpression expression;
+        final JInvocation formatterMethod;
         final boolean noFormatParameters = messageMethod.parameters(ParameterType.FORMAT).isEmpty();
-        // Get the format options
-        if (message.format() == Annotations.FormatType.MESSAGE_FORMAT) {
-            if (message.hasId() && projectCodeVar != null && noFormatParameters) {
-                final String formattedId = formatMessageId(message.id());
-                format = projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod));
-            } else if (message.hasId() && projectCodeVar != null) {
-                final String formattedId = formatMessageId(message.id());
-                formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-                format = formatterMethod;
-            } else if (noFormatParameters) {
-                format = JExpr.invoke(msgMethod);
-            } else {
-                formatterMethod.arg(JExpr.invoke(msgMethod));
-                format = formatterMethod;
+
+        switch (message.format()) {
+            case MESSAGE_FORMAT: {
+                final JClass formatter = getCodeModel().ref(message.format().formatClass());
+                formatterMethod = formatter.staticInvoke(message.format().staticMethod());
+                if (message.hasId() && projectCodeVar != null && noFormatParameters) {
+                    final String formattedId = formatMessageId(message.id());
+                    expression = projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod));
+                } else if (message.hasId() && projectCodeVar != null) {
+                    final String formattedId = formatMessageId(message.id());
+                    formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+                    expression = formatterMethod;
+                } else if (noFormatParameters) {
+                    expression = JExpr.invoke(msgMethod);
+                } else {
+                    formatterMethod.arg(JExpr.invoke(msgMethod));
+                    expression = formatterMethod;
+                }
+                break;
             }
-        } else {
-            if (message.hasId() && projectCodeVar != null) {
-                final String formattedId = formatMessageId(message.id());
-                formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-                format = formatterMethod;
-            } else {
-                formatterMethod.arg(JExpr.invoke(msgMethod));
-                format = formatterMethod;
+            case PRINTF: {
+                final JClass formatter = getCodeModel().ref(message.format().formatClass());
+                formatterMethod = formatter.staticInvoke(message.format().staticMethod());
+                if (message.hasId() && projectCodeVar != null) {
+                    final String formattedId = formatMessageId(message.id());
+                    formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+                    expression = formatterMethod;
+                } else {
+                    formatterMethod.arg(JExpr.invoke(msgMethod));
+                    expression = formatterMethod;
+                }
+                break;
             }
+            default:
+                formatterMethod = null;
+                if (message.hasId() && projectCodeVar != null) {
+                    expression = projectCodeVar.plus(JExpr.lit(formatMessageId(message.id()))).plus(JExpr.invoke(msgMethod));
+                } else {
+                    expression = JExpr.invoke(msgMethod);
+                }
+                break;
         }
+
         // Create maps for the fields and properties. Key is the field or setter method, value is the parameter to set
         // the value to.
         final Map<String, JVar> fields = new HashMap<String, JVar>();
@@ -136,10 +152,15 @@ abstract class ImplementationClassModel extends ClassModel {
             final String formatterClass = param.formatterClass();
             switch (param.parameterType()) {
                 case FORMAT: {
-                    if (formatterClass == null) {
-                        formatterMethod.arg(var);
+                    if (formatterMethod == null) {
+                        // This should never happen, but let's safe guard against it
+                        throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
                     } else {
-                        formatterMethod.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(var));
+                        if (formatterClass == null) {
+                            formatterMethod.arg(var);
+                        } else {
+                            formatterMethod.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(var));
+                        }
                     }
                     break;
                 }
@@ -155,9 +176,9 @@ abstract class ImplementationClassModel extends ClassModel {
         }
         // Setup the return type
         if (messageMethod.returnType().isThrowable()) {
-            initCause(result, returnField, body, messageMethod, format);
+            initCause(result, returnField, body, messageMethod, expression);
         } else {
-            result.init(format);
+            result.init(expression);
         }
         // Set the fields and properties of the return type
         for (Map.Entry<String, JVar> entry : fields.entrySet()) {

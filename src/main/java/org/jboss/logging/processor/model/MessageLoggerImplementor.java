@@ -43,6 +43,7 @@ import com.sun.codemodel.internal.JInvocation;
 import com.sun.codemodel.internal.JMethod;
 import com.sun.codemodel.internal.JMod;
 import com.sun.codemodel.internal.JVar;
+import org.jboss.logging.processor.Annotations.FormatType;
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 import org.jboss.logging.processor.intf.model.Parameter;
@@ -393,33 +394,53 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             logInv.arg(params.get(messageMethod.parameters(ParameterType.FQCN).iterator().next()).invoke("getName"));
         }
         logInv.arg(JExpr.direct(messageMethod.logLevel()));
-        // The clause must be first if there is one.
-        if (messageMethod.hasCause()) {
-            logInv.arg(JExpr.direct(messageMethod.cause().name()));
-        } else {
-            logInv.arg(JExpr._null());
-        }
-        // The next parameter is the message. Should be accessed via the
-        // message retrieval method.
+
+
         final MessageMethod.Message message = messageMethod.message();
-        if (message.hasId() && projectCodeVar != null) {
-            String formattedId = formatMessageId(message.id());
-            logInv.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+        // No format log messages need the message before the cause
+        if (message.format() == FormatType.NO_FORMAT) {
+            if (message.hasId() && projectCodeVar != null) {
+                String formattedId = formatMessageId(message.id());
+                logInv.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+            } else {
+                logInv.arg(JExpr.invoke(msgMethod));
+            }
+            // Next for no format should always be null
+            logInv.arg(JExpr._null());
+
+            // The cause is the final argument
+            if (messageMethod.hasCause()) {
+                logInv.arg(JExpr.direct(messageMethod.cause().name()));
+            } else {
+                logInv.arg(JExpr._null());
+            }
         } else {
-            logInv.arg(JExpr.invoke(msgMethod));
-        }
-        // Create the parameters
-        for (Map.Entry<Parameter, JVar> entry : params.entrySet()) {
-            final Parameter param = entry.getKey();
-            final String formatterClass = param.formatterClass();
-            switch (param.parameterType()) {
-                case FORMAT:
-                    if (formatterClass == null) {
-                        logInv.arg(entry.getValue());
-                    } else {
-                        logInv.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(entry.getValue()));
-                    }
-                    break;
+            if (messageMethod.hasCause()) {
+                logInv.arg(JExpr.direct(messageMethod.cause().name()));
+            } else {
+                logInv.arg(JExpr._null());
+            }
+            // The next parameter is the message. Should be accessed via the
+            // message retrieval method.
+            if (message.hasId() && projectCodeVar != null) {
+                String formattedId = formatMessageId(message.id());
+                logInv.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
+            } else {
+                logInv.arg(JExpr.invoke(msgMethod));
+            }
+            // Create the parameters
+            for (Map.Entry<Parameter, JVar> entry : params.entrySet()) {
+                final Parameter param = entry.getKey();
+                final String formatterClass = param.formatterClass();
+                switch (param.parameterType()) {
+                    case FORMAT:
+                        if (formatterClass == null) {
+                            logInv.arg(entry.getValue());
+                        } else {
+                            logInv.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(entry.getValue()));
+                        }
+                        break;
+                }
             }
         }
     }

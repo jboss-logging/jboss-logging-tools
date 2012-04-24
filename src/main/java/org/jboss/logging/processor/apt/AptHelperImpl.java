@@ -55,6 +55,9 @@ public class AptHelperImpl implements AptHelper {
                 case PRINTF:
                     result = FormatType.PRINTF;
                     break;
+                case NO_FORMAT:
+                    result = FormatType.NO_FORMAT;
+                    break;
             }
         }
         return result;
@@ -99,7 +102,7 @@ public class AptHelperImpl implements AptHelper {
 
     @Override
     public String loggerMethod(final FormatType formatType) {
-        return "log" + (formatType == null ? "" : formatType.logType());
+        return "log" + (formatType == null || formatType == FormatType.NO_FORMAT ? "" : formatType.logType());
     }
 
     @Override
