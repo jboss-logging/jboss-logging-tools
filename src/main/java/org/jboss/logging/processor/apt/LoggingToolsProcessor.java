@@ -102,6 +102,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
         boolean process = true;
+        final Validator validator = new Validator();
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
@@ -110,7 +111,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                     final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
                     for (TypeElement interfaceElement : interfaces) {
                         final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
-                        final Collection<ValidationMessage> validationMessages = Validator.INSTANCE.validate(messageInterface);
+                        final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
                         for (ValidationMessage message : validationMessages) {
                             final Object reference = message.getMessageObject().reference();
                             if (reference instanceof Element) {
