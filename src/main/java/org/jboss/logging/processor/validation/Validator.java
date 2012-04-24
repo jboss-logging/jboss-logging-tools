@@ -48,9 +48,11 @@ import org.jboss.logging.processor.intf.model.ThrowableType;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class Validator {
-    public static final Validator INSTANCE = new Validator();
 
-    private Validator() {
+    private final MessageIdValidator messageIdValidator;
+
+    public Validator() {
+        messageIdValidator = new MessageIdValidator();
     }
 
     /**
@@ -109,7 +111,7 @@ public final class Validator {
                 if (message.id() < 0) {
                     messages.add(createError(messageMethod, "Message id %d is invalid. Must be greater than 0 or inherit another valid id.", message.id()));
                 } else {
-                    messages.addAll(MessageIdValidator.INSTANCE.validate(projectCode, messageMethod));
+                    messages.addAll(messageIdValidator.validate(projectCode, messageMethod));
                 }
             }
             final FormatValidator formatValidator = FormatValidatorFactory.create(messageMethod);

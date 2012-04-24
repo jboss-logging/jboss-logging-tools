@@ -41,11 +41,10 @@ import org.jboss.logging.processor.util.Comparison;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class MessageIdValidator {
-    public static final MessageIdValidator INSTANCE = new MessageIdValidator();
 
     private final Map<MessageKey, MessageMethod> usedMessageIds = new HashMap<MessageKey, MessageMethod>();
 
-    private MessageIdValidator() {
+    MessageIdValidator() {
     }
 
     public Collection<ValidationMessage> validate(final String projectCode, final MessageMethod messageMethod) {
