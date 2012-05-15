@@ -23,6 +23,7 @@
 package org.jboss.logging.processor.validation;
 
 import org.jboss.logging.processor.Annotations;
+import org.jboss.logging.processor.Annotations.FormatType;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 
 /**
@@ -38,9 +39,11 @@ public final class FormatValidatorFactory {
         if (messageMethod.message() == null) {
             return InvalidFormatValidator.of("No message annotation found.");
         }
-        final String msg = messageMethod.message().value();
-        final Annotations.FormatType format = messageMethod.message().format();
-        if (msg == null) {
+        return create(messageMethod.message().format(), messageMethod.message().value());
+    }
+
+    public static FormatValidator create(final FormatType format, final String message) throws IllegalStateException {
+        if (message == null) {
             return InvalidFormatValidator.of("A message is required for the format.");
         }
         if (format == null) {
@@ -48,9 +51,9 @@ public final class FormatValidatorFactory {
         }
         switch (format) {
             case MESSAGE_FORMAT:
-                return MessageFormatValidator.of(msg);
+                return MessageFormatValidator.of(message);
             case PRINTF:
-                return StringFormatValidator.of(msg);
+                return StringFormatValidator.of(message);
             case NO_FORMAT:
                 return NoFormatValidator.INSTANCE;
         }

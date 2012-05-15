@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -104,17 +105,34 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         compare(1, "howAreYou", properties, NAME);
     }
 
+    @Test
+    public void testStringFormat() throws Exception {
+        final String fileName = "StringFormatLogger.i18n%s.properties";
+        final Properties en = findFile(String.format(fileName, ""));
+        final Properties es = findFile(String.format(fileName, "_es"));
+        final StringFormatLogger logger = Logger.getMessageLogger(StringFormatLogger.class, CATEGORY, new Locale("es"));
+        final Date date = new Date();
+        logger.dukesBirthday(date);
+        logger.dukesBirthdayFailure(date);
+        logger.stringInt("string", 1);
+        logger.stringIntFailure("string", 1);
+        compare(0, "dukesBirthday", es, date);
+        compare(1, "dukesBirthdayFailure", en, date);
+        compare(2, "stringInt", es, "string", 1);
+        compare(3, "stringIntFailure", en, "string", 1);
+    }
+
     private static DefaultLogger getLogger(final Locale locale) {
         return Logger.getMessageLogger(DefaultLogger.class, CATEGORY, locale);
     }
 
-    private void compare(final int handlerIndex, final String key, final Properties properties, final String... params) {
+    private void compare(final int handlerIndex, final String key, final Properties properties, final Object... params) {
         final String expectedMessage = getFormattedProperty(key, properties, params);
         final String loggedMessage = HANDLER.getMessage(handlerIndex).replaceAll(LOGGER_ID_PATTERN, "");
         Assert.assertEquals(expectedMessage, loggedMessage);
     }
 
-    private String getFormattedProperty(final String key, final Properties properties, final String... params) {
+    private String getFormattedProperty(final String key, final Properties properties, final Object... params) {
         final String format = properties.getProperty(key);
         if (format == null) {
             return null;

@@ -46,10 +46,14 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.jboss.logging.processor.model.ClassModel;
-import org.jboss.logging.processor.model.ClassModelFactory;
+import org.jboss.logging.processor.Annotations.FormatType;
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
+import org.jboss.logging.processor.model.ClassModel;
+import org.jboss.logging.processor.model.ClassModelFactory;
+import org.jboss.logging.processor.validation.FormatValidator;
+import org.jboss.logging.processor.validation.FormatValidatorFactory;
+import org.jboss.logging.processor.validation.StringFormatValidator;
 
 /**
  * The translation class generator.
@@ -108,7 +112,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     }
 
     private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
-        final Map<File, Map<MessageMethod, String>>  validTranslations = new HashMap<File, Map<MessageMethod, String>>();
+        final Map<File, Map<MessageMethod, String>> validTranslations = new HashMap<File, Map<MessageMethod, String>>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
         }
@@ -156,7 +160,8 @@ final class TranslationClassGenerator extends AbstractGenerator {
     /**
      * Returns only the valid translations message corresponding
      * to the declared {@link org.jboss.logging.processor.intf.model.MessageMethod} methods in the
-     * {@link org.jboss.logging.processor.Annotations#messageBundle()} or {@link org.jboss.logging.processor.Annotations#messageLogger()} interface.
+     * {@link org.jboss.logging.processor.Annotations#messageBundle()} or {@link org.jboss.logging.processor.Annotations#messageLogger()}
+     * interface.
      *
      * @param messageInterface the message interface.
      * @param file             the translation file
@@ -183,9 +188,15 @@ final class TranslationClassGenerator extends AbstractGenerator {
             for (MessageMethod messageMethod : messageMethods) {
                 final String key = messageMethod.translationKey();
                 if (translations.containsKey(key)) {
-                    String message = translations.getProperty(key);
-                    if (!message.trim().isEmpty()) {
-                        validTranslations.put(messageMethod, translations.getProperty(key));
+                    final String initMessage = messageMethod.message().value();
+                    final String translationMessage = translations.getProperty(key);
+                    if (!translationMessage.trim().isEmpty()) {
+                        final FormatValidator validator = getValidatorFor(messageMethod, translationMessage);
+                        if (validator.isValid()) {
+                            validTranslations.put(messageMethod, translationMessage);
+                        } else {
+                            logger().warn(validator.summaryMessage());
+                        }
                     } else {
                         logger().warn("The translation message with key %s is ignored because value is empty or contains only whitespace", key);
                     }
@@ -233,6 +244,16 @@ final class TranslationClassGenerator extends AbstractGenerator {
         } catch (IllegalStateException ex) {
             logger().error(ex, "Cannot generate %s source file", classModel.qualifiedClassName());
         }
+    }
+
+    private static FormatValidator getValidatorFor(final MessageMethod messageMethod, final String translationMessage) {
+        FormatValidator result = FormatValidatorFactory.create(messageMethod.message().format(), translationMessage);
+        if (result.isValid()) {
+            if (messageMethod.message().format() == FormatType.PRINTF) {
+                result = StringFormatValidator.withTranslation(messageMethod.message().value(), translationMessage);
+            }
+        }
+        return result;
     }
 
     /**

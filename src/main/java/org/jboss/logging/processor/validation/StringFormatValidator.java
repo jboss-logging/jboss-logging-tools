@@ -24,9 +24,11 @@ package org.jboss.logging.processor.validation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.IllegalFormatException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +45,7 @@ import java.util.regex.Pattern;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class StringFormatValidator extends AbstractFormatValidator {
+public final class StringFormatValidator extends AbstractFormatValidator {
     /**
      * The Regex pattern.
      */
@@ -91,6 +93,69 @@ class StringFormatValidator extends AbstractFormatValidator {
     /**
      * Creates a string format.
      *
+     * @param format the format.
+     *
+     * @return the string format.
+     */
+    public static StringFormatValidator withTranslation(final String format, final String translationFormat) {
+        final StringFormatValidator result = new StringFormatValidator(format);
+        final StringFormatValidator translationResult = new StringFormatValidator(translationFormat);
+        try {
+            result.init();
+            result.validate();
+        } catch (RuntimeException e) {
+            if (result.isValid()) {
+                result.valid = false;
+                result.setDetailMessage("Format '%s' appears to be invalid. Error: %s", format, e.getMessage());
+            }
+        }
+        try {
+            translationResult.init();
+            translationResult.validate();
+        } catch (RuntimeException e) {
+            if (translationResult.isValid()) {
+                translationResult.valid = false;
+                translationResult.setDetailMessage("Format '%s' appears to be invalid. Error: %s", format, e.getMessage());
+            }
+        }
+        // If either is invalid, return the invalid one
+        if (!result.isValid())
+            return result;
+
+        if (!translationResult.isValid())
+            return translationResult;
+
+        // Sort the formats
+        final List<StringFormatPart> initParts = sortParts(result.formats);
+        final List<StringFormatPart> translationParts = sortParts(translationResult.formats);
+
+        // The size should be the same as well as the position of each element
+        if (initParts.size() == translationParts.size()) {
+            // Parameters should be in the exact order
+            final Iterator<StringFormatPart> initIter = initParts.iterator();
+            final Iterator<StringFormatPart> translationIter = translationParts.iterator();
+            while (initIter.hasNext()) {
+                final StringFormatPart initPart = initIter.next();
+                final StringFormatPart translationPart = translationIter.next();
+                if (initPart.conversion() != translationPart.conversion()) {
+                    result.valid = false;
+                    result.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
+                    result.setSummaryMessage("The translated message format does not match the initial message format.");
+                    break;
+                }
+            }
+        } else {
+            result.valid = false;
+            result.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
+            result.setSummaryMessage("The translated message format does not match the initial message format.");
+        }
+
+        return result;
+    }
+
+    /**
+     * Creates a string format.
+     *
      * @param format     the format.
      * @param parameters the parameters to validate against.
      *
@@ -106,6 +171,40 @@ class StringFormatValidator extends AbstractFormatValidator {
                 result.valid = false;
                 result.setSummaryMessage("Format '%s' appears to be invalid. Error: %s", format, e.getMessage());
             }
+        }
+        return result;
+    }
+
+    static List<StringFormatPart> sortParts(final Collection<StringFormatPart> parts) {
+        final TreeMap<Integer, List<StringFormatPart>> paramMap = new TreeMap<Integer, List<StringFormatPart>>();
+        int counter = 0;
+        int index = 0;
+        for (StringFormatPart part : parts) {
+            // Check the index and set appropriately
+            if (part.index() > 0 || part.index() == 0) {
+                index = part.index();
+            } else if (part.index() < -1) {
+                index = 0;
+            }
+            // Find or create the list for the multimap.
+            final List<StringFormatPart> params;
+            if (paramMap.containsKey(index)) {
+                params = paramMap.get(index);
+                // Skip positional if already defined.
+                if (index > 0) {
+                    continue;
+                }
+            } else {
+                params = new ArrayList<StringFormatPart>();
+                paramMap.put(index, params);
+            }
+            counter++;
+            params.add(part);
+        }
+        // Order the formats
+        final List<StringFormatPart> result = new ArrayList<StringFormatPart>(parts.size());
+        for (List<StringFormatPart> list : paramMap.values()) {
+            result.addAll(list);
         }
         return result;
     }
