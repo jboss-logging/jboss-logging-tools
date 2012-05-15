@@ -188,8 +188,13 @@ final class TranslationClassGenerator extends AbstractGenerator {
             }
             for (MessageMethod messageMethod : messageMethods) {
                 final String key = messageMethod.translationKey();
+                final Element methodElement;
+                if (messageMethod.reference() instanceof Element) {
+                    methodElement = (Element) messageMethod.reference();
+                } else {
+                    methodElement = null;
+                }
                 if (translations.containsKey(key)) {
-                    final String initMessage = messageMethod.message().value();
                     final String translationMessage = translations.getProperty(key);
                     if (!translationMessage.trim().isEmpty()) {
                         final FormatValidator validator = getValidatorFor(messageMethod, translationMessage);
@@ -197,19 +202,19 @@ final class TranslationClassGenerator extends AbstractGenerator {
                             if (validator.argumentCount() == messageMethod.formatParameterCount()) {
                                 validTranslations.put(messageMethod, translationMessage);
                             } else {
-                                logger().warn((Element) messageMethod.reference(),
+                                logger().warn(methodElement,
                                         "The parameter count for the format (%d) and the number of format parameters (%d) do not match.",
                                         validator.argumentCount(), messageMethod.formatParameterCount());
                             }
                         } else {
-                            logger().warn((Element) messageMethod.reference(), validator.summaryMessage());
+                            logger().warn(methodElement, "%s Resource Bundle: %s", validator.summaryMessage(), file.getAbsolutePath());
                         }
                     } else {
-                        logger().warn("The translation message with key %s is ignored because value is empty or contains only whitespace", key);
+                        logger().warn(methodElement, "The translation message with key %s is ignored because value is empty or contains only whitespace", key);
                     }
 
                 } else {
-                    logger().warn("The translation message with key %s have no corresponding messageMethod.", key);
+                    logger().warn(methodElement, "The translation message with key %s have no corresponding messageMethod.", key);
                 }
             }
 
