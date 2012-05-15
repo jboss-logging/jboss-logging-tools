@@ -76,5 +76,8 @@ public class StringFormatValidatorTest {
         validator = StringFormatValidator.of("%2$d %<d %s", "Test", 42);
         assertTrue(validator.isValid(), validator.detailMessage());
 
+        validator = StringFormatValidator.of("The error is %s, I repeat %1$s", "invalid");
+        assertTrue(validator.isValid(), validator.detailMessage());
+
     }
 }

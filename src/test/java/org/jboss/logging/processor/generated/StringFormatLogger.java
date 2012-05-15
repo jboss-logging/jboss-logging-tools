@@ -50,4 +50,12 @@ public interface StringFormatLogger {
     @LogMessage(level = Level.INFO)
     @Message("Duke's Birthday: %1$tm %<te,%<tY")
     void dukesBirthdayFailure(Date date);
+
+    @LogMessage(level = Level.INFO)
+    @Message("The error is %s, I repeat %1$s")
+    void repeat(String message);
+
+    @LogMessage(level = Level.INFO)
+    @Message("The error is %s, I repeat %1$s")
+    void repeatFailure(String message);
 }
