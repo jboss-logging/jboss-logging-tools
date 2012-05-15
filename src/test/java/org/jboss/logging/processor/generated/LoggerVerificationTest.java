@@ -114,12 +114,18 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         final Date date = new Date();
         logger.dukesBirthday(date);
         logger.dukesBirthdayFailure(date);
-        logger.stringInt("string", 1);
-        logger.stringIntFailure("string", 1);
         compare(0, "dukesBirthday", es, date);
         compare(1, "dukesBirthdayFailure", en, date);
+
+        logger.stringInt("string", 1);
+        logger.stringIntFailure("string", 1);
         compare(2, "stringInt", es, "string", 1);
         compare(3, "stringIntFailure", en, "string", 1);
+
+        logger.repeat("invalid");
+        logger.repeatFailure("invalid");
+        compare(4, "repeat", es, "invalid");
+        compare(5, "repeatFailure", en, "invalid");
     }
 
     private static DefaultLogger getLogger(final Locale locale) {
@@ -129,7 +135,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
     private void compare(final int handlerIndex, final String key, final Properties properties, final Object... params) {
         final String expectedMessage = getFormattedProperty(key, properties, params);
         final String loggedMessage = HANDLER.getMessage(handlerIndex).replaceAll(LOGGER_ID_PATTERN, "");
-        Assert.assertEquals(expectedMessage, loggedMessage);
+        Assert.assertEquals(loggedMessage, expectedMessage);
     }
 
     private String getFormattedProperty(final String key, final Properties properties, final Object... params) {

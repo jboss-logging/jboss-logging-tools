@@ -92,8 +92,11 @@ public final class StringFormatValidator extends AbstractFormatValidator {
 
     /**
      * Creates a string format.
+     * <p/>
+     * <b>Note:</b> The validator returned is the validator for the translation format.
      *
-     * @param format the format.
+     * @param format            the format.
+     * @param translationFormat the format of the translation
      *
      * @return the string format.
      */
@@ -138,19 +141,19 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                 final StringFormatPart initPart = initIter.next();
                 final StringFormatPart translationPart = translationIter.next();
                 if (initPart.conversion() != translationPart.conversion()) {
-                    result.valid = false;
-                    result.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
-                    result.setSummaryMessage("The translated message format does not match the initial message format.");
+                    translationResult.valid = false;
+                    translationResult.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
+                    translationResult.setSummaryMessage("The translated message format does not match the initial message format.");
                     break;
                 }
             }
         } else {
-            result.valid = false;
-            result.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
-            result.setSummaryMessage("The translated message format does not match the initial message format.");
+            translationResult.valid = false;
+            translationResult.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
+            translationResult.setSummaryMessage("The translated message format does not match the initial message format.");
         }
 
-        return result;
+        return translationResult;
     }
 
     /**
@@ -176,37 +179,21 @@ public final class StringFormatValidator extends AbstractFormatValidator {
     }
 
     static List<StringFormatPart> sortParts(final Collection<StringFormatPart> parts) {
-        final TreeMap<Integer, List<StringFormatPart>> paramMap = new TreeMap<Integer, List<StringFormatPart>>();
-        int counter = 0;
+        final TreeMap<Integer, StringFormatPart> paramMap = new TreeMap<Integer, StringFormatPart>();
         int index = 0;
+        int count = 0;
         for (StringFormatPart part : parts) {
             // Check the index and set appropriately
-            if (part.index() > 0 || part.index() == 0) {
+            if (part.index() > 0) {
                 index = part.index();
-            } else if (part.index() < -1) {
-                index = 0;
+            } else if (part.index() == 0) {
+                index = ++count;
             }
-            // Find or create the list for the multimap.
-            final List<StringFormatPart> params;
-            if (paramMap.containsKey(index)) {
-                params = paramMap.get(index);
-                // Skip positional if already defined.
-                if (index > 0) {
-                    continue;
-                }
-            } else {
-                params = new ArrayList<StringFormatPart>();
-                paramMap.put(index, params);
+            if (!paramMap.containsKey(index)) {
+                paramMap.put(index, part);
             }
-            counter++;
-            params.add(part);
         }
-        // Order the formats
-        final List<StringFormatPart> result = new ArrayList<StringFormatPart>(parts.size());
-        for (List<StringFormatPart> list : paramMap.values()) {
-            result.addAll(list);
-        }
-        return result;
+        return new ArrayList<StringFormatPart>(paramMap.values());
     }
 
     /**
@@ -390,15 +377,21 @@ public final class StringFormatValidator extends AbstractFormatValidator {
             }
         }
         final Set<Integer> counted = new HashSet<Integer>();
+        int count = 1;
         // Initialize the argument count
         for (StringFormatPart stringFormatPart : formats) {
             if (stringFormatPart.conversion().isLineSeparator() || stringFormatPart.conversion().isPercent())
                 continue;
             if (stringFormatPart.index() > 0) {
-                if (counted.add(stringFormatPart.index()))
+                if (counted.add(stringFormatPart.index())) {
                     argumentCount++;
+                }
             } else if (stringFormatPart.index() == 0) {
-                argumentCount++;
+                if (!counted.contains(count)) {
+                    argumentCount++;
+                    counted.add(count);
+                    count++;
+                }
             }
         }
     }

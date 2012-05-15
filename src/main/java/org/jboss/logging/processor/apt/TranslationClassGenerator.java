@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -193,9 +194,15 @@ final class TranslationClassGenerator extends AbstractGenerator {
                     if (!translationMessage.trim().isEmpty()) {
                         final FormatValidator validator = getValidatorFor(messageMethod, translationMessage);
                         if (validator.isValid()) {
-                            validTranslations.put(messageMethod, translationMessage);
+                            if (validator.argumentCount() == messageMethod.formatParameterCount()) {
+                                validTranslations.put(messageMethod, translationMessage);
+                            } else {
+                                logger().warn((Element) messageMethod.reference(),
+                                        "The parameter count for the format (%d) and the number of format parameters (%d) do not match.",
+                                        validator.argumentCount(), messageMethod.formatParameterCount());
+                            }
                         } else {
-                            logger().warn(validator.summaryMessage());
+                            logger().warn((Element) messageMethod.reference(), validator.summaryMessage());
                         }
                     } else {
                         logger().warn("The translation message with key %s is ignored because value is empty or contains only whitespace", key);
