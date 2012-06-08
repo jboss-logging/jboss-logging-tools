@@ -31,16 +31,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JExpression;
-import com.sun.codemodel.internal.JFieldVar;
-import com.sun.codemodel.internal.JInvocation;
-import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JVar;
+import com.sun.codemodel.JBlock;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JExpression;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JInvocation;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
+import com.sun.codemodel.JVar;
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 import org.jboss.logging.processor.intf.model.Parameter;
@@ -51,7 +51,7 @@ import org.jboss.logging.processor.intf.model.ThrowableType;
  * interface.
  * <p/>
  * <p>
- * Essentially this uses the com.sun.codemodel.internal.JCodeModel to generate the
+ * Essentially this uses the com.sun.codemodel.JCodeModel to generate the
  * source files with. This class is for convenience in generating default source
  * files.
  * </p>
