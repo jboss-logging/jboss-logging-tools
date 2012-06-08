@@ -36,6 +36,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.jboss.logging.processor.intf.model.MessageObject;
+
 /**
  * An utility class to work with element.
  *
@@ -176,7 +178,8 @@ public final class ElementHelper {
     }
 
     /**
-     * Checks to see if the method has or inherits a {@link org.jboss.logging.processor.Annotations#message()}  annotation.
+     * Checks to see if the method has or inherits a {@link org.jboss.logging.processor.Annotations#message()}
+     * annotation.
      *
      * @param methods the method to search.
      * @param method  the method to check.
@@ -198,7 +201,8 @@ public final class ElementHelper {
 
     /**
      * Checks to see if the method is overloaded. An overloaded method has a different parameter count based on the
-     * format parameters only. Parameters annotated with {@link org.jboss.logging.processor.Annotations#cause()} or {@link org.jboss.logging.processor.Annotations#param()}
+     * format parameters only. Parameters annotated with {@link org.jboss.logging.processor.Annotations#cause()} or
+     * {@link org.jboss.logging.processor.Annotations#param()}
      * are not counted.
      *
      * @param methods the method to search.
@@ -324,5 +328,20 @@ public final class ElementHelper {
      */
     public static String typeToString(final String qualifiedType) {
         return qualifiedType.replace("$", ".");
+    }
+
+    /**
+     * If the {@link org.jboss.logging.processor.intf.model.MessageObject#reference()} is an instance of {@link
+     * Element}, then the value is returned, otherwise {@code null} is returned.
+     *
+     * @param object the object to check the reference on
+     *
+     * @return the element reference or {@code null}
+     */
+    public static Element fromMessageObject(final MessageObject object) {
+        if (object.reference() instanceof Element) {
+            return (Element) object.reference();
+        }
+        return null;
     }
 }

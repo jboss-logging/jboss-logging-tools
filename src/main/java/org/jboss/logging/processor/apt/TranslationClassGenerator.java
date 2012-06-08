@@ -52,6 +52,7 @@ import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 import org.jboss.logging.processor.model.ClassModel;
 import org.jboss.logging.processor.model.ClassModelFactory;
+import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.FormatValidator;
 import org.jboss.logging.processor.validation.FormatValidatorFactory;
 import org.jboss.logging.processor.validation.StringFormatValidator;
@@ -188,12 +189,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
             }
             for (MessageMethod messageMethod : messageMethods) {
                 final String key = messageMethod.translationKey();
-                final Element methodElement;
-                if (messageMethod.reference() instanceof Element) {
-                    methodElement = (Element) messageMethod.reference();
-                } else {
-                    methodElement = null;
-                }
+                final Element methodElement = ElementHelper.fromMessageObject(messageMethod);
                 if (translations.containsKey(key)) {
                     final String translationMessage = translations.getProperty(key);
                     if (!translationMessage.trim().isEmpty()) {
@@ -233,7 +229,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
      * @param translations     the translations message
      */
     private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<MessageMethod, String> translations) {
-        logger().note("Generating translation class for %s.", translationFile.getAbsolutePath());
+        logger().note(ElementHelper.fromMessageObject(messageInterface), "Generating translation class.");
 
         //Generate empty translation super class if needed
         //Check if enclosing translation file exists, if not generate an empty super class

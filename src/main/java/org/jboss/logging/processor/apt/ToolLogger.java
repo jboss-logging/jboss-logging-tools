@@ -78,16 +78,6 @@ public final class ToolLogger {
     }
 
     /**
-     * Prints a formatted note message.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void note(final String messageFormat, final Object... args) {
-        note(null, messageFormat, args);
-    }
-
-    /**
      * Prints a note message.
      *
      * @param element the element to print with the note.
@@ -141,18 +131,8 @@ public final class ToolLogger {
      */
     public void debug(final Element element, final String messageFormat, final Object... args) {
         if (isDebugEnabled) {
-            other(messageFormat, element, args);
+            other(null, messageFormat, element, args);
         }
-    }
-
-    /**
-     * Prints a formatted warning message.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void warn(final String messageFormat, final Object... args) {
-        warn(null, messageFormat, args);
     }
 
     /**
@@ -174,16 +154,6 @@ public final class ToolLogger {
      */
     public void warn(final Element element, final String messageFormat, final Object... args) {
         log(Kind.WARNING, element, messageFormat, args);
-    }
-
-    /**
-     * Prints a formatted warning message.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void mandatoryWarning(final String messageFormat, final Object... args) {
-        mandatoryWarning(null, messageFormat, args);
     }
 
     /**
@@ -289,16 +259,6 @@ public final class ToolLogger {
      */
     public void error(final Element element, final Throwable cause, final String messageFormat, final Object... args) {
         log(Kind.ERROR, element, cause, messageFormat, args);
-    }
-
-    /**
-     * Prints a formatted message that does not fit the other types.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void other(final String messageFormat, final Object... args) {
-        log(Kind.OTHER, null, messageFormat, args);
     }
 
     /**
