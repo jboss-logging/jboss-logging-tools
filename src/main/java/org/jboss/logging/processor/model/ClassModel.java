@@ -129,19 +129,19 @@ public abstract class ClassModel {
 
         // Add extends
         if (superClassName != null) {
-            definedClass._extends(codeModel.ref(superClassName));
+            definedClass._extends(codeModel.directClass(superClassName));
         }
 
         // Always implement the interface
         // TODO - Temporary fix for implementing nested interfaces.
-        definedClass._implements(codeModel.ref(typeToString(messageInterface.name())));
+        definedClass._implements(codeModel.directClass(typeToString(messageInterface.name())));
 
         //Add implements
         if (!messageInterface.extendedInterfaces().isEmpty()) {
             for (MessageInterface intf : messageInterface.extendedInterfaces()) {
                 // TODO - Temporary fix for implementing nested interfaces.
                 final String interfaceName = typeToString(intf.name());
-                definedClass._implements(codeModel.ref(interfaceName));
+                definedClass._implements(codeModel.directClass(interfaceName));
             }
         }
         return codeModel;
@@ -210,7 +210,7 @@ public abstract class ClassModel {
             }
 
             //Create method
-            JClass returnType = codeModel.ref(String.class);
+            JClass returnType = codeModel.directClass(String.class.getName());
             method = definedClass.method(JMod.PROTECTED, returnType, messageMethod.messageMethodName());
 
             JBlock body = method.body();

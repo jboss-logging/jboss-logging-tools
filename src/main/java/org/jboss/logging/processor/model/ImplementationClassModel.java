@@ -72,7 +72,7 @@ abstract class ImplementationClassModel extends ClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         JCodeModel codeModel = super.generateModel();
-        getDefinedClass()._implements(codeModel.ref(Serializable.class));
+        getDefinedClass()._implements(codeModel.directClass(Serializable.class.getName()));
         // Add the serializable UID
         JFieldVar serialVersionUID = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel.LONG, "serialVersionUID");
         serialVersionUID.init(JExpr.lit(1L));
@@ -92,7 +92,7 @@ abstract class ImplementationClassModel extends ClassModel {
         addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
-        final JClass returnField = getCodeModel().ref(method.type().fullName());
+        final JClass returnField = getCodeModel().directClass(method.type().fullName());
         final JVar result = body.decl(returnField, "result");
         final MessageMethod.Message message = messageMethod.message();
         final JExpression expression;
@@ -101,7 +101,7 @@ abstract class ImplementationClassModel extends ClassModel {
 
         switch (message.format()) {
             case MESSAGE_FORMAT: {
-                final JClass formatter = getCodeModel().ref(message.format().formatClass());
+                final JClass formatter = getCodeModel().directClass(message.format().formatClass().getName());
                 formatterMethod = formatter.staticInvoke(message.format().staticMethod());
                 if (message.hasId() && projectCodeVar != null && noFormatParameters) {
                     final String formattedId = formatMessageId(message.id());
@@ -119,7 +119,7 @@ abstract class ImplementationClassModel extends ClassModel {
                 break;
             }
             case PRINTF: {
-                final JClass formatter = getCodeModel().ref(message.format().formatClass());
+                final JClass formatter = getCodeModel().directClass(message.format().formatClass().getName());
                 formatterMethod = formatter.staticInvoke(message.format().staticMethod());
                 if (message.hasId() && projectCodeVar != null) {
                     final String formattedId = formatMessageId(message.id());
@@ -147,7 +147,7 @@ abstract class ImplementationClassModel extends ClassModel {
         final Map<String, JVar> properties = new HashMap<String, JVar>();
         // Create the parameters
         for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
-            final JClass paramType = getCodeModel().ref(param.type());
+            final JClass paramType = getCodeModel().directClass(param.type());
             final JVar var = method.param(JMod.FINAL, paramType, param.name());
             final String formatterClass = param.formatterClass();
             switch (param.parameterType()) {
@@ -159,7 +159,7 @@ abstract class ImplementationClassModel extends ClassModel {
                         if (formatterClass == null) {
                             formatterMethod.arg(var);
                         } else {
-                            formatterMethod.arg(JExpr._new(getCodeModel().ref(formatterClass)).arg(var));
+                            formatterMethod.arg(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
                         }
                     }
                     break;
@@ -238,8 +238,8 @@ abstract class ImplementationClassModel extends ClassModel {
         } else {
             result.init(JExpr._new(returnField));
         }
-        final JClass arrays = getCodeModel().ref(Arrays.class);
-        final JClass stClass = getCodeModel().ref(StackTraceElement.class).array();
+        final JClass arrays = getCodeModel().directClass(Arrays.class.getName());
+        final JClass stClass = getCodeModel().directClass(StackTraceElement.class.getName()).array();
         final JVar st = body.decl(stClass, "st").init(result.invoke("getStackTrace"));
         final JInvocation setStackTrace = result.invoke("setStackTrace");
         setStackTrace.arg(arrays.staticInvoke("copyOfRange").arg(st).arg(JExpr.lit(1)).arg(st.ref("length")));
@@ -248,7 +248,7 @@ abstract class ImplementationClassModel extends ClassModel {
 
     protected final void addThrownTypes(final MessageMethod messageMethod, final JMethod jMethod) {
         for (ThrowableType thrownType : messageMethod.thrownTypes()) {
-            jMethod._throws(getCodeModel().ref(thrownType.name()));
+            jMethod._throws(getCodeModel().directClass(thrownType.name()));
         }
     }
 }
