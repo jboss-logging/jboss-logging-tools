@@ -57,12 +57,6 @@ class MessageBundleImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        //Add a project code constant
-        JFieldVar projectCodeVar = null;
-        if (!messageInterface().projectCode().isEmpty()) {
-            projectCodeVar = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, "projectCode");
-            projectCodeVar.init(JExpr.lit(messageInterface().projectCode()));
-        }
         // Add default constructor
         getDefinedClass().constructor(JMod.PROTECTED);
         createReadResolveMethod();
@@ -83,7 +77,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
 
             // Add the message messageMethod.
             final JMethod msgMethod = addMessageMethod(messageMethod);
-            createBundleMethod(messageMethod, jMethod, msgMethod, projectCodeVar);
+            createBundleMethod(messageMethod, jMethod, msgMethod);
         }
         return codeModel;
     }

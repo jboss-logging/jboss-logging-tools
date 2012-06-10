@@ -24,7 +24,6 @@ package org.jboss.logging.processor.model;
 
 import static org.jboss.logging.processor.Tools.loggers;
 import static org.jboss.logging.processor.intf.model.Parameter.ParameterType;
-import static org.jboss.logging.processor.model.ClassModelHelper.formatMessageId;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -87,12 +86,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        //Add a project code constant
-        JFieldVar projectCodeVar = null;
-        if (!messageInterface().projectCode().isEmpty()) {
-            projectCodeVar = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, "projectCode");
-            projectCodeVar.init(JExpr.lit(messageInterface().projectCode()));
-        }
 
         // Add FQCN
         final JFieldVar fqcn = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, FQCN_FIELD_NAME);
@@ -145,9 +138,9 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
             // Create the messageMethod body
             if (messageMethod.isLoggerMethod()) {
-                createLoggerMethod(messageMethod, jMethod, msgMethod, projectCodeVar, logger);
+                createLoggerMethod(messageMethod, jMethod, msgMethod, logger);
             } else {
-                createBundleMethod(messageMethod, jMethod, msgMethod, projectCodeVar);
+                createBundleMethod(messageMethod, jMethod, msgMethod);
             }
         }
         return codeModel;
@@ -376,10 +369,9 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param messageMethod  the message method.
      * @param method         the method to create the body for.
      * @param msgMethod      the message method for retrieving the message.
-     * @param projectCodeVar the project code variable
      * @param logger         the logger to use.
      */
-    private void createLoggerMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar, final JExpression logger) {
+    private void createLoggerMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod, final JExpression logger) {
         addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
@@ -399,12 +391,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final MessageMethod.Message message = messageMethod.message();
         // No format log messages need the message before the cause
         if (message.format() == FormatType.NO_FORMAT) {
-            if (message.hasId() && projectCodeVar != null) {
-                String formattedId = formatMessageId(message.id());
-                logInv.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-            } else {
-                logInv.arg(JExpr.invoke(msgMethod));
-            }
+            logInv.arg(JExpr.invoke(msgMethod));
             // Next for no format should always be null
             logInv.arg(JExpr._null());
 
@@ -422,12 +409,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             // The next parameter is the message. Should be accessed via the
             // message retrieval method.
-            if (message.hasId() && projectCodeVar != null) {
-                String formattedId = formatMessageId(message.id());
-                logInv.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-            } else {
-                logInv.arg(JExpr.invoke(msgMethod));
-            }
+            logInv.arg(JExpr.invoke(msgMethod));
             // Create the parameters
             for (Map.Entry<Parameter, JVar> entry : params.entrySet()) {
                 final Parameter param = entry.getKey();

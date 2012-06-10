@@ -206,7 +206,13 @@ public abstract class ClassModel {
             JFieldVar methodField = definedClass.fields().get(methodName);
             if (methodField == null) {
                 methodField = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName);
-                methodField.init(JExpr.lit(messageValue));
+                final String msg;
+                if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
+                    msg = ClassModelHelper.formatMessageId(messageInterface.projectCode(), messageMethod.message().id()) + messageValue;
+                } else {
+                    msg = messageValue;
+                }
+                methodField.init(JExpr.lit(msg));
             }
 
             //Create method

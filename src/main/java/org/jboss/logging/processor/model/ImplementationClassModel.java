@@ -23,7 +23,6 @@
 package org.jboss.logging.processor.model;
 
 import static org.jboss.logging.processor.intf.model.Parameter.ParameterType;
-import static org.jboss.logging.processor.model.ClassModelHelper.formatMessageId;
 import static org.jboss.logging.processor.model.ClassModelHelper.implementationClassName;
 
 import java.io.Serializable;
@@ -86,9 +85,8 @@ abstract class ImplementationClassModel extends ClassModel {
      * @param messageMethod  the message method.
      * @param method         the method to create the body for.
      * @param msgMethod      the message method for retrieving the message.
-     * @param projectCodeVar the project code variable
      */
-    void createBundleMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod, final JVar projectCodeVar) {
+    void createBundleMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod) {
         addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
@@ -103,14 +101,7 @@ abstract class ImplementationClassModel extends ClassModel {
             case MESSAGE_FORMAT: {
                 final JClass formatter = getCodeModel().directClass(message.format().formatClass().getName());
                 formatterMethod = formatter.staticInvoke(message.format().staticMethod());
-                if (message.hasId() && projectCodeVar != null && noFormatParameters) {
-                    final String formattedId = formatMessageId(message.id());
-                    expression = projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod));
-                } else if (message.hasId() && projectCodeVar != null) {
-                    final String formattedId = formatMessageId(message.id());
-                    formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-                    expression = formatterMethod;
-                } else if (noFormatParameters) {
+                if (noFormatParameters) {
                     expression = JExpr.invoke(msgMethod);
                 } else {
                     formatterMethod.arg(JExpr.invoke(msgMethod));
@@ -120,24 +111,13 @@ abstract class ImplementationClassModel extends ClassModel {
             }
             case PRINTF: {
                 final JClass formatter = getCodeModel().directClass(message.format().formatClass().getName());
-                formatterMethod = formatter.staticInvoke(message.format().staticMethod());
-                if (message.hasId() && projectCodeVar != null) {
-                    final String formattedId = formatMessageId(message.id());
-                    formatterMethod.arg(projectCodeVar.plus(JExpr.lit(formattedId)).plus(JExpr.invoke(msgMethod)));
-                    expression = formatterMethod;
-                } else {
-                    formatterMethod.arg(JExpr.invoke(msgMethod));
-                    expression = formatterMethod;
-                }
+                formatterMethod = formatter.staticInvoke(message.format().staticMethod()).arg(JExpr.invoke(msgMethod));
+                expression = formatterMethod;
                 break;
             }
             default:
                 formatterMethod = null;
-                if (message.hasId() && projectCodeVar != null) {
-                    expression = projectCodeVar.plus(JExpr.lit(formatMessageId(message.id()))).plus(JExpr.invoke(msgMethod));
-                } else {
-                    expression = JExpr.invoke(msgMethod);
-                }
+                expression = JExpr.invoke(msgMethod);
                 break;
         }
 
