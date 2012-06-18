@@ -42,6 +42,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.logging.processor.intf.model.MessageInterface;
+import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.ValidationMessage;
 import org.jboss.logging.processor.validation.Validator;
 
@@ -113,37 +114,19 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                         final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
                         final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
                         for (ValidationMessage message : validationMessages) {
-                            final Object reference = message.getMessageObject().reference();
-                            if (reference instanceof Element) {
-                                final Element element = Element.class.cast(reference);
-                                switch (message.type()) {
-                                    case ERROR: {
-                                        logger.error(element, message.getMessage());
-                                        process = false;
-                                        break;
-                                    }
-                                    case WARN: {
-                                        logger.warn(element, message.getMessage());
-                                        break;
-                                    }
-                                    default: {
-                                        logger.note(element, message.getMessage());
-                                    }
+                            final Element element = ElementHelper.fromMessageObject(message.getMessageObject());
+                            switch (message.type()) {
+                                case ERROR: {
+                                    logger.error(element, message.getMessage());
+                                    process = false;
+                                    break;
                                 }
-                            } else {
-                                switch (message.type()) {
-                                    case ERROR: {
-                                        logger.error(message.getMessage());
-                                        process = false;
-                                        break;
-                                    }
-                                    case WARN: {
-                                        logger.warn(message.getMessage());
-                                        break;
-                                    }
-                                    default: {
-                                        logger.note(message.getMessage());
-                                    }
+                                case WARN: {
+                                    logger.warn(element, message.getMessage());
+                                    break;
+                                }
+                                default: {
+                                    logger.note(element, message.getMessage());
                                 }
                             }
                         }

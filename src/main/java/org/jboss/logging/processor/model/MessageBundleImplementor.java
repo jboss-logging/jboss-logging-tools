@@ -25,12 +25,12 @@ package org.jboss.logging.processor.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JFieldVar;
-import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 
@@ -57,12 +57,6 @@ class MessageBundleImplementor extends ImplementationClassModel {
     @Override
     protected JCodeModel generateModel() throws IllegalStateException {
         final JCodeModel codeModel = super.generateModel();
-        //Add a project code constant
-        JFieldVar projectCodeVar = null;
-        if (!messageInterface().projectCode().isEmpty()) {
-            projectCodeVar = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, "projectCode");
-            projectCodeVar.init(JExpr.lit(messageInterface().projectCode()));
-        }
         // Add default constructor
         getDefinedClass().constructor(JMod.PROTECTED);
         createReadResolveMethod();
@@ -78,12 +72,12 @@ class MessageBundleImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MessageMethod messageMethod : messageMethods) {
-            final JClass returnType = codeModel.ref(messageMethod.returnType().name());
+            final JClass returnType = codeModel.directClass(messageMethod.returnType().name());
             final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, messageMethod.name());
 
             // Add the message messageMethod.
             final JMethod msgMethod = addMessageMethod(messageMethod);
-            createBundleMethod(messageMethod, jMethod, msgMethod, projectCodeVar);
+            createBundleMethod(messageMethod, jMethod, msgMethod);
         }
         return codeModel;
     }

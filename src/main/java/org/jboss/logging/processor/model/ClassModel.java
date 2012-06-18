@@ -27,19 +27,19 @@ import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 import java.io.IOException;
 import javax.tools.JavaFileObject;
 
-import com.sun.codemodel.internal.JAnnotationUse;
-import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JClass;
-import com.sun.codemodel.internal.JClassAlreadyExistsException;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JDocComment;
-import com.sun.codemodel.internal.JExpr;
-import com.sun.codemodel.internal.JFieldVar;
-import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
-import com.sun.codemodel.internal.JType;
-import com.sun.codemodel.internal.JTypeVar;
+import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JBlock;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JClassAlreadyExistsException;
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JDocComment;
+import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
+import com.sun.codemodel.JType;
+import com.sun.codemodel.JTypeVar;
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 
@@ -129,19 +129,19 @@ public abstract class ClassModel {
 
         // Add extends
         if (superClassName != null) {
-            definedClass._extends(codeModel.ref(superClassName));
+            definedClass._extends(codeModel.directClass(superClassName));
         }
 
         // Always implement the interface
         // TODO - Temporary fix for implementing nested interfaces.
-        definedClass._implements(codeModel.ref(typeToString(messageInterface.name())));
+        definedClass._implements(codeModel.directClass(typeToString(messageInterface.name())));
 
         //Add implements
         if (!messageInterface.extendedInterfaces().isEmpty()) {
             for (MessageInterface intf : messageInterface.extendedInterfaces()) {
                 // TODO - Temporary fix for implementing nested interfaces.
                 final String interfaceName = typeToString(intf.name());
-                definedClass._implements(codeModel.ref(interfaceName));
+                definedClass._implements(codeModel.directClass(interfaceName));
             }
         }
         return codeModel;
@@ -206,11 +206,17 @@ public abstract class ClassModel {
             JFieldVar methodField = definedClass.fields().get(methodName);
             if (methodField == null) {
                 methodField = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName);
-                methodField.init(JExpr.lit(messageValue));
+                final String msg;
+                if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
+                    msg = ClassModelHelper.formatMessageId(messageInterface.projectCode(), messageMethod.message().id()) + messageValue;
+                } else {
+                    msg = messageValue;
+                }
+                methodField.init(JExpr.lit(msg));
             }
 
             //Create method
-            JClass returnType = codeModel.ref(String.class);
+            JClass returnType = codeModel.directClass(String.class.getName());
             method = definedClass.method(JMod.PROTECTED, returnType, messageMethod.messageMethodName());
 
             JBlock body = method.body();
