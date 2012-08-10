@@ -23,9 +23,7 @@
 package org.jboss.logging.processor.apt;
 
 import static org.jboss.logging.processor.Tools.annotations;
-import static org.jboss.logging.processor.Tools.aptHelper;
 import static org.jboss.logging.processor.Tools.loggers;
-import static org.jboss.logging.processor.util.ElementHelper.isAnnotatedWith;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
@@ -58,7 +56,7 @@ import org.jboss.logging.processor.intf.model.MessageMethod;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class MessageInterfaceFactory {
-    private static volatile LoggerInterface LOGGER_INTERFACE = null;
+    private static volatile LoggerInterface LOGGER_INTERFACE;
     private static final Object LOCK = new Object();
 
     /**
@@ -105,6 +103,7 @@ public final class MessageInterfaceFactory {
      * Message interface implementation.
      */
     private static class AptMessageInterface implements MessageInterface {
+        private final Annotations annotations;
         private final TypeElement interfaceElement;
         private final Types types;
         private final Elements elements;
@@ -117,6 +116,7 @@ public final class MessageInterfaceFactory {
         private String fqcn;
 
         private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
+            annotations = annotations();
             this.interfaceElement = interfaceElement;
             this.types = types;
             this.elements = elements;
@@ -166,12 +166,12 @@ public final class MessageInterfaceFactory {
 
         @Override
         public boolean isMessageLogger() {
-            return isAnnotatedWith(interfaceElement, annotations().messageLogger());
+            return annotations.isMessageLogger(interfaceElement);
         }
 
         @Override
         public boolean isMessageBundle() {
-            return isAnnotatedWith(interfaceElement, annotations().messageBundle());
+            return annotations.isMessageBundle(interfaceElement);
         }
 
         @Override
@@ -217,7 +217,7 @@ public final class MessageInterfaceFactory {
             final Collection<MessageMethod> m = builder.build();
             if (m != null)
                 this.messageMethods.addAll(m);
-            projectCode = aptHelper().projectCode(interfaceElement);
+            projectCode = annotations.projectCode(interfaceElement);
             qualifiedName = elements.getBinaryName(interfaceElement).toString();
             final int lastDot = qualifiedName.lastIndexOf(".");
             if (lastDot > 0) {
@@ -227,16 +227,17 @@ public final class MessageInterfaceFactory {
                 packageName = null;
                 simpleName = qualifiedName;
             }
+            final String messageLoggerAnnotationName = types.getDeclaredType(elements.getTypeElement(annotations.getMessageLoggerAnnotationName(interfaceElement))).toString();
             // Format class may not yet be compiled, so get it in a roundabout way
             for (AnnotationMirror mirror : interfaceElement.getAnnotationMirrors()) {
                 final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.toString().equals(types.getDeclaredType(elements.getTypeElement(annotations().messageLogger().getName())).toString())) {
+                if (annotationType.toString().equals(messageLoggerAnnotationName)) {
                     final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
                     for (ExecutableElement key : map.keySet()) {
                         if (key.getSimpleName().contentEquals("loggingClass")) {
                             final String value = map.get(key).getValue().toString();
                             if (!value.equals(Void.class.getName()))
-                                fqcn = value.toString();
+                                fqcn = value;
                         }
                     }
                 }

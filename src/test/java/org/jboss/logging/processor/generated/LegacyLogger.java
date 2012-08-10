@@ -25,49 +25,51 @@
  */
 package org.jboss.logging.processor.generated;
 
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.util.Formattable;
 import java.util.Formatter;
 
+import org.jboss.logging.Cause;
+import org.jboss.logging.FormatWith;
+import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.FormatWith;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.Message.Format;
-import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.Message;
+import org.jboss.logging.Message.Format;
+import org.jboss.logging.MessageLogger;
 
 /**
  * @author James R. Perkins Jr. (jrp)
  */
 @MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
-interface DefaultLogger {
+interface LegacyLogger {
 
     final String TEST_MSG = "No format%n";
 
     /**
      * The default logger.
      */
-    DefaultLogger LOGGER = Logger.getMessageLogger(DefaultLogger.class, AbstractLoggerTest.CATEGORY);
+    LegacyLogger LOGGER = Logger.getMessageLogger(LegacyLogger.class, AbstractLoggerTest.CATEGORY);
 
     @LogMessage(level = Level.INFO)
-    @Message(id = 100, value = "Hello %s.")
+    @Message(id = 900, value = "Hello %s.")
     void hello(String name);
 
     @LogMessage(level = Level.INFO)
-    @Message(id = 101, value = "How are you %s?")
+    @Message(id = 901, value = "How are you %s?")
     void howAreYou(String name);
 
     @LogMessage(level = Level.INFO)
-    @Message(id = 102, format = Format.NO_FORMAT, value = TEST_MSG)
+    @Message(id = 902, format = Format.NO_FORMAT, value = TEST_MSG)
     void noFormat();
 
     @LogMessage(level = Level.INFO)
-    @Message(id = 103, format = Format.NO_FORMAT, value = TEST_MSG)
+    @Message(id = 903, format = Format.NO_FORMAT, value = TEST_MSG)
     void noFormatWithCause(@Cause Throwable cause);
 
     @LogMessage(level = Level.INFO)
-    @Message(id = 104, value = "Test Message: %s")
+    @Message(id = 904, value = "Test Message: %s")
     void formatWith(@FormatWith(CustomFormatter.class) String msg);
 
     static class CustomFormatter {

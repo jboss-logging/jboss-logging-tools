@@ -22,7 +22,6 @@
 
 package org.jboss.logging.processor.validation;
 
-import static org.jboss.logging.processor.Tools.annotations;
 import static org.jboss.logging.processor.intf.model.Parameter.ParameterType;
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createError;
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createWarning;
@@ -156,7 +155,7 @@ public final class Validator {
                 }
                 case FQCN:
                     if (!parameter.type().equals(Class.class.getName())) {
-                        messages.add(createError(parameter, "Parameter %s annotated with %s on method %s must be of type %s.", parameter.name(), annotations().loggingClass().getName(), messageMethod.name(), Class.class.getName()));
+                        messages.add(createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.", parameter.name(), messageMethod.name(), Class.class.getName()));
                     }
                     break;
                 case FIELD: {

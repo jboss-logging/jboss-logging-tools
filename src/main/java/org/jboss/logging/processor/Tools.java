@@ -24,8 +24,8 @@ package org.jboss.logging.processor;
 
 import java.util.ServiceLoader;
 
-import org.jboss.logging.processor.apt.AptHelper;
-import org.jboss.logging.processor.apt.AptHelperImpl;
+import org.jboss.logging.processor.apt.Annotations;
+import org.jboss.logging.processor.apt.AnnotationsImpl;
 
 /**
  * This class is not thread safe. The static methods use lazy loading for static
@@ -35,20 +35,19 @@ import org.jboss.logging.processor.apt.AptHelperImpl;
  */
 public class Tools {
 
-    private static volatile AptHelper aptHelper;
     private static volatile Annotations annotations;
     private static volatile Loggers loggers;
-    private static final ServiceLoader<AptHelper> aptHelperLoader = ServiceLoader.load(AptHelper.class, Tools.class.getClassLoader());
     private static final ServiceLoader<Annotations> annotationsLoader = ServiceLoader.load(Annotations.class, Tools.class.getClassLoader());
     private static final ServiceLoader<Loggers> loggersLoader = ServiceLoader.load(Loggers.class, Tools.class.getClassLoader());
 
     private Tools() {
     }
 
+
     /**
-     * Locates the first implementation of {@link Annotations}.
+     * Locates the first implementation of {@link Loggers}.
      *
-     * @return the annotations to use.
+     * @return the loggers to use.
      *
      * @throws IllegalStateException if the implementation could not be found.
      */
@@ -61,32 +60,7 @@ public class Tools {
                     if (annotationsLoader.iterator().hasNext()) {
                         annotations = result = annotationsLoader.iterator().next();
                     } else {
-                        annotations = result = new BaseAnnotations();
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-
-    /**
-     * Locates the first implementation of {@link Loggers}.
-     *
-     * @return the loggers to use.
-     *
-     * @throws IllegalStateException if the implementation could not be found.
-     */
-    public static AptHelper aptHelper() {
-        AptHelper result = aptHelper;
-        if (result == null) {
-            synchronized (aptHelperLoader) {
-                result = aptHelper;
-                if (result == null) {
-                    if (aptHelperLoader.iterator().hasNext()) {
-                        aptHelper = result = aptHelperLoader.iterator().next();
-                    } else {
-                        aptHelper = result = new AptHelperImpl();
+                        annotations = result = new AnnotationsImpl();
                     }
                 }
             }

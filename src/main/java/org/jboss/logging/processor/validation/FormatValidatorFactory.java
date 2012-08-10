@@ -22,8 +22,7 @@
 
 package org.jboss.logging.processor.validation;
 
-import org.jboss.logging.processor.Annotations;
-import org.jboss.logging.processor.Annotations.FormatType;
+import org.jboss.logging.processor.apt.Annotations.FormatType;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 
 /**

@@ -47,7 +47,6 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.jboss.logging.processor.Annotations.FormatType;
 import org.jboss.logging.processor.intf.model.MessageInterface;
 import org.jboss.logging.processor.intf.model.MessageMethod;
 import org.jboss.logging.processor.model.ClassModel;
@@ -162,7 +161,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     /**
      * Returns only the valid translations message corresponding
      * to the declared {@link org.jboss.logging.processor.intf.model.MessageMethod} methods in the
-     * {@link org.jboss.logging.processor.Annotations#messageBundle()} or {@link org.jboss.logging.processor.Annotations#messageLogger()}
+     * {@link org.jboss.logging.annotations.MessageBundle} or {@link org.jboss.logging.annotations.MessageLogger}
      * interface.
      *
      * @param messageInterface the message interface.
@@ -257,7 +256,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     private static FormatValidator getValidatorFor(final MessageMethod messageMethod, final String translationMessage) {
         FormatValidator result = FormatValidatorFactory.create(messageMethod.message().format(), translationMessage);
         if (result.isValid()) {
-            if (messageMethod.message().format() == FormatType.PRINTF) {
+            if (messageMethod.message().format() == Annotations.FormatType.PRINTF) {
                 result = StringFormatValidator.withTranslation(messageMethod.message().value(), translationMessage);
             }
         }

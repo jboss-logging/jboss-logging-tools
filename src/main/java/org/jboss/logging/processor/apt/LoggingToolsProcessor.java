@@ -141,8 +141,6 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                         }
                     }
                 }
-            } catch (AtpException e) {
-                logger.error(e.getElement(), e);
             } catch (Throwable t) {
                 logger.error(annotation, t);
             }
@@ -151,7 +149,6 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     }
 
     private boolean isValidAnnotation(final TypeElement annotation) {
-        final String name = annotation.getQualifiedName().toString();
-        return (name.equals(annotations().messageBundle().getName()) || name.equals(annotations().messageLogger().getName()));
+        return annotations().isValidInterfaceAnnotation(annotation);
     }
 }

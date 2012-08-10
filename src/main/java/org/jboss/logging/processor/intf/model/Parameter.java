@@ -122,7 +122,7 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
     String formatterClass();
 
     /**
-     * Returns the class if the parameter is annotated with {@link org.jboss.logging.processor.Annotations#param()}.
+     * Returns the class if the parameter is annotated with {@link org.jboss.logging.annotations.Param}.
      * If the annotation is not present, {@code null} is returned.
      *
      * @return the parameter class or {@code null}.

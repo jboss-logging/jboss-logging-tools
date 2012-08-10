@@ -36,6 +36,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.jboss.logging.processor.apt.Annotations;
 import org.jboss.logging.processor.intf.model.MessageObject;
 
 /**
@@ -58,17 +59,32 @@ public final class ElementHelper {
      * @param element the element to look for the annotation on.
      * @param clazz   the annotation class
      *
-     * @return true if the element is annotated, false otherwise
+     * @return {@code true} if the element is annotated, otherwise {@code false}
      *
-     * @throws NullPointerException if element parameter is null
+     * @throws IllegalArgumentException if element parameter is null
      */
     public static boolean isAnnotatedWith(final Element element, final Class<? extends Annotation> clazz) {
         if (element == null) {
-            throw new NullPointerException("The element parameter is null");
+            throw new IllegalArgumentException("The element parameter is null");
         }
 
         Annotation annotation = element.getAnnotation(clazz);
         return (annotation != null);
+    }
+
+    /**
+     * Checks if an element is annotated with either of the given annotations.
+     *
+     * @param element the element to look for the annotation on.
+     * @param clazz1  the first class to check
+     * @param clazz2  the second class to check
+     *
+     * @return {@code true} if any of the annotations are found on the element, otherwise {@code false}
+     *
+     * @throws IllegalArgumentException if element parameter is null
+     */
+    public static boolean isAnnotatedWith(final Element element, final Class<? extends Annotation> clazz1, final Class<? extends Annotation> clazz2) {
+        return isAnnotatedWith(element, clazz1) || isAnnotatedWith(element, clazz2);
     }
 
     /**
@@ -149,9 +165,10 @@ public final class ElementHelper {
      * @return {@code true} if there is a cause, otherwise {@code false}.
      */
     public static boolean hasCause(final Collection<? extends VariableElement> params) {
+        final Annotations annotations = annotations();
         // Look for cause
         for (VariableElement param : params) {
-            if (param.getAnnotation(annotations().cause()) != null) {
+            if (annotations.hasCauseAnnotation(param)) {
                 return true;
             }
         }
@@ -159,18 +176,19 @@ public final class ElementHelper {
     }
 
     /**
-     * Returns the number of parameters excluding the {@link org.jboss.logging.processor.Annotations#cause()} parameter
-     * and any {@link org.jboss.logging.processor.Annotations#param()} parameters if found.
+     * Returns the number of parameters excluding the {@link org.jboss.logging.annotations.Cause} parameter
+     * and any {@link org.jboss.logging.annotations.Param} parameters if found.
      *
      * @param params the parameters to get the count for.
      *
      * @return the number of parameters.
      */
     public static int parameterCount(final Collection<? extends VariableElement> params) {
+        final Annotations annotations = annotations();
         int result = params.size();
         for (VariableElement param : params) {
-            if (isAnnotatedWith(param, annotations().param()) || isAnnotatedWith(param, annotations().field()) ||
-                    isAnnotatedWith(param, annotations().property())) {
+            if (annotations.hasParamAnnotation(param) || annotations.hasFieldAnnotation(param) ||
+                    annotations.hasPropertyAnnotation(param)) {
                 --result;
             }
         }
@@ -178,7 +196,7 @@ public final class ElementHelper {
     }
 
     /**
-     * Checks to see if the method has or inherits a {@link org.jboss.logging.processor.Annotations#message()}
+     * Checks to see if the method has or inherits a {@link org.jboss.logging.annotations.Message}
      * annotation.
      *
      * @param methods the method to search.
@@ -187,12 +205,13 @@ public final class ElementHelper {
      * @return {@code true} if the method has or inherits a message annotation, otherwise {@code false}.
      */
     public static boolean inheritsMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
-        if (isAnnotatedWith(method, annotations().message())) {
+        final Annotations annotations = annotations();
+        if (annotations.hasMessageAnnotation(method)) {
             return false;
         }
         final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
-            if (isAnnotatedWith(m, annotations().message())) {
+            if (annotations.hasMessageAnnotation(m)) {
                 return true;
             }
         }
@@ -201,8 +220,8 @@ public final class ElementHelper {
 
     /**
      * Checks to see if the method is overloaded. An overloaded method has a different parameter count based on the
-     * format parameters only. Parameters annotated with {@link org.jboss.logging.processor.Annotations#cause()} or
-     * {@link org.jboss.logging.processor.Annotations#param()}
+     * format parameters only. Parameters annotated with {@link org.jboss.logging.annotations.Cause} or
+     * {@link org.jboss.logging.annotations.Param}
      * are not counted.
      *
      * @param methods the method to search.

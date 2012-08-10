@@ -24,7 +24,7 @@ package org.jboss.logging.processor.intf.model;
 
 import java.util.Set;
 
-import org.jboss.logging.processor.Annotations;
+import org.jboss.logging.processor.apt.Annotations.FormatType;
 import org.jboss.logging.processor.intf.model.Parameter.ParameterType;
 
 /**
@@ -77,7 +77,7 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
      * Indicates whether the message was inherited from another message or not. If {@code true} is returned the
      * {@link Message} was inherited from a different method, otherwise {@code false}.
      * <p/>
-     * <b>Note:</b> {@code false} does not indicate the method has a {@link org.jboss.logging.processor.Annotations#message()} annotation.
+     * <b>Note:</b> {@code false} does not indicate the method has a {@link org.jboss.logging.annotations.Message} annotation.
      *
      * @return {@code true} if the message was inherited from a different method, otherwise {@code false}.
      */
@@ -151,7 +151,7 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
 
 
     /**
-     * Represents a {@link org.jboss.logging.processor.Annotations#message()} annotation on a method.
+     * Represents a {@link org.jboss.logging.annotations.Message} annotation on a method.
      */
     public interface Message {
 
@@ -190,6 +190,6 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
          *
          * @return the format type.
          */
-        Annotations.FormatType format();
+        FormatType format();
     }
 }
