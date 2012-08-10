@@ -32,7 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageInterface;
 
 /**
  * An abstract processor used process annotations.

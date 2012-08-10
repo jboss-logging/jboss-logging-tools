@@ -47,10 +47,10 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.model.ClassModel;
-import org.jboss.logging.processor.model.ClassModelFactory;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.generator.model.ClassModel;
+import org.jboss.logging.processor.generator.model.ClassModelFactory;
 import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.FormatValidator;
 import org.jboss.logging.processor.validation.FormatValidatorFactory;
@@ -160,7 +160,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
     /**
      * Returns only the valid translations message corresponding
-     * to the declared {@link org.jboss.logging.processor.intf.model.MessageMethod} methods in the
+     * to the declared {@link org.jboss.logging.processor.model.MessageMethod} methods in the
      * {@link org.jboss.logging.annotations.MessageBundle} or {@link org.jboss.logging.annotations.MessageLogger}
      * interface.
      *

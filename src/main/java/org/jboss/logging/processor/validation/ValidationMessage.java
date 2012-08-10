@@ -22,7 +22,7 @@
 
 package org.jboss.logging.processor.validation;
 
-import org.jboss.logging.processor.intf.model.MessageObject;
+import org.jboss.logging.processor.model.MessageObject;
 
 /**
  * Date: 12.08.2011

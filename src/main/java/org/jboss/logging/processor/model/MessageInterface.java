@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.intf.model;
+package org.jboss.logging.processor.model;
 
 import java.util.Collection;
 import java.util.Set;

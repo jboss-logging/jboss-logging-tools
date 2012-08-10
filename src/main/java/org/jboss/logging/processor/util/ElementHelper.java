@@ -37,7 +37,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.jboss.logging.processor.apt.Annotations;
-import org.jboss.logging.processor.intf.model.MessageObject;
+import org.jboss.logging.processor.model.MessageObject;
 
 /**
  * An utility class to work with element.
@@ -95,12 +95,11 @@ public final class ElementHelper {
      *
      * @return the translation file name prefix
      *
-     * @throws NullPointerException     if element is null
-     * @throws IllegalArgumentException if element is not an interface
+     * @throws IllegalArgumentException if element is null or the element is not an interface
      */
     public static String getPrimaryClassNamePrefix(final TypeElement element) {
         if (element == null) {
-            throw new NullPointerException("The element parameter cannot be null");
+            throw new IllegalArgumentException("The element parameter cannot be null");
         }
         if (!element.getKind().isInterface()) {
             throw new IllegalArgumentException("The element parameter is not an interface");
@@ -350,7 +349,7 @@ public final class ElementHelper {
     }
 
     /**
-     * If the {@link org.jboss.logging.processor.intf.model.MessageObject#reference()} is an instance of {@link
+     * If the {@link org.jboss.logging.processor.model.MessageObject#reference()} is an instance of {@link
      * Element}, then the value is returned, otherwise {@code null} is returned.
      *
      * @param object the object to check the reference on

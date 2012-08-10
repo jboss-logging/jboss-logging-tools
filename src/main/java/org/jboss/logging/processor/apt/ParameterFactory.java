@@ -42,8 +42,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.intf.model.Parameter;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.Comparison;
 
 /**

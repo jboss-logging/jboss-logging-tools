@@ -22,7 +22,7 @@
 
 package org.jboss.logging.processor.validation;
 
-import static org.jboss.logging.processor.intf.model.Parameter.ParameterType;
+import static org.jboss.logging.processor.model.Parameter.ParameterType;
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createError;
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createWarning;
 
@@ -35,11 +35,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.intf.model.Parameter;
-import org.jboss.logging.processor.intf.model.ReturnType;
-import org.jboss.logging.processor.intf.model.ThrowableType;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
+import org.jboss.logging.processor.model.ReturnType;
+import org.jboss.logging.processor.model.ThrowableType;
 
 /**
  * Date: 12.08.2011

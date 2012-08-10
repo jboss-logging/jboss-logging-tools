@@ -28,44 +28,43 @@ import org.jboss.logging.processor.apt.Annotations;
 import org.jboss.logging.processor.apt.AnnotationsImpl;
 
 /**
- * This class is not thread safe. The static methods use lazy loading for static
- * variables.
+ * A helper class that uses services loaders to load implementations for the {@link Annotations} and the {@link
+ * Loggers} interfaces. If the service loader did not find an implementation a default implementation is used.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 21.Feb.2011
  */
 public class Tools {
 
-    private static volatile Annotations annotations;
-    private static volatile Loggers loggers;
-    private static final ServiceLoader<Annotations> annotationsLoader = ServiceLoader.load(Annotations.class, Tools.class.getClassLoader());
-    private static final ServiceLoader<Loggers> loggersLoader = ServiceLoader.load(Loggers.class, Tools.class.getClassLoader());
+    private static final Tools INSTANCE = new Tools();
+
+    private final Annotations annotations;
+    private final Loggers loggers;
 
     private Tools() {
+        final ServiceLoader<Annotations> annotationsLoader = ServiceLoader.load(Annotations.class, Tools.class.getClassLoader());
+        final ServiceLoader<Loggers> loggersLoader = ServiceLoader.load(Loggers.class, Tools.class.getClassLoader());
+        if (annotationsLoader.iterator().hasNext()) {
+            annotations = annotationsLoader.iterator().next();
+        } else {
+            annotations = new AnnotationsImpl();
+        }
+        if (loggersLoader.iterator().hasNext()) {
+            loggers = loggersLoader.iterator().next();
+        } else {
+            loggers = new BaseLoggers();
+        }
     }
 
 
     /**
-     * Locates the first implementation of {@link Loggers}.
+     * Locates the first implementation of {@link Annotations}.
      *
-     * @return the loggers to use.
+     * @return the annotations
      *
      * @throws IllegalStateException if the implementation could not be found.
      */
     public static Annotations annotations() {
-        Annotations result = annotations;
-        if (result == null) {
-            synchronized (annotationsLoader) {
-                result = annotations;
-                if (result == null) {
-                    if (annotationsLoader.iterator().hasNext()) {
-                        annotations = result = annotationsLoader.iterator().next();
-                    } else {
-                        annotations = result = new AnnotationsImpl();
-                    }
-                }
-            }
-        }
-        return result;
+        return INSTANCE.annotations;
     }
 
 
@@ -77,19 +76,6 @@ public class Tools {
      * @throws IllegalStateException if the implementation could not be found.
      */
     public static Loggers loggers() {
-        Loggers result = loggers;
-        if (result == null) {
-            synchronized (loggersLoader) {
-                result = loggers;
-                if (result == null) {
-                    if (loggersLoader.iterator().hasNext()) {
-                        loggers = result = loggersLoader.iterator().next();
-                    } else {
-                        loggers = result = new BaseLoggers();
-                    }
-                }
-            }
-        }
-        return result;
+        return INSTANCE.loggers;
     }
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.model;
+package org.jboss.logging.processor.generator.model;
 
 import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 
@@ -40,8 +40,8 @@ import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JType;
 import com.sun.codemodel.JTypeVar;
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
 
 /**
  * The basic java class model.

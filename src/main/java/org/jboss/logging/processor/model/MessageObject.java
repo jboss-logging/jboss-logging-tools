@@ -19,46 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.logging.processor.util;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+package org.jboss.logging.processor.model;
 
 /**
- * Various transformation utilities.
+ * A generic interface for returning basic information about parts of a message bundle or message logger interface.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
- * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-public final class TransformationHelper {
+public interface MessageObject {
 
     /**
-     * Constructor for singleton.
+     * Returns a name for the object.
+     * <p/>
+     * For an interface or class this will return the qualified class name. For a method this will return the name of
+     * the method. For a parameter the name of the parameter will be returned.
+     *
+     * @return the name of the object.
      */
-    private TransformationHelper() {
-    }
+    String name();
 
     /**
-     * Converts a stack trace to string output.
+     * The object used to extract information for the message logger or message bundle, if applicable. The reference is
+     * not used for the implementation and is provided for convenience.
+     * <p/>
+     * For example, in an annotation processor implementation a {@link javax.lang.model.element.ExecutableElement}
+     * might be returned.
      *
-     * @param t the stack trace to convert.
-     *
-     * @return a string version of the stack trace.
+     * @return the reference object used to extract information.
      */
-    public static String stackTraceToString(final Throwable t) {
-        final StringWriter stringWriter = new StringWriter();
-        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
-        t.printStackTrace(printWriter);
-        printWriter.flush();
-        stringWriter.flush();
-        printWriter.close();
-        try {
-            stringWriter.close();
-        } catch (IOException e) {
-            // Do nothing
-        }
-        return stringWriter.toString();
-    }
-
+    Object reference();
 }

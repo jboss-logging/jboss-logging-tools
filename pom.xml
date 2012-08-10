@@ -51,6 +51,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
         <version.org.jboss.logging>3.1.2.GA</version.org.jboss.logging>
         <version.org.jboss.logmanager>1.3.2.Final</version.org.jboss.logmanager>
         <version.org.testng>6.3.1</version.org.testng>
@@ -70,7 +71,7 @@
         <dependency>
             <groupId>com.sun.codemodel</groupId>
             <artifactId>codemodel</artifactId>
-            <version>2.6</version>
+            <version>${version.com.sun.codemodel}</version>
         </dependency>
 
         <!--

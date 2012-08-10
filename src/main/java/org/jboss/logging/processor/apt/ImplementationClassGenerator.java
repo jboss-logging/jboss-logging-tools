@@ -26,9 +26,9 @@ import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
-import org.jboss.logging.processor.model.ClassModel;
-import org.jboss.logging.processor.model.ClassModelFactory;
-import org.jboss.logging.processor.intf.model.MessageInterface;
+import org.jboss.logging.processor.generator.model.ClassModel;
+import org.jboss.logging.processor.generator.model.ClassModelFactory;
+import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.util.VersionComparator;
 
 /**

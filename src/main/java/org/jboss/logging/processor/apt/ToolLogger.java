@@ -22,6 +22,9 @@
 
 package org.jboss.logging.processor.apt;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,8 +32,6 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic.Kind;
-
-import org.jboss.logging.processor.util.TransformationHelper;
 
 /**
  * A logger for logging messages for annotation processors.
@@ -312,7 +313,7 @@ public final class ToolLogger {
 
     private void log(final Kind kind, final Element element, final Throwable cause, final String messageFormat, final Object... args) {
 
-        String stringCause = TransformationHelper.stackTraceToString(cause);
+        String stringCause = stackTraceToString(cause);
 
         if (messageFormat == null) {
             log(kind, element, stringCause);
@@ -330,7 +331,7 @@ public final class ToolLogger {
 
     private void log(final Kind kind, final Element element, final Throwable cause, final String message) {
 
-        String stringCause = TransformationHelper.stackTraceToString(cause);
+        String stringCause = stackTraceToString(cause);
 
         if (message == null) {
             log(kind, element, stringCause);
@@ -340,6 +341,28 @@ public final class ToolLogger {
             log(kind, element, messageWithCause);
         }
 
+    }
+
+    /**
+     * Converts a stack trace to string output.
+     *
+     * @param t the stack trace to convert.
+     *
+     * @return a string version of the stack trace.
+     */
+    public static String stackTraceToString(final Throwable t) {
+        final StringWriter stringWriter = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        t.printStackTrace(printWriter);
+        printWriter.flush();
+        stringWriter.flush();
+        printWriter.close();
+        try {
+            stringWriter.close();
+        } catch (IOException e) {
+            // Do nothing
+        }
+        return stringWriter.toString();
     }
 
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.model;
+package org.jboss.logging.processor.generator.model;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,8 +31,8 @@ import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
 
 /**
  * The java message bundle class model.

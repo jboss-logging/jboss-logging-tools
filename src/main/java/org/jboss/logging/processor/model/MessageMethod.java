@@ -20,12 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.intf.model;
+package org.jboss.logging.processor.model;
 
 import java.util.Set;
 
 import org.jboss.logging.processor.apt.Annotations.FormatType;
-import org.jboss.logging.processor.intf.model.Parameter.ParameterType;
+import org.jboss.logging.processor.model.Parameter.ParameterType;
 
 /**
  * Date: 29.07.2011

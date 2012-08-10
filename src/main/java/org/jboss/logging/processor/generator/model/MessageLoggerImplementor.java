@@ -20,10 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.model;
+package org.jboss.logging.processor.generator.model;
 
 import static org.jboss.logging.processor.Tools.loggers;
-import static org.jboss.logging.processor.intf.model.Parameter.ParameterType;
+import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -42,10 +42,10 @@ import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
-import org.jboss.logging.processor.apt.Annotations;
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.intf.model.Parameter;
+import org.jboss.logging.processor.apt.Annotations.FormatType;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
 
 /**
  * Used to generate a message logger implementation.

@@ -47,11 +47,11 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
 
 /**
- * A factory to create a {@link org.jboss.logging.processor.intf.model.MessageInterface} for annotation processors.
+ * A factory to create a {@link org.jboss.logging.processor.model.MessageInterface} for annotation processors.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

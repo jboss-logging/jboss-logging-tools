@@ -41,7 +41,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.ValidationMessage;
 import org.jboss.logging.processor.validation.Validator;
