@@ -47,11 +47,11 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.jboss.logging.processor.Annotations.FormatType;
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.model.ClassModel;
-import org.jboss.logging.processor.model.ClassModelFactory;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.generator.model.ClassModel;
+import org.jboss.logging.processor.generator.model.ClassModelFactory;
+import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.FormatValidator;
 import org.jboss.logging.processor.validation.FormatValidatorFactory;
 import org.jboss.logging.processor.validation.StringFormatValidator;
@@ -160,8 +160,8 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
     /**
      * Returns only the valid translations message corresponding
-     * to the declared {@link org.jboss.logging.processor.intf.model.MessageMethod} methods in the
-     * {@link org.jboss.logging.processor.Annotations#messageBundle()} or {@link org.jboss.logging.processor.Annotations#messageLogger()}
+     * to the declared {@link org.jboss.logging.processor.model.MessageMethod} methods in the
+     * {@link org.jboss.logging.annotations.MessageBundle} or {@link org.jboss.logging.annotations.MessageLogger}
      * interface.
      *
      * @param messageInterface the message interface.
@@ -188,12 +188,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
             }
             for (MessageMethod messageMethod : messageMethods) {
                 final String key = messageMethod.translationKey();
-                final Element methodElement;
-                if (messageMethod.reference() instanceof Element) {
-                    methodElement = (Element) messageMethod.reference();
-                } else {
-                    methodElement = null;
-                }
+                final Element methodElement = ElementHelper.fromMessageObject(messageMethod);
                 if (translations.containsKey(key)) {
                     final String translationMessage = translations.getProperty(key);
                     if (!translationMessage.trim().isEmpty()) {
@@ -233,7 +228,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
      * @param translations     the translations message
      */
     private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<MessageMethod, String> translations) {
-        logger().note("Generating translation class for %s.", translationFile.getAbsolutePath());
+        logger().note(ElementHelper.fromMessageObject(messageInterface), "Generating translation class.");
 
         //Generate empty translation super class if needed
         //Check if enclosing translation file exists, if not generate an empty super class
@@ -261,7 +256,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     private static FormatValidator getValidatorFor(final MessageMethod messageMethod, final String translationMessage) {
         FormatValidator result = FormatValidatorFactory.create(messageMethod.message().format(), translationMessage);
         if (result.isValid()) {
-            if (messageMethod.message().format() == FormatType.PRINTF) {
+            if (messageMethod.message().format() == Annotations.FormatType.PRINTF) {
                 result = StringFormatValidator.withTranslation(messageMethod.message().value(), translationMessage);
             }
         }

@@ -20,12 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.model;
+package org.jboss.logging.processor.generator.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageInterface;
 
 /**
  * Utilities for the code model.
@@ -35,6 +35,8 @@ import org.jboss.logging.processor.intf.model.MessageInterface;
 public final class ClassModelHelper {
 
     private static final String STRING_ID_FORMAT = "%06d: ";
+
+    private static final String STRING_ID_FORMAT2 = "%s%06d: ";
 
     /**
      * Constructor for singleton model.
@@ -55,12 +57,13 @@ public final class ClassModelHelper {
     /**
      * Formats message id.
      *
-     * @param messageId the message id to format.
+     * @param projectCode the project code for the message
+     * @param messageId   the message id to format
      *
-     * @return the formatted message id.
+     * @return the formatted message id
      */
-    public static String formatMessageId(final int messageId) {
-        return String.format(STRING_ID_FORMAT, messageId);
+    public static String formatMessageId(final String projectCode, final int messageId) {
+        return String.format(STRING_ID_FORMAT2, projectCode, messageId);
     }
 
     /**

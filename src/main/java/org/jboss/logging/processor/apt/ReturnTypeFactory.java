@@ -39,10 +39,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.intf.model.Parameter;
-import org.jboss.logging.processor.intf.model.ReturnType;
-import org.jboss.logging.processor.intf.model.ThrowableType;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
+import org.jboss.logging.processor.model.ReturnType;
+import org.jboss.logging.processor.model.ThrowableType;
 import org.jboss.logging.processor.util.Objects;
 
 /**

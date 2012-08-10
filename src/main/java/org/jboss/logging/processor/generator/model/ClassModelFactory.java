@@ -20,15 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.model;
+package org.jboss.logging.processor.generator.model;
 
-import static org.jboss.logging.processor.model.ClassModelHelper.implementationClassName;
+import static org.jboss.logging.processor.generator.model.ClassModelHelper.implementationClassName;
 import static org.jboss.logging.processor.util.TranslationHelper.getEnclosingTranslationClassName;
 
 import java.util.Map;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
 
 /**
  * Creates a class model for the message interface.

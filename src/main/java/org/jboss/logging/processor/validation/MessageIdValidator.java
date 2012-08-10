@@ -32,7 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.logging.processor.intf.model.MessageMethod;
+import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.util.Comparison;
 
 /**

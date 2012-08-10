@@ -22,6 +22,9 @@
 
 package org.jboss.logging.processor.apt;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,8 +32,6 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic.Kind;
-
-import org.jboss.logging.processor.util.TransformationHelper;
 
 /**
  * A logger for logging messages for annotation processors.
@@ -75,16 +76,6 @@ public final class ToolLogger {
      */
     public boolean isDebugEnabled() {
         return isDebugEnabled;
-    }
-
-    /**
-     * Prints a formatted note message.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void note(final String messageFormat, final Object... args) {
-        note(null, messageFormat, args);
     }
 
     /**
@@ -141,18 +132,8 @@ public final class ToolLogger {
      */
     public void debug(final Element element, final String messageFormat, final Object... args) {
         if (isDebugEnabled) {
-            other(messageFormat, element, args);
+            other(null, messageFormat, element, args);
         }
-    }
-
-    /**
-     * Prints a formatted warning message.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void warn(final String messageFormat, final Object... args) {
-        warn(null, messageFormat, args);
     }
 
     /**
@@ -174,16 +155,6 @@ public final class ToolLogger {
      */
     public void warn(final Element element, final String messageFormat, final Object... args) {
         log(Kind.WARNING, element, messageFormat, args);
-    }
-
-    /**
-     * Prints a formatted warning message.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void mandatoryWarning(final String messageFormat, final Object... args) {
-        mandatoryWarning(null, messageFormat, args);
     }
 
     /**
@@ -292,16 +263,6 @@ public final class ToolLogger {
     }
 
     /**
-     * Prints a formatted message that does not fit the other types.
-     *
-     * @param messageFormat the message format.
-     * @param args          the format arguments.
-     */
-    public void other(final String messageFormat, final Object... args) {
-        log(Kind.OTHER, null, messageFormat, args);
-    }
-
-    /**
      * Prints a message that does not fit the other types.
      *
      * @param element the element to print with the message.
@@ -352,7 +313,7 @@ public final class ToolLogger {
 
     private void log(final Kind kind, final Element element, final Throwable cause, final String messageFormat, final Object... args) {
 
-        String stringCause = TransformationHelper.stackTraceToString(cause);
+        String stringCause = stackTraceToString(cause);
 
         if (messageFormat == null) {
             log(kind, element, stringCause);
@@ -370,7 +331,7 @@ public final class ToolLogger {
 
     private void log(final Kind kind, final Element element, final Throwable cause, final String message) {
 
-        String stringCause = TransformationHelper.stackTraceToString(cause);
+        String stringCause = stackTraceToString(cause);
 
         if (message == null) {
             log(kind, element, stringCause);
@@ -380,6 +341,28 @@ public final class ToolLogger {
             log(kind, element, messageWithCause);
         }
 
+    }
+
+    /**
+     * Converts a stack trace to string output.
+     *
+     * @param t the stack trace to convert.
+     *
+     * @return a string version of the stack trace.
+     */
+    public static String stackTraceToString(final Throwable t) {
+        final StringWriter stringWriter = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(stringWriter, true);
+        t.printStackTrace(printWriter);
+        printWriter.flush();
+        stringWriter.flush();
+        printWriter.close();
+        try {
+            stringWriter.close();
+        } catch (IOException e) {
+            // Do nothing
+        }
+        return stringWriter.toString();
     }
 
 }

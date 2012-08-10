@@ -49,11 +49,11 @@ public final class TranslationHelper {
      *
      * @return the class name suffix corresponding to the given translation filename
      *
-     * @throws NullPointerException if translationFileName is null or not valid
+     * @throws IllegalArgumentException if translationFileName is null or not valid
      */
     public static String getTranslationClassNameSuffix(final String translationFileName) {
         if (translationFileName == null) {
-            throw new NullPointerException("The translationFileName parameter cannot be null");
+            throw new IllegalArgumentException("The translationFileName parameter cannot be null");
         }
 
         Pattern pattern = Pattern.compile("[^_]*((_[^_.]*){1,3}).*");
@@ -61,7 +61,7 @@ public final class TranslationHelper {
         boolean found = matcher.find();
 
         if (!found) {
-            throw new NullPointerException("The given filename is not a valid property filename");
+            throw new IllegalArgumentException("The given filename is not a valid property filename");
         }
 
         return matcher.group(1);
@@ -104,11 +104,11 @@ public final class TranslationHelper {
      *
      * @return the enclosing class name
      *
-     * @throws NullPointerException if translationClassName is null
+     * @throws IllegalArgumentException if translationClassName is null
      */
     public static String getEnclosingTranslationClassName(final String translationClassName) {
         if (translationClassName == null) {
-            throw new NullPointerException("The translationClassName parameter cannot be null");
+            throw new IllegalArgumentException("The translationClassName parameter cannot be null");
         }
 
         int lastUnderScore = translationClassName.lastIndexOf("_");

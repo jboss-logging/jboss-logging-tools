@@ -20,33 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.intf.model;
+package org.jboss.logging.processor.model;
 
 /**
- * A generic interface for returning basic information about parts of a message bundle or message logger interface.
+ * Represents the {@code JavaDoc's} documentation.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageObject {
+public interface JavaDocComment {
 
     /**
-     * Returns a name for the object.
-     * <p/>
-     * For an interface or class this will return the qualified class name. For a method this will return the name of
-     * the method. For a parameter the name of the parameter will be returned.
+     * The JavaDoc comments if available or {@code null} if there are no JavaDoc's present.
      *
-     * @return the name of the object.
+     * @return the JavaDoc comments or {@code null}.
      */
-    String name();
-
-    /**
-     * The object used to extract information for the message logger or message bundle, if applicable. The reference is
-     * not used for the implementation and is provided for convenience.
-     * <p/>
-     * For example, in an annotation processor implementation a {@link javax.lang.model.element.ExecutableElement}
-     * might be returned.
-     *
-     * @return the reference object used to extract information.
-     */
-    Object reference();
+    String getComment();
 }

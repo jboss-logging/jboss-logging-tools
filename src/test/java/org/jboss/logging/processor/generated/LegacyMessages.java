@@ -22,32 +22,23 @@
 
 package org.jboss.logging.processor.generated;
 
+import org.jboss.logging.Field;
 import org.jboss.logging.Messages;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.Field;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.Message.Format;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.annotations.Param;
-import org.jboss.logging.annotations.Property;
+import org.jboss.logging.Cause;
+import org.jboss.logging.Message;
+import org.jboss.logging.Message.Format;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Param;
+import org.jboss.logging.Property;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "MSG")
-public interface ValidMessages {
+public interface LegacyMessages {
     final String TEST_MSG = "Test%n";
 
-    final ValidMessages MESSAGES = Messages.getBundle(ValidMessages.class);
-
-    @Message(value = TEST_MSG)
-    String testWithNewLine();
-
-    @Message(format = Format.NO_FORMAT, value = TEST_MSG)
-    String noFormat();
-
-    @Message(format = Format.NO_FORMAT, value = TEST_MSG)
-    RuntimeException noFormatException(@Cause Throwable cause);
+    final LegacyMessages MESSAGES = Messages.getBundle(LegacyMessages.class);
 
     @Message(TEST_MSG)
     CustomException fieldMessage(@Field(name = "value") int value);

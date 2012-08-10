@@ -43,10 +43,10 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.intf.model.Parameter;
-import org.jboss.logging.processor.intf.model.Parameter.ParameterType;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
+import org.jboss.logging.processor.model.Parameter.ParameterType;
 import org.jboss.logging.processor.util.Strings;
 
 /**
@@ -149,7 +149,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
      */
     void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MessageInterface messageInterface) {
         if (messageInterface == null) {
-            throw new NullPointerException("The translations parameter cannot be null");
+            throw new IllegalArgumentException("The translations parameter cannot be null");
         }
 
         File pathFile = new File(generatedFilesPath, relativePath);

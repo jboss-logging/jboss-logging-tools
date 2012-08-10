@@ -35,5 +35,18 @@ public class MessagesTest {
         Assert.assertEquals(ValidMessages.MESSAGES.testWithNewLine(), String.format(ValidMessages.TEST_MSG));
         Assert.assertEquals(ValidMessages.MESSAGES.noFormat(), ValidMessages.TEST_MSG);
         Assert.assertEquals(ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage(), ValidMessages.TEST_MSG);
+
+        final int value = 10;
+        Assert.assertEquals(ValidMessages.MESSAGES.fieldMessage(value).value, value);
+        Assert.assertEquals(ValidMessages.MESSAGES.paramMessage(value).value, value);
+        Assert.assertEquals(ValidMessages.MESSAGES.propertyMessage(value).value, value);
+    }
+
+    @Test
+    public void testLegacy() {
+        final int value = 10;
+        Assert.assertEquals(LegacyMessages.MESSAGES.fieldMessage(value).value, value);
+        Assert.assertEquals(LegacyMessages.MESSAGES.paramMessage(value).value, value);
+        Assert.assertEquals(LegacyMessages.MESSAGES.propertyMessage(value).value, value);
     }
 }

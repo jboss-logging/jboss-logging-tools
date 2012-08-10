@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.intf.model;
+package org.jboss.logging.processor.model;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
@@ -122,7 +122,7 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
     String formatterClass();
 
     /**
-     * Returns the class if the parameter is annotated with {@link org.jboss.logging.processor.Annotations#param()}.
+     * Returns the class if the parameter is annotated with {@link org.jboss.logging.annotations.Param}.
      * If the annotation is not present, {@code null} is returned.
      *
      * @return the parameter class or {@code null}.
@@ -132,7 +132,7 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
     /**
      * Returns the name of the target field or method. For example if the {@link #parameterType()} returns
      * {@link ParameterType#FIELD}, the target name is the name of the field to set on the
-     * {@link org.jboss.logging.processor.intf.model.ReturnType return type}. If no target name is defined an empty String is returned.
+     * {@link org.jboss.logging.processor.model.ReturnType return type}. If no target name is defined an empty String is returned.
      *
      * @return the target field name, method name or an empty string.
      */

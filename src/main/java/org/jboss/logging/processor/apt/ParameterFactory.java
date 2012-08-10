@@ -23,8 +23,6 @@
 package org.jboss.logging.processor.apt;
 
 import static org.jboss.logging.processor.Tools.annotations;
-import static org.jboss.logging.processor.Tools.aptHelper;
-import static org.jboss.logging.processor.util.ElementHelper.isAnnotatedWith;
 import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
@@ -44,8 +42,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.intf.model.Parameter;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.Comparison;
 
 /**
@@ -63,12 +61,14 @@ final class ParameterFactory {
         final Set<Parameter> result = new LinkedHashSet<Parameter>();
         final List<? extends VariableElement> params = method.getParameters();
         int index = 0;
+        final Annotations annotations = annotations();
         for (VariableElement param : params) {
+            final String formatWithAnnotationName = types.getDeclaredType(elements.getTypeElement(annotations.getFormatWithAnnotationName(param))).toString();
             String formatClass = null;
             // Format class may not yet be compiled, so get it in a roundabout way
             for (AnnotationMirror mirror : param.getAnnotationMirrors()) {
                 final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.toString().equals(types.getDeclaredType(elements.getTypeElement(annotations().formatWith().getName())).toString())) {
+                if (annotationType.toString().equals(formatWithAnnotationName)) {
                     final AnnotationValue value = mirror.getElementValues().values().iterator().next();
                     formatClass = ((TypeElement) (((DeclaredType) value.getValue()).asElement())).getQualifiedName().toString();
                 }
@@ -87,9 +87,9 @@ final class ParameterFactory {
                 }
             }
             if (method.isVarArgs()) {
-                result.add(new AptParameter(elements, types, qualifiedType, param, formatClass, (++index == params.size())));
+                result.add(new AptParameter(elements, types, annotations, qualifiedType, param, formatClass, (++index == params.size())));
             } else {
-                result.add(new AptParameter(elements, types, qualifiedType, param, formatClass, false));
+                result.add(new AptParameter(elements, types, annotations, qualifiedType, param, formatClass, false));
             }
         }
         return result;
@@ -199,6 +199,7 @@ final class ParameterFactory {
     }
 
     private static class AptParameter implements Parameter {
+        private final Annotations annotations;
         private final Types types;
         private final Elements elements;
 
@@ -214,30 +215,32 @@ final class ParameterFactory {
          *
          * @param elements       the element utilities from the annotation processor.
          * @param types          the type utilities from the annotation processor.
+         * @param annotations    the annotations
          * @param qualifiedType  the qualified type name of the parameter.
          * @param param          the parameter.
          * @param formatterClass the formatter class, or {@code null} if none
          * @param isVarArgs      {@code true} if this is a vararg parameter, otherwise {@code false}.
          */
-        AptParameter(final Elements elements, final Types types, final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
+        AptParameter(final Elements elements, final Types types, final Annotations annotations, final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
+            this.annotations = annotations;
             this.elements = elements;
             this.types = types;
             this.qualifiedType = qualifiedType;
             this.param = param;
             this.formatterClass = formatterClass;
-            if (isAnnotatedWith(param, annotations().param())) {
+            if (annotations.hasParamAnnotation(param)) {
                 paramClass = Object.class;
                 parameterType = ParameterType.CONSTRUCTION;
-            } else if (isAnnotatedWith(param, annotations().cause())) {
+            } else if (annotations.hasCauseAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.CAUSE;
-            } else if (isAnnotatedWith(param, annotations().field())) {
+            } else if (annotations.hasFieldAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FIELD;
-            } else if (isAnnotatedWith(param, annotations().property())) {
+            } else if (annotations.hasPropertyAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.PROPERTY;
-            } else if (isAnnotatedWith(param, annotations().loggingClass())) {
+            } else if (annotations.hasLoggingClassAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FQCN;
             } else {
@@ -289,7 +292,7 @@ final class ParameterFactory {
 
         @Override
         public String targetName() {
-            return aptHelper().targetName(param);
+            return annotations.targetName(param);
         }
 
         @Override

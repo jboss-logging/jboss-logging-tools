@@ -24,10 +24,8 @@ package org.jboss.logging.processor.apt;
 
 import static java.util.Collections.unmodifiableSet;
 import static org.jboss.logging.processor.Tools.annotations;
-import static org.jboss.logging.processor.Tools.aptHelper;
 import static org.jboss.logging.processor.util.ElementHelper.findByName;
 import static org.jboss.logging.processor.util.ElementHelper.inheritsMessage;
-import static org.jboss.logging.processor.util.ElementHelper.isAnnotatedWith;
 import static org.jboss.logging.processor.util.ElementHelper.isOverloaded;
 import static org.jboss.logging.processor.util.ElementHelper.parameterCount;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
@@ -48,12 +46,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.Annotations.FormatType;
-import org.jboss.logging.processor.intf.model.MessageMethod;
-import org.jboss.logging.processor.intf.model.Parameter;
-import org.jboss.logging.processor.intf.model.Parameter.ParameterType;
-import org.jboss.logging.processor.intf.model.ReturnType;
-import org.jboss.logging.processor.intf.model.ThrowableType;
+import org.jboss.logging.processor.apt.Annotations.FormatType;
+import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
+import org.jboss.logging.processor.model.Parameter.ParameterType;
+import org.jboss.logging.processor.model.ReturnType;
+import org.jboss.logging.processor.model.ThrowableType;
 import org.jboss.logging.processor.util.Comparison;
 
 /**
@@ -64,11 +62,13 @@ import org.jboss.logging.processor.util.Comparison;
 final class MessageMethodBuilder {
 
     private static final String MESSAGE_METHOD_SUFFIX = "$str";
+    private final Annotations annotations;
     private final List<ExecutableElement> methods;
     private final Elements elements;
     private final Types types;
 
     private MessageMethodBuilder(final Elements elements, final Types types) {
+        annotations = annotations();
         this.elements = elements;
         this.types = types;
         methods = new LinkedList<ExecutableElement>();
@@ -86,7 +86,7 @@ final class MessageMethodBuilder {
     Set<MessageMethod> build() {
         final Set<MessageMethod> result = new LinkedHashSet<MessageMethod>();
         for (ExecutableElement elementMethod : methods) {
-            final AptMessageMethod resultMethod = new AptMessageMethod(elements, elementMethod);
+            final AptMessageMethod resultMethod = new AptMessageMethod(elements, elementMethod, annotations);
             resultMethod.inheritsMessage = inheritsMessage(methods, elementMethod);
             resultMethod.message = findMessage(methods, elementMethod);
             resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
@@ -113,38 +113,38 @@ final class MessageMethodBuilder {
         return Collections.unmodifiableSet(result);
     }
 
-    private static MessageMethod.Message findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+    private MessageMethod.Message findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         AptMessage result = null;
-        if (isAnnotatedWith(method, annotations().message())) {
+        if (annotations.hasMessageAnnotation(method)) {
             result = new AptMessage();
-            result.hasId = aptHelper().hasMessageId(method);
-            result.value = aptHelper().messageValue(method);
-            result.formatType = aptHelper().messageFormat(method);
-            result.inheritsId = aptHelper().inheritsMessageId(method);
+            result.hasId = annotations.hasMessageId(method);
+            result.value = annotations.messageValue(method);
+            result.formatType = annotations.messageFormat(method);
+            result.inheritsId = annotations.inheritsMessageId(method);
             if (result.inheritsId()) {
                 result.id = findMessageId(methods, method);
                 if (result.id > 0) {
                     result.hasId = true;
                 }
             } else {
-                result.id = aptHelper().messageId(method);
+                result.id = annotations.messageId(method);
             }
         } else {
             final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
             for (ExecutableElement m : allMethods) {
-                if (isAnnotatedWith(m, annotations().message())) {
+                if (annotations.hasMessageAnnotation(m)) {
                     result = new AptMessage();
-                    result.hasId = aptHelper().hasMessageId(m);
-                    result.value = aptHelper().messageValue(m);
-                    result.formatType = aptHelper().messageFormat(m);
-                    result.inheritsId = aptHelper().inheritsMessageId(m);
+                    result.hasId = annotations.hasMessageId(m);
+                    result.value = annotations.messageValue(m);
+                    result.formatType = annotations.messageFormat(m);
+                    result.inheritsId = annotations.inheritsMessageId(m);
                     if (result.inheritsId()) {
                         result.id = findMessageId(methods, m);
                         if (result.id > 0) {
                             result.hasId = true;
                         }
                     } else {
-                        result.id = aptHelper().messageId(m);
+                        result.id = annotations.messageId(m);
                     }
                     break;
                 }
@@ -153,13 +153,13 @@ final class MessageMethodBuilder {
         return result;
     }
 
-    private static int findMessageId(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+    private int findMessageId(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         int result = -2;
         final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
-            if (isAnnotatedWith(m, annotations().message())) {
-                if (!aptHelper().inheritsMessageId(m)) {
-                    result = aptHelper().messageId(m);
+            if (annotations.hasMessageAnnotation(m)) {
+                if (!annotations.inheritsMessageId(m)) {
+                    result = annotations.messageId(m);
                 }
             }
         }
@@ -172,6 +172,7 @@ final class MessageMethodBuilder {
      */
     private static class AptMessageMethod implements MessageMethod {
 
+        private final Annotations annotations;
         private final Elements elements;
         private ReturnType returnType;
 
@@ -188,10 +189,12 @@ final class MessageMethodBuilder {
         /**
          * Private constructor for the
          *
-         * @param elements the elements utility.
-         * @param method   the method to describe.
+         * @param elements    the elements utility.
+         * @param method      the method to describe.
+         * @param annotations the annotations
          */
-        AptMessageMethod(final Elements elements, final ExecutableElement method) {
+        AptMessageMethod(final Elements elements, final ExecutableElement method, final Annotations annotations) {
+            this.annotations = annotations;
             this.elements = elements;
             this.method = method;
             inheritsMessage = false;
@@ -275,12 +278,12 @@ final class MessageMethodBuilder {
 
         @Override
         public String loggerMethod() {
-            return aptHelper().loggerMethod(message.format());
+            return annotations.loggerMethod(message.format());
         }
 
         @Override
         public String logLevel() {
-            return aptHelper().logLevel(method);
+            return annotations.logLevel(method);
         }
 
         @Override
@@ -293,7 +296,7 @@ final class MessageMethodBuilder {
 
         @Override
         public boolean isLoggerMethod() {
-            return isAnnotatedWith(method, annotations().logMessage());
+            return annotations.isLoggerMethod(method);
         }
 
         @Override

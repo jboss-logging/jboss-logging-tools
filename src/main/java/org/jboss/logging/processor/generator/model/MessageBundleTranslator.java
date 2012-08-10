@@ -20,36 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.model;
-
-
-import static org.jboss.logging.processor.Tools.loggers;
+package org.jboss.logging.processor.generator.model;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.sun.codemodel.internal.JBlock;
-import com.sun.codemodel.internal.JCodeModel;
-import com.sun.codemodel.internal.JDefinedClass;
-import com.sun.codemodel.internal.JMethod;
-import com.sun.codemodel.internal.JMod;
-import org.jboss.logging.processor.intf.model.MessageInterface;
-import org.jboss.logging.processor.intf.model.MessageMethod;
-
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
 
 /**
- * The java message logger translation class model.
+ * The java message bundle class model.
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-class MessageLoggerTranslator extends ClassModel {
-
-    /**
-     * The logger parameter name.
-     */
-    private static final String LOGGER_PARAMETER_NAME = "logger";
+class MessageBundleTranslator extends ClassModel {
 
     /**
      * The translation map.
@@ -57,14 +47,14 @@ class MessageLoggerTranslator extends ClassModel {
     private final Map<MessageMethod, String> translations;
 
     /**
-     * Create a MessageLogger with super class and interface.
+     * Create a MessageBundle with super class and interface.
      *
      * @param messageInterface the message interface to implement.
      * @param className        the implementation class name.
      * @param superClassName   the super class name
      * @param translations     the translation map.
      */
-    public MessageLoggerTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
+    public MessageBundleTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
         super(messageInterface, className, superClassName);
 
         if (translations != null) {
@@ -79,13 +69,13 @@ class MessageLoggerTranslator extends ClassModel {
         JCodeModel model = super.generateModel();
         JDefinedClass definedClass = getDefinedClass();
 
-        JMethod constructor = definedClass.constructor(JMod.PUBLIC);
-        constructor.param(JMod.FINAL, loggers().loggerClass(), LOGGER_PARAMETER_NAME);
+        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
+        constructor.body().invoke("super");
 
-        JBlock constructorBody = constructor.body();
-        constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
+        JMethod readResolve = createReadResolveMethod();
+        readResolve.annotate(Override.class);
 
-        final Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
+        final Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
         final Set<String> methodNames = new HashSet<String>();
         for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
@@ -96,5 +86,4 @@ class MessageLoggerTranslator extends ClassModel {
 
         return model;
     }
-
 }

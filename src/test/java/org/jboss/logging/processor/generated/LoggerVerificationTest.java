@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.jboss.logging.Logger;
+import org.jboss.logging.processor.generated.DefaultLogger.CustomFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
@@ -53,12 +54,15 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         DefaultLogger.LOGGER.howAreYou(NAME);
         DefaultLogger.LOGGER.noFormat();
         DefaultLogger.LOGGER.noFormatWithCause(new IllegalArgumentException("No format cause"));
+        final String msg = "This is a test message";
+        DefaultLogger.LOGGER.formatWith(msg);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
         Assert.assertEquals(properties.size(), HANDLER.size());
         compare(0, "hello", properties, NAME);
         compare(1, "howAreYou", properties, NAME);
         compare(2, "noFormat", properties);
         compare(3, "noFormatWithCause", properties);
+        compare(4, "formatWith", properties, new CustomFormatter(msg));
     }
 
     @Test
