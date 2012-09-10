@@ -22,7 +22,6 @@
 package org.jboss.logging.processor.apt;
 
 import static javax.lang.model.util.ElementFilter.typesIn;
-import static org.jboss.logging.processor.Tools.annotations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,12 +34,12 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
+import org.jboss.logging.processor.Tools;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.ValidationMessage;
@@ -56,7 +55,6 @@ import org.jboss.logging.processor.validation.Validator;
 @SupportedOptions({
         LoggingToolsProcessor.DEBUG_OPTION
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class LoggingToolsProcessor extends AbstractProcessor {
 
     public static final String DEBUG_OPTION = "debug";
@@ -101,6 +99,16 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     }
 
     @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return Tools.annotations().getSupportedAnnotations();
+    }
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latest();
+    }
+
+    @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
         boolean process = true;
         final Validator validator = new Validator();
@@ -108,35 +116,33 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
             try {
-                if (isValidAnnotation(annotation)) {
-                    final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
-                    for (TypeElement interfaceElement : interfaces) {
-                        final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
-                        final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
-                        for (ValidationMessage message : validationMessages) {
-                            final Element element = ElementHelper.fromMessageObject(message.getMessageObject());
-                            switch (message.type()) {
-                                case ERROR: {
-                                    logger.error(element, message.getMessage());
-                                    process = false;
-                                    break;
-                                }
-                                case WARN: {
-                                    logger.warn(element, message.getMessage());
-                                    break;
-                                }
-                                default: {
-                                    logger.note(element, message.getMessage());
-                                }
+                final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
+                for (TypeElement interfaceElement : interfaces) {
+                    final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
+                    final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
+                    for (ValidationMessage message : validationMessages) {
+                        final Element element = ElementHelper.fromMessageObject(message.getMessageObject());
+                        switch (message.type()) {
+                            case ERROR: {
+                                logger.error(element, message.getMessage());
+                                process = false;
+                                break;
+                            }
+                            case WARN: {
+                                logger.warn(element, message.getMessage());
+                                break;
+                            }
+                            default: {
+                                logger.note(element, message.getMessage());
                             }
                         }
-                        if (process) {
-                            if (interfaceElement.getKind().isInterface()
-                                    && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
-                                for (AbstractGenerator processor : processors) {
-                                    logger.debug("Executing processor %s", processor.getName());
-                                    processor.processTypeElement(annotation, interfaceElement, messageInterface);
-                                }
+                    }
+                    if (process) {
+                        if (interfaceElement.getKind().isInterface()
+                                && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
+                            for (AbstractGenerator processor : processors) {
+                                logger.debug("Executing processor %s", processor.getName());
+                                processor.processTypeElement(annotation, interfaceElement, messageInterface);
                             }
                         }
                     }
@@ -146,9 +152,5 @@ public class LoggingToolsProcessor extends AbstractProcessor {
             }
         }
         return process;
-    }
-
-    private boolean isValidAnnotation(final TypeElement annotation) {
-        return annotations().isValidInterfaceAnnotation(annotation);
     }
 }

@@ -31,7 +31,7 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
-public class BaseLoggers implements Loggers {
+public class JBossLoggers implements Loggers {
 
     @Override
     public Class<Logger> loggerClass() {

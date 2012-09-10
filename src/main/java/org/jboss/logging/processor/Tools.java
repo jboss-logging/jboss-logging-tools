@@ -51,7 +51,7 @@ public class Tools {
         if (loggersLoader.iterator().hasNext()) {
             loggers = loggersLoader.iterator().next();
         } else {
-            loggers = new BaseLoggers();
+            loggers = new JBossLoggers();
         }
     }
 

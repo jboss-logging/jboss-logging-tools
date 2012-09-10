@@ -23,6 +23,7 @@
 package org.jboss.logging.processor.apt;
 
 import java.text.MessageFormat;
+import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -70,6 +71,12 @@ public interface Annotations {
             return staticMethod;
         }
     }
+
+    /**
+     * Returns a set of the supported annotations.
+     * @return
+     */
+    Set<String> getSupportedAnnotations();
 
     /**
      * Returns the method format type.
@@ -190,17 +197,6 @@ public interface Annotations {
      * @return {@code true} if the interface is a message logger
      */
     boolean isMessageLogger(TypeElement element);
-
-    /**
-     * Checks the annotation to see if it's valid to be processed.
-     * <p/>
-     * By default all annotations are processed.
-     *
-     * @param annotation the annotation to check
-     *
-     * @return {@code true} if the annotation should be processed, otherwise {@code false}
-     */
-    boolean isValidInterfaceAnnotation(TypeElement annotation);
 
     /**
      * Returns the name of the {@code @FormatWith} class.
