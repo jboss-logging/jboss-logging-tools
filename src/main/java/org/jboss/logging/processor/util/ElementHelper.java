@@ -28,6 +28,9 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -73,18 +76,53 @@ public final class ElementHelper {
     }
 
     /**
-     * Checks if an element is annotated with either of the given annotations.
+     * Check if an element is annotated with the given annotation.
      *
      * @param element the element to look for the annotation on.
-     * @param clazz1  the first class to check
-     * @param clazz2  the second class to check
+     * @param fqcn    the fully qualified class name of the annotation
      *
-     * @return {@code true} if any of the annotations are found on the element, otherwise {@code false}
+     * @return {@code true} if the element is annotated, otherwise {@code false}
      *
      * @throws IllegalArgumentException if element parameter is null
      */
-    public static boolean isAnnotatedWith(final Element element, final Class<? extends Annotation> clazz1, final Class<? extends Annotation> clazz2) {
-        return isAnnotatedWith(element, clazz1) || isAnnotatedWith(element, clazz2);
+    public static boolean isAnnotatedWith(final Element element, final String fqcn) {
+        if (element == null) {
+            throw new IllegalArgumentException("The element parameter is null");
+        }
+        final List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            final DeclaredType annotationType = annotationMirror.getAnnotationType();
+            if (annotationType.toString().equals(fqcn)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the annotation value for the annotation.
+     * <p/>
+     * Note that the default value of the annotation is not returned.
+     *
+     * @param element    the element the annotation is present on
+     * @param annotation the fully qualified annotation name
+     * @param fieldName  the name of the field/method of the value
+     *
+     * @return the value if found or {@code null} if the annotation was not present or the value was not defined
+     */
+    public static AnnotationValue getAnnotationValue(final Element element, final String annotation, final String fieldName) {
+        for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
+            final DeclaredType annotationType = mirror.getAnnotationType();
+            if (annotationType.toString().equals(annotation)) {
+                final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
+                for (ExecutableElement key : map.keySet()) {
+                    if (key.getSimpleName().contentEquals(fieldName)) {
+                        return map.get(key);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

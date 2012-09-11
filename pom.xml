@@ -58,9 +58,6 @@
     </properties>
 
     <dependencies>
-        <!--
-            JBoss Logging
-        -->
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>

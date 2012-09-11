@@ -47,10 +47,10 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.generator.model.ClassModel;
 import org.jboss.logging.processor.generator.model.ClassModelFactory;
+import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.FormatValidator;
 import org.jboss.logging.processor.validation.FormatValidatorFactory;
@@ -66,10 +66,14 @@ import org.jboss.logging.processor.validation.StringFormatValidator;
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-@SupportedOptions(TranslationClassGenerator.TRANSLATION_FILES_PATH_OPTION)
+@SupportedOptions({
+        TranslationClassGenerator.TRANSLATION_FILES_PATH_OPTION,
+        TranslationClassGenerator.SKIP_TRANSLATIONS
+})
 final class TranslationClassGenerator extends AbstractGenerator {
 
     public static final String TRANSLATION_FILES_PATH_OPTION = "translationFilesPath";
+    public static final String SKIP_TRANSLATIONS = "skipTranslations";
 
     /**
      * The properties file pattern. The property file must
@@ -83,6 +87,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     private static final String TRANSLATION_FILE_EXTENSION_PATTERN = ".i18n_[a-z]*(_[A-Z]*){0,2}\\.properties";
 
     private final String translationFilesPath;
+    private final boolean skipTranslations;
 
 
     /**
@@ -95,10 +100,16 @@ final class TranslationClassGenerator extends AbstractGenerator {
         super(processingEnv);
         Map<String, String> options = processingEnv.getOptions();
         this.translationFilesPath = options.get(TRANSLATION_FILES_PATH_OPTION);
+        final String value = options.get(SKIP_TRANSLATIONS);
+        this.skipTranslations = (options.containsKey(SKIP_TRANSLATIONS) && (value == null ? true : Boolean.valueOf(value)));
     }
 
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
+        if (skipTranslations) {
+            logger().debug(element, "Skipping processing of translation implementation");
+            return;
+        }
         try {
             final List<File> files = findTranslationFiles(messageInterface);
             final Map<File, Map<MessageMethod, String>> validTranslations = allInterfaceTranslations(messageInterface, files);
