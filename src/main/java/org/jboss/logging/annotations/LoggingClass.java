@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 
 /**
  * Mark a parameter as specifying the name of the logging class to use.  The parameter
- * may have a type of {@link String} or {@link Class}.
+ * may have a type of {@link Class}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
