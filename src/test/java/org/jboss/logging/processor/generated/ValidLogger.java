@@ -1,9 +1,9 @@
 package org.jboss.logging.processor.generated;
 
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageLogger;
@@ -57,4 +57,14 @@ public interface ValidLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id = Message.INHERIT, value = "Processing error in module '%s'")
     void processingError(@Cause Throwable cause, String moduleName);
+
+    /**
+     * Logs an error message indicating a processing error.
+     *
+     * @param on      the object the error occurred on
+     * @param message the error message
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 203, value = "Processing error on '%s' with error '%s'")
+    void processingError(Object on, String message);
 }

@@ -58,8 +58,11 @@ public final class MessageIdValidator {
                 synchronized (this) {
                     if (usedMessageIds.containsKey(key)) {
                         final MessageMethod previousMethod = usedMessageIds.get(key);
-                        messages.add(createError(previousMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), previousMethod.name(), projectCode));
-                        messages.add(createError(messageMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), messageMethod.name(), projectCode));
+                        // Allow methods with the same name to use the same id, like INHERIT does
+                        if (!previousMethod.name().equals(messageMethod.name())) {
+                            messages.add(createError(previousMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), previousMethod.name(), projectCode));
+                            messages.add(createError(messageMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), messageMethod.name(), projectCode));
+                        }
                     } else {
                         usedMessageIds.put(key, messageMethod);
                     }
