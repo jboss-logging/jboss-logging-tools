@@ -67,13 +67,13 @@ public final class Validator {
             final String projectCode = messageInterface.projectCode();
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-            messages.addAll(validateCommon(projectCode, messageMethods));
+            messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateBundle(messageMethods));
         } else if (messageInterface.isMessageLogger()) {
             final String projectCode = messageInterface.projectCode();
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-            messages.addAll(validateCommon(projectCode, messageMethods));
+            messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateLogger(messageMethods));
         } else {
             messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
@@ -84,12 +84,12 @@ public final class Validator {
     /**
      * Validate common attributes to all interfaces.
      *
-     * @param projectCode    the project code of the interface.
-     * @param messageMethods the messageMethods to validate.
+     * @param messageInterface the interface.
+     * @param messageMethods   the messageMethods to validate.
      *
      * @return a collection of validation messages.
      */
-    private Collection<ValidationMessage> validateCommon(final String projectCode, final Set<MessageMethod> messageMethods) {
+    private Collection<ValidationMessage> validateCommon(final MessageInterface messageInterface, final Set<MessageMethod> messageMethods) {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         final Map<String, MessageMethod> methodNames = new HashMap<String, MessageMethod>();
         for (MessageMethod messageMethod : messageMethods) {
@@ -110,7 +110,7 @@ public final class Validator {
                 if (message.id() < 0) {
                     messages.add(createError(messageMethod, "Message id %d is invalid. Must be greater than 0 or inherit another valid id.", message.id()));
                 } else {
-                    messages.addAll(messageIdValidator.validate(projectCode, messageMethod));
+                    messages.addAll(messageIdValidator.validate(messageInterface, messageMethod));
                 }
             }
             final FormatValidator formatValidator = FormatValidatorFactory.create(messageMethod);

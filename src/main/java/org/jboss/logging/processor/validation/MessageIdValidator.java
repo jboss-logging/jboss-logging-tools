@@ -32,6 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.logging.annotations.ValidIdRange;
+import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.util.Comparison;
 
@@ -47,21 +49,42 @@ public final class MessageIdValidator {
     MessageIdValidator() {
     }
 
-    public Collection<ValidationMessage> validate(final String projectCode, final MessageMethod messageMethod) {
+    public Collection<ValidationMessage> validate(final MessageInterface messageInterface, final MessageMethod messageMethod) {
         final List<ValidationMessage> messages = new LinkedList<ValidationMessage>();
         final MessageMethod.Message message = messageMethod.message();
         if (message == null) {
             messages.add(createError(messageMethod, "No message annotation found."));
         } else {
             if (!messageMethod.inheritsMessage() && !message.inheritsId()) {
-                final MessageKey key = createMessageKey(projectCode, message.id());
+                final int id = message.id();
+                final List<ValidIdRange> validIdRanges = messageInterface.validIdRanges();
+                boolean invalidId = !validIdRanges.isEmpty();
+                for (ValidIdRange validIdRange : validIdRanges) {
+                    if (id >= validIdRange.min() && id <= validIdRange.max()) {
+                        invalidId = false;
+                        break;
+                    }
+                }
+                if (invalidId) {
+                    final StringBuilder ranges = new StringBuilder();
+                    int count = 0;
+                    for (ValidIdRange validIdRange : validIdRanges) {
+                        ranges.append(validIdRange.min()).append('-').append(validIdRange.max());
+                        if (++count < validIdRanges.size()) {
+                            ranges.append(", ");
+                        }
+                    }
+                    messages.add(createError(messageMethod, "Message id %d on method %s is not within the valid range: %s", id, messageMethod.name(), ranges.toString()));
+                }
+                final String projectCode = messageInterface.projectCode();
+                final MessageKey key = createMessageKey(projectCode, id);
                 synchronized (this) {
                     if (usedMessageIds.containsKey(key)) {
                         final MessageMethod previousMethod = usedMessageIds.get(key);
                         // Allow methods with the same name to use the same id, like INHERIT does
                         if (!previousMethod.name().equals(messageMethod.name())) {
-                            messages.add(createError(previousMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), previousMethod.name(), projectCode));
-                            messages.add(createError(messageMethod, "Message id %s is not unique for messageMethod %s with project code %s.", message.id(), messageMethod.name(), projectCode));
+                            messages.add(createError(previousMethod, "Message id %s is not unique for messageMethod %s with project code %s.", id, previousMethod.name(), projectCode));
+                            messages.add(createError(messageMethod, "Message id %s is not unique for messageMethod %s with project code %s.", id, messageMethod.name(), projectCode));
                         }
                     } else {
                         usedMessageIds.put(key, messageMethod);

@@ -28,6 +28,7 @@ import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,8 +48,11 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.ValidIdRange;
+import org.jboss.logging.annotations.ValidIdRanges;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * A factory to create a {@link org.jboss.logging.processor.model.MessageInterface} for annotation processors.
@@ -109,6 +113,7 @@ public final class MessageInterfaceFactory {
         private final Elements elements;
         private final Set<MessageInterface> extendedInterfaces;
         private final List<MessageMethod> messageMethods;
+        private final List<ValidIdRange> validIdRanges;
         private String projectCode;
         private String packageName;
         private String simpleName;
@@ -122,6 +127,13 @@ public final class MessageInterfaceFactory {
             this.elements = elements;
             this.messageMethods = new LinkedList<MessageMethod>();
             this.extendedInterfaces = new LinkedHashSet<MessageInterface>();
+            if (ElementHelper.isAnnotatedWith(interfaceElement, ValidIdRanges.class)) {
+                validIdRanges = Arrays.asList(interfaceElement.getAnnotation(ValidIdRanges.class).value());
+            } else if (ElementHelper.isAnnotatedWith(interfaceElement, ValidIdRange.class)) {
+                validIdRanges = Arrays.asList(interfaceElement.getAnnotation(ValidIdRange.class));
+            } else {
+                validIdRanges = Collections.emptyList();
+            }
         }
 
         @Override
@@ -177,6 +189,11 @@ public final class MessageInterfaceFactory {
         @Override
         public boolean isLoggerInterface() {
             return false;
+        }
+
+        @Override
+        public List<ValidIdRange> validIdRanges() {
+            return validIdRanges;
         }
 
         @Override
@@ -359,6 +376,11 @@ public final class MessageInterfaceFactory {
         @Override
         public boolean isLoggerInterface() {
             return true;
+        }
+
+        @Override
+        public List<ValidIdRange> validIdRanges() {
+            return Collections.emptyList();
         }
 
         @Override

@@ -25,9 +25,6 @@
  */
 package org.jboss.logging.processor.generated;
 
-import java.io.OutputStream;
-import java.util.Formatter;
-
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
@@ -36,11 +33,13 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.ValidIdRange;
 
 /**
  * @author James R. Perkins Jr. (jrp)
  */
 @MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
+@ValidIdRange(min = 100, max = 150)
 interface DefaultLogger {
 
     final String TEST_MSG = "No format%n";
