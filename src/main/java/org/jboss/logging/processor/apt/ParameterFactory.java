@@ -23,7 +23,6 @@
 package org.jboss.logging.processor.apt;
 
 import static org.jboss.logging.processor.Tools.annotations;
-import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
@@ -38,13 +37,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.Comparison;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
@@ -111,6 +111,11 @@ final class ParameterFactory {
             @Override
             public String targetName() {
                 return "";
+            }
+
+            @Override
+            public Transform transform() {
+                return null;
             }
 
             @Override
@@ -207,6 +212,7 @@ final class ParameterFactory {
         private final Class<?> paramClass;
         private final boolean isVarArgs;
         private final ParameterType parameterType;
+        private final Transform transform;
 
         /**
          * Only allow construction from within the parent class.
@@ -228,21 +234,31 @@ final class ParameterFactory {
             if (annotations.hasParamAnnotation(param)) {
                 paramClass = Object.class;
                 parameterType = ParameterType.CONSTRUCTION;
+                transform = null;
             } else if (annotations.hasCauseAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.CAUSE;
+                transform = null;
             } else if (annotations.hasFieldAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FIELD;
+                transform = null;
             } else if (annotations.hasPropertyAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.PROPERTY;
+                transform = null;
             } else if (annotations.hasLoggingClassAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FQCN;
+                transform = null;
+            } else if (ElementHelper.isAnnotatedWith(param, Transform.class)) {
+                paramClass = null;
+                parameterType = ParameterType.TRANSFORM;
+                transform = param.getAnnotation(Transform.class);
             } else {
                 parameterType = ParameterType.FORMAT;
                 paramClass = null;
+                transform = null;
             }
             this.isVarArgs = isVarArgs;
         }
@@ -290,6 +306,11 @@ final class ParameterFactory {
         @Override
         public String targetName() {
             return annotations.targetName(param);
+        }
+
+        @Override
+        public Transform transform() {
+            return transform;
         }
 
         @Override

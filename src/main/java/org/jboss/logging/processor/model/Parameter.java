@@ -22,6 +22,8 @@
 
 package org.jboss.logging.processor.model;
 
+import org.jboss.logging.annotations.Transform;
+
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
@@ -65,7 +67,13 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
          * Indicates the parameter is a property and should be set via its setter in the {@link Throwable throwable}
          * return type.
          */
-        PROPERTY
+        PROPERTY,
+
+        /**
+         * Transforms the parameter using the {@link org.jboss.logging.annotations.Transform.TransformType transform
+         * type}.
+         */
+        TRANSFORM,
     }
 
     /**
@@ -132,9 +140,18 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
     /**
      * Returns the name of the target field or method. For example if the {@link #parameterType()} returns
      * {@link ParameterType#FIELD}, the target name is the name of the field to set on the
-     * {@link org.jboss.logging.processor.model.ReturnType return type}. If no target name is defined an empty String is returned.
+     * {@link org.jboss.logging.processor.model.ReturnType return type}. If no target name is defined an empty String
+     * is
+     * returned.
      *
      * @return the target field name, method name or an empty string.
      */
     String targetName();
+
+    /**
+     * The transform type if this the {@link #parameterType()} is {@link ParameterType#TRANSFORM}.
+     *
+     * @return the transform annotation or {@code null} if not a transform parameter
+     */
+    Transform transform();
 }

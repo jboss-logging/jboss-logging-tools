@@ -2,8 +2,15 @@ package org.jboss.logging.processor.apt;
 
 import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -37,17 +44,17 @@ abstract class AbstractMessageObjectType implements MessageObjectType {
     @Override
     public final boolean isAssignableFrom(final Class<?> type) {
         final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
-        return types.isAssignable(this.typeMirror, typeMirror);
+        return types.isAssignable(types.erasure(this.typeMirror), types.erasure(typeMirror));
     }
 
     @Override
     public final boolean isSubtypeOf(final Class<?> type) {
-        final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-        return types.isSubtype(this.typeMirror, typeMirror);
+        final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
+        return types.isSubtype(types.erasure(this.typeMirror), types.erasure(typeMirror));
     }
 
     @Override
     public final boolean isSameAs(final Class<?> type) {
-        return type().equals(type.getName().replace("$", "."));
+        return type().equals(typeToString(type));
     }
 }

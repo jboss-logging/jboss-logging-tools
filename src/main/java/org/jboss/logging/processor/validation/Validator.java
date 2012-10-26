@@ -27,6 +27,7 @@ import static org.jboss.logging.processor.validation.ValidationMessageFactory.cr
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createWarning;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -64,13 +67,11 @@ public final class Validator {
     public final Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         if (messageInterface.isMessageBundle()) {
-            final String projectCode = messageInterface.projectCode();
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateBundle(messageMethods));
         } else if (messageInterface.isMessageLogger()) {
-            final String projectCode = messageInterface.projectCode();
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(messageInterface, messageMethods));
@@ -118,6 +119,31 @@ public final class Validator {
                 final int paramCount = messageMethod.formatParameterCount();
                 if (messageMethod.formatParameterCount() != formatValidator.argumentCount()) {
                     messages.add(createError(messageMethod, "Parameter count does not match for format '%s'. Required: %d Provided: %d", formatValidator.format(), formatValidator.argumentCount(), paramCount));
+                }
+                // If annotated with @Transform, must be an Object, primitives are not allowed
+                if (!messageMethod.parameters(ParameterType.TRANSFORM).isEmpty()) {
+                    final Set<Parameter> parameters = messageMethod.parameters(ParameterType.TRANSFORM);
+                    // Validate each parameter
+                    for (Parameter parameter : parameters) {
+                        final List<TransformType> transformTypes = Arrays.asList(parameter.transform().value());
+                        if (parameter.isPrimitive()) {
+                            messages.add(createError(parameter, "Parameters annotated with @Transform cannot be primitives."));
+                        } else if (transformTypes.contains(TransformType.GET_CLASS) && transformTypes.contains(TransformType.SIZE)) {
+                            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.GET_CLASS, TransformType.SIZE));
+                        } else if (transformTypes.contains(TransformType.HASH_CODE) && transformTypes.contains(TransformType.SIZE)) {
+                            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.HASH_CODE, TransformType.SIZE));
+                        } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE) && transformTypes.contains(TransformType.SIZE)) {
+                            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.IDENTITY_HASH_CODE, TransformType.SIZE));
+                        } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE) && transformTypes.contains(TransformType.HASH_CODE)) {
+                            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.IDENTITY_HASH_CODE, TransformType.HASH_CODE));
+                        } else if (transformTypes.contains(TransformType.SIZE)) {
+                            if (!(parameter.isArray() || parameter.isVarArgs() || parameter.isSubtypeOf(Map.class) ||
+                                    parameter.isSubtypeOf(Collection.class) || parameter.isSubtypeOf(CharSequence.class))) {
+                                messages.add(createError(parameter, "Invalid type (%s) for %s. Must be an array, %s, %s or %s.", parameter.type(),
+                                        TransformType.SIZE, Collection.class.getName(), Map.class.getName(), CharSequence.class.getName()));
+                            }
+                        }
+                    }
                 }
             } else {
                 messages.add(createError(messageMethod, formatValidator.summaryMessage()));

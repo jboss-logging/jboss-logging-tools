@@ -31,8 +31,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -43,6 +45,8 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -246,13 +250,37 @@ final class TranslationFileGenerator extends AbstractGenerator {
         writer.write(String.format("# Message: %s", msg.value()));
         writer.newLine();
         final Map<String, String> parameterComments = parseParameterComments(messageMethod);
-        final Set<Parameter> parameters = messageMethod.parameters(ParameterType.FORMAT);
+        final Set<Parameter> parameters = messageMethod.parameters(ParameterType.FORMAT, ParameterType.TRANSFORM);
         int i = 0;
         for (Parameter parameter : parameters) {
             final String name = parameter.name();
             final String comment = (parameterComments.containsKey(name) ? parameterComments.get(name) : EMPTY_STRING);
-            writer.write(String.format("# @param %d: %s - %s", ++i, name, comment));
-            writer.newLine();
+            if (parameter.parameterType() == ParameterType.TRANSFORM) {
+                final List<TransformType> transformTypes = Arrays.asList(parameter.transform().value());
+                if (transformTypes.contains(TransformType.GET_CLASS)) {
+                    if (transformTypes.size() == 1) {
+                        writer.write(String.format("# @param class of %s - %s", name, comment));
+                    } else if (transformTypes.contains(TransformType.HASH_CODE)) {
+                        writer.write(String.format("# @param hashCode of class of %s - %s", name, comment));
+                    } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE)) {
+                        writer.write(String.format("# @param identityHashCode of class of %s - %s", name, comment));
+                    }
+                } else if (transformTypes.contains(TransformType.HASH_CODE)) {
+                    writer.write(String.format("# @param hashCode of %s - %s", name, comment));
+                } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE)) {
+                    writer.write(String.format("# @param identityHashCode of %s - %s", name, comment));
+                } else if (transformTypes.contains(TransformType.SIZE)) {
+                    if (parameter.isArray() || parameter.isVarArgs() || parameter.isSubtypeOf(String.class)) {
+                        writer.write(String.format("# @param length of %s - %s", name, comment));
+                    } else {
+                        writer.write(String.format("# @param size of %s - %s", name, comment));
+                    }
+                }
+                writer.newLine();
+            } else {
+                writer.write(String.format("# @param %d: %s - %s", ++i, name, comment));
+                writer.newLine();
+            }
         }
         writer.write(String.format("%s=", messageMethod.translationKey()));
         writer.write(messageMethod.message().value());
