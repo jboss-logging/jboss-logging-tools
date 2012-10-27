@@ -106,11 +106,9 @@ public final class MessageInterfaceFactory {
     /**
      * Message interface implementation.
      */
-    private static class AptMessageInterface implements MessageInterface {
+    private static class AptMessageInterface extends AbstractMessageObjectType implements MessageInterface {
         private final Annotations annotations;
         private final TypeElement interfaceElement;
-        private final Types types;
-        private final Elements elements;
         private final Set<MessageInterface> extendedInterfaces;
         private final List<MessageMethod> messageMethods;
         private final List<ValidIdRange> validIdRanges;
@@ -121,10 +119,9 @@ public final class MessageInterfaceFactory {
         private String fqcn;
 
         private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
+            super(elements, types, interfaceElement);
             annotations = annotations();
             this.interfaceElement = interfaceElement;
-            this.types = types;
-            this.elements = elements;
             this.messageMethods = new LinkedList<MessageMethod>();
             this.extendedInterfaces = new LinkedHashSet<MessageInterface>();
             if (ElementHelper.isAnnotatedWith(interfaceElement, ValidIdRanges.class)) {
@@ -272,37 +269,17 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isAssignable(typeMirror, interfaceElement.asType());
-        }
-
-        @Override
-        public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isSubtype(interfaceElement.asType(), typeMirror);
-        }
-
-        @Override
-        public boolean isSameAs(final Class<?> type) {
-            return qualifiedName.equals(type.getName());
-        }
-
-        @Override
         public String getComment() {
             return elements.getDocComment(interfaceElement);
         }
     }
 
-    private static class LoggerInterface implements MessageInterface {
+    private static class LoggerInterface extends AbstractMessageObjectType implements MessageInterface {
         private final TypeElement loggerInterface;
-        private final Elements elements;
-        private final Types types;
         private final Set<MessageMethod> messageMethods;
 
         private LoggerInterface(final Elements elements, final Types types) {
-            this.elements = elements;
-            this.types = types;
+            super(elements, types, elements.getTypeElement(loggers().loggerInterface().getName()));
             messageMethods = new HashSet<MessageMethod>();
             this.loggerInterface = elements.getTypeElement(loggers().loggerInterface().getName());
         }
@@ -386,28 +363,6 @@ public final class MessageInterfaceFactory {
         @Override
         public TypeElement reference() {
             return loggerInterface;
-        }
-
-        @Override
-        public String type() {
-            return name();
-        }
-
-        @Override
-        public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isAssignable(typeMirror, loggerInterface.asType());
-        }
-
-        @Override
-        public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isSubtype(loggerInterface.asType(), typeMirror);
-        }
-
-        @Override
-        public boolean isSameAs(final Class<?> type) {
-            return name().equals(type.getName());
         }
 
         @Override

@@ -198,10 +198,8 @@ final class ParameterFactory {
         };
     }
 
-    private static class AptParameter implements Parameter {
+    private static class AptParameter extends AbstractMessageObjectType implements Parameter {
         private final Annotations annotations;
-        private final Types types;
-        private final Elements elements;
 
         private final VariableElement param;
         private final String qualifiedType;
@@ -222,9 +220,8 @@ final class ParameterFactory {
          * @param isVarArgs      {@code true} if this is a vararg parameter, otherwise {@code false}.
          */
         AptParameter(final Elements elements, final Types types, final Annotations annotations, final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
+            super(elements, types, param);
             this.annotations = annotations;
-            this.elements = elements;
-            this.types = types;
             this.qualifiedType = qualifiedType;
             this.param = param;
             this.formatterClass = formatterClass;
@@ -331,23 +328,6 @@ final class ParameterFactory {
         @Override
         public VariableElement reference() {
             return param;
-        }
-
-        @Override
-        public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
-            return types.isAssignable(param.asType(), typeMirror);
-        }
-
-        @Override
-        public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
-            return types.isSubtype(typeMirror, param.asType());
-        }
-
-        @Override
-        public boolean isSameAs(final Class<?> type) {
-            return type().equals(type.getName().replace("$", "."));
         }
     }
 }

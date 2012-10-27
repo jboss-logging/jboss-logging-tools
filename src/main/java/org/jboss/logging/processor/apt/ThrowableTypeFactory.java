@@ -87,11 +87,7 @@ final class ThrowableTypeFactory {
         return result;
     }
 
-    private static class AptThrowableType implements ThrowableType {
-
-        private final Elements elements;
-
-        private final Types types;
+    private static class AptThrowableType extends AbstractMessageObjectType implements ThrowableType {
 
         private final TypeMirror type;
 
@@ -113,8 +109,7 @@ final class ThrowableTypeFactory {
          * @param type     the class name of the return type.
          */
         private AptThrowableType(final Elements elements, final Types types, final TypeMirror type) {
-            this.elements = elements;
-            this.types = types;
+            super(elements, types, type);
             this.type = type;
         }
 
@@ -244,36 +239,12 @@ final class ThrowableTypeFactory {
         }
 
         @Override
-        public String type() {
-            return name();
-        }
-
-        @Override
-        public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isAssignable(typeMirror, this.type);
-        }
-
-        @Override
-        public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isSubtype(this.type, typeMirror);
-        }
-
-        @Override
-        public boolean isSameAs(final Class<?> type) {
-            return name().equals(type.getName());
-        }
-
-        @Override
         public int compareTo(final ThrowableType o) {
             return name().compareTo(o.name());
         }
     }
 
     private static class AptReturnThrowableType extends AptThrowableType {
-
-        private final Types types;
 
         private final MessageMethod messageMethod;
 
@@ -291,7 +262,6 @@ final class ThrowableTypeFactory {
          */
         private AptReturnThrowableType(final Elements elements, final Types types, final MessageMethod messageMethod, final TypeMirror type) {
             super(elements, types, type);
-            this.types = types;
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<Parameter>();
         }

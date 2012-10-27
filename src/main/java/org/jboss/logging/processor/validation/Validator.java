@@ -198,10 +198,6 @@ public final class Validator {
         if (returnType.equals(ReturnType.VOID) || returnType.isPrimitive()) {
             messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type. Cannot be void or a primitive.", messageMethod.name()));
         } else if (returnType.isThrowable()) {
-            if (!returnType.isSubtypeOf(Throwable.class)) {
-                // if (!returnType.isSubtypeOf(Throwable.class)) {
-                messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type of %s.", messageMethod.name(), returnType.name()));
-            }
             final ThrowableType throwableReturnType = returnType.throwableReturnType();
             if (throwableReturnType.useConstructionParameters()) {
                 // TODO - Check the return type constructor. Currently handled via the ThrowableReturnTypeFactory.
@@ -220,7 +216,7 @@ public final class Validator {
             }
         } else {
             if (!returnType.isAssignableFrom(String.class)) {
-                messages.add(createError(messageMethod, "Return type %s does not appear valid for a message bundle.", messageMethod.name()));
+                messages.add(createError(messageMethod, "Message bundle method (%s) has an invalid return type of %s.", messageMethod.name(), returnType.name()));
             }
         }
         return messages;
