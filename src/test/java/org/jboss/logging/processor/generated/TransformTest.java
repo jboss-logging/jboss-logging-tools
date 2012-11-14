@@ -12,10 +12,10 @@ import org.testng.annotations.Test;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class TransformTest extends AbstractLoggerTest {
+    int pos = 0;
 
     @Test
     public void testLog() throws Exception {
-        int pos = 0;
 
         // Log strings
         final String s = "This is a test string";
@@ -139,5 +139,26 @@ public class TransformTest extends AbstractLoggerTest {
         Assert.assertEquals(TransformMessages.MESSAGES.msgObjectHashCode(map), String.format(TransformLogger.HASH_CODE_MSG, map.hashCode()));
         Assert.assertEquals(TransformMessages.MESSAGES.msgObjectIdentityHashCode(map), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(map)));
         Assert.assertEquals(TransformMessages.MESSAGES.msgSize(map), String.format(TransformLogger.SIZE_MSG, map.size()));
+    }
+
+    @Test
+    public void testPositions() throws Exception {
+
+        // Log strings
+        final String msg1 = "Test message 1";
+        final String msg2 = "Test message 2";
+        String expected = String.format(TransformLogger.POS_MSG_1, msg2.length(), msg1.hashCode(), System.identityHashCode(msg1));
+        TransformLogger.LOGGER.posTest1(msg1, msg2);
+        Assert.assertEquals(HANDLER.getMessage(pos++), expected);
+        Assert.assertEquals(TransformMessages.MESSAGES.posTest1(msg1, msg2), expected);
+
+        final Object obj = "Test";
+        final String msg = "This is a test message";
+        final String s1 = "s1";
+        final String s2 = "s2";
+        expected = String.format(TransformLogger.POS_MSG_2, msg.length(), s1, s2, obj.getClass());
+        TransformLogger.LOGGER.posTest2(obj, msg, s1, s2);
+        Assert.assertEquals(HANDLER.getMessage(pos++), expected);
+        Assert.assertEquals(TransformMessages.MESSAGES.posTest2(obj, msg, s1, s2), expected);
     }
 }

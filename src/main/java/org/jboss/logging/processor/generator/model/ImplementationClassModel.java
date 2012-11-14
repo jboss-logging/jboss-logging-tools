@@ -45,6 +45,8 @@ import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
+import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -137,6 +139,7 @@ abstract class ImplementationClassModel extends ClassModel {
         for (Parameter param : allParameters) {
             parameterNames.add(param.name());
         }
+        final List<JExpression> args = new ArrayList<JExpression>();
         // Create the parameters
         for (Parameter param : allParameters) {
             final JClass paramType;
@@ -159,9 +162,9 @@ abstract class ImplementationClassModel extends ClassModel {
                         throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
                     } else {
                         if (formatterClass == null) {
-                            formatterMethod.arg(var);
+                            args.add(var);
                         } else {
-                            formatterMethod.arg(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
+                            args.add(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
                         }
                     }
                     break;
@@ -172,14 +175,40 @@ abstract class ImplementationClassModel extends ClassModel {
                         throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
                     } else {
                         final JVar transformVar = createTransformVar(parameterNames, body, param, var);
-                        final JInvocation invocation;
                         if (formatterClass == null) {
-                            invocation = formatterMethod;
+                            args.add(transformVar);
                         } else {
-                            invocation = JExpr._new(getCodeModel().directClass(formatterClass));
-                            formatterMethod.arg(invocation);
+                            final JInvocation invocation = JExpr._new(getCodeModel().directClass(formatterClass));
+                            args.add(invocation.arg(transformVar));
                         }
-                        invocation.arg(transformVar);
+                    }
+                    break;
+                }
+                case POS: {
+                    if (formatterMethod == null) {
+                        // This should never happen, but let's safe guard against it
+                        throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
+                    } else {
+                        final Pos pos = param.pos();
+                        final int[] positions = pos.value();
+                        final Transform[] transform = pos.transform();
+                        for (int i = 0; i < positions.length; i++) {
+                            final int index = positions[i] - 1;
+                            if (transform != null && transform.length > 0) {
+                                final JVar tVar = createTransformVar(parameterNames, method.body(), param, transform[i], var);
+                                if (index < args.size()) {
+                                    args.add(index, tVar);
+                                } else {
+                                    args.add(tVar);
+                                }
+                            } else {
+                                if (index < args.size()) {
+                                    args.add(index, var);
+                                } else {
+                                    args.add(var);
+                                }
+                            }
+                        }
                     }
                     break;
                 }
@@ -193,6 +222,11 @@ abstract class ImplementationClassModel extends ClassModel {
                 }
             }
         }
+        // If a format method, add the arguments
+        if (formatterMethod != null)
+            for (JExpression arg : args) {
+                formatterMethod.arg(arg);
+            }
         // Setup the return type
         final JVar result = body.decl(returnField, "result");
         if (messageMethod.returnType().isThrowable()) {
@@ -211,9 +245,14 @@ abstract class ImplementationClassModel extends ClassModel {
     }
 
     JVar createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final JVar var) {
+        return createTransformVar(parameterNames, methodBody, param, param.transform(), var);
+    }
+
+    JVar createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final Transform transform, final JVar var) {
+        final int currentPos = methodBody.pos();
         // Position to method body to start
         methodBody.pos(0);
-        final List<TransformType> transformTypes = Arrays.asList(param.transform().value());
+        final List<TransformType> transformTypes = Arrays.asList(transform.value());
         final JVar result;
         // Create the conditional elements
         final JConditional condition = methodBody._if(var.eq(JExpr._null()));
@@ -227,12 +266,14 @@ abstract class ImplementationClassModel extends ClassModel {
             if (transformTypes.size() == 1) {
                 // Get the parameter name
                 final String paramName = getUniqueName(parameterNames, param, "Class");
+                parameterNames.add(paramName);
                 result = methodBody.decl(getCodeModel().directClass("java.lang.Class"), paramName);
                 ifBlock.assign(result, JExpr._null());
                 elseBlock.assign(result, var.invoke("getClass"));
             } else {
                 // Get the parameter name
                 final String paramName = getUniqueName(parameterNames, param, "HashCode");
+                parameterNames.add(paramName);
                 result = methodBody.decl(getCodeModel().INT, paramName);
                 ifBlock.assign(result, JExpr.lit(0));
                 if (transformTypes.contains(TransformType.HASH_CODE)) {
@@ -246,6 +287,7 @@ abstract class ImplementationClassModel extends ClassModel {
         } else if (transformTypes.contains(TransformType.HASH_CODE)) {
             // Get the parameter name
             final String paramName = getUniqueName(parameterNames, param, "HashCode");
+            parameterNames.add(paramName);
             result = methodBody.decl(getCodeModel().INT, paramName);
             ifBlock.assign(result, JExpr.lit(0));
             if (param.isArray() || param.isVarArgs()) {
@@ -256,12 +298,14 @@ abstract class ImplementationClassModel extends ClassModel {
         } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE)) {
             // Get the parameter name
             final String paramName = getUniqueName(parameterNames, param, "HashCode");
+            parameterNames.add(paramName);
             result = methodBody.decl(getCodeModel().INT, paramName);
             ifBlock.assign(result, JExpr.lit(0));
             elseBlock.assign(result, getCodeModel().directClass("java.lang.System").staticInvoke("identityHashCode").arg(var));
         } else if (transformTypes.contains(TransformType.SIZE)) {
             // Get the parameter name
             final String paramName = getUniqueName(parameterNames, param, "Size");
+            parameterNames.add(paramName);
             result = methodBody.decl(getCodeModel().INT, paramName);
             ifBlock.assign(result, JExpr.lit(0));
             if (param.isArray() || param.isVarArgs()) {
@@ -278,7 +322,7 @@ abstract class ImplementationClassModel extends ClassModel {
             throw new IllegalStateException(String.format("Invalid transform type: %s", transformTypes));
         }
         // Set the position to the end of the transform blocks. Should always be 2, variable declaration and if/else block.
-        methodBody.pos(2);
+        methodBody.pos(currentPos + 2);
         return result;
     }
 

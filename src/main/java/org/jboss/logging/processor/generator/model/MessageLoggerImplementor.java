@@ -44,6 +44,8 @@ import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
+import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.apt.Annotations.FormatType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -418,6 +420,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             // The next parameter is the message. Should be accessed via the
             // message retrieval method.
             logInv.arg(JExpr.invoke(msgMethod));
+            final List<JExpression> args = new ArrayList<JExpression>();
             // Create the parameters
             for (Map.Entry<Parameter, JVar> entry : params.entrySet()) {
                 final Parameter param = entry.getKey();
@@ -426,23 +429,46 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 switch (param.parameterType()) {
                     case FORMAT:
                         if (formatterClass == null) {
-                            logInv.arg(var);
+                            args.add(var);
                         } else {
-                            logInv.arg(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
+                            args.add(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
                         }
                         break;
                     case TRANSFORM:
                         final JVar transformVar = createTransformVar(parameterNames, method.body(), param, var);
-                        final JInvocation invocation;
                         if (formatterClass == null) {
-                            invocation = logInv;
+                            args.add(transformVar);
                         } else {
-                            invocation = JExpr._new(getCodeModel().directClass(formatterClass));
-                            logInv.arg(invocation);
+                            final JInvocation invocation = JExpr._new(getCodeModel().directClass(formatterClass));
+                            args.add(invocation.arg(transformVar));
                         }
-                        invocation.arg(transformVar);
+                        break;
+                    case POS:
+                        final Pos pos = param.pos();
+                        final int[] positions = pos.value();
+                        final Transform[] transform = pos.transform();
+                        for (int i = 0; i < positions.length; i++) {
+                            final int index = positions[i] - 1;
+                            if (transform != null && transform.length > 0) {
+                                final JVar tVar = createTransformVar(parameterNames, method.body(), param, transform[i], var);
+                                if (index < args.size()) {
+                                    args.add(index, tVar);
+                                } else {
+                                    args.add(tVar);
+                                }
+                            } else {
+                                if (index < args.size()) {
+                                    args.add(index, var);
+                                } else {
+                                    args.add(var);
+                                }
+                            }
+                        }
                         break;
                 }
+            }
+            for (JExpression arg : args) {
+                logInv.arg(arg);
             }
         }
     }

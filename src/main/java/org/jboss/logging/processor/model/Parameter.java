@@ -22,6 +22,7 @@
 
 package org.jboss.logging.processor.model;
 
+import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 
 /**
@@ -74,6 +75,11 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
          * type}.
          */
         TRANSFORM,
+
+        /**
+         * Indicates the parameter is a positional parameter.
+         */
+        POS,
     }
 
     /**
@@ -154,4 +160,20 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
      * @return the transform annotation or {@code null} if not a transform parameter
      */
     Transform transform();
+
+    /**
+     * The position annotation if this the {@link #parameterType()} is {@link ParameterType#POS}.
+     * <p/>
+     * This works the same way the {@link java.util.Formatter formatter} positional characters work.
+     * <p/>
+     * <pre>
+     *      String.format("Numeric value %1$d (%1$x)");
+     *
+     *      &#64;Message(""Numeric value %d (%x)"")
+     *      void logNumericValue(@Pos(1) int value);
+     * </pre>
+     *
+     * @return the position annotation or {@code null} if not a position parameter
+     */
+    Pos pos();
 }

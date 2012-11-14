@@ -302,7 +302,11 @@ final class MessageMethodBuilder {
 
         @Override
         public int formatParameterCount() {
-            return parameters(ParameterType.FORMAT, ParameterType.TRANSFORM).size();
+            int result =  parameters(ParameterType.FORMAT, ParameterType.TRANSFORM).size();
+            for (Parameter params : parameters(ParameterType.POS)) {
+                result += params.pos().value().length;
+            }
+            return result;
         }
 
         @Override

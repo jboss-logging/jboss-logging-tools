@@ -4,8 +4,10 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 
@@ -93,4 +95,13 @@ public interface TransformMessages {
     String msgSize(@Transform(TransformType.SIZE) Object[] array);
 
     String msgSize(@Transform(TransformType.SIZE) Map<String, String> map);
+
+    // Position tests
+    String POS_MSG_1 = "size %d hashCode %d identityHashCode %d";
+    @Message(POS_MSG_1)
+    String posTest1(@Pos(value = {2, 3}, transform = {@Transform(TransformType.HASH_CODE), @Transform(TransformType.IDENTITY_HASH_CODE)}) String msg1, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg2);
+
+    String POS_MSG_2 = "size %d s1=%s s2=%s getClass() %s";
+    @Message(POS_MSG_2)
+    String posTest2(@Pos(value = 4, transform = @Transform(TransformType.GET_CLASS)) Object type, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg, @Pos(2) String s1, @Pos(3) String s2);
 }

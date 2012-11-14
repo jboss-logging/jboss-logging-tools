@@ -40,6 +40,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -115,6 +116,11 @@ final class ParameterFactory {
 
             @Override
             public Transform transform() {
+                return null;
+            }
+
+            @Override
+            public Pos pos() {
                 return null;
             }
 
@@ -213,6 +219,7 @@ final class ParameterFactory {
         private final boolean isVarArgs;
         private final ParameterType parameterType;
         private final Transform transform;
+        private final Pos pos;
 
         /**
          * Only allow construction from within the parent class.
@@ -235,30 +242,42 @@ final class ParameterFactory {
                 paramClass = Object.class;
                 parameterType = ParameterType.CONSTRUCTION;
                 transform = null;
+                pos = null;
             } else if (annotations.hasCauseAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.CAUSE;
                 transform = null;
+                pos = null;
             } else if (annotations.hasFieldAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FIELD;
                 transform = null;
+                pos = null;
             } else if (annotations.hasPropertyAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.PROPERTY;
                 transform = null;
+                pos = null;
             } else if (annotations.hasLoggingClassAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FQCN;
                 transform = null;
+                pos = null;
             } else if (ElementHelper.isAnnotatedWith(param, Transform.class)) {
                 paramClass = null;
                 parameterType = ParameterType.TRANSFORM;
                 transform = param.getAnnotation(Transform.class);
+                pos = null;
+            } else if (ElementHelper.isAnnotatedWith(param, Pos.class)) {
+                paramClass = null;
+                parameterType = ParameterType.POS;
+                transform = null;
+                pos = param.getAnnotation(Pos.class);
             } else {
                 parameterType = ParameterType.FORMAT;
                 paramClass = null;
                 transform = null;
+                pos = null;
             }
             this.isVarArgs = isVarArgs;
         }
@@ -311,6 +330,11 @@ final class ParameterFactory {
         @Override
         public Transform transform() {
             return transform;
+        }
+
+        @Override
+        public Pos pos() {
+            return pos;
         }
 
         @Override

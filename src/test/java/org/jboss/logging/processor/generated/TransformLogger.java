@@ -7,6 +7,7 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 
@@ -122,4 +123,15 @@ public interface TransformLogger {
 
     @LogMessage
     void logSize(@Transform(TransformType.SIZE) Map<String, String> map);
+
+    // Position tests
+    String POS_MSG_1 = "size %d hashCode %d identityHashCode %d";
+    @LogMessage
+    @Message(POS_MSG_1)
+    void posTest1(@Pos(value = {2, 3}, transform = {@Transform(TransformType.HASH_CODE), @Transform(TransformType.IDENTITY_HASH_CODE)}) String msg1, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg2);
+
+    String POS_MSG_2 = "size %d s1=%s s2=%s getClass() %s";
+    @LogMessage
+    @Message(POS_MSG_2)
+    void posTest2(@Pos(value = 4, transform = @Transform(TransformType.GET_CLASS)) Object type, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg, @Pos(2) String s1, @Pos(3) String s2);
 }
