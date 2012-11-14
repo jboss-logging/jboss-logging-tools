@@ -23,7 +23,10 @@
 package org.jboss.logging.processor.model;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+
+import org.jboss.logging.annotations.ValidIdRange;
 
 /**
  * Date: 28.07.2011
@@ -33,7 +36,8 @@ import java.util.Set;
 public interface MessageInterface extends Comparable<MessageInterface>, MessageObject, MessageObjectType, JavaDocComment {
 
     /**
-     * Checks the interface to see if the {@link org.jboss.logging.processor.Loggers#loggerInterface() logger interface}
+     * Checks the interface to see if the {@link org.jboss.logging.processor.Loggers#loggerInterface() logger
+     * interface}
      * is being extended in this interface.
      *
      * @return {@code true} if this interface extends the logger interface, otherwise {@code false}.
@@ -84,7 +88,8 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     String simpleName();
 
     /**
-     * The fully qualified class name to use for log methods. This will generally be the same result as {@link #name()}.
+     * The fully qualified class name to use for log methods. This will generally be the same result as {@link
+     * #name()}.
      *
      * @return the fully qualified class name to use for logging.
      */
@@ -115,4 +120,11 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
      * @return {@code true} if this is a logger interface, otherwise {@code false}.
      */
     boolean isLoggerInterface();
+
+    /**
+     * Returns a list of {@link ValidIdRange valid id ranges}.
+     *
+     * @return a list of valid id ranges or an empty list
+     */
+    List<ValidIdRange> validIdRanges();
 }

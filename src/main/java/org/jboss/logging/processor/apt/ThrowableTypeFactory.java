@@ -44,7 +44,6 @@ import javax.lang.model.util.Types;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ThrowableType;
-import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.util.Objects;
 
 /**
@@ -87,23 +86,17 @@ final class ThrowableTypeFactory {
         return result;
     }
 
-    private static class AptThrowableType implements ThrowableType {
-
-        private final Elements elements;
-
-        private final Types types;
+    private static class AptThrowableType extends AbstractMessageObjectType implements ThrowableType {
 
         private final TypeMirror type;
-
+        private final boolean isChecked;
         private boolean defaultConstructor = false;
-
         private boolean stringConstructor = false;
-
         private boolean throwableConstructor = false;
-
         private boolean stringAndThrowableConstructor = false;
-
         private boolean throwableAndStringConstructor = false;
+        protected final TypeMirror stringType;
+        protected final TypeMirror throwableType;
 
         /**
          * Creates a new descriptor that is not primitive.
@@ -113,9 +106,13 @@ final class ThrowableTypeFactory {
          * @param type     the class name of the return type.
          */
         private AptThrowableType(final Elements elements, final Types types, final TypeMirror type) {
-            this.elements = elements;
-            this.types = types;
+            super(elements, types, type);
             this.type = type;
+            stringType = elements.getTypeElement(String.class.getName()).asType();
+            throwableType = elements.getTypeElement(Throwable.class.getName()).asType();
+            final TypeMirror runtimeException = elements.getTypeElement(RuntimeException.class.getName()).asType();
+            final TypeMirror error = elements.getTypeElement(Error.class.getName()).asType();
+            isChecked = !(types.isAssignable(runtimeException, type) && types.isAssignable(error, type));
         }
 
         /**
@@ -136,18 +133,18 @@ final class ThrowableTypeFactory {
                             defaultConstructor = true;
                             break;
                         case 1:
-                            if (ElementHelper.isAssignableFrom(params.get(0).asType(), String.class)) {
+                            if (types.isAssignable(params.get(0).asType(), stringType)) {
                                 stringConstructor = true;
-                            } else if (ElementHelper.isAssignableFrom(Throwable.class, params.get(0).asType())) {
+                            } else if (types.isAssignable(throwableType, params.get(0).asType())) {
                                 throwableConstructor = true;
                             }
                             break;
                         case 2:
-                            if (ElementHelper.isAssignableFrom(params.get(0).asType(), String.class)
-                                    && ElementHelper.isAssignableFrom(Throwable.class, params.get(1).asType())) {
+                            if (types.isAssignable(params.get(0).asType(), stringType)
+                                    && types.isAssignable(throwableType, params.get(1).asType())) {
                                 stringAndThrowableConstructor = true;
-                            } else if (ElementHelper.isAssignableFrom(Throwable.class, params.get(0).asType())
-                                    && ElementHelper.isAssignableFrom(params.get(1).asType(), String.class)) {
+                            } else if (types.isAssignable(throwableType, params.get(0).asType())
+                                    && types.isAssignable(params.get(1).asType(), stringType)) {
                                 throwableAndStringConstructor = true;
                             }
                             break;
@@ -203,7 +200,7 @@ final class ThrowableTypeFactory {
 
         @Override
         public boolean isChecked() {
-            return !(ElementHelper.isAssignableFrom(type, RuntimeException.class) || ElementHelper.isAssignableFrom(type, Error.class));
+            return isChecked;
         }
 
         @Override
@@ -244,36 +241,12 @@ final class ThrowableTypeFactory {
         }
 
         @Override
-        public String type() {
-            return name();
-        }
-
-        @Override
-        public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isAssignable(typeMirror, this.type);
-        }
-
-        @Override
-        public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isSubtype(this.type, typeMirror);
-        }
-
-        @Override
-        public boolean isSameAs(final Class<?> type) {
-            return name().equals(type.getName());
-        }
-
-        @Override
         public int compareTo(final ThrowableType o) {
             return name().compareTo(o.name());
         }
     }
 
     private static class AptReturnThrowableType extends AptThrowableType {
-
-        private final Types types;
 
         private final MessageMethod messageMethod;
 
@@ -291,7 +264,6 @@ final class ThrowableTypeFactory {
          */
         private AptReturnThrowableType(final Elements elements, final Types types, final MessageMethod messageMethod, final TypeMirror type) {
             super(elements, types, type);
-            this.types = types;
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<Parameter>();
         }
@@ -308,12 +280,12 @@ final class ThrowableTypeFactory {
                 boolean causeFound = false;
                 boolean messageFound = false;
                 for (VariableElement param : params) {
-                    if (!causeFound && messageMethod.hasCause() && ElementHelper.isAssignableFrom(Throwable.class, param.asType())) {
+                    if (!causeFound && messageMethod.hasCause() && types.isAssignable(throwableType, param.asType())) {
                         causeFound = true;
                         matchedParams.add(messageMethod.cause());
                         continue;
                     }
-                    if (!messageFound && ElementHelper.isAssignableFrom(param.asType(), String.class)) {
+                    if (!messageFound && types.isAssignable(param.asType(), stringType)) {
                         messageFound = true;
                         matchedParams.add(ParameterFactory.forMessageMethod(messageMethod));
                         continue;

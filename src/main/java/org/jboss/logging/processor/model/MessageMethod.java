@@ -52,6 +52,16 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
     Set<Parameter> parameters(ParameterType parameterType);
 
     /**
+     * Returns an unmodifiable collection of the parameters specified by the parameter type or an empty set.
+     *
+     * @param parameterType  the parameter type to look-up the parameters for.
+     * @param parameterTypes an array of types to look-up parameters for.
+     *
+     * @return a collection of the parameters or an empty set.
+     */
+    Set<Parameter> parameters(ParameterType parameterType, ParameterType... parameterTypes);
+
+    /**
      * Returns the return type for the method.
      *
      * @return the return type for the method.
@@ -77,7 +87,8 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
      * Indicates whether the message was inherited from another message or not. If {@code true} is returned the
      * {@link Message} was inherited from a different method, otherwise {@code false}.
      * <p/>
-     * <b>Note:</b> {@code false} does not indicate the method has a {@link org.jboss.logging.annotations.Message} annotation.
+     * <b>Note:</b> {@code false} does not indicate the method has a {@link org.jboss.logging.annotations.Message}
+     * annotation.
      *
      * @return {@code true} if the message was inherited from a different method, otherwise {@code false}.
      */

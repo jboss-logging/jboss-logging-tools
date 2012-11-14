@@ -37,7 +37,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 
 import org.jboss.logging.processor.apt.Annotations;
 import org.jboss.logging.processor.model.MessageObject;
@@ -272,90 +271,6 @@ public final class ElementHelper {
             if (method.getSimpleName().equals(m.getSimpleName()) && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
                 return true;
             }
-        }
-        return false;
-    }
-
-    /**
-     * Checks to see if the type element is assignable from the type.
-     *
-     * @param typeElement the type element to check.
-     * @param type        the type to check.
-     *
-     * @return {@code true} if the type element is assignable from the type,
-     *         otherwise {@code false}.
-     */
-    public static boolean isAssignableFrom(final TypeElement typeElement, final Class<?> type) {
-        if (type.getName().equals(typeElement.getQualifiedName().toString())) {
-            return true;
-        }
-        for (Class<?> intf : type.getInterfaces()) {
-            if (isAssignableFrom(typeElement, intf)) {
-                return true;
-            }
-        }
-        return (type.getSuperclass() != null && isAssignableFrom(typeElement, type.getSuperclass()));
-    }
-
-    /**
-     * Checks to see id the type mirror is assignable from the type.
-     *
-     * @param typeMirror the type mirror to check.
-     * @param type       the type to check.
-     *
-     * @return {@code true} if the type mirror is assignable from the type,
-     *         otherwise {@code false}.
-     */
-    public static boolean isAssignableFrom(final TypeMirror typeMirror, final Class<?> type) {
-        if (typeMirror instanceof DeclaredType) {
-            final DeclaredType dclType = (DeclaredType) typeMirror;
-            final TypeElement typeElement = (TypeElement) dclType.asElement();
-            return isAssignableFrom(typeElement, type);
-        }
-        for (Class<?> intf : type.getInterfaces()) {
-            if (isAssignableFrom(typeMirror, intf)) {
-                return true;
-            }
-        }
-        return (type.getSuperclass() != null && isAssignableFrom(typeMirror, type.getSuperclass()));
-    }
-
-    /**
-     * Checks to see if the type is assignable from the type element.
-     *
-     * @param type        the type to check.
-     * @param typeElement the type element to check.
-     *
-     * @return {@code true} if the type is assignable from the type element,
-     *         otherwise {@code false}.
-     */
-    public static boolean isAssignableFrom(final Class<?> type, final TypeElement typeElement) {
-        if (type.getName().equals(typeElement.getQualifiedName().toString())) {
-            return true;
-        }
-        final List<? extends TypeMirror> types = typeElement.getInterfaces();
-        for (TypeMirror typeMirror : types) {
-            if (isAssignableFrom(type, typeMirror)) {
-                return true;
-            }
-        }
-        return isAssignableFrom(type, typeElement.getSuperclass());
-    }
-
-    /**
-     * Checks to see if the type is assignable from the type mirror.
-     *
-     * @param type       the type to check.
-     * @param typeMirror the type mirror to check.
-     *
-     * @return {@code true} if the type is assignable from the type mirror,
-     *         otherwise {@code false}.
-     */
-    public static boolean isAssignableFrom(final Class<?> type, final TypeMirror typeMirror) {
-        if (typeMirror instanceof DeclaredType) {
-            final DeclaredType dclType = (DeclaredType) typeMirror;
-            final TypeElement typeElement = (TypeElement) dclType.asElement();
-            return isAssignableFrom(type, typeElement);
         }
         return false;
     }

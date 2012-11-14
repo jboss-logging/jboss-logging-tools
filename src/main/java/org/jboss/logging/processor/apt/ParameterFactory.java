@@ -23,7 +23,6 @@
 package org.jboss.logging.processor.apt;
 
 import static org.jboss.logging.processor.Tools.annotations;
-import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
@@ -38,13 +37,15 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.Comparison;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
@@ -111,6 +112,16 @@ final class ParameterFactory {
             @Override
             public String targetName() {
                 return "";
+            }
+
+            @Override
+            public Transform transform() {
+                return null;
+            }
+
+            @Override
+            public Pos pos() {
+                return null;
             }
 
             @Override
@@ -198,10 +209,8 @@ final class ParameterFactory {
         };
     }
 
-    private static class AptParameter implements Parameter {
+    private static class AptParameter extends AbstractMessageObjectType implements Parameter {
         private final Annotations annotations;
-        private final Types types;
-        private final Elements elements;
 
         private final VariableElement param;
         private final String qualifiedType;
@@ -209,6 +218,8 @@ final class ParameterFactory {
         private final Class<?> paramClass;
         private final boolean isVarArgs;
         private final ParameterType parameterType;
+        private final Transform transform;
+        private final Pos pos;
 
         /**
          * Only allow construction from within the parent class.
@@ -222,30 +233,51 @@ final class ParameterFactory {
          * @param isVarArgs      {@code true} if this is a vararg parameter, otherwise {@code false}.
          */
         AptParameter(final Elements elements, final Types types, final Annotations annotations, final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
+            super(elements, types, param);
             this.annotations = annotations;
-            this.elements = elements;
-            this.types = types;
             this.qualifiedType = qualifiedType;
             this.param = param;
             this.formatterClass = formatterClass;
             if (annotations.hasParamAnnotation(param)) {
                 paramClass = Object.class;
                 parameterType = ParameterType.CONSTRUCTION;
+                transform = null;
+                pos = null;
             } else if (annotations.hasCauseAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.CAUSE;
+                transform = null;
+                pos = null;
             } else if (annotations.hasFieldAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FIELD;
+                transform = null;
+                pos = null;
             } else if (annotations.hasPropertyAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.PROPERTY;
+                transform = null;
+                pos = null;
             } else if (annotations.hasLoggingClassAnnotation(param)) {
                 paramClass = null;
                 parameterType = ParameterType.FQCN;
+                transform = null;
+                pos = null;
+            } else if (ElementHelper.isAnnotatedWith(param, Transform.class)) {
+                paramClass = null;
+                parameterType = ParameterType.TRANSFORM;
+                transform = param.getAnnotation(Transform.class);
+                pos = null;
+            } else if (ElementHelper.isAnnotatedWith(param, Pos.class)) {
+                paramClass = null;
+                parameterType = ParameterType.POS;
+                transform = null;
+                pos = param.getAnnotation(Pos.class);
             } else {
                 parameterType = ParameterType.FORMAT;
                 paramClass = null;
+                transform = null;
+                pos = null;
             }
             this.isVarArgs = isVarArgs;
         }
@@ -296,6 +328,16 @@ final class ParameterFactory {
         }
 
         @Override
+        public Transform transform() {
+            return transform;
+        }
+
+        @Override
+        public Pos pos() {
+            return pos;
+        }
+
+        @Override
         public int hashCode() {
             return HashCodeBuilder.builder()
                     .add(qualifiedType)
@@ -331,23 +373,6 @@ final class ParameterFactory {
         @Override
         public VariableElement reference() {
             return param;
-        }
-
-        @Override
-        public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
-            return types.isAssignable(param.asType(), typeMirror);
-        }
-
-        @Override
-        public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
-            return types.isSubtype(typeMirror, param.asType());
-        }
-
-        @Override
-        public boolean isSameAs(final Class<?> type) {
-            return type().equals(type.getName().replace("$", "."));
         }
     }
 }

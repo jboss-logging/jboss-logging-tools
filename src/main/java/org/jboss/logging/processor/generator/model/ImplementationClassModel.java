@@ -22,17 +22,22 @@
 
 package org.jboss.logging.processor.generator.model;
 
-import static org.jboss.logging.processor.model.Parameter.ParameterType;
 import static org.jboss.logging.processor.generator.model.ClassModelHelper.implementationClassName;
+import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JConditional;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JFieldVar;
@@ -40,6 +45,9 @@ import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
+import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -82,16 +90,15 @@ abstract class ImplementationClassModel extends ClassModel {
     /**
      * Create the bundle method body.
      *
-     * @param messageMethod  the message method.
-     * @param method         the method to create the body for.
-     * @param msgMethod      the message method for retrieving the message.
+     * @param messageMethod the message method.
+     * @param method        the method to create the body for.
+     * @param msgMethod     the message method for retrieving the message.
      */
     void createBundleMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod) {
         addThrownTypes(messageMethod, method);
         // Create the body of the method and add the text
         final JBlock body = method.body();
         final JClass returnField = getCodeModel().directClass(method.type().fullName());
-        final JVar result = body.decl(returnField, "result");
         final MessageMethod.Message message = messageMethod.message();
         final JExpression expression;
         final JInvocation formatterMethod;
@@ -123,12 +130,30 @@ abstract class ImplementationClassModel extends ClassModel {
 
         // Create maps for the fields and properties. Key is the field or setter method, value is the parameter to set
         // the value to.
+        final Set<Parameter> allParameters = messageMethod.parameters(ParameterType.ANY);
         final Map<String, JVar> fields = new HashMap<String, JVar>();
         final Map<String, JVar> properties = new HashMap<String, JVar>();
+
+        // First load the parameter names
+        final List<String> parameterNames = new ArrayList<String>(allParameters.size());
+        for (Parameter param : allParameters) {
+            parameterNames.add(param.name());
+        }
+        final List<JExpression> args = new ArrayList<JExpression>();
         // Create the parameters
-        for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
-            final JClass paramType = getCodeModel().directClass(param.type());
-            final JVar var = method.param(JMod.FINAL, paramType, param.name());
+        for (Parameter param : allParameters) {
+            final JClass paramType;
+            if (param.isArray() && !param.isVarArgs()) {
+                paramType = getCodeModel().directClass(param.type()).array();
+            } else {
+                paramType = getCodeModel().directClass(param.type());
+            }
+            final JVar var;
+            if (param.isVarArgs()) {
+                var = method.varParam(paramType, param.name());
+            } else {
+                var = method.param(JMod.FINAL, paramType, param.name());
+            }
             final String formatterClass = param.formatterClass();
             switch (param.parameterType()) {
                 case FORMAT: {
@@ -137,9 +162,52 @@ abstract class ImplementationClassModel extends ClassModel {
                         throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
                     } else {
                         if (formatterClass == null) {
-                            formatterMethod.arg(var);
+                            args.add(var);
                         } else {
-                            formatterMethod.arg(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
+                            args.add(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
+                        }
+                    }
+                    break;
+                }
+                case TRANSFORM: {
+                    if (formatterMethod == null) {
+                        // This should never happen, but let's safe guard against it
+                        throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
+                    } else {
+                        final JVar transformVar = createTransformVar(parameterNames, body, param, var);
+                        if (formatterClass == null) {
+                            args.add(transformVar);
+                        } else {
+                            final JInvocation invocation = JExpr._new(getCodeModel().directClass(formatterClass));
+                            args.add(invocation.arg(transformVar));
+                        }
+                    }
+                    break;
+                }
+                case POS: {
+                    if (formatterMethod == null) {
+                        // This should never happen, but let's safe guard against it
+                        throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
+                    } else {
+                        final Pos pos = param.pos();
+                        final int[] positions = pos.value();
+                        final Transform[] transform = pos.transform();
+                        for (int i = 0; i < positions.length; i++) {
+                            final int index = positions[i] - 1;
+                            if (transform != null && transform.length > 0) {
+                                final JVar tVar = createTransformVar(parameterNames, method.body(), param, transform[i], var);
+                                if (index < args.size()) {
+                                    args.add(index, tVar);
+                                } else {
+                                    args.add(tVar);
+                                }
+                            } else {
+                                if (index < args.size()) {
+                                    args.add(index, var);
+                                } else {
+                                    args.add(var);
+                                }
+                            }
                         }
                     }
                     break;
@@ -154,7 +222,13 @@ abstract class ImplementationClassModel extends ClassModel {
                 }
             }
         }
+        // If a format method, add the arguments
+        if (formatterMethod != null)
+            for (JExpression arg : args) {
+                formatterMethod.arg(arg);
+            }
         // Setup the return type
+        final JVar result = body.decl(returnField, "result");
         if (messageMethod.returnType().isThrowable()) {
             initCause(result, returnField, body, messageMethod, expression);
         } else {
@@ -170,7 +244,105 @@ abstract class ImplementationClassModel extends ClassModel {
         body._return(result);
     }
 
-    /**
+    JVar createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final JVar var) {
+        return createTransformVar(parameterNames, methodBody, param, param.transform(), var);
+    }
+
+    JVar createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final Transform transform, final JVar var) {
+        final int currentPos = methodBody.pos();
+        // Position to method body to start
+        methodBody.pos(0);
+        final List<TransformType> transformTypes = Arrays.asList(transform.value());
+        final JVar result;
+        // Create the conditional elements
+        final JConditional condition = methodBody._if(var.eq(JExpr._null()));
+        final JBlock ifBlock = condition._then();
+        final JBlock elseBlock = condition._else();
+        // Reposition to start for variable creation
+        methodBody.pos(0);
+        // GET_CLASS should always be processed first
+        if (transformTypes.contains(TransformType.GET_CLASS)) {
+            // Determine the result field type
+            if (transformTypes.size() == 1) {
+                // Get the parameter name
+                final String paramName = getUniqueName(parameterNames, param, "Class");
+                parameterNames.add(paramName);
+                result = methodBody.decl(getCodeModel().directClass("java.lang.Class"), paramName);
+                ifBlock.assign(result, JExpr._null());
+                elseBlock.assign(result, var.invoke("getClass"));
+            } else {
+                // Get the parameter name
+                final String paramName = getUniqueName(parameterNames, param, "HashCode");
+                parameterNames.add(paramName);
+                result = methodBody.decl(getCodeModel().INT, paramName);
+                ifBlock.assign(result, JExpr.lit(0));
+                if (transformTypes.contains(TransformType.HASH_CODE)) {
+                    elseBlock.assign(result, var.invoke("getClass").invoke("hashCode"));
+                } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE)) {
+                    elseBlock.assign(result, getCodeModel().directClass("java.lang.System").staticInvoke("identityHashCode").arg(var.invoke("getClass")));
+                } else {
+                    throw new IllegalStateException(String.format("Invalid transform type combination: %s", transformTypes));
+                }
+            }
+        } else if (transformTypes.contains(TransformType.HASH_CODE)) {
+            // Get the parameter name
+            final String paramName = getUniqueName(parameterNames, param, "HashCode");
+            parameterNames.add(paramName);
+            result = methodBody.decl(getCodeModel().INT, paramName);
+            ifBlock.assign(result, JExpr.lit(0));
+            if (param.isArray() || param.isVarArgs()) {
+                elseBlock.assign(result, getCodeModel().directClass("java.util.Arrays").staticInvoke("hashCode").arg(var));
+            } else {
+                elseBlock.assign(result, var.invoke("hashCode"));
+            }
+        } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE)) {
+            // Get the parameter name
+            final String paramName = getUniqueName(parameterNames, param, "HashCode");
+            parameterNames.add(paramName);
+            result = methodBody.decl(getCodeModel().INT, paramName);
+            ifBlock.assign(result, JExpr.lit(0));
+            elseBlock.assign(result, getCodeModel().directClass("java.lang.System").staticInvoke("identityHashCode").arg(var));
+        } else if (transformTypes.contains(TransformType.SIZE)) {
+            // Get the parameter name
+            final String paramName = getUniqueName(parameterNames, param, "Size");
+            parameterNames.add(paramName);
+            result = methodBody.decl(getCodeModel().INT, paramName);
+            ifBlock.assign(result, JExpr.lit(0));
+            if (param.isArray() || param.isVarArgs()) {
+                elseBlock.assign(result, var.ref("length"));
+            } else if (param.isSubtypeOf(Map.class) || param.isSubtypeOf(Collection.class)) {
+                elseBlock.assign(result, var.invoke("size"));
+            } else if (param.isAssignableFrom(CharSequence.class)) {
+                elseBlock.assign(result, var.invoke("length"));
+            } else {
+                throw new IllegalStateException(String.format("Invalid type for %s. Must be an array, %s, %s or %s.",
+                        TransformType.SIZE, Collection.class.getName(), Map.class.getName(), CharSequence.class.getName()));
+            }
+        } else {
+            throw new IllegalStateException(String.format("Invalid transform type: %s", transformTypes));
+        }
+        // Set the position to the end of the transform blocks. Should always be 2, variable declaration and if/else block.
+        methodBody.pos(currentPos + 2);
+        return result;
+    }
+
+    private String getUniqueName(final List<String> parameterNames, final Parameter parameter, final String suffix) {
+        String result = (suffix == null ? parameter.name() : parameter.name().concat(suffix));
+        if (parameterNames.contains(result)) {
+            return getUniqueName(parameterNames, new StringBuilder(result), 0);
+        }
+        return result;
+    }
+
+    private String getUniqueName(final List<String> parameterNames, final StringBuilder sb, final int index) {
+        String result = sb.append(index).toString();
+        if (parameterNames.contains(result)) {
+            return getUniqueName(parameterNames, sb, index + 1);
+        }
+        return result;
+    }
+
+    /*
      * Initialize the cause (Throwable) return type.
      *
      * @param result        the return variable

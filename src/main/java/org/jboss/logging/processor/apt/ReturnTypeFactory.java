@@ -70,18 +70,15 @@ final class ReturnTypeFactory {
     /**
      * Implementation of return type.
      */
-    private static class AptReturnType implements ReturnType {
-        private final Elements elements;
+    private static class AptReturnType extends AbstractMessageObjectType implements ReturnType {
         private final Map<String, TypeMirror> fields;
         private final Map<String, TypeMirror> methods;
-        private final Types types;
         private final TypeMirror returnType;
         private final MessageMethod method;
         private ThrowableType throwableType;
 
         AptReturnType(final Elements elements, final Types types, final TypeMirror returnType, final MessageMethod method) {
-            this.elements = elements;
-            this.types = types;
+            super(elements, types, returnType);
             this.returnType = returnType;
             this.method = method;
             throwableType = null;
@@ -168,28 +165,6 @@ final class ReturnTypeFactory {
         @Override
         public TypeMirror reference() {
             return returnType;
-        }
-
-        @Override
-        public String type() {
-            return name();
-        }
-
-        @Override
-        public boolean isAssignableFrom(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isAssignable(typeMirror, returnType);
-        }
-
-        @Override
-        public boolean isSubtypeOf(final Class<?> type) {
-            final TypeMirror typeMirror = elements.getTypeElement(type.getName()).asType();
-            return types.isSubtype(returnType, typeMirror);
-        }
-
-        @Override
-        public boolean isSameAs(final Class<?> type) {
-            return type().equals(type.getName());
         }
 
         private boolean checkType(final Parameter parameter, final TypeMirror type) {

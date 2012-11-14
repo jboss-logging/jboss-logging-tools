@@ -25,9 +25,11 @@ package org.jboss.logging.processor.generator.model;
 import static org.jboss.logging.processor.Tools.loggers;
 import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +44,8 @@ import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
+import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.apt.Annotations.FormatType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -366,10 +370,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     /**
      * Create the logger method body.
      *
-     * @param messageMethod  the message method.
-     * @param method         the method to create the body for.
-     * @param msgMethod      the message method for retrieving the message.
-     * @param logger         the logger to use.
+     * @param messageMethod the message method.
+     * @param method        the method to create the body for.
+     * @param msgMethod     the message method for retrieving the message.
+     * @param logger        the logger to use.
      */
     private void createLoggerMethod(final MessageMethod messageMethod, final JMethod method, final JMethod msgMethod, final JExpression logger) {
         addThrownTypes(messageMethod, method);
@@ -377,6 +381,12 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final JBlock body = method.body();
         // Initialize the method parameters
         final Map<Parameter, JVar> params = createParameters(messageMethod, method);
+
+        // First load the parameter names
+        final List<String> parameterNames = new ArrayList<String>(params.size());
+        for (Parameter param : params.keySet()) {
+            parameterNames.add(param.name());
+        }
 
         // Determine which logger method to invoke
         final JInvocation logInv = body.invoke(logger, messageMethod.loggerMethod());
@@ -410,19 +420,55 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             // The next parameter is the message. Should be accessed via the
             // message retrieval method.
             logInv.arg(JExpr.invoke(msgMethod));
+            final List<JExpression> args = new ArrayList<JExpression>();
             // Create the parameters
             for (Map.Entry<Parameter, JVar> entry : params.entrySet()) {
                 final Parameter param = entry.getKey();
                 final String formatterClass = param.formatterClass();
+                final JVar var = entry.getValue();
                 switch (param.parameterType()) {
                     case FORMAT:
                         if (formatterClass == null) {
-                            logInv.arg(entry.getValue());
+                            args.add(var);
                         } else {
-                            logInv.arg(JExpr._new(getCodeModel().directClass(formatterClass)).arg(entry.getValue()));
+                            args.add(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
+                        }
+                        break;
+                    case TRANSFORM:
+                        final JVar transformVar = createTransformVar(parameterNames, method.body(), param, var);
+                        if (formatterClass == null) {
+                            args.add(transformVar);
+                        } else {
+                            final JInvocation invocation = JExpr._new(getCodeModel().directClass(formatterClass));
+                            args.add(invocation.arg(transformVar));
+                        }
+                        break;
+                    case POS:
+                        final Pos pos = param.pos();
+                        final int[] positions = pos.value();
+                        final Transform[] transform = pos.transform();
+                        for (int i = 0; i < positions.length; i++) {
+                            final int index = positions[i] - 1;
+                            if (transform != null && transform.length > 0) {
+                                final JVar tVar = createTransformVar(parameterNames, method.body(), param, transform[i], var);
+                                if (index < args.size()) {
+                                    args.add(index, tVar);
+                                } else {
+                                    args.add(tVar);
+                                }
+                            } else {
+                                if (index < args.size()) {
+                                    args.add(index, var);
+                                } else {
+                                    args.add(var);
+                                }
+                            }
                         }
                         break;
                 }
+            }
+            for (JExpression arg : args) {
+                logInv.arg(arg);
             }
         }
     }
@@ -431,8 +477,18 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final Map<Parameter, JVar> result = new LinkedHashMap<Parameter, JVar>();
         // Create the parameters
         for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
-            final JClass paramType = getCodeModel().directClass(param.type());
-            final JVar var = method.param(JMod.FINAL, paramType, param.name());
+            final JClass paramType;
+            if (param.isArray() && !param.isVarArgs()) {
+                paramType = getCodeModel().directClass(param.type()).array();
+            } else {
+                paramType = getCodeModel().directClass(param.type());
+            }
+            final JVar var;
+            if (param.isVarArgs()) {
+                var = method.varParam(paramType, param.name());
+            } else {
+                var = method.param(JMod.FINAL, paramType, param.name());
+            }
             result.put(param, var);
         }
         return result;

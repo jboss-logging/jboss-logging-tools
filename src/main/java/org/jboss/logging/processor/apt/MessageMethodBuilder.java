@@ -257,6 +257,20 @@ final class MessageMethodBuilder {
         }
 
         @Override
+        public Set<Parameter> parameters(final ParameterType parameterType, final ParameterType... parameterTypes) {
+            final Set<Parameter> result = new LinkedHashSet<Parameter>();
+            if (parameters.containsKey(parameterType)) {
+                result.addAll(parameters.get(parameterType));
+            }
+            for (ParameterType pt : parameterTypes) {
+                if (parameters.containsKey(pt)) {
+                    result.addAll(parameters.get(pt));
+                }
+            }
+            return result;
+        }
+
+        @Override
         public boolean hasCause() {
             return cause != null;
         }
@@ -288,10 +302,11 @@ final class MessageMethodBuilder {
 
         @Override
         public int formatParameterCount() {
-            if (parameters.containsKey(ParameterType.FORMAT)) {
-                return parameters.get(ParameterType.FORMAT).size();
+            int result =  parameters(ParameterType.FORMAT, ParameterType.TRANSFORM).size();
+            for (Parameter params : parameters(ParameterType.POS)) {
+                result += params.pos().value().length;
             }
-            return 0;
+            return result;
         }
 
         @Override

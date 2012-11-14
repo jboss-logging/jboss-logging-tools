@@ -27,6 +27,7 @@ import static org.jboss.logging.processor.validation.ValidationMessageFactory.cr
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createWarning;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +35,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
+import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -64,16 +69,14 @@ public final class Validator {
     public final Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         if (messageInterface.isMessageBundle()) {
-            final String projectCode = messageInterface.projectCode();
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-            messages.addAll(validateCommon(projectCode, messageMethods));
+            messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateBundle(messageMethods));
         } else if (messageInterface.isMessageLogger()) {
-            final String projectCode = messageInterface.projectCode();
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-            messages.addAll(validateCommon(projectCode, messageMethods));
+            messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateLogger(messageMethods));
         } else {
             messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
@@ -84,12 +87,12 @@ public final class Validator {
     /**
      * Validate common attributes to all interfaces.
      *
-     * @param projectCode    the project code of the interface.
-     * @param messageMethods the messageMethods to validate.
+     * @param messageInterface the interface.
+     * @param messageMethods   the messageMethods to validate.
      *
      * @return a collection of validation messages.
      */
-    private Collection<ValidationMessage> validateCommon(final String projectCode, final Set<MessageMethod> messageMethods) {
+    private Collection<ValidationMessage> validateCommon(final MessageInterface messageInterface, final Set<MessageMethod> messageMethods) {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         final Map<String, MessageMethod> methodNames = new HashMap<String, MessageMethod>();
         for (MessageMethod messageMethod : messageMethods) {
@@ -110,7 +113,7 @@ public final class Validator {
                 if (message.id() < 0) {
                     messages.add(createError(messageMethod, "Message id %d is invalid. Must be greater than 0 or inherit another valid id.", message.id()));
                 } else {
-                    messages.addAll(messageIdValidator.validate(projectCode, messageMethod));
+                    messages.addAll(messageIdValidator.validate(messageInterface, messageMethod));
                 }
             }
             final FormatValidator formatValidator = FormatValidatorFactory.create(messageMethod);
@@ -118,6 +121,54 @@ public final class Validator {
                 final int paramCount = messageMethod.formatParameterCount();
                 if (messageMethod.formatParameterCount() != formatValidator.argumentCount()) {
                     messages.add(createError(messageMethod, "Parameter count does not match for format '%s'. Required: %d Provided: %d", formatValidator.format(), formatValidator.argumentCount(), paramCount));
+                }
+                // Validate the transform parameter
+                if (!messageMethod.parameters(ParameterType.TRANSFORM).isEmpty()) {
+                    final Set<Parameter> parameters = messageMethod.parameters(ParameterType.TRANSFORM);
+                    // Validate each parameter
+                    for (Parameter parameter : parameters) {
+                        validateTransform(messages, parameter, parameter.transform());
+                    }
+                }
+                // Validate the POS annotated parameters
+                if (!messageMethod.parameters(ParameterType.POS).isEmpty()) {
+                    final Map<Integer, Parameter> positions = new TreeMap<Integer, Parameter>();
+                    final Set<Parameter> parameters = messageMethod.parameters(ParameterType.POS);
+                    // Validate each parameter
+                    for (Parameter parameter : parameters) {
+                        final Pos pos = parameter.pos();
+                        final Transform[] transforms = pos.transform();
+                        if (transforms != null && transforms.length > 0) {
+                            if (pos.value().length != transforms.length) {
+                                messages.add(createError(parameter, "Positional parameters with transforms must have an equal number of positions and transforms."));
+                            } else {
+                                for (Transform transform : transforms) {
+                                    validateTransform(messages, parameter, transform);
+                                }
+                            }
+                        }
+                        // Validate the positions
+                        final Set<Integer> usedPositions = new HashSet<Integer>();
+                        for (int position : pos.value()) {
+                            if (usedPositions.contains(position)) {
+                                messages.add(createError(parameter, "Position '%d' already used for this parameter.", position));
+                            } else {
+                                usedPositions.add(position);
+                            }
+                            if (positions.containsKey(position)) {
+                                messages.add(createError(parameter, "Position '%d' already defined on parameter '%s'", position, positions.get(position).name()));
+                            } else {
+                                positions.put(position, parameter);
+                            }
+                        }
+                    }
+                    // Check for missing indexed parameters
+                    for (int i = 0; i < messageMethod.formatParameterCount(); i++) {
+                        final int positionIndex = i + 1;
+                        if (!positions.containsKey(positionIndex)) {
+                            messages.add(createError(messageMethod, "Missing parameter with position '%d' defined.", positionIndex));
+                        }
+                    }
                 }
             } else {
                 messages.add(createError(messageMethod, formatValidator.summaryMessage()));
@@ -137,6 +188,28 @@ public final class Validator {
             messages.addAll(validateParameters(messageMethod));
         }
         return messages;
+    }
+
+    private void validateTransform(final List<ValidationMessage> messages, final Parameter parameter, final Transform transform) {
+        final List<TransformType> transformTypes = Arrays.asList(transform.value());
+        // If annotated with @Transform, must be an Object, primitives are not allowed
+        if (parameter.isPrimitive()) {
+            messages.add(createError(parameter, "Parameters annotated with @Transform cannot be primitives."));
+        } else if (transformTypes.contains(TransformType.GET_CLASS) && transformTypes.contains(TransformType.SIZE)) {
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.GET_CLASS, TransformType.SIZE));
+        } else if (transformTypes.contains(TransformType.HASH_CODE) && transformTypes.contains(TransformType.SIZE)) {
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.HASH_CODE, TransformType.SIZE));
+        } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE) && transformTypes.contains(TransformType.SIZE)) {
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.IDENTITY_HASH_CODE, TransformType.SIZE));
+        } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE) && transformTypes.contains(TransformType.HASH_CODE)) {
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.IDENTITY_HASH_CODE, TransformType.HASH_CODE));
+        } else if (transformTypes.contains(TransformType.SIZE)) {
+            if (!(parameter.isArray() || parameter.isVarArgs() || parameter.isSubtypeOf(Map.class) ||
+                    parameter.isSubtypeOf(Collection.class) || parameter.isSubtypeOf(CharSequence.class))) {
+                messages.add(createError(parameter, "Invalid type (%s) for %s. Must be an array, %s, %s or %s.", parameter.type(),
+                        TransformType.SIZE, Collection.class.getName(), Map.class.getName(), CharSequence.class.getName()));
+            }
+        }
     }
 
     private Collection<ValidationMessage> validateParameters(final MessageMethod messageMethod) {
@@ -198,10 +271,6 @@ public final class Validator {
         if (returnType.equals(ReturnType.VOID) || returnType.isPrimitive()) {
             messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type. Cannot be void or a primitive.", messageMethod.name()));
         } else if (returnType.isThrowable()) {
-            if (!returnType.isSubtypeOf(Throwable.class)) {
-                // if (!returnType.isSubtypeOf(Throwable.class)) {
-                messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type of %s.", messageMethod.name(), returnType.name()));
-            }
             final ThrowableType throwableReturnType = returnType.throwableReturnType();
             if (throwableReturnType.useConstructionParameters()) {
                 // TODO - Check the return type constructor. Currently handled via the ThrowableReturnTypeFactory.
@@ -220,7 +289,7 @@ public final class Validator {
             }
         } else {
             if (!returnType.isAssignableFrom(String.class)) {
-                messages.add(createError(messageMethod, "Return type %s does not appear valid for a message bundle.", messageMethod.name()));
+                messages.add(createError(messageMethod, "Message bundle method (%s) has an invalid return type of %s.", messageMethod.name(), returnType.name()));
             }
         }
         return messages;

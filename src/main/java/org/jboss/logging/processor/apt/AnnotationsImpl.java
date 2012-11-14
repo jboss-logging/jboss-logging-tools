@@ -273,13 +273,13 @@ public class AnnotationsImpl implements Annotations {
         final LogMessage logMessage = method.getAnnotation(LogMessage.class);
         if (logMessage != null) {
             final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
-            result = String.format("%s.%s.%s", Logger.class.getSimpleName(), Logger.Level.class.getSimpleName(), logLevel.name());
+            result = String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
         } else {
             // check legacy annotation
             if (ElementHelper.isAnnotatedWith(method, LEGACY_LOG_MESSAGE)) {
                 final AnnotationValue value = ElementHelper.getAnnotationValue(method, LEGACY_LOG_MESSAGE, "level");
                 final Logger.Level logLevel = (value == null ? Logger.Level.INFO : getEnum(Logger.Level.class, value.getValue().toString()));
-                result = String.format("%s.%s.%s", Logger.class.getSimpleName(), Logger.Level.class.getSimpleName(), logLevel.name());
+                result = String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
             }
         }
         return result;
