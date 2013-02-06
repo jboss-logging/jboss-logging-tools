@@ -312,7 +312,7 @@ abstract class ImplementationClassModel extends ClassModel {
                 elseBlock.assign(result, var.ref("length"));
             } else if (param.isSubtypeOf(Map.class) || param.isSubtypeOf(Collection.class)) {
                 elseBlock.assign(result, var.invoke("size"));
-            } else if (param.isAssignableFrom(CharSequence.class)) {
+            } else if (param.isSubtypeOf(CharSequence.class)) {
                 elseBlock.assign(result, var.invoke("length"));
             } else {
                 throw new IllegalStateException(String.format("Invalid type for %s. Must be an array, %s, %s or %s.",

@@ -44,7 +44,7 @@ abstract class AbstractMessageObjectType implements MessageObjectType {
     @Override
     public final boolean isAssignableFrom(final Class<?> type) {
         final TypeMirror typeMirror = elements.getTypeElement(typeToString(type)).asType();
-        return types.isAssignable(types.erasure(this.typeMirror), types.erasure(typeMirror));
+        return types.isAssignable(types.erasure(typeMirror), types.erasure(this.typeMirror));
     }
 
     @Override

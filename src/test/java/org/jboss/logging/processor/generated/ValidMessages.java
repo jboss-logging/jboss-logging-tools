@@ -58,6 +58,9 @@ public interface ValidMessages {
     @Message(TEST_MSG)
     CustomException propertyMessage(@Property int value);
 
+    @Message(TEST_MSG)
+    LoggingException loggingException(@Cause Exception e);
+
     static class CustomException extends RuntimeException {
         public int value;
 
@@ -84,6 +87,17 @@ public interface ValidMessages {
 
         public void setValue(final int value) {
             this.value = value;
+        }
+    }
+
+    static class LoggingException extends RuntimeException {
+
+        public LoggingException(final Exception e) {
+            super(e);
+        }
+
+        public LoggingException(final Exception e, final String msg) {
+            super(msg, e);
         }
     }
 }
