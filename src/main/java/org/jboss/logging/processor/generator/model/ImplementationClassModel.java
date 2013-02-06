@@ -34,17 +34,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.sun.codemodel.JBlock;
-import com.sun.codemodel.JClass;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JConditional;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JExpression;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JInvocation;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
-import com.sun.codemodel.JVar;
+import org.jboss.jdeparser.JBlock;
+import org.jboss.jdeparser.JClass;
+import org.jboss.jdeparser.JDeparser;
+import org.jboss.jdeparser.JConditional;
+import org.jboss.jdeparser.JExpr;
+import org.jboss.jdeparser.JExpression;
+import org.jboss.jdeparser.JFieldVar;
+import org.jboss.jdeparser.JInvocation;
+import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JMod;
+import org.jboss.jdeparser.JVar;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
@@ -58,7 +58,7 @@ import org.jboss.logging.processor.model.ThrowableType;
  * interface.
  * <p/>
  * <p>
- * Essentially this uses the com.sun.codemodel.JCodeModel to generate the
+ * Essentially this uses the org.jboss.jdeparser.JDeparser to generate the
  * source files with. This class is for convenience in generating default source
  * files.
  * </p>
@@ -77,8 +77,8 @@ abstract class ImplementationClassModel extends ClassModel {
     }
 
     @Override
-    protected JCodeModel generateModel() throws IllegalStateException {
-        JCodeModel codeModel = super.generateModel();
+    protected JDeparser generateModel() throws IllegalStateException {
+        JDeparser codeModel = super.generateModel();
         getDefinedClass()._implements(codeModel.directClass(Serializable.class.getName()));
         // Add the serializable UID
         JFieldVar serialVersionUID = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, codeModel.LONG, "serialVersionUID");
@@ -312,7 +312,7 @@ abstract class ImplementationClassModel extends ClassModel {
                 elseBlock.assign(result, var.ref("length"));
             } else if (param.isSubtypeOf(Map.class) || param.isSubtypeOf(Collection.class)) {
                 elseBlock.assign(result, var.invoke("size"));
-            } else if (param.isAssignableFrom(CharSequence.class)) {
+            } else if (param.isSubtypeOf(CharSequence.class)) {
                 elseBlock.assign(result, var.invoke("length"));
             } else {
                 throw new IllegalStateException(String.format("Invalid type for %s. Must be an array, %s, %s or %s.",

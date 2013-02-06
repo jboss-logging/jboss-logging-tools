@@ -133,18 +133,18 @@ final class ThrowableTypeFactory {
                             defaultConstructor = true;
                             break;
                         case 1:
-                            if (types.isAssignable(params.get(0).asType(), stringType)) {
+                            if (types.isAssignable(stringType, params.get(0).asType())) {
                                 stringConstructor = true;
-                            } else if (types.isAssignable(throwableType, params.get(0).asType())) {
+                            } else if (types.isAssignable(params.get(0).asType(), throwableType)) {
                                 throwableConstructor = true;
                             }
                             break;
                         case 2:
-                            if (types.isAssignable(params.get(0).asType(), stringType)
-                                    && types.isAssignable(throwableType, params.get(1).asType())) {
+                            if (types.isAssignable(stringType, params.get(0).asType())
+                                    && types.isAssignable(params.get(1).asType(), throwableType)) {
                                 stringAndThrowableConstructor = true;
-                            } else if (types.isAssignable(throwableType, params.get(0).asType())
-                                    && types.isAssignable(params.get(1).asType(), stringType)) {
+                            } else if (types.isAssignable(params.get(0).asType(), throwableType)
+                                    && types.isAssignable(stringType, params.get(1).asType())) {
                                 throwableAndStringConstructor = true;
                             }
                             break;

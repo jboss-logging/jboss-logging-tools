@@ -25,12 +25,12 @@ package org.jboss.logging.processor.generator.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.codemodel.JClass;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
+import org.jboss.jdeparser.JClass;
+import org.jboss.jdeparser.JDeparser;
+import org.jboss.jdeparser.JExpr;
+import org.jboss.jdeparser.JFieldVar;
+import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JMod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -55,8 +55,8 @@ class MessageBundleImplementor extends ImplementationClassModel {
     }
 
     @Override
-    protected JCodeModel generateModel() throws IllegalStateException {
-        final JCodeModel codeModel = super.generateModel();
+    protected JDeparser generateModel() throws IllegalStateException {
+        final JDeparser codeModel = super.generateModel();
         // Add default constructor
         getDefinedClass().constructor(JMod.PROTECTED);
         createReadResolveMethod();

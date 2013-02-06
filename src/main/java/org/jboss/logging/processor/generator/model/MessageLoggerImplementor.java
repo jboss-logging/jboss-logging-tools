@@ -34,16 +34,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.sun.codemodel.JBlock;
-import com.sun.codemodel.JClass;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JExpression;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JInvocation;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
-import com.sun.codemodel.JVar;
+import org.jboss.jdeparser.JBlock;
+import org.jboss.jdeparser.JClass;
+import org.jboss.jdeparser.JDeparser;
+import org.jboss.jdeparser.JExpr;
+import org.jboss.jdeparser.JExpression;
+import org.jboss.jdeparser.JFieldVar;
+import org.jboss.jdeparser.JInvocation;
+import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JMod;
+import org.jboss.jdeparser.JVar;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.apt.Annotations.FormatType;
@@ -88,8 +88,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     }
 
     @Override
-    protected JCodeModel generateModel() throws IllegalStateException {
-        final JCodeModel codeModel = super.generateModel();
+    protected JDeparser generateModel() throws IllegalStateException {
+        final JDeparser codeModel = super.generateModel();
 
         // Add FQCN
         final JFieldVar fqcn = getDefinedClass().field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, FQCN_FIELD_NAME);
@@ -150,7 +150,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         return codeModel;
     }
 
-    private void generateDelegatingLoggerMethods(JCodeModel codeModel, JFieldVar logVar, JFieldVar fqcn) {
+    private void generateDelegatingLoggerMethods(JDeparser codeModel, JFieldVar logVar, JFieldVar fqcn) {
         // Generate these methods so they look the same as they appear in DelegatedBasicLogger.
         for (String level : Arrays.asList("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL")) {
             // string prep

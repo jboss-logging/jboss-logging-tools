@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import javax.tools.JavaFileObject;
 
-import com.sun.codemodel.CodeWriter;
-import com.sun.codemodel.JPackage;
+import org.jboss.jdeparser.CodeWriter;
+import org.jboss.jdeparser.JPackage;
 
 /**
  * <p>
