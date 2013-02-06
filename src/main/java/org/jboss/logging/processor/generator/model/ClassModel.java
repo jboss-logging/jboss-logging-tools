@@ -27,19 +27,19 @@ import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 import java.io.IOException;
 import javax.tools.JavaFileObject;
 
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JBlock;
-import com.sun.codemodel.JClass;
-import com.sun.codemodel.JClassAlreadyExistsException;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JDocComment;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
-import com.sun.codemodel.JType;
-import com.sun.codemodel.JTypeVar;
+import org.jboss.jdeparser.JAnnotationUse;
+import org.jboss.jdeparser.JBlock;
+import org.jboss.jdeparser.JClass;
+import org.jboss.jdeparser.JClassAlreadyExistsException;
+import org.jboss.jdeparser.JDeparser;
+import org.jboss.jdeparser.JDefinedClass;
+import org.jboss.jdeparser.JDocComment;
+import org.jboss.jdeparser.JExpr;
+import org.jboss.jdeparser.JFieldVar;
+import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JMod;
+import org.jboss.jdeparser.JType;
+import org.jboss.jdeparser.JTypeVar;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -57,7 +57,7 @@ public abstract class ClassModel {
 
     private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
 
-    private final JCodeModel codeModel;
+    private final JDeparser codeModel;
 
     private volatile JDefinedClass definedClass;
 
@@ -78,7 +78,7 @@ public abstract class ClassModel {
         this.messageInterface = messageInterface;
         this.className = className;
         this.superClassName = superClassName;
-        codeModel = new JCodeModel();
+        codeModel = new JDeparser();
     }
 
     /**
@@ -101,7 +101,7 @@ public abstract class ClassModel {
     public final void create(final JavaFileObject fileObject) throws IOException, IllegalStateException {
 
         //Generate the model class
-        final JCodeModel model = this.generateModel();
+        final JDeparser model = this.generateModel();
 
         //Write it to a file
         model.build(new JavaFileObjectCodeWriter(fileObject));
@@ -115,7 +115,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if the class has already been defined.
      */
-    JCodeModel generateModel() throws IllegalStateException {
+    JDeparser generateModel() throws IllegalStateException {
         final JDefinedClass definedClass = getDefinedClass();
 
         // Add generated annotation
@@ -226,7 +226,7 @@ public abstract class ClassModel {
         return method;
     }
 
-    final JCodeModel getCodeModel() {
+    final JDeparser getCodeModel() {
         return codeModel;
     }
 

@@ -30,11 +30,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.sun.codemodel.JBlock;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
+import org.jboss.jdeparser.JBlock;
+import org.jboss.jdeparser.JDeparser;
+import org.jboss.jdeparser.JDefinedClass;
+import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JMod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -75,8 +75,8 @@ class MessageLoggerTranslator extends ClassModel {
     }
 
     @Override
-    public JCodeModel generateModel() throws IllegalStateException {
-        JCodeModel model = super.generateModel();
+    public JDeparser generateModel() throws IllegalStateException {
+        JDeparser model = super.generateModel();
         JDefinedClass definedClass = getDefinedClass();
 
         JMethod constructor = definedClass.constructor(JMod.PUBLIC);
