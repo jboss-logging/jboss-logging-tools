@@ -133,6 +133,19 @@ public class AnnotationsImpl implements Annotations {
     }
 
     @Override
+    public int idLength(final TypeElement intf) {
+        int result = 6;
+        final MessageBundle bundle = intf.getAnnotation(MessageBundle.class);
+        final MessageLogger logger = intf.getAnnotation(MessageLogger.class);
+        if (bundle != null) {
+            result = bundle.length();
+        } else if (logger != null) {
+            result = logger.length();
+        }
+        return result;
+    }
+
+    @Override
     public boolean hasCauseAnnotation(final VariableElement param) {
         return ElementHelper.isAnnotatedWith(param, Cause.class) || ElementHelper.isAnnotatedWith(param, LEGACY_CAUSE);
     }

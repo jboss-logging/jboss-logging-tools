@@ -54,9 +54,11 @@ import org.jboss.logging.processor.model.ThrowableType;
 public final class Validator {
 
     private final MessageIdValidator messageIdValidator;
+    private final IdLengthValidator idLengthValidator;
 
     public Validator() {
         messageIdValidator = new MessageIdValidator();
+        idLengthValidator = new IdLengthValidator();
     }
 
     /**
@@ -95,6 +97,9 @@ public final class Validator {
     private Collection<ValidationMessage> validateCommon(final MessageInterface messageInterface, final Set<MessageMethod> messageMethods) {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
         final Map<String, MessageMethod> methodNames = new HashMap<String, MessageMethod>();
+
+        messages.addAll(idLengthValidator.validate(messageInterface));
+
         for (MessageMethod messageMethod : messageMethods) {
             // Check for checked exceptions thrown on the interface messageMethod
             for (ThrowableType throwableType : messageMethod.thrownTypes()) {

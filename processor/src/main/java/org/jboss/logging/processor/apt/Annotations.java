@@ -98,6 +98,15 @@ public interface Annotations {
     String projectCode(TypeElement intf);
 
     /**
+     * The length the id should be padded.
+     *
+     * @param intf the interface to find the project code on.
+     *
+     * @return the padding length
+     */
+    int idLength(TypeElement intf);
+
+    /**
      * Checks to see if the parameter has a cause annotation.
      *
      * @param param the parameter to check

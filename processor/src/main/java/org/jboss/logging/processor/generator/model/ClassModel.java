@@ -67,6 +67,8 @@ public abstract class ClassModel {
 
     private final String superClassName;
 
+    private final String format;
+
     /**
      * Construct a class model.
      *
@@ -79,6 +81,12 @@ public abstract class ClassModel {
         this.className = className;
         this.superClassName = superClassName;
         codeModel = new JDeparser();
+        final int idLen = messageInterface.getIdLength();
+        if (idLen > 0) {
+            format = "%s%0" + messageInterface.getIdLength() +"d: %s";
+        } else {
+            format = "%s%d: %s";
+        }
     }
 
     /**
@@ -208,7 +216,7 @@ public abstract class ClassModel {
                 methodField = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName);
                 final String msg;
                 if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
-                    msg = ClassModelHelper.formatMessageId(messageInterface.projectCode(), messageMethod.message().id()) + messageValue;
+                    msg = String.format(format, messageInterface.projectCode(), messageMethod.message().id(), messageValue);
                 } else {
                     msg = messageValue;
                 }

@@ -127,4 +127,11 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
      * @return a list of valid id ranges or an empty list
      */
     List<ValidIdRange> validIdRanges();
+
+    /**
+     * The length to pad the id with. A value of less than 0 indicates no padding.
+     *
+     * @return the length to pad the id with
+     */
+    int getIdLength();
 }

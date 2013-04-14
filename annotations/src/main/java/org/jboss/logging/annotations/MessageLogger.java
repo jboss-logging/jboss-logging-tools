@@ -2,7 +2,7 @@
  * JBoss, Home of Professional Open Source.
  *
  * Copyright 2010 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. 
+ * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Signify that an interface is a typed logger interface.  A message logger interface may optionally extend other message logger
- * interfaces and message bundle interfaces (see {@link org.jboss.logging.MessageBundle}, as well as the {@link org.jboss.logging.BasicLogger} interface.
+ * Signify that an interface is a typed logger interface.  A message logger interface may optionally extend other
+ * message logger interfaces and message bundle interfaces (see {@link org.jboss.logging.annotations.MessageBundle}, as
+ * well as the {@link org.jboss.logging.BasicLogger} interface.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -44,4 +45,15 @@ public @interface MessageLogger {
      * @return the project code
      */
     String projectCode();
+
+    /**
+     * The length of the padding used for each id in the message bundle. For example given the default padding length
+     * of 6 and a message with an id of 100 would result would be {@code "000100"}.
+     * <p/>
+     * Valid values a range of 3 to 8. Any value less than 0 turns off padding. Any other value will result in an error
+     * being produced.
+     *
+     * @return the length the id should be padded
+     */
+    int length() default 6;
 }

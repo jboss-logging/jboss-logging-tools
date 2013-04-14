@@ -34,8 +34,6 @@ import org.jboss.logging.processor.model.MessageInterface;
  */
 public final class ClassModelHelper {
 
-    private static final String STRING_ID_FORMAT = "%06d: ";
-
     private static final String STRING_ID_FORMAT2 = "%s%06d: ";
 
     /**
@@ -62,7 +60,7 @@ public final class ClassModelHelper {
      *
      * @return the formatted message id
      */
-    public static String formatMessageId(final String projectCode, final int messageId) {
+    public static String formatMessageId(final String projectCode, final int padLength, final int messageId) {
         return String.format(STRING_ID_FORMAT2, projectCode, messageId);
     }
 

@@ -117,6 +117,7 @@ public final class MessageInterfaceFactory {
         private String simpleName;
         private String qualifiedName;
         private String fqcn;
+        private int idLen;
 
         private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
             super(elements, types, interfaceElement);
@@ -194,6 +195,11 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
+        public int getIdLength() {
+            return idLen;
+        }
+
+        @Override
         public int hashCode() {
             return HashCodeBuilder.builder().add(name()).toHashCode();
         }
@@ -232,6 +238,7 @@ public final class MessageInterfaceFactory {
             if (m != null)
                 this.messageMethods.addAll(m);
             projectCode = annotations.projectCode(interfaceElement);
+            idLen = annotations.idLength(interfaceElement);
             qualifiedName = elements.getBinaryName(interfaceElement).toString();
             final int lastDot = qualifiedName.lastIndexOf(".");
             if (lastDot > 0) {
@@ -358,6 +365,11 @@ public final class MessageInterfaceFactory {
         @Override
         public List<ValidIdRange> validIdRanges() {
             return Collections.emptyList();
+        }
+
+        @Override
+        public int getIdLength() {
+            return -1;
         }
 
         @Override
