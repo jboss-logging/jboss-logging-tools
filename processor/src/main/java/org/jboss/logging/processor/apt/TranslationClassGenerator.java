@@ -240,7 +240,6 @@ final class TranslationClassGenerator extends AbstractGenerator {
      * @param translations     the translations message
      */
     private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<MessageMethod, String> translations) {
-        logger().note(ElementHelper.fromMessageObject(messageInterface), "Generating translation class.");
 
         //Generate empty translation super class if needed
         //Check if enclosing translation file exists, if not generate an empty super class
