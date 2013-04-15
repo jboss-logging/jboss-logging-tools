@@ -48,6 +48,7 @@ import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.apt.Annotations.FormatType;
 import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 
@@ -128,7 +129,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
             // Handle logger interface
-            if (messageInterface.isLoggerInterface()) {
+            if (messageInterface.getAnnotatedType() == AnnotatedType.NONE) {
                 continue;
             }
             messageMethods.addAll(messageInterface.methods());

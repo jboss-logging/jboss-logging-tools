@@ -35,6 +35,21 @@ import org.jboss.logging.annotations.ValidIdRange;
  */
 public interface MessageInterface extends Comparable<MessageInterface>, MessageObject, MessageObjectType, JavaDocComment {
 
+    public enum AnnotatedType {
+        /**
+         * Indicates the interface is annotated with {@code @MessageBundle}
+         */
+        MESSAGE_BUNDLE,
+        /**
+         * Indicates the interface is annotated with {@code @MessageLogger}
+         */
+        MESSAGE_LOGGER,
+        /**
+         * Indicates the interface is not annotated with {@code MessageBundle} or {@code @MessageLogger}
+         */
+        NONE,
+    }
+
     /**
      * Checks the interface to see if the {@link org.jboss.logging.processor.Loggers#loggerInterface() logger
      * interface}
@@ -59,9 +74,10 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     Collection<MessageMethod> methods();
 
     /**
-     * The project code for the message interface or {@code null} if {@link #isLoggerInterface()} returns {@code true}.
+     * The project code for the message interface or {@code null} if {@link #getAnnotatedType()} returns {@link
+     * AnnotatedType#NONE}.
      *
-     * @return the project code or {@code null} if {@link #isLoggerInterface()} returns {@code true}.
+     * @return the project code or {@code null} if {@link #getAnnotatedType()} returns {@link AnnotatedType#NONE}
      */
     String projectCode();
 
@@ -96,30 +112,11 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     String loggingFQCN();
 
     /**
-     * Returns {@code true} if the interface is annotated as a message logger, otherwise {@code false}.
+     * Returns the annotation type on the interface.
      *
-     * @return {@code true} if a message logger, otherwise {@code false}.
+     * @return the annotated type
      */
-    boolean isMessageLogger();
-
-    /**
-     * Returns {@code true} if the interface is annotated as a message bundle, otherwise {@code false}.
-     *
-     * @return {@code true} if a message bundle, otherwise {@code false}.
-     */
-    boolean isMessageBundle();
-
-    /**
-     * This is a special type of {@code MessageInterface} and will only return {@code true} if this is a
-     * {@link org.jboss.logging.processor.Loggers#loggerInterface() logger interface}. Otherwise {@code false} is
-     * returned.
-     * <p/>
-     * <b>Note:</b> {@link #isMessageBundle()} and {@link #isMessageLogger()} will return {@code false} if this is
-     * {@code true}.
-     *
-     * @return {@code true} if this is a logger interface, otherwise {@code false}.
-     */
-    boolean isLoggerInterface();
+    AnnotatedType getAnnotatedType();
 
     /**
      * Returns a list of {@link ValidIdRange valid id ranges}.

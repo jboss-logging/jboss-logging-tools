@@ -41,6 +41,7 @@ import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ReturnType;
@@ -70,18 +71,23 @@ public final class Validator {
      */
     public final Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
-        if (messageInterface.isMessageBundle()) {
-            // Get all messageMethods except logger interface messageMethods
-            final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-            messages.addAll(validateCommon(messageInterface, messageMethods));
-            messages.addAll(validateBundle(messageMethods));
-        } else if (messageInterface.isMessageLogger()) {
-            // Get all messageMethods except logger interface messageMethods
-            final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-            messages.addAll(validateCommon(messageInterface, messageMethods));
-            messages.addAll(validateLogger(messageMethods));
-        } else {
-            messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
+        switch (messageInterface.getAnnotatedType()) {
+            case MESSAGE_BUNDLE: {
+                // Get all messageMethods except logger interface messageMethods
+                final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
+                messages.addAll(validateCommon(messageInterface, messageMethods));
+                messages.addAll(validateBundle(messageMethods));
+                break;
+            }
+            case MESSAGE_LOGGER: {
+                // Get all messageMethods except logger interface messageMethods
+                final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
+                messages.addAll(validateCommon(messageInterface, messageMethods));
+                messages.addAll(validateLogger(messageMethods));
+                break;
+            }
+            default:
+                messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
         }
         return messages;
     }
@@ -336,7 +342,7 @@ public final class Validator {
      * @return a set of all the methods (exception logger interface methods) the interface must implement.
      */
     private Set<MessageMethod> getAllMethods(final MessageInterface messageInterface) {
-        if (messageInterface.isLoggerInterface()) {
+        if (messageInterface.getAnnotatedType() == AnnotatedType.NONE) {
             return Collections.emptySet();
         }
         final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();

@@ -32,6 +32,7 @@ import org.jboss.jdeparser.JFieldVar;
 import org.jboss.jdeparser.JMethod;
 import org.jboss.jdeparser.JMod;
 import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 
 /**
@@ -64,7 +65,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
             // Handle logger interface
-            if (messageInterface.isLoggerInterface()) {
+            if (messageInterface.getAnnotatedType() == AnnotatedType.NONE) {
                 continue;
             }
             messageMethods.addAll(messageInterface.methods());

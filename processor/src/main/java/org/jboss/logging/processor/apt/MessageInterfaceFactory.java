@@ -175,18 +175,13 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public boolean isMessageLogger() {
-            return annotations.isMessageLogger(interfaceElement);
-        }
-
-        @Override
-        public boolean isMessageBundle() {
-            return annotations.isMessageBundle(interfaceElement);
-        }
-
-        @Override
-        public boolean isLoggerInterface() {
-            return false;
+        public AnnotatedType getAnnotatedType() {
+            if (annotations.isMessageLogger(interfaceElement)) {
+                return AnnotatedType.MESSAGE_LOGGER;
+            } else if (annotations.isMessageBundle(interfaceElement)) {
+                return AnnotatedType.MESSAGE_BUNDLE;
+            }
+            return AnnotatedType.NONE;
         }
 
         @Override
@@ -348,18 +343,8 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public boolean isMessageLogger() {
-            return false;
-        }
-
-        @Override
-        public boolean isMessageBundle() {
-            return false;
-        }
-
-        @Override
-        public boolean isLoggerInterface() {
-            return true;
+        public AnnotatedType getAnnotatedType() {
+            return AnnotatedType.NONE;
         }
 
         @Override

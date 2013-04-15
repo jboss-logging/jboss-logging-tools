@@ -50,6 +50,7 @@ import javax.tools.StandardLocation;
 import org.jboss.logging.processor.generator.model.ClassModel;
 import org.jboss.logging.processor.generator.model.ClassModelFactory;
 import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.FormatValidator;
@@ -192,7 +193,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
             messageMethods.addAll(messageInterface.methods());
             for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
                 // Handle logger interface
-                if (msgIntf.isLoggerInterface()) {
+                if (msgIntf.getAnnotatedType() == AnnotatedType.NONE) {
                     continue;
                 }
                 messageMethods.addAll(msgIntf.methods());
