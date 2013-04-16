@@ -11,6 +11,9 @@ import java.lang.annotation.Target;
  * Sets a range of valid id's allowed on the {@link org.jboss.logging.annotations.Message#id() message id}. Both {@link
  * Message#INHERIT} and {@link Message#NONE} are ignored when validating.
  * <p/>
+ * <b>Note:</b> Message id's from inherited interfaces are not validated within the range provided. Super interfaces
+ * would need their own annotation for range validation.
+ * <p/>
  * <code>
  * <pre>
  *          &#64;MessageLogger(projectCode = "EXAMPLE")

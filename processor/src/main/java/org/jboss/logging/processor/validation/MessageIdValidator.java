@@ -55,26 +55,29 @@ public final class MessageIdValidator {
         if (message == null) {
             messages.add(createError(messageMethod, "No message annotation found."));
         } else {
+            final Collection<MessageMethod> interfaceMessageMethods = messageInterface.methods();
             if (!messageMethod.inheritsMessage() && !message.inheritsId()) {
                 final int id = message.id();
-                final List<ValidIdRange> validIdRanges = messageInterface.validIdRanges();
-                boolean invalidId = !validIdRanges.isEmpty();
-                for (ValidIdRange validIdRange : validIdRanges) {
-                    if (id >= validIdRange.min() && id <= validIdRange.max()) {
-                        invalidId = false;
-                        break;
-                    }
-                }
-                if (invalidId) {
-                    final StringBuilder ranges = new StringBuilder();
-                    int count = 0;
+                if (interfaceMessageMethods.contains(messageMethod)) {
+                    final List<ValidIdRange> validIdRanges = messageInterface.validIdRanges();
+                    boolean invalidId = !validIdRanges.isEmpty();
                     for (ValidIdRange validIdRange : validIdRanges) {
-                        ranges.append(validIdRange.min()).append('-').append(validIdRange.max());
-                        if (++count < validIdRanges.size()) {
-                            ranges.append(", ");
+                        if (id >= validIdRange.min() && id <= validIdRange.max()) {
+                            invalidId = false;
+                            break;
                         }
                     }
-                    messages.add(createError(messageMethod, "Message id %d on method %s is not within the valid range: %s", id, messageMethod.name(), ranges.toString()));
+                    if (invalidId) {
+                        final StringBuilder ranges = new StringBuilder();
+                        int count = 0;
+                        for (ValidIdRange validIdRange : validIdRanges) {
+                            ranges.append(validIdRange.min()).append('-').append(validIdRange.max());
+                            if (++count < validIdRanges.size()) {
+                                ranges.append(", ");
+                            }
+                        }
+                        messages.add(createError(messageMethod, "Message id %d on method %s is not within the valid range: %s", id, messageMethod.name(), ranges.toString()));
+                    }
                 }
                 final String projectCode = messageInterface.projectCode();
                 final MessageKey key = createMessageKey(projectCode, id);
