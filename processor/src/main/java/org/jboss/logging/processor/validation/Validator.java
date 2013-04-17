@@ -56,10 +56,12 @@ public final class Validator {
 
     private final MessageIdValidator messageIdValidator;
     private final IdLengthValidator idLengthValidator;
+    private final IdRangeValidator idRangeValidator;
 
     public Validator() {
         messageIdValidator = new MessageIdValidator();
         idLengthValidator = new IdLengthValidator();
+        idRangeValidator = new IdRangeValidator();
     }
 
     /**
@@ -105,6 +107,7 @@ public final class Validator {
         final Map<String, MessageMethod> methodNames = new HashMap<String, MessageMethod>();
 
         messages.addAll(idLengthValidator.validate(messageInterface));
+        messages.addAll(idRangeValidator.validate(messageInterface));
 
         for (MessageMethod messageMethod : messageMethods) {
             // Check for checked exceptions thrown on the interface messageMethod
