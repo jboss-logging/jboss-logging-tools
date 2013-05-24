@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
@@ -56,6 +57,11 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         DefaultLogger.LOGGER.noFormatWithCause(new IllegalArgumentException("No format cause"));
         final String msg = "This is a test message";
         DefaultLogger.LOGGER.formatWith(msg);
+
+        final String[] values = {"A", "B", "C", "D"};
+        DefaultLogger.LOGGER.invalidSelection("G", values);
+        DefaultLogger.LOGGER.invalidSelection("A", "B", "C", "D");
+
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
         Assert.assertEquals(properties.size(), HANDLER.size());
         compare(0, "hello", properties, NAME);
@@ -63,6 +69,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         compare(2, "noFormat", properties);
         compare(3, "noFormatWithCause", properties);
         compare(4, "formatWith", properties, new CustomFormatter(msg));
+        compare(5, "invalidSelection.2", properties, "G", Arrays.toString(values));
+        compare(6, "invalidSelection.1", properties, Arrays.toString(values));
     }
 
     @Test

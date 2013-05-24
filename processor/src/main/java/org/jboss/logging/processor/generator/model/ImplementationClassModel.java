@@ -36,8 +36,8 @@ import java.util.Set;
 
 import org.jboss.jdeparser.JBlock;
 import org.jboss.jdeparser.JClass;
-import org.jboss.jdeparser.JDeparser;
 import org.jboss.jdeparser.JConditional;
+import org.jboss.jdeparser.JDeparser;
 import org.jboss.jdeparser.JExpr;
 import org.jboss.jdeparser.JExpression;
 import org.jboss.jdeparser.JFieldVar;
@@ -162,7 +162,11 @@ abstract class ImplementationClassModel extends ClassModel {
                         throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
                     } else {
                         if (formatterClass == null) {
-                            args.add(var);
+                            if (param.isArray() || param.isVarArgs()) {
+                                args.add(getCodeModel().directClass(Arrays.class.getName()).staticInvoke("toString").arg(var));
+                            } else {
+                                args.add(var);
+                            }
                         } else {
                             args.add(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
                         }
@@ -291,7 +295,7 @@ abstract class ImplementationClassModel extends ClassModel {
             result = methodBody.decl(getCodeModel().INT, paramName);
             ifBlock.assign(result, JExpr.lit(0));
             if (param.isArray() || param.isVarArgs()) {
-                elseBlock.assign(result, getCodeModel().directClass("java.util.Arrays").staticInvoke("hashCode").arg(var));
+                elseBlock.assign(result, getCodeModel().directClass(Arrays.class.getName()).staticInvoke("hashCode").arg(var));
             } else {
                 elseBlock.assign(result, var.invoke("hashCode"));
             }

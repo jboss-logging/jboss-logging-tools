@@ -430,7 +430,11 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 switch (param.parameterType()) {
                     case FORMAT:
                         if (formatterClass == null) {
-                            args.add(var);
+                            if (param.isArray() || param.isVarArgs()) {
+                                args.add(getCodeModel().directClass(Arrays.class.getName()).staticInvoke("toString").arg(var));
+                            } else {
+                                args.add(var);
+                            }
                         } else {
                             args.add(JExpr._new(getCodeModel().directClass(formatterClass)).arg(var));
                         }

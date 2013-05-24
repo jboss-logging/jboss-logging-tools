@@ -69,6 +69,14 @@ interface DefaultLogger {
     @Message(id = 104, value = "Test Message: %s")
     void formatWith(@FormatWith(CustomFormatter.class) String msg);
 
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 105, value = "Valid values are; %s")
+    void invalidSelection(String... validValues);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = Message.INHERIT, value = "Invalid value '%s'. Valid values are; %s")
+    void invalidSelection(String selected, String[] validValues);
+
     static class CustomFormatter {
 
         private final String msg;
