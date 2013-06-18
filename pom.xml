@@ -33,7 +33,7 @@
 
     <groupId>org.jboss.logging</groupId>
     <artifactId>jboss-logging-tools-parent</artifactId>
-    <version>1.2.0.Final-SNAPSHOT</version>
+    <version>1.2.0.Beta1</version>
     <packaging>pom</packaging>
 
     <name>JBoss Logging Tools Parent</name>
