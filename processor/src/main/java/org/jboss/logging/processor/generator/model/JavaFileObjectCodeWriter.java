@@ -52,11 +52,6 @@ class JavaFileObjectCodeWriter extends CodeWriter {
     private final JavaFileObject fileObject;
 
     /**
-     * The output stream.
-     */
-    private OutputStream out;
-
-    /**
      * Class constructor.
      *
      * @param fileObject the file object.
@@ -71,15 +66,12 @@ class JavaFileObjectCodeWriter extends CodeWriter {
      */
     @Override
     public OutputStream openBinary(final JPackage pkg, final String fileName) throws IOException {
-        this.out = new BufferedOutputStream(fileObject.openOutputStream());
-        return out;
+        return new BufferedOutputStream(fileObject.openOutputStream());
     }
 
     @Override
     public void close() throws IOException {
-        if (out != null) {
-            out.close();
-        }
+        // no operation
     }
 
 }
