@@ -22,6 +22,7 @@
 
 package org.jboss.logging.processor.generator.model;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.tools.JavaFileObject;
@@ -70,7 +71,7 @@ class JavaFileObjectCodeWriter extends CodeWriter {
      */
     @Override
     public OutputStream openBinary(final JPackage pkg, final String fileName) throws IOException {
-        this.out = fileObject.openOutputStream();
+        this.out = new BufferedOutputStream(fileObject.openOutputStream());
         return out;
     }
 
