@@ -22,9 +22,10 @@
 
 package org.jboss.logging.processor.generator.model;
 
-import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import javax.tools.JavaFileObject;
 
 import org.jboss.jdeparser.CodeWriter;
@@ -66,12 +67,19 @@ class JavaFileObjectCodeWriter extends CodeWriter {
      */
     @Override
     public OutputStream openBinary(final JPackage pkg, final String fileName) throws IOException {
-        return new BufferedOutputStream(fileObject.openOutputStream());
+        // No reason to wrap in a buffer as the FileObject returns a FilterOutputStream which writes a byte at a time
+        return fileObject.openOutputStream();
+    }
+
+    @Override
+    public Writer openSource(final JPackage pkg, final String fileName) throws IOException {
+        // At least in OpenJDK encoding is correctly handled in the implementation
+        return new BufferedWriter(fileObject.openWriter());
     }
 
     @Override
     public void close() throws IOException {
-        // no operation
+        // no-op
     }
 
 }
