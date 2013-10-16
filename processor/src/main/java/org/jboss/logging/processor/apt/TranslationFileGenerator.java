@@ -28,7 +28,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
@@ -45,7 +44,6 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -201,7 +199,9 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
         try {
             final FileObject fileObject = filer().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
-            writer = new BufferedWriter(new OutputStreamWriter(fileObject.openOutputStream()));
+            // Note the FileObject#openWriter() is used here. The FileObject#openOutputStream() returns an output stream
+            // that writes each byte separately which results in poor performance.
+            writer = new BufferedWriter(fileObject.openWriter());
             // Write comments
             writer.write(Strings.fill("#", DEFAULT_FILE_COMMENT.length()));
             writer.newLine();
