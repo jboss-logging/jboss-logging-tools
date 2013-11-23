@@ -270,11 +270,17 @@ final class ThrowableTypeFactory {
 
         @Override
         protected void init(final List<? extends VariableElement> params) {
-            // Check to see if message has @Param annotated arguments.
-            if (!messageMethod.parameters(ParameterType.CONSTRUCTION).isEmpty() && !useConstructionParameters) {
+            final Set<Parameter> methodConstructorParameters = messageMethod.parameters(ParameterType.CONSTRUCTION);
+            // If there are no construction parameters or a constructor was already found, no need to process
+            if (methodConstructorParameters.isEmpty() || useConstructionParameters) {
+                return;
+            }
+            // The number of parameters needed has to include the cause, if specified, and the message it self
+            final int neededParamSize = methodConstructorParameters.size() + (messageMethod.hasCause() ? 2 : 1);
+            if (neededParamSize == params.size()) {
                 // Checks for the first constructor that can be used. The compiler will end-up determining the constructor
                 // to use, so a best guess should work.
-                final Iterator<Parameter> methodParameterIterator = messageMethod.parameters(ParameterType.CONSTRUCTION).iterator();
+                final Iterator<Parameter> methodParameterIterator = methodConstructorParameters.iterator();
                 final Set<Parameter> matchedParams = new LinkedHashSet<Parameter>();
                 boolean match = false;
                 boolean causeFound = false;
@@ -306,6 +312,7 @@ final class ThrowableTypeFactory {
                 }
 
                 if (match) {
+                    constructionParameters.clear();
                     useConstructionParameters = true;
                     constructionParameters.addAll(matchedParams);
                 }
