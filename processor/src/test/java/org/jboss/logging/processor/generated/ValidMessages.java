@@ -22,6 +22,8 @@
 
 package org.jboss.logging.processor.generated;
 
+import static org.jboss.logging.processor.util.Objects.areEqual;
+
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Field;
@@ -30,6 +32,8 @@ import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Property;
+import org.jboss.logging.processor.util.Objects;
+import org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -65,11 +69,10 @@ public interface ValidMessages {
         public int value;
 
         public CustomException() {
-            super();
         }
 
-        public CustomException(final int value) {
-            super();
+        public CustomException(final int value, final String msg) {
+            super(msg);
             this.value = value;
         }
 

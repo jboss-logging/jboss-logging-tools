@@ -53,11 +53,10 @@ public interface LegacyMessages {
         public int value;
 
         public CustomException() {
-            super();
         }
 
-        public CustomException(final int value) {
-            super();
+        public CustomException(final int value, final String msg) {
+            super(msg);
             this.value = value;
         }
 
