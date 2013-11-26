@@ -192,7 +192,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             final JMethod xxx4 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, lowered);
             final JVar xxx4loggerFqcn = xxx4.param(codeModel.directClass(String.class.getName()), "loggerFqcn");
             final JVar xxx4message = xxx4.param(codeModel.directClass(Object.class.getName()), "message");
-            final JVar xxx4params = xxx4.param(codeModel.directClass(Object[].class.getName()), "params");
+            final JVar xxx4params = xxx4.param(codeModel.directClass(Object[].class.getCanonicalName()), "params");
             final JVar xxx4t = xxx4.param(codeModel.directClass(Throwable.class.getName()), "t");
             final JInvocation xxx4inv = xxx4.body().invoke(logVar, lowered);
             xxx4inv.arg(xxx4loggerFqcn);
@@ -215,7 +215,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     final JVar xxx1xParams = xxx1x.varParam(codeModel.directClass(Object.class.getName()), "params");
                     final JInvocation xxx1xInv = xxx1x.body().invoke(logVar, target);
                     xxx1xInv.arg(fqcn);
-                    xxx1xInv.arg(codeModel.directClass(loggers().logLevelClass().getName()).staticRef(level));
+                    xxx1xInv.arg(codeModel.directClass(loggers().logLevelClass().getCanonicalName()).staticRef(level));
                     xxx1xInv.arg(renderThr ? thr : JExpr._null());
                     xxx1xInv.arg(xxx1xFormat);
                     xxx1xInv.arg(xxx1xParams);
@@ -231,7 +231,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         }
                         final JInvocation xxx2xInv = xxx2x.body().invoke(logVar, target);
                         xxx2xInv.arg(fqcn);
-                        xxx2xInv.arg(codeModel.directClass(loggers().logLevelClass().getName()).staticRef(level));
+                        xxx2xInv.arg(codeModel.directClass(loggers().logLevelClass().getCanonicalName()).staticRef(level));
                         xxx2xInv.arg(renderThr ? thr : JExpr._null());
                         xxx2xInv.arg(xxx2xFormat);
                         for (int j = 0; j < i; j++) {
@@ -246,14 +246,14 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // isEnabled...
         final JMethod isEnabled = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.BOOLEAN, "isEnabled");
-        final JVar isEnabledLevel = isEnabled.param(codeModel.directClass(loggers().logLevelClass().getName()), "level");
+        final JVar isEnabledLevel = isEnabled.param(codeModel.directClass(loggers().logLevelClass().getCanonicalName()), "level");
         final JInvocation isEnabledInv = JExpr.invoke(logVar, "isEnabled");
         isEnabledInv.arg(isEnabledLevel);
         isEnabled.body()._return(isEnabledInv);
 
         // now, the four "raw" log methods
         final JMethod log1 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
-        final JVar log1Level = log1.param(codeModel.directClass(loggers().logLevelClass().getName()), "level");
+        final JVar log1Level = log1.param(codeModel.directClass(loggers().logLevelClass().getCanonicalName()), "level");
         final JVar log1Message = log1.param(codeModel.directClass(Object.class.getName()), "message");
         final JInvocation log1inv = log1.body().invoke(logVar, "log");
         log1inv.arg(fqcn);
@@ -263,7 +263,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         log1inv.arg(JExpr._null());
 
         final JMethod log2 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
-        final JVar log2Level = log2.param(codeModel.directClass(loggers().logLevelClass().getName()), "level");
+        final JVar log2Level = log2.param(codeModel.directClass(loggers().logLevelClass().getCanonicalName()), "level");
         final JVar log2message = log2.param(codeModel.directClass(Object.class.getName()), "message");
         final JVar log2t = log2.param(codeModel.directClass(Throwable.class.getName()), "t");
         final JInvocation log2inv = log2.body().invoke(logVar, "log");
@@ -274,7 +274,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         log2inv.arg(log2t);
 
         final JMethod log3 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
-        final JVar log3Level = log3.param(codeModel.directClass(loggers().logLevelClass().getName()), "level");
+        final JVar log3Level = log3.param(codeModel.directClass(loggers().logLevelClass().getCanonicalName()), "level");
         final JVar log3loggerFqcn = log3.param(codeModel.directClass(String.class.getName()), "loggerFqcn");
         final JVar log3message = log3.param(codeModel.directClass(Object.class.getName()), "message");
         final JVar log3t = log3.param(codeModel.directClass(Throwable.class.getName()), "t");
@@ -286,9 +286,9 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         final JMethod log4 = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, "log");
         final JVar log4loggerFqcn = log4.param(codeModel.directClass(String.class.getName()), "loggerFqcn");
-        final JVar log4Level = log4.param(codeModel.directClass(loggers().logLevelClass().getName()), "level");
+        final JVar log4Level = log4.param(codeModel.directClass(loggers().logLevelClass().getCanonicalName()), "level");
         final JVar log4message = log4.param(codeModel.directClass(Object.class.getName()), "message");
-        final JVar log4params = log4.param(codeModel.directClass(Object[].class.getName()), "params");
+        final JVar log4params = log4.param(codeModel.directClass(Object[].class.getCanonicalName()), "params");
         final JVar log4t = log4.param(codeModel.directClass(Throwable.class.getName()), "t");
         final JInvocation log4inv = log4.body().invoke(logVar, "log");
         log4inv.arg(log4loggerFqcn);
@@ -311,7 +311,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
                 final JMethod log1x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
                 if (renderFqcn) logFqcn = log1x.param(codeModel.directClass(String.class.getName()), "loggerFqcn");
-                final JVar log1xLevel = log1x.param(codeModel.directClass(loggers().logLevelClass().getName()), "level");
+                final JVar log1xLevel = log1x.param(codeModel.directClass(loggers().logLevelClass().getCanonicalName()), "level");
                 if (renderThr) thr = log1x.param(codeModel.directClass(Throwable.class.getName()), "t");
                 final JVar log1xFormat = log1x.param(codeModel.directClass(String.class.getName()), "format");
                 final JVar log1xParams = log1x.varParam(codeModel.directClass(Object.class.getName()), "params");
@@ -326,7 +326,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 for (int i = 1; i <= 3; i++) {
                     final JMethod log2x = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, codeModel.VOID, name);
                     if (renderFqcn) logFqcn = log2x.param(codeModel.directClass(String.class.getName()), "loggerFqcn");
-                    final JVar log2xLevel = log2x.param(codeModel.directClass(loggers().logLevelClass().getName()), "level");
+                    final JVar log2xLevel = log2x.param(codeModel.directClass(loggers().logLevelClass().getCanonicalName()), "level");
                     if (renderThr) thr = log2x.param(codeModel.directClass(Throwable.class.getName()), "t");
                     final JVar log2xFormat = log2x.param(codeModel.directClass(String.class.getName()), "format");
                     final JVar[] params = new JVar[i];
