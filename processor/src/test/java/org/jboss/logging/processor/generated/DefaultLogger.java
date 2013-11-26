@@ -25,6 +25,7 @@
  */
 package org.jboss.logging.processor.generated;
 
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
@@ -40,7 +41,7 @@ import org.jboss.logging.annotations.ValidIdRange;
  */
 @MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
 @ValidIdRange(min = 100, max = 150)
-interface DefaultLogger {
+interface DefaultLogger extends BasicLogger {
 
     final String TEST_MSG = "No format%n";
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,17 +28,13 @@ import org.testng.annotations.Test;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class MessagesTest {
+public class LegacyMessagesTest {
 
     @Test
-    public void testFormats() {
-        Assert.assertEquals(ValidMessages.MESSAGES.testWithNewLine(), String.format(ValidMessages.TEST_MSG));
-        Assert.assertEquals(ValidMessages.MESSAGES.noFormat(), ValidMessages.TEST_MSG);
-        Assert.assertEquals(ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage(), ValidMessages.TEST_MSG);
-
+    public void testLegacy() {
         final int value = 10;
-        Assert.assertEquals(ValidMessages.MESSAGES.fieldMessage(value).value, value);
-        Assert.assertEquals(ValidMessages.MESSAGES.paramMessage(value).value, value);
-        Assert.assertEquals(ValidMessages.MESSAGES.propertyMessage(value).value, value);
+        Assert.assertEquals(LegacyMessages.MESSAGES.fieldMessage(value).value, value);
+        Assert.assertEquals(LegacyMessages.MESSAGES.paramMessage(value).value, value);
+        Assert.assertEquals(LegacyMessages.MESSAGES.propertyMessage(value).value, value);
     }
 }
