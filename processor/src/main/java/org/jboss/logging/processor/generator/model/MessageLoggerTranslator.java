@@ -26,7 +26,7 @@ package org.jboss.logging.processor.generator.model;
 import static org.jboss.logging.processor.Tools.loggers;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -86,7 +86,7 @@ class MessageLoggerTranslator extends ClassModel {
         constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
 
         final Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
-        final Set<String> methodNames = new HashSet<String>();
+        final Set<String> methodNames = new LinkedHashSet<String>();
         for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             if (methodNames.add(method.name())) {

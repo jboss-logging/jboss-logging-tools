@@ -27,8 +27,8 @@ import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -125,7 +125,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         }
 
         // Process the method descriptors and add to the model before writing.
-        final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
+        final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
             // Handle logger interface

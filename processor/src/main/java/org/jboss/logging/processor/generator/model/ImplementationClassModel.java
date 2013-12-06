@@ -29,7 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,8 +131,8 @@ abstract class ImplementationClassModel extends ClassModel {
         // Create maps for the fields and properties. Key is the field or setter method, value is the parameter to set
         // the value to.
         final Set<Parameter> allParameters = messageMethod.parameters(ParameterType.ANY);
-        final Map<String, JVar> fields = new HashMap<String, JVar>();
-        final Map<String, JVar> properties = new HashMap<String, JVar>();
+        final Map<String, JVar> fields = new LinkedHashMap<String, JVar>();
+        final Map<String, JVar> properties = new LinkedHashMap<String, JVar>();
 
         // First load the parameter names
         final List<String> parameterNames = new ArrayList<String>(allParameters.size());

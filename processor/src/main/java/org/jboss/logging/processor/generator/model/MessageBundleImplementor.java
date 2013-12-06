@@ -22,13 +22,11 @@
 
 package org.jboss.logging.processor.generator.model;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.jboss.jdeparser.JClass;
 import org.jboss.jdeparser.JDeparser;
-import org.jboss.jdeparser.JExpr;
-import org.jboss.jdeparser.JFieldVar;
 import org.jboss.jdeparser.JMethod;
 import org.jboss.jdeparser.JMod;
 import org.jboss.logging.processor.model.MessageInterface;
@@ -61,7 +59,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
         // Add default constructor
         getDefinedClass().constructor(JMod.PROTECTED);
         createReadResolveMethod();
-        final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
+        final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
             // Handle logger interface
