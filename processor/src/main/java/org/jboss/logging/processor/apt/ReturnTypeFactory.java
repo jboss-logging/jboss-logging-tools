@@ -25,7 +25,7 @@ package org.jboss.logging.processor.apt;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
@@ -82,8 +82,8 @@ final class ReturnTypeFactory {
             this.returnType = returnType;
             this.method = method;
             throwableType = null;
-            fields = new HashMap<String, TypeMirror>();
-            methods = new HashMap<String, TypeMirror>();
+            fields = new LinkedHashMap<String, TypeMirror>();
+            methods = new LinkedHashMap<String, TypeMirror>();
         }
 
         @Override
