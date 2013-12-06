@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -348,7 +349,7 @@ public final class Validator {
         if (messageInterface.getAnnotatedType() == AnnotatedType.NONE) {
             return Collections.emptySet();
         }
-        final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
+        final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
         for (MessageMethod messageMethod : messageInterface.methods()) {
             messageMethods.add(messageMethod);
         }

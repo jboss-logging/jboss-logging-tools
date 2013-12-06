@@ -23,7 +23,7 @@
 package org.jboss.logging.processor.generator.model;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,7 +76,7 @@ class MessageBundleTranslator extends ClassModel {
         readResolve.annotate(Override.class);
 
         final Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
-        final Set<String> methodNames = new HashSet<String>();
+        final Set<String> methodNames = new LinkedHashSet<String>();
         for (Map.Entry<MessageMethod, String> entry : entries) {
             JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
             if (methodNames.add(method.name())) {

@@ -31,7 +31,6 @@ import static org.jboss.logging.processor.util.Objects.areEqual;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -282,7 +281,7 @@ public final class MessageInterfaceFactory {
 
         private LoggerInterface(final Elements elements, final Types types) {
             super(elements, types, elements.getTypeElement(loggers().loggerInterface().getName()));
-            messageMethods = new HashSet<MessageMethod>();
+            messageMethods = new LinkedHashSet<MessageMethod>();
             this.loggerInterface = elements.getTypeElement(loggers().loggerInterface().getName());
         }
 

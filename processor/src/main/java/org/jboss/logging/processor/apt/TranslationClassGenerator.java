@@ -33,8 +33,8 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -125,7 +125,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     }
 
     private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
-        final Map<File, Map<MessageMethod, String>> validTranslations = new HashMap<File, Map<MessageMethod, String>>();
+        final Map<File, Map<MessageMethod, String>> validTranslations = new LinkedHashMap<File, Map<MessageMethod, String>>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
         }
@@ -182,14 +182,14 @@ final class TranslationClassGenerator extends AbstractGenerator {
      * @return the valid translations messages
      */
     private Map<MessageMethod, String> validateTranslationMessages(final MessageInterface messageInterface, final File file) {
-        Map<MessageMethod, String> validTranslations = new HashMap<MessageMethod, String>();
+        Map<MessageMethod, String> validTranslations = new LinkedHashMap<MessageMethod, String>();
 
         try {
 
             //Load translations
             Properties translations = new Properties();
             translations.load(new InputStreamReader(new FileInputStream(file), "utf-8"));
-            final Set<MessageMethod> messageMethods = new HashSet<MessageMethod>();
+            final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
             messageMethods.addAll(messageInterface.methods());
             for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
                 // Handle logger interface

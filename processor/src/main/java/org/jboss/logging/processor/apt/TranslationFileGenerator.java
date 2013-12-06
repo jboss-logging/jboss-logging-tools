@@ -34,6 +34,7 @@ import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -288,7 +289,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
     }
 
     private Map<String, String> parseParameterComments(final MessageMethod messageMethod) throws IOException {
-        final Map<String, String> result = new HashMap<String, String>();
+        final Map<String, String> result = new LinkedHashMap<String, String>();
         final String comment = messageMethod.getComment();
         if (comment != null) {
             final Matcher matcher = PATTERN.matcher(comment);
