@@ -132,7 +132,8 @@ public class GeneratedSourceAnalysisTest {
     }
 
     private String packageToPath(final Package pkg) {
-        return pkg.getName().replace('.', File.separatorChar);
+        String result = pkg.getName().replace('.', File.separatorChar);
+        return result.endsWith(File.separator) ? result : result + File.separator;
     }
 
     private Descriptors parseGenerated(final Class<?> intf) throws IOException {
