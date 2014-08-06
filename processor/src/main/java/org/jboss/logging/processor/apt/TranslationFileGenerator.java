@@ -26,8 +26,10 @@ import static org.jboss.logging.processor.util.ElementHelper.getPrimaryClassName
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
@@ -199,10 +201,18 @@ final class TranslationFileGenerator extends AbstractGenerator {
         BufferedWriter writer = null;
 
         try {
-            final FileObject fileObject = filer().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
-            // Note the FileObject#openWriter() is used here. The FileObject#openOutputStream() returns an output stream
-            // that writes each byte separately which results in poor performance.
-            writer = new BufferedWriter(fileObject.openWriter());
+            if (generatedFilesPath == null) {
+                final FileObject fileObject = filer().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
+                // Note the FileObject#openWriter() is used here. The FileObject#openOutputStream() returns an output stream
+                // that writes each byte separately which results in poor performance.
+                writer = new BufferedWriter(fileObject.openWriter());
+            } else {
+                String relativePath = messageInterface.packageName().replace('.', File.separatorChar);
+                final File path = new File(generatedFilesPath, relativePath);
+                path.mkdirs();
+                final File file = new File(path, fileName);
+                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
+            }
             // Write comments
             writer.write(Strings.fill("#", DEFAULT_FILE_COMMENT.length()));
             writer.newLine();
