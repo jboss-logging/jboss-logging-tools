@@ -16,7 +16,7 @@ import org.jboss.logging.annotations.ValidIdRanges;
 @MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
 @ValidIdRanges({
         @ValidIdRange(min = 200, max = 202),
-        @ValidIdRange(min = 203, max = 203)
+        @ValidIdRange(min = 203, max = 204)
 })
 public interface ValidLogger {
 
@@ -73,4 +73,7 @@ public interface ValidLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id = 203, value = "Processing error on '%s' with error '%s'")
     void processingError(Object on, String message);
+
+    @Message(id = 204, value = "Bundle message inside a logger")
+    String bundleMessage();
 }

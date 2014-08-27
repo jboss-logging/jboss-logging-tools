@@ -50,7 +50,7 @@ public class GeneratedSourceAnalysisTest {
     private static String TEST_GENERATED_SRC_PATH = null;
 
     private final Pattern methodNamePattern = Pattern.compile("((?:\\s?|\\s+?)(?:public final)?\\s+)?([\\w\\.]+)\\s+(\\w+)(\\(.*)");
-    private final Pattern fieldNamePattern = Pattern.compile("((?:\\s?|\\s+?)private final static\\s+)([\\w\\.]+String|String)(?:\\s+)(\\w+)(.*)");
+    private final Pattern fieldNamePattern = Pattern.compile("((?:\\s?|\\s+?)private static final\\s+)([\\w\\.]+String|String)(?:\\s+)(\\w+)(.*)");
     private final Pattern messageMethodPattern = Pattern.compile("((?:\\s?|\\s+?)protected\\s+)([\\w.]+String|String)(?:\\s+)(\\w+)(\\$str\\(\\))(.*)");
 
     @BeforeClass

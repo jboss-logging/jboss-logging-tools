@@ -24,10 +24,9 @@ package org.jboss.logging.processor.generator.model;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.annotation.processing.Filer;
 
-import org.jboss.jdeparser.JClass;
-import org.jboss.jdeparser.JDeparser;
-import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JMod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
@@ -47,17 +46,18 @@ class MessageBundleImplementor extends ImplementationClassModel {
     /**
      * Creates a new message bundle code model.
      *
+     * @param filer            the filer used to create the source file
      * @param messageInterface the message interface to implement.
      */
-    public MessageBundleImplementor(final MessageInterface messageInterface) {
-        super(messageInterface);
+    public MessageBundleImplementor(final Filer filer, final MessageInterface messageInterface) {
+        super(filer, messageInterface);
     }
 
     @Override
-    protected JDeparser generateModel() throws IllegalStateException {
-        final JDeparser codeModel = super.generateModel();
+    protected JClassDef generateModel() throws IllegalStateException {
+        final JClassDef classDef = super.generateModel();
         // Add default constructor
-        getDefinedClass().constructor(JMod.PROTECTED);
+        classDef.constructor(JMod.PROTECTED);
         createReadResolveMethod();
         final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
         messageMethods.addAll(messageInterface().methods());
@@ -71,13 +71,8 @@ class MessageBundleImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MessageMethod messageMethod : messageMethods) {
-            final JClass returnType = codeModel.directClass(messageMethod.returnType().name());
-            final JMethod jMethod = getDefinedClass().method(JMod.PUBLIC | JMod.FINAL, returnType, messageMethod.name());
-
-            // Add the message messageMethod.
-            final JMethod msgMethod = addMessageMethod(messageMethod);
-            createBundleMethod(messageMethod, jMethod, msgMethod);
+            createBundleMethod(classDef, messageMethod);
         }
-        return codeModel;
+        return classDef;
     }
 }

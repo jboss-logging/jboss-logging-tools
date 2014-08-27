@@ -250,17 +250,12 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
 
         //Create source file
-        final ClassModel classModel = ClassModelFactory.translation(messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
+        final ClassModel classModel = ClassModelFactory.translation(filer(), messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
 
         try {
-
-            classModel.create(filer().createSourceFile(classModel.qualifiedClassName()));
-
-        } catch (IOException ex) {
-            logger().error(ex, "Cannot generate %s source file", classModel.qualifiedClassName());
-
-        } catch (IllegalStateException ex) {
-            logger().error(ex, "Cannot generate %s source file", classModel.qualifiedClassName());
+            classModel.generateAndWrite();
+        } catch (IllegalStateException | IOException e) {
+            logger().error(e, "Cannot generate %s source file", classModel.qualifiedClassName());
         }
     }
 
