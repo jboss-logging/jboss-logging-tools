@@ -74,9 +74,22 @@ public interface Annotations {
 
     /**
      * Returns a set of the supported annotations.
-     * @return
+     * @return a set of supported annotations
      */
     Set<String> getSupportedAnnotations();
+
+    /**
+     * Checks that the annotation is a supported interface annotation.
+     * <p/>
+     * Supported interface annotations are annotations that indicate the interface should be processed. No errors should
+     * be thrown if {@code false} is returned. The annotations should just be skipped.
+     *
+     * @param annotation the annotation to check
+     *
+     * @return {@code true} if this is a supported interface annotation, {@code false} if the annotation should be
+     * skipped
+     */
+    boolean isSupportedInterfaceAnnotation(TypeElement annotation);
 
     /**
      * Returns the method format type.
