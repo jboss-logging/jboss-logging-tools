@@ -22,8 +22,10 @@
 
 package org.jboss.logging.processor.apt;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -40,7 +42,11 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
+import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
+import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.annotations.ValidIdRange;
+import org.jboss.logging.annotations.ValidIdRanges;
 import org.jboss.logging.processor.util.ElementHelper;
 
 /**
@@ -65,17 +71,55 @@ public class AnnotationsImpl implements Annotations {
     static final String LEGACY_PROPERTY = "org.jboss.logging.Property";
 
     private static String[] ANNOTATIONS = {
+            // Legacy interface annotations
             LEGACY_MESSAGE_BUNDLE,
             LEGACY_MESSAGE_LOGGER,
+            // Legacy annotations
+            LEGACY_CAUSE,
+            LEGACY_FIELD,
+            LEGACY_FORMAT_WITH,
+            LEGACY_LOG_MESSAGE,
+            LEGACY_LOGGING_CLASS,
+            LEGACY_MESSAGE,
+            LEGACY_PARAM,
+            LEGACY_PROPERTY,
+            // Interface annotations
             MessageBundle.class.getName(),
             MessageLogger.class.getName(),
+            // Other annotations
+            Cause.class.getName(),
+            Field.class.getName(),
+            FormatWith.class.getName(),
+            LoggingClass.class.getName(),
+            LogMessage.class.getName(),
+            Message.class.getName(),
+            Param.class.getName(),
+            Pos.class.getName(),
+            Property.class.getName(),
+            Transform.class.getName(),
+            ValidIdRange.class.getName(),
+            ValidIdRanges.class.getName(),
     };
+
+    private static List<String> INTERFACE_ANNOTATIONS = Arrays.asList(
+            // Legacy interface annotations
+            LEGACY_MESSAGE_BUNDLE,
+            LEGACY_MESSAGE_LOGGER,
+            // Interface annotations
+            MessageBundle.class.getName(),
+            MessageLogger.class.getName()
+    );
 
     @Override
     public Set<String> getSupportedAnnotations() {
         final Set<String> annotations = new HashSet<String>(ANNOTATIONS.length);
         Collections.addAll(annotations, ANNOTATIONS);
         return Collections.unmodifiableSet(annotations);
+    }
+
+    @Override
+    public boolean isSupportedInterfaceAnnotation(final TypeElement annotation) {
+        return INTERFACE_ANNOTATIONS.contains(annotation.getQualifiedName().toString());
     }
 
     @Override
