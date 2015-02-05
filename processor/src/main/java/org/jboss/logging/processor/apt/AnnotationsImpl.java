@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -59,30 +58,8 @@ import org.jboss.logging.processor.util.ElementHelper;
  */
 @SuppressWarnings("deprecation")
 public class AnnotationsImpl implements Annotations {
-    static final String LEGACY_CAUSE = "org.jboss.logging.Cause";
-    static final String LEGACY_FIELD = "org.jboss.logging.Field";
-    static final String LEGACY_FORMAT_WITH = "org.jboss.logging.FormatWith";
-    static final String LEGACY_LOGGING_CLASS = "org.jboss.logging.LoggingClass";
-    static final String LEGACY_LOG_MESSAGE = "org.jboss.logging.LogMessage";
-    static final String LEGACY_MESSAGE = "org.jboss.logging.Message";
-    static final String LEGACY_MESSAGE_BUNDLE = "org.jboss.logging.MessageBundle";
-    static final String LEGACY_MESSAGE_LOGGER = "org.jboss.logging.MessageLogger";
-    static final String LEGACY_PARAM = "org.jboss.logging.Param";
-    static final String LEGACY_PROPERTY = "org.jboss.logging.Property";
 
-    private static String[] ANNOTATIONS = {
-            // Legacy interface annotations
-            LEGACY_MESSAGE_BUNDLE,
-            LEGACY_MESSAGE_LOGGER,
-            // Legacy annotations
-            LEGACY_CAUSE,
-            LEGACY_FIELD,
-            LEGACY_FORMAT_WITH,
-            LEGACY_LOG_MESSAGE,
-            LEGACY_LOGGING_CLASS,
-            LEGACY_MESSAGE,
-            LEGACY_PARAM,
-            LEGACY_PROPERTY,
+    private static final String[] ANNOTATIONS = {
             // Interface annotations
             MessageBundle.class.getName(),
             MessageLogger.class.getName(),
@@ -101,11 +78,7 @@ public class AnnotationsImpl implements Annotations {
             ValidIdRanges.class.getName(),
     };
 
-    private static List<String> INTERFACE_ANNOTATIONS = Arrays.asList(
-            // Legacy interface annotations
-            LEGACY_MESSAGE_BUNDLE,
-            LEGACY_MESSAGE_LOGGER,
-            // Interface annotations
+    private static final List<String> INTERFACE_ANNOTATIONS = Arrays.asList(
             MessageBundle.class.getName(),
             MessageLogger.class.getName()
     );
@@ -142,14 +115,6 @@ public class AnnotationsImpl implements Annotations {
                 }
             }
             // Check the legacy annotation
-        } else if (ElementHelper.isAnnotatedWith(method, LEGACY_MESSAGE)) {
-            final AnnotationValue value = ElementHelper.getAnnotationValue(method, LEGACY_MESSAGE, "format");
-            if (value != null) {
-                result = getEnum(FormatType.class, value.getValue().toString());
-            } else {
-                // This is the default if not specified
-                result = FormatType.PRINTF;
-            }
         }
         return result;
     }
@@ -163,15 +128,6 @@ public class AnnotationsImpl implements Annotations {
             result = bundle.projectCode();
         } else if (logger != null) {
             result = logger.projectCode();
-        } else {
-            // Check legacy annotations
-            final AnnotationValue legacyBundle = ElementHelper.getAnnotationValue(intf, LEGACY_MESSAGE_BUNDLE, "projectCode");
-            final AnnotationValue legacyLogger = ElementHelper.getAnnotationValue(intf, LEGACY_MESSAGE_LOGGER, "projectCode");
-            if (legacyBundle != null) {
-                result = legacyBundle.getValue().toString();
-            } else if (legacyLogger != null) {
-                result = legacyLogger.getValue().toString();
-            }
         }
         return result;
     }
@@ -191,132 +147,81 @@ public class AnnotationsImpl implements Annotations {
 
     @Override
     public boolean hasCauseAnnotation(final VariableElement param) {
-        return ElementHelper.isAnnotatedWith(param, Cause.class) || ElementHelper.isAnnotatedWith(param, LEGACY_CAUSE);
+        return ElementHelper.isAnnotatedWith(param, Cause.class);
     }
 
     @Override
     public boolean hasFieldAnnotation(final VariableElement param) {
-        return ElementHelper.isAnnotatedWith(param, Field.class) || ElementHelper.isAnnotatedWith(param, LEGACY_FIELD);
+        return ElementHelper.isAnnotatedWith(param, Field.class);
     }
 
     @Override
     public boolean hasLoggingClassAnnotation(final VariableElement param) {
-        return ElementHelper.isAnnotatedWith(param, LoggingClass.class) || ElementHelper.isAnnotatedWith(param, LEGACY_LOGGING_CLASS);
+        return ElementHelper.isAnnotatedWith(param, LoggingClass.class);
     }
 
     @Override
     public boolean hasMessageAnnotation(final ExecutableElement method) {
-        return ElementHelper.isAnnotatedWith(method, Message.class) || ElementHelper.isAnnotatedWith(method, LEGACY_MESSAGE);
+        return ElementHelper.isAnnotatedWith(method, Message.class);
     }
 
     @Override
     public boolean hasMessageId(final ExecutableElement method) {
-        final boolean result;
         final Message message = method.getAnnotation(Message.class);
-        if (message != null) {
-            result = (message.id() != Message.NONE && message.id() != Message.INHERIT);
-        } else {
-            // Check legacy annotation
-            if (ElementHelper.isAnnotatedWith(method, LEGACY_MESSAGE)) {
-                final AnnotationValue value = ElementHelper.getAnnotationValue(method, LEGACY_MESSAGE, "id");
-                final int id = (value != null) ? Integer.parseInt(value.getValue().toString()) : Message.INHERIT;
-                result = (value != null && (id != Message.NONE && id != Message.INHERIT));
-            } else {
-                result = false;
-            }
-        }
-
-        return result;
+        return message != null && (message.id() != Message.NONE && message.id() != Message.INHERIT);
     }
 
     @Override
     public boolean hasParamAnnotation(final VariableElement param) {
-        return ElementHelper.isAnnotatedWith(param, Param.class) || ElementHelper.isAnnotatedWith(param, LEGACY_PARAM);
+        return ElementHelper.isAnnotatedWith(param, Param.class);
     }
 
     @Override
     public boolean hasPropertyAnnotation(final VariableElement param) {
-        return ElementHelper.isAnnotatedWith(param, Property.class) || ElementHelper.isAnnotatedWith(param, LEGACY_PROPERTY);
+        return ElementHelper.isAnnotatedWith(param, Property.class);
     }
 
     @Override
     public boolean inheritsMessageId(final ExecutableElement method) {
-        final boolean result;
         final Message message = method.getAnnotation(Message.class);
-        if (message != null) {
-            result = message.id() == Message.INHERIT;
-        } else {
-            // Check legacy annotation
-            if (ElementHelper.isAnnotatedWith(method, LEGACY_MESSAGE)) {
-                final AnnotationValue value = ElementHelper.getAnnotationValue(method, LEGACY_MESSAGE, "id");
-                final int id = (value != null) ? Integer.parseInt(value.getValue().toString()) : Message.INHERIT;
-                result = (value != null && id == Message.INHERIT);
-            } else {
-                result = false;
-            }
-        }
-        return result;
+        return message != null && message.id() == Message.INHERIT;
     }
 
     @Override
     public boolean isLoggerMethod(final ExecutableElement method) {
-        return ElementHelper.isAnnotatedWith(method, LogMessage.class) || ElementHelper.isAnnotatedWith(method, LEGACY_LOG_MESSAGE);
+        return ElementHelper.isAnnotatedWith(method, LogMessage.class);
     }
 
     @Override
     public boolean isMessageBundle(final TypeElement element) {
-        return ElementHelper.isAnnotatedWith(element, MessageBundle.class) || ElementHelper.isAnnotatedWith(element, LEGACY_MESSAGE_BUNDLE);
+        return ElementHelper.isAnnotatedWith(element, MessageBundle.class);
     }
 
     @Override
     public boolean isMessageLogger(final TypeElement element) {
-        return ElementHelper.isAnnotatedWith(element, MessageLogger.class) || ElementHelper.isAnnotatedWith(element, LEGACY_MESSAGE_LOGGER);
+        return ElementHelper.isAnnotatedWith(element, MessageLogger.class);
     }
 
     @Override
     public String getFormatWithAnnotationName(final VariableElement param) {
-        String result = FormatWith.class.getName();
-        if (ElementHelper.isAnnotatedWith(param, LEGACY_FORMAT_WITH)) {
-            result = LEGACY_FORMAT_WITH;
-        }
-        return result;
+        return FormatWith.class.getName();
     }
 
     @Override
     public String getMessageLoggerAnnotationName(final TypeElement element) {
-        String result = MessageLogger.class.getName();
-        if (ElementHelper.isAnnotatedWith(element, LEGACY_MESSAGE_LOGGER)) {
-            result = LEGACY_MESSAGE_LOGGER;
-        }
-        return result;
+        return MessageLogger.class.getName();
     }
 
     @Override
     public int messageId(final ExecutableElement method) {
-        final int result;
         final Message message = method.getAnnotation(Message.class);
-        if (message != null) {
-            result = message.id();
-        } else {
-            // Check legacy annotation
-            final AnnotationValue value = ElementHelper.getAnnotationValue(method, LEGACY_MESSAGE, "id");
-            result = (value == null ? Message.NONE : Integer.valueOf(value.getValue().toString()));
-        }
-        return result;
+        return message.id();
     }
 
     @Override
     public String messageValue(final ExecutableElement method) {
-        final String result;
         final Message message = method.getAnnotation(Message.class);
-        if (message != null) {
-            result = message.value();
-        } else {
-            // Check legacy annotation
-            final AnnotationValue value = ElementHelper.getAnnotationValue(method, LEGACY_MESSAGE, "value");
-            result = (value == null ? null : value.getValue().toString());
-        }
-        return result;
+        return message.value();
     }
 
     @Override
@@ -326,20 +231,9 @@ public class AnnotationsImpl implements Annotations {
 
     @Override
     public String logLevel(final ExecutableElement method) {
-        String result = null;
         final LogMessage logMessage = method.getAnnotation(LogMessage.class);
-        if (logMessage != null) {
-            final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
-            result = String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
-        } else {
-            // check legacy annotation
-            if (ElementHelper.isAnnotatedWith(method, LEGACY_LOG_MESSAGE)) {
-                final AnnotationValue value = ElementHelper.getAnnotationValue(method, LEGACY_LOG_MESSAGE, "level");
-                final Logger.Level logLevel = (value == null ? Logger.Level.INFO : getEnum(Logger.Level.class, value.getValue().toString()));
-                result = String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
-            }
-        }
-        return result;
+        final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
+        return String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
     }
 
     @Override
@@ -362,24 +256,6 @@ public class AnnotationsImpl implements Annotations {
                 result = name;
             }
             result = "set" + Character.toUpperCase(result.charAt(0)) + result.substring(1);
-        } else {
-            // Check legacy annotations
-            if (ElementHelper.isAnnotatedWith(param, LEGACY_FIELD)) {
-                final AnnotationValue value = ElementHelper.getAnnotationValue(param, LEGACY_FIELD, "name");
-                if (value == null) {
-                    result = param.getSimpleName().toString();
-                } else {
-                    result = value.getValue().toString();
-                }
-            } else if (ElementHelper.isAnnotatedWith(param, LEGACY_PROPERTY)) {
-                final AnnotationValue value = ElementHelper.getAnnotationValue(param, LEGACY_PROPERTY, "name");
-                if (value == null) {
-                    result = param.getSimpleName().toString();
-                } else {
-                    result = value.getValue().toString();
-                }
-                result = "set" + Character.toUpperCase(result.charAt(0)) + result.substring(1);
-            }
         }
         return result;
     }
