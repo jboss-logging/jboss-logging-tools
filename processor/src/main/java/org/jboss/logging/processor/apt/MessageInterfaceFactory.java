@@ -22,8 +22,6 @@
 
 package org.jboss.logging.processor.apt;
 
-import static org.jboss.logging.processor.Tools.annotations;
-import static org.jboss.logging.processor.Tools.loggers;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
@@ -47,6 +45,9 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.ValidIdRange;
 import org.jboss.logging.annotations.ValidIdRanges;
 import org.jboss.logging.processor.model.MessageInterface;
@@ -59,8 +60,8 @@ import org.jboss.logging.processor.util.ElementHelper;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class MessageInterfaceFactory {
-    private static volatile LoggerInterface LOGGER_INTERFACE;
     private static final Object LOCK = new Object();
+    private static volatile LoggerInterface LOGGER_INTERFACE;
 
     /**
      * Private constructor for factory.
@@ -69,7 +70,8 @@ public final class MessageInterfaceFactory {
     }
 
     /**
-     * Creates a message interface from the {@link javax.lang.model.element.TypeElement} specified by the {@code interfaceElement} parameter.
+     * Creates a message interface from the {@link javax.lang.model.element.TypeElement} specified by the {@code
+     * interfaceElement} parameter.
      *
      * @param processingEnvironment the annotation processing environment.
      * @param interfaceElement      the interface element to parse.
@@ -79,7 +81,7 @@ public final class MessageInterfaceFactory {
     public static MessageInterface of(final ProcessingEnvironment processingEnvironment, final TypeElement interfaceElement) {
         final Types types = processingEnvironment.getTypeUtils();
         final Elements elements = processingEnvironment.getElementUtils();
-        if (types.isSameType(interfaceElement.asType(), elements.getTypeElement(loggers().loggerInterface().getName()).asType())) {
+        if (types.isSameType(interfaceElement.asType(), elements.getTypeElement(BasicLogger.class.getName()).asType())) {
             MessageInterface result = LOGGER_INTERFACE;
             if (result == null) {
                 synchronized (LOCK) {
@@ -106,7 +108,6 @@ public final class MessageInterfaceFactory {
      * Message interface implementation.
      */
     private static class AptMessageInterface extends AbstractMessageObjectType implements MessageInterface {
-        private final Annotations annotations;
         private final TypeElement interfaceElement;
         private final Set<MessageInterface> extendedInterfaces;
         private final List<MessageMethod> messageMethods;
@@ -120,7 +121,6 @@ public final class MessageInterfaceFactory {
 
         private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
             super(elements, types, interfaceElement);
-            annotations = annotations();
             this.interfaceElement = interfaceElement;
             this.messageMethods = new LinkedList<MessageMethod>();
             this.extendedInterfaces = new LinkedHashSet<MessageInterface>();
@@ -139,8 +139,18 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
+        public String name() {
+            return qualifiedName;
+        }
+
+        @Override
         public Set<MessageInterface> extendedInterfaces() {
             return Collections.unmodifiableSet(extendedInterfaces);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.builder().add(name()).toHashCode();
         }
 
         @Override
@@ -149,18 +159,72 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
+        public int compareTo(final MessageInterface o) {
+            return this.name().compareTo(o.name());
+        }
+
+        @Override
         public String projectCode() {
             return projectCode;
         }
 
+        private void init() {
+            // Keeping below for now
+            final Collection<ExecutableElement> methods = ElementFilter.methodsIn(interfaceElement.getEnclosedElements());
+            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types);
+            for (ExecutableElement param : methods) {
+                builder.add(param);
+            }
+            final Collection<MessageMethod> m = builder.build();
+            if (m != null)
+                this.messageMethods.addAll(m);
+            final MessageBundle messageBundle = interfaceElement.getAnnotation(MessageBundle.class);
+            final MessageLogger messageLogger = interfaceElement.getAnnotation(MessageLogger.class);
+            if (messageBundle != null) {
+                projectCode = messageBundle.projectCode();
+                idLen = messageBundle.length();
+            } else if (messageLogger != null) {
+                projectCode = messageLogger.projectCode();
+                idLen = messageLogger.length();
+            } // TODO (jrp) this should cause an error
+            qualifiedName = elements.getBinaryName(interfaceElement).toString();
+            final int lastDot = qualifiedName.lastIndexOf(".");
+            if (lastDot > 0) {
+                packageName = qualifiedName.substring(0, lastDot);
+                simpleName = qualifiedName.substring(lastDot + 1);
+            } else {
+                packageName = null;
+                simpleName = qualifiedName;
+            }
+            // Format class may not yet be compiled, so get it in a roundabout way
+            for (AnnotationMirror mirror : interfaceElement.getAnnotationMirrors()) {
+                final DeclaredType annotationType = mirror.getAnnotationType();
+                if (annotationType.toString().equals(MessageLogger.class.getName())) {
+                    final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
+                    for (ExecutableElement key : map.keySet()) {
+                        if (key.getSimpleName().contentEquals("loggingClass")) {
+                            final String value = map.get(key).getValue().toString();
+                            if (!value.equals(Void.class.getName()))
+                                fqcn = value;
+                        }
+                    }
+                }
+            }
+        }
+
         @Override
-        public String name() {
-            return qualifiedName;
+        public String type() {
+            return name();
         }
 
         @Override
         public String packageName() {
             return packageName;
+        }
+
+        @Override
+        public String getComment() {
+            return elements.getDocComment(interfaceElement);
         }
 
         @Override
@@ -175,9 +239,9 @@ public final class MessageInterfaceFactory {
 
         @Override
         public AnnotatedType getAnnotatedType() {
-            if (annotations.isMessageLogger(interfaceElement)) {
+            if (ElementHelper.isAnnotatedWith(interfaceElement, MessageLogger.class)) {
                 return AnnotatedType.MESSAGE_LOGGER;
-            } else if (annotations.isMessageBundle(interfaceElement)) {
+            } else if (ElementHelper.isAnnotatedWith(interfaceElement, MessageBundle.class)) {
                 return AnnotatedType.MESSAGE_BUNDLE;
             }
             return AnnotatedType.NONE;
@@ -193,10 +257,7 @@ public final class MessageInterfaceFactory {
             return idLen;
         }
 
-        @Override
-        public int hashCode() {
-            return HashCodeBuilder.builder().add(name()).toHashCode();
-        }
+
 
         @Override
         public boolean equals(final Object obj) {
@@ -210,10 +271,7 @@ public final class MessageInterfaceFactory {
             return areEqual(name(), other.name());
         }
 
-        @Override
-        public int compareTo(final MessageInterface o) {
-            return this.name().compareTo(o.name());
-        }
+
 
         @Override
         public String toString() {
@@ -221,58 +279,16 @@ public final class MessageInterfaceFactory {
         }
 
 
-        private void init() {
-            // Keeping below for now
-            final Collection<ExecutableElement> methods = ElementFilter.methodsIn(interfaceElement.getEnclosedElements());
-            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types);
-            for (ExecutableElement param : methods) {
-                builder.add(param);
-            }
-            final Collection<MessageMethod> m = builder.build();
-            if (m != null)
-                this.messageMethods.addAll(m);
-            projectCode = annotations.projectCode(interfaceElement);
-            idLen = annotations.idLength(interfaceElement);
-            qualifiedName = elements.getBinaryName(interfaceElement).toString();
-            final int lastDot = qualifiedName.lastIndexOf(".");
-            if (lastDot > 0) {
-                packageName = qualifiedName.substring(0, lastDot);
-                simpleName = qualifiedName.substring(lastDot + 1);
-            } else {
-                packageName = null;
-                simpleName = qualifiedName;
-            }
-            final String messageLoggerAnnotationName = types.getDeclaredType(elements.getTypeElement(annotations.getMessageLoggerAnnotationName(interfaceElement))).toString();
-            // Format class may not yet be compiled, so get it in a roundabout way
-            for (AnnotationMirror mirror : interfaceElement.getAnnotationMirrors()) {
-                final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.toString().equals(messageLoggerAnnotationName)) {
-                    final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
-                    for (ExecutableElement key : map.keySet()) {
-                        if (key.getSimpleName().contentEquals("loggingClass")) {
-                            final String value = map.get(key).getValue().toString();
-                            if (!value.equals(Void.class.getName()))
-                                fqcn = value;
-                        }
-                    }
-                }
-            }
-        }
+
 
         @Override
         public TypeElement reference() {
             return interfaceElement;
         }
 
-        @Override
-        public String type() {
-            return name();
-        }
 
-        @Override
-        public String getComment() {
-            return elements.getDocComment(interfaceElement);
-        }
+
+
     }
 
     private static class LoggerInterface extends AbstractMessageObjectType implements MessageInterface {
@@ -280,15 +296,10 @@ public final class MessageInterfaceFactory {
         private final Set<MessageMethod> messageMethods;
 
         private LoggerInterface(final Elements elements, final Types types) {
-            super(elements, types, elements.getTypeElement(loggers().loggerInterface().getName()));
+            // TODO (jrp) BasicLogger type can likely be initialized once
+            super(elements, types, elements.getTypeElement(BasicLogger.class.getName()));
             messageMethods = new LinkedHashSet<MessageMethod>();
-            this.loggerInterface = elements.getTypeElement(loggers().loggerInterface().getName());
-        }
-
-        static LoggerInterface of(final Elements elements, final Types types) {
-            final LoggerInterface result = new LoggerInterface(elements, types);
-            result.init();
-            return result;
+            this.loggerInterface = elements.getTypeElement(BasicLogger.class.getName());
         }
 
         private void init() {
@@ -299,6 +310,12 @@ public final class MessageInterfaceFactory {
             }
             final Collection<MessageMethod> m = builder.build();
             this.messageMethods.addAll(m);
+        }
+
+        static LoggerInterface of(final Elements elements, final Types types) {
+            final LoggerInterface result = new LoggerInterface(elements, types);
+            result.init();
+            return result;
         }
 
         @Override
@@ -323,17 +340,17 @@ public final class MessageInterfaceFactory {
 
         @Override
         public String name() {
-            return loggers().loggerInterface().getName();
+            return BasicLogger.class.getName();
         }
 
         @Override
         public String packageName() {
-            return loggers().loggerInterface().getPackage().getName();
+            return BasicLogger.class.getPackage().getName();
         }
 
         @Override
         public String simpleName() {
-            return loggers().loggerInterface().getSimpleName();
+            return BasicLogger.class.getSimpleName();
         }
 
         @Override

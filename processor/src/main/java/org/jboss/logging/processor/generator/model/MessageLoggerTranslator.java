@@ -24,7 +24,6 @@ package org.jboss.logging.processor.generator.model;
 
 
 import static org.jboss.jdeparser.JExprs.$v;
-import static org.jboss.logging.processor.Tools.loggers;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -36,6 +35,7 @@ import org.jboss.jdeparser.JBlock;
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JMethodDef;
 import org.jboss.jdeparser.JMod;
+import org.jboss.logging.Logger;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -81,7 +81,7 @@ class MessageLoggerTranslator extends ClassModel {
         JClassDef classDef = super.generateModel();
 
         JMethodDef constructor = classDef.constructor(JMod.PUBLIC);
-        constructor.param(JMod.FINAL, loggers().loggerClass(), LOGGER_PARAMETER_NAME);
+        constructor.param(JMod.FINAL, Logger.class, LOGGER_PARAMETER_NAME);
 
         JBlock constructorBody = constructor.body();
         constructorBody.callSuper().arg($v(LOGGER_PARAMETER_NAME));

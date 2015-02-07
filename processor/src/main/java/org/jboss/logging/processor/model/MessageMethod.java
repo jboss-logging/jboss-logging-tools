@@ -24,7 +24,7 @@ package org.jboss.logging.processor.model;
 
 import java.util.Set;
 
-import org.jboss.logging.processor.apt.Annotations.FormatType;
+import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.processor.model.Parameter.ParameterType;
 
 /**
@@ -201,6 +201,6 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
          *
          * @return the format type.
          */
-        FormatType format();
+        Format format();
     }
 }

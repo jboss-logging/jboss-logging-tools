@@ -22,23 +22,21 @@
 
 package org.jboss.logging.processor.util;
 
-import static org.jboss.logging.processor.Tools.annotations;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 
-import org.jboss.logging.processor.apt.Annotations;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Field;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.Param;
+import org.jboss.logging.annotations.Property;
 import org.jboss.logging.processor.model.MessageObject;
 
 /**
@@ -72,56 +70,6 @@ public final class ElementHelper {
 
         Annotation annotation = element.getAnnotation(clazz);
         return (annotation != null);
-    }
-
-    /**
-     * Check if an element is annotated with the given annotation.
-     *
-     * @param element the element to look for the annotation on.
-     * @param fqcn    the fully qualified class name of the annotation
-     *
-     * @return {@code true} if the element is annotated, otherwise {@code false}
-     *
-     * @throws IllegalArgumentException if element parameter is null
-     */
-    public static boolean isAnnotatedWith(final Element element, final String fqcn) {
-        if (element == null) {
-            throw new IllegalArgumentException("The element parameter is null");
-        }
-        final List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
-        for (AnnotationMirror annotationMirror : annotationMirrors) {
-            final DeclaredType annotationType = annotationMirror.getAnnotationType();
-            if (annotationType.toString().equals(fqcn)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns the annotation value for the annotation.
-     * <p/>
-     * Note that the default value of the annotation is not returned.
-     *
-     * @param element    the element the annotation is present on
-     * @param annotation the fully qualified annotation name
-     * @param fieldName  the name of the field/method of the value
-     *
-     * @return the value if found or {@code null} if the annotation was not present or the value was not defined
-     */
-    public static AnnotationValue getAnnotationValue(final Element element, final String annotation, final String fieldName) {
-        for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
-            final DeclaredType annotationType = mirror.getAnnotationType();
-            if (annotationType.toString().equals(annotation)) {
-                final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
-                for (ExecutableElement key : map.keySet()) {
-                    if (key.getSimpleName().contentEquals(fieldName)) {
-                        return map.get(key);
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -201,10 +149,9 @@ public final class ElementHelper {
      * @return {@code true} if there is a cause, otherwise {@code false}.
      */
     public static boolean hasCause(final Collection<? extends VariableElement> params) {
-        final Annotations annotations = annotations();
         // Look for cause
         for (VariableElement param : params) {
-            if (annotations.hasCauseAnnotation(param)) {
+            if (isAnnotatedWith(param, Cause.class)) {
                 return true;
             }
         }
@@ -220,11 +167,10 @@ public final class ElementHelper {
      * @return the number of parameters.
      */
     public static int parameterCount(final Collection<? extends VariableElement> params) {
-        final Annotations annotations = annotations();
         int result = params.size();
         for (VariableElement param : params) {
-            if (annotations.hasParamAnnotation(param) || annotations.hasFieldAnnotation(param) ||
-                    annotations.hasPropertyAnnotation(param)) {
+            if (isAnnotatedWith(param, Param.class) || isAnnotatedWith(param, Field.class) ||
+                    isAnnotatedWith(param, Property.class)) {
                 --result;
             }
         }
@@ -241,13 +187,12 @@ public final class ElementHelper {
      * @return {@code true} if the method has or inherits a message annotation, otherwise {@code false}.
      */
     public static boolean inheritsMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
-        final Annotations annotations = annotations();
-        if (annotations.hasMessageAnnotation(method)) {
+        if (isAnnotatedWith(method, Message.class)) {
             return false;
         }
         final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
-            if (annotations.hasMessageAnnotation(m)) {
+            if (isAnnotatedWith(m, Message.class)) {
                 return true;
             }
         }

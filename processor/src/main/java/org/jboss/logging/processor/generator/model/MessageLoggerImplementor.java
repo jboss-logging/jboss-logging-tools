@@ -26,7 +26,6 @@ import static org.jboss.jdeparser.JExpr.NULL;
 import static org.jboss.jdeparser.JExpr.THIS;
 import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.jdeparser.JTypes.$t;
-import static org.jboss.logging.processor.Tools.loggers;
 import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.util.ArrayList;
@@ -50,9 +49,11 @@ import org.jboss.jdeparser.JMod;
 import org.jboss.jdeparser.JParamDeclaration;
 import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JVarDeclaration;
+import org.jboss.logging.DelegatingBasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
-import org.jboss.logging.processor.apt.Annotations.FormatType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -109,22 +110,22 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Add default constructor
         final JMethodDef constructor = classDef.constructor(JMod.PUBLIC);
-        final JParamDeclaration constructorParam = constructor.param(JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
+        final JParamDeclaration constructorParam = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
         final JBlock constructorBody = constructor.body();
         final JAssignableExpr logger;
         if (messageInterface().extendsLoggerInterface()) {
             if (useLogging31) {
-                classDef._extends(loggers().delegatingLogger());
+                classDef._extends(DelegatingBasicLogger.class);
                 constructorBody.callSuper().arg($v(constructorParam));
                 logger = $v(constructorParam);
             } else {
-                JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
+                JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
                 constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
                 logger = $v(logVar);
                 generateDelegatingLoggerMethods(classDef, logger, fqcn);
             }
         } else {
-            JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggers().loggerClass(), LOG_FIELD_NAME);
+            JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
             constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
             logger = $v(logVar);
         }
@@ -152,7 +153,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     }
 
     private void generateDelegatingLoggerMethods(final JClassDef classDef, final JAssignableExpr logVar, JVarDeclaration fqcn) {
-        final Class<?> logLevelClass = loggers().logLevelClass();
+        final Class<?> logLevelClass = Logger.Level.class;
         // Generate these methods so they look the same as they appear in DelegatedBasicLogger.
         for (String level : Arrays.asList("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL")) {
             // string prep
@@ -418,7 +419,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         final MessageMethod.Message message = messageMethod.message();
         // No format log messages need the message before the cause
-        if (message.format() == FormatType.NO_FORMAT) {
+        if (message.format() == Format.NO_FORMAT) {
             logCaller.arg(JExprs.call(msgMethodName));
             // Next for no format should always be null
             logCaller.arg(NULL);

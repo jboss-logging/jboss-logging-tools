@@ -47,6 +47,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.processor.generator.model.ClassModel;
 import org.jboss.logging.processor.generator.model.ClassModelFactory;
 import org.jboss.logging.processor.model.MessageInterface;
@@ -262,7 +263,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     private static FormatValidator getValidatorFor(final MessageMethod messageMethod, final String translationMessage) {
         FormatValidator result = FormatValidatorFactory.create(messageMethod.message().format(), translationMessage);
         if (result.isValid()) {
-            if (messageMethod.message().format() == Annotations.FormatType.PRINTF) {
+            if (messageMethod.message().format() == Message.Format.PRINTF) {
                 result = StringFormatValidator.withTranslation(messageMethod.message().value(), translationMessage);
             }
         }

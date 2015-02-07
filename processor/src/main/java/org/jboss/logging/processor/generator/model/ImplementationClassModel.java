@@ -30,6 +30,7 @@ import static org.jboss.logging.processor.generator.model.ClassModelHelper.imple
 import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -115,16 +116,16 @@ abstract class ImplementationClassModel extends ClassModel {
 
         switch (message.format()) {
             case MESSAGE_FORMAT: {
-                final JType formatter = $t(message.format().formatClass());
-                formatterCall = formatter.call(message.format().staticMethod());
+                final JType formatter = $t(MessageFormat.class);
+                formatterCall = formatter.call("format");
                 if (!noFormatParameters) {
                     formatterCall.arg(JExprs.call(messageMethod.messageMethodName()));
                 }
                 break;
             }
             case PRINTF: {
-                final JType formatter = $t(message.format().formatClass());
-                formatterCall = formatter.call(message.format().staticMethod()).arg(JExprs.call(messageMethod.messageMethodName()));
+                final JType formatter = $t(String.class);
+                formatterCall = formatter.call("format").arg(JExprs.call(messageMethod.messageMethodName()));
                 break;
             }
             default:
