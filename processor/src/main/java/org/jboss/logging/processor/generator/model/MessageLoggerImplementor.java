@@ -30,16 +30,19 @@ import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.processing.Filer;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
+import org.jboss.jdeparser.JBlock.Braces;
 import org.jboss.jdeparser.JCall;
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JExpr;
@@ -52,12 +55,14 @@ import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message.Format;
+import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Used to generate a message logger implementation.
@@ -74,6 +79,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     private static final String FQCN_FIELD_NAME = "FQCN";
 
     private final boolean useLogging31;
+    private final Map<String, JVarDeclaration> logOnceVars = new HashMap<>();
 
     /**
      * Creates a new message logger code model.
@@ -396,8 +402,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         method.annotate(Override.class);
         addMessageMethod(messageMethod);
         addThrownTypes(messageMethod, method);
-        // Create the body of the method and add the text
-        final JBlock body = method.body();
         // Initialize the method parameters
         final Map<Parameter, JParamDeclaration> params = createParameters(messageMethod, method);
 
@@ -405,6 +409,25 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final List<String> parameterNames = new ArrayList<>(params.size());
         for (Parameter param : params.keySet()) {
             parameterNames.add(param.name());
+        }
+
+        // Check for the @Once annotation
+        final JBlock body;
+        if (ElementHelper.isAnnotatedWith(messageMethod.reference(), Once.class) && messageMethod.isLoggerMethod()) {
+            final JType atomicBoolean = $t(AtomicBoolean.class);
+            sourceFile._import(atomicBoolean);
+            // The variable will be shared with overloaded methods
+            final String varName = messageMethod.name() + "_$Once";
+            final JVarDeclaration var;
+            if (logOnceVars.containsKey(varName)) {
+                var = logOnceVars.get(varName);
+            } else {
+                var = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, atomicBoolean, varName, atomicBoolean._new().arg(JExpr.FALSE));
+                logOnceVars.put(varName, var);
+            }
+            body = method.body()._if($v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)).block(Braces.REQUIRED);
+        } else {
+            body = method.body();
         }
 
         // Determine which logger method to invoke
@@ -458,7 +481,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         }
                         break;
                     case TRANSFORM:
-                        final JAssignableExpr transformVar = createTransformVar(parameterNames, method.body(), param, $v(var));
+                        final JAssignableExpr transformVar = createTransformVar(parameterNames, body, param, $v(var));
                         if (formatterClass == null) {
                             args.add(transformVar);
                         } else {
@@ -472,7 +495,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         for (int i = 0; i < positions.length; i++) {
                             final int index = positions[i] - 1;
                             if (transform != null && transform.length > 0) {
-                                final JAssignableExpr tVar = createTransformVar(parameterNames, method.body(), param, transform[i], $v(var));
+                                final JAssignableExpr tVar = createTransformVar(parameterNames, body, param, transform[i], $v(var));
                                 if (index < args.size()) {
                                     args.add(index, tVar);
                                 } else {

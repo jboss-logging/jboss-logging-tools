@@ -62,6 +62,7 @@ public abstract class ClassModel {
     private final JSources sources;
 
     private final JClassDef classDef;
+    protected final JSourceFile sourceFile;
 
     private final MessageInterface messageInterface;
 
@@ -85,7 +86,7 @@ public abstract class ClassModel {
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
         sources = JDeparser.createSources(JFiler.newInstance(filer), new FormatPreferences(new Properties()));
-        final JSourceFile sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
+        sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
         classDef = sourceFile._class(JMod.PUBLIC, className);
         final int idLen = messageInterface.getIdLength();
         if (idLen > 0) {
