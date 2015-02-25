@@ -26,10 +26,10 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.Filer;
 
-import org.jboss.jdeparser.JDeparser;
-import org.jboss.jdeparser.JDefinedClass;
-import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JClassDef;
+import org.jboss.jdeparser.JMethodDef;
 import org.jboss.jdeparser.JMod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -49,13 +49,14 @@ class MessageBundleTranslator extends ClassModel {
     /**
      * Create a MessageBundle with super class and interface.
      *
+     * @param filer            the filer used to create the source file
      * @param messageInterface the message interface to implement.
      * @param className        the implementation class name.
      * @param superClassName   the super class name
      * @param translations     the translation map.
      */
-    public MessageBundleTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
-        super(messageInterface, className, superClassName);
+    public MessageBundleTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
+        super(filer, messageInterface, className, superClassName);
 
         if (translations != null) {
             this.translations = translations;
@@ -65,25 +66,24 @@ class MessageBundleTranslator extends ClassModel {
     }
 
     @Override
-    public JDeparser generateModel() throws IllegalStateException {
-        JDeparser model = super.generateModel();
-        JDefinedClass definedClass = getDefinedClass();
+    public JClassDef generateModel() throws IllegalStateException {
+        JClassDef classDef = super.generateModel();
 
-        JMethod constructor = definedClass.constructor(JMod.PROTECTED);
-        constructor.body().invoke("super");
+        JMethodDef constructor = classDef.constructor(JMod.PROTECTED);
+        constructor.body().callSuper();
 
-        JMethod readResolve = createReadResolveMethod();
+        JMethodDef readResolve = createReadResolveMethod();
         readResolve.annotate(Override.class);
 
         final Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
-        final Set<String> methodNames = new LinkedHashSet<String>();
+        final Set<JMethodDef> methodNames = new LinkedHashSet<>();
         for (Map.Entry<MessageMethod, String> entry : entries) {
-            JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
-            if (methodNames.add(method.name())) {
+            JMethodDef method = addMessageMethod(entry.getKey(), entry.getValue());
+            if (methodNames.add(method)) {
                 method.annotate(Override.class);
             }
         }
 
-        return model;
+        return classDef;
     }
 }

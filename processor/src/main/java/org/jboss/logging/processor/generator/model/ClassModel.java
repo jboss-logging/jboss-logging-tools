@@ -22,24 +22,28 @@
 
 package org.jboss.logging.processor.generator.model;
 
+import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 
 import java.io.IOException;
-import javax.tools.JavaFileObject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import javax.annotation.Generated;
+import javax.annotation.processing.Filer;
 
-import org.jboss.jdeparser.JAnnotationUse;
-import org.jboss.jdeparser.JBlock;
-import org.jboss.jdeparser.JClass;
-import org.jboss.jdeparser.JClassAlreadyExistsException;
+import org.jboss.jdeparser.FormatPreferences;
+import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JDeparser;
-import org.jboss.jdeparser.JDefinedClass;
-import org.jboss.jdeparser.JDocComment;
-import org.jboss.jdeparser.JExpr;
-import org.jboss.jdeparser.JFieldVar;
-import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JExprs;
+import org.jboss.jdeparser.JFiler;
+import org.jboss.jdeparser.JMethodDef;
 import org.jboss.jdeparser.JMod;
+import org.jboss.jdeparser.JSourceFile;
+import org.jboss.jdeparser.JSources;
 import org.jboss.jdeparser.JType;
-import org.jboss.jdeparser.JTypeVar;
+import org.jboss.jdeparser.JTypes;
+import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -51,42 +55,46 @@ import org.jboss.logging.processor.model.MessageMethod;
  */
 public abstract class ClassModel {
 
-    private static final JType[] EMPTY_TYPE_ARRAY = new JTypeVar[0];
-
     private static final String INSTANCE_FIELD_NAME = "INSTANCE";
 
     private static final String GET_INSTANCE_METHOD_NAME = "readResolve";
 
-    private final JDeparser codeModel;
+    private final JSources sources;
 
-    private volatile JDefinedClass definedClass;
+    private final JClassDef classDef;
 
     private final MessageInterface messageInterface;
 
     private final String className;
-
     private final String superClassName;
 
     private final String format;
 
+    private final Map<String, JMethodDef> messageMethods;
+    private final Map<String, JVarDeclaration> messageFields;
+
     /**
      * Construct a class model.
      *
+     * @param filer            the filer used to create the source file
      * @param messageInterface the message interface to implement.
-     * @param className        the final class name.
      * @param superClassName   the super class used for the translation implementations.
      */
-    ClassModel(final MessageInterface messageInterface, final String className, final String superClassName) {
+    ClassModel(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName) {
         this.messageInterface = messageInterface;
-        this.className = className;
+        this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
-        codeModel = new JDeparser();
+        sources = JDeparser.createSources(JFiler.newInstance(filer), new FormatPreferences(new Properties()));
+        final JSourceFile sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
+        classDef = sourceFile._class(JMod.PUBLIC, className);
         final int idLen = messageInterface.getIdLength();
         if (idLen > 0) {
-            format = "%s%0" + messageInterface.getIdLength() +"d: %s";
+            format = "%s%0" + messageInterface.getIdLength() + "d: %s";
         } else {
             format = "%s%d: %s";
         }
+        messageMethods = new HashMap<>();
+        messageFields = new HashMap<>();
     }
 
     /**
@@ -99,20 +107,14 @@ public abstract class ClassModel {
     }
 
     /**
-     * Creates the source file.
+     * Writes the generated source file to the file system.
      *
-     * @param fileObject the files object to write the source to.
-     *
-     * @throws java.io.IOException   if the file could not be written.
-     * @throws IllegalStateException if the implementation is in an invalid state.
+     * @throws java.io.IOException if the file could not be written
      */
-    public final void create(final JavaFileObject fileObject) throws IOException, IllegalStateException {
-
-        //Generate the model class
-        final JDeparser model = this.generateModel();
-
-        //Write it to a file
-        model.build(new JavaFileObjectCodeWriter(fileObject));
+    public final void generateAndWrite() throws IOException {
+        generateModel();
+        sources.writeSources();
+        JDeparser.dropCaches();
     }
 
     /**
@@ -123,36 +125,33 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if the class has already been defined.
      */
-    JDeparser generateModel() throws IllegalStateException {
-        final JDefinedClass definedClass = getDefinedClass();
-
+    JClassDef generateModel() throws IllegalStateException {
         // Add generated annotation
-        JAnnotationUse generatedAnnotation = definedClass.annotate(javax.annotation.Generated.class);
-        generatedAnnotation.param("value", getClass().getName());
-        generatedAnnotation.param("date", ClassModelHelper.generatedDateValue());
+        classDef.annotate(Generated.class)
+                .value("value", getClass().getName())
+                .value("date", JExprs.str(ClassModelHelper.generatedDateValue()));
 
         // Create the default JavaDoc
-        JDocComment docComment = definedClass.javadoc();
-        docComment.add("Warning this class consists of generated code.");
+        classDef.docComment().text("Warning this class consists of generated code.");
 
         // Add extends
         if (superClassName != null) {
-            definedClass._extends(codeModel.directClass(superClassName));
+            classDef._extends(superClassName);
         }
 
         // Always implement the interface
         // TODO - Temporary fix for implementing nested interfaces.
-        definedClass._implements(codeModel.directClass(typeToString(messageInterface.name())));
+        classDef._implements(typeToString(messageInterface.name()));
 
         //Add implements
         if (!messageInterface.extendedInterfaces().isEmpty()) {
             for (MessageInterface intf : messageInterface.extendedInterfaces()) {
                 // TODO - Temporary fix for implementing nested interfaces.
                 final String interfaceName = typeToString(intf.name());
-                definedClass._implements(codeModel.directClass(interfaceName));
+                classDef._implements(interfaceName);
             }
         }
-        return codeModel;
+        return classDef;
     }
 
     /**
@@ -172,7 +171,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    JMethod addMessageMethod(final MessageMethod messageMethod) {
+    JMethodDef addMessageMethod(final MessageMethod messageMethod) {
         return addMessageMethod(messageMethod, messageMethod.message().value());
     }
 
@@ -194,8 +193,7 @@ public abstract class ClassModel {
      *
      * @throws IllegalStateException if this method is called before the generateModel method
      */
-    JMethod addMessageMethod(final MessageMethod messageMethod, final String messageValue) {
-        final JDefinedClass definedClass = getDefinedClass();
+    JMethodDef addMessageMethod(final MessageMethod messageMethod, final String messageValue) {
         // Values could be null and we shouldn't create message methods for null values.
         if (messageValue == null) {
             return null;
@@ -206,61 +204,28 @@ public abstract class ClassModel {
         } else {
             methodName = messageMethod.name();
         }
-        JMethod method = definedClass.getMethod(messageMethod.messageMethodName(), EMPTY_TYPE_ARRAY);
 
+        // Create the method that returns the string message for formatting
+        JMethodDef method = messageMethods.get(messageMethod.messageMethodName());
         if (method == null) {
-
-            //Create method return field
-            JFieldVar methodField = definedClass.fields().get(methodName);
-            if (methodField == null) {
-                methodField = definedClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName);
+            JVarDeclaration field = messageFields.get(methodName);
+            if (field == null) {
                 final String msg;
                 if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
+                    // Prefix the id to the string message
                     msg = String.format(format, messageInterface.projectCode(), messageMethod.message().id(), messageValue);
                 } else {
                     msg = messageValue;
                 }
-                methodField.init(JExpr.lit(msg));
+                field = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName, JExprs.str(msg));
+                messageFields.put(field.name(), field);
             }
-
-            //Create method
-            JClass returnType = codeModel.directClass(String.class.getName());
-            method = definedClass.method(JMod.PROTECTED, returnType, messageMethod.messageMethodName());
-
-            JBlock body = method.body();
-            body._return(methodField);
+            method = classDef.method(JMod.PROTECTED, String.class, messageMethod.messageMethodName());
+            method.body()._return($v(field));
+            messageMethods.put(messageMethod.messageMethodName(), method);
         }
 
         return method;
-    }
-
-    final JDeparser getCodeModel() {
-        return codeModel;
-    }
-
-    /**
-     * Returns the main enclosing class.
-     *
-     * @return the main enclosing class.
-     */
-    final JDefinedClass getDefinedClass() {
-        JDefinedClass result = definedClass;
-        if (result == null) {
-            synchronized (codeModel) {
-                result = definedClass;
-                if (result == null) {
-                    try {
-                        definedClass = codeModel._class(qualifiedClassName());
-                        result = definedClass;
-                    } catch (JClassAlreadyExistsException e) {
-                        throw new IllegalStateException("Class " + qualifiedClassName() + " has already been defined. Cannot generate the class.", e);
-                    }
-
-                }
-
-            }
-        }
-        return result;
     }
 
     /**
@@ -278,12 +243,11 @@ public abstract class ClassModel {
      *
      * @return the read resolve method.
      */
-    protected JMethod createReadResolveMethod() {
-        final JDefinedClass definedClass = getDefinedClass();
-        final JFieldVar instance = definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, definedClass, INSTANCE_FIELD_NAME);
-        instance.init(JExpr._new(definedClass));
-        final JMethod readResolveMethod = definedClass.method(JMod.PROTECTED, Object.class, GET_INSTANCE_METHOD_NAME);
-        readResolveMethod.body()._return(instance);
+    protected JMethodDef createReadResolveMethod() {
+        final JType type = JTypes.typeOf(classDef);
+        final JVarDeclaration instance = classDef.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, type, INSTANCE_FIELD_NAME, type._new());
+        final JMethodDef readResolveMethod = classDef.method(JMod.PROTECTED, Object.class, GET_INSTANCE_METHOD_NAME);
+        readResolveMethod.body()._return($v(instance));
         return readResolveMethod;
     }
 }

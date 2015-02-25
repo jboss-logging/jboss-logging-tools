@@ -74,7 +74,7 @@ public final class ClassModelHelper {
      * @throws IllegalArgumentException if the message interface is not a message bundle or a message logger.
      */
     public static String implementationClassName(final MessageInterface messageInterface) throws IllegalArgumentException {
-        final StringBuilder result = new StringBuilder(messageInterface.name());
+        final StringBuilder result = new StringBuilder(messageInterface.simpleName());
         switch (messageInterface.getAnnotatedType()) {
             case MESSAGE_BUNDLE:
                 result.append("_$bundle");

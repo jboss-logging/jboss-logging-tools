@@ -23,17 +23,18 @@
 package org.jboss.logging.processor.generator.model;
 
 
+import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.logging.processor.Tools.loggers;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.Filer;
 
 import org.jboss.jdeparser.JBlock;
-import org.jboss.jdeparser.JDeparser;
-import org.jboss.jdeparser.JDefinedClass;
-import org.jboss.jdeparser.JMethod;
+import org.jboss.jdeparser.JClassDef;
+import org.jboss.jdeparser.JMethodDef;
 import org.jboss.jdeparser.JMod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -59,13 +60,14 @@ class MessageLoggerTranslator extends ClassModel {
     /**
      * Create a MessageLogger with super class and interface.
      *
+     * @param filer            the filer used to create the source file
      * @param messageInterface the message interface to implement.
      * @param className        the implementation class name.
      * @param superClassName   the super class name
      * @param translations     the translation map.
      */
-    public MessageLoggerTranslator(final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
-        super(messageInterface, className, superClassName);
+    public MessageLoggerTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
+        super(filer, messageInterface, className, superClassName);
 
         if (translations != null) {
             this.translations = translations;
@@ -75,26 +77,25 @@ class MessageLoggerTranslator extends ClassModel {
     }
 
     @Override
-    public JDeparser generateModel() throws IllegalStateException {
-        JDeparser model = super.generateModel();
-        JDefinedClass definedClass = getDefinedClass();
+    public JClassDef generateModel() throws IllegalStateException {
+        JClassDef classDef = super.generateModel();
 
-        JMethod constructor = definedClass.constructor(JMod.PUBLIC);
+        JMethodDef constructor = classDef.constructor(JMod.PUBLIC);
         constructor.param(JMod.FINAL, loggers().loggerClass(), LOGGER_PARAMETER_NAME);
 
         JBlock constructorBody = constructor.body();
-        constructorBody.directStatement("super(" + LOGGER_PARAMETER_NAME + ");");
+        constructorBody.callSuper().arg($v(LOGGER_PARAMETER_NAME));
 
         final Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
-        final Set<String> methodNames = new LinkedHashSet<String>();
+        final Set<JMethodDef> methodNames = new LinkedHashSet<>();
         for (Map.Entry<MessageMethod, String> entry : entries) {
-            JMethod method = addMessageMethod(entry.getKey(), entry.getValue());
-            if (methodNames.add(method.name())) {
+            JMethodDef method = addMessageMethod(entry.getKey(), entry.getValue());
+            if (methodNames.add(method)) {
                 method.annotate(Override.class);
             }
         }
 
-        return model;
+        return classDef;
     }
 
 }

@@ -59,11 +59,9 @@ final class ImplementationClassGenerator extends AbstractGenerator {
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
-            final ClassModel classModel = ClassModelFactory.implementation(messageInterface, useLogging31);
-            classModel.create(filer().createSourceFile(classModel.qualifiedClassName()));
-        } catch (IOException e) {
-            logger().error(element, e);
-        } catch (IllegalStateException e) {
+            final ClassModel classModel = ClassModelFactory.implementation(filer(), messageInterface, useLogging31);
+            classModel.generateAndWrite();
+        } catch (IllegalStateException | IOException e) {
             logger().error(element, e);
         }
     }
