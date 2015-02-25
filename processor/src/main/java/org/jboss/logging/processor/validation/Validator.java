@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
@@ -47,6 +48,7 @@ import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ReturnType;
 import org.jboss.logging.processor.model.ThrowableType;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Date: 12.08.2011
@@ -324,6 +326,9 @@ public final class Validator {
                 messages.addAll(validateLoggerMethod(messageMethod));
             } else {
                 messages.addAll(validateBundleMethod(messageMethod));
+                if (ElementHelper.isAnnotatedWith(messageMethod.reference(), Once.class)) {
+                    messages.add(createError(messageMethod, "Only @LogMessage method can be annoted with @Once"));
+                }
             }
         }
         return messages;

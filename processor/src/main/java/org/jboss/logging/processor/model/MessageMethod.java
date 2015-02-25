@@ -24,6 +24,8 @@ package org.jboss.logging.processor.model;
 
 import java.util.Set;
 
+import javax.lang.model.element.ExecutableElement;
+
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.processor.model.Parameter.ParameterType;
 
@@ -160,6 +162,8 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
      */
     boolean isLoggerMethod();
 
+    @Override
+    ExecutableElement reference();
 
     /**
      * Represents a {@link org.jboss.logging.annotations.Message} annotation on a method.
