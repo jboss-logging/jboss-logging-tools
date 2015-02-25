@@ -22,7 +22,7 @@
 
 package org.jboss.logging.processor.validation;
 
-import org.jboss.logging.processor.apt.Annotations.FormatType;
+import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.processor.model.MessageMethod;
 
 /**
@@ -41,7 +41,7 @@ public final class FormatValidatorFactory {
         return create(messageMethod.message().format(), messageMethod.message().value());
     }
 
-    public static FormatValidator create(final FormatType format, final String message) throws IllegalStateException {
+    public static FormatValidator create(final Format format, final String message) throws IllegalStateException {
         if (message == null) {
             return InvalidFormatValidator.of("A message is required for the format.");
         }

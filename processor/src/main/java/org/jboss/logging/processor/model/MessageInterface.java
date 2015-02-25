@@ -51,9 +51,8 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     }
 
     /**
-     * Checks the interface to see if the {@link org.jboss.logging.processor.Loggers#loggerInterface() logger
-     * interface}
-     * is being extended in this interface.
+     * Checks the interface to see if the {@link org.jboss.logging.BasicLogger logger interface} is being extended in
+     * this interface.
      *
      * @return {@code true} if this interface extends the logger interface, otherwise {@code false}.
      */

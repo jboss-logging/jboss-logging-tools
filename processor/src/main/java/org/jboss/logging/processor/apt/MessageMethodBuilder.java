@@ -23,7 +23,6 @@
 package org.jboss.logging.processor.apt;
 
 import static java.util.Collections.unmodifiableSet;
-import static org.jboss.logging.processor.Tools.annotations;
 import static org.jboss.logging.processor.util.ElementHelper.findByName;
 import static org.jboss.logging.processor.util.ElementHelper.inheritsMessage;
 import static org.jboss.logging.processor.util.ElementHelper.isOverloaded;
@@ -46,13 +45,17 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.apt.Annotations.FormatType;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.Parameter.ParameterType;
 import org.jboss.logging.processor.model.ReturnType;
 import org.jboss.logging.processor.model.ThrowableType;
 import org.jboss.logging.processor.util.Comparison;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Date: 29.07.2011
@@ -62,20 +65,14 @@ import org.jboss.logging.processor.util.Comparison;
 final class MessageMethodBuilder {
 
     private static final String MESSAGE_METHOD_SUFFIX = "$str";
-    private final Annotations annotations;
     private final List<ExecutableElement> methods;
     private final Elements elements;
     private final Types types;
 
     private MessageMethodBuilder(final Elements elements, final Types types) {
-        annotations = annotations();
         this.elements = elements;
         this.types = types;
-        methods = new LinkedList<ExecutableElement>();
-    }
-
-    static MessageMethodBuilder create(final Elements elements, final Types types) {
-        return new MessageMethodBuilder(elements, types);
+        methods = new LinkedList<>();
     }
 
     MessageMethodBuilder add(final ExecutableElement method) {
@@ -84,9 +81,9 @@ final class MessageMethodBuilder {
     }
 
     Set<MessageMethod> build() {
-        final Set<MessageMethod> result = new LinkedHashSet<MessageMethod>();
+        final Set<MessageMethod> result = new LinkedHashSet<>();
         for (ExecutableElement elementMethod : methods) {
-            final AptMessageMethod resultMethod = new AptMessageMethod(elements, elementMethod, annotations);
+            final AptMessageMethod resultMethod = new AptMessageMethod(elements, elementMethod);
             resultMethod.inheritsMessage = inheritsMessage(methods, elementMethod);
             resultMethod.message = findMessage(methods, elementMethod);
             resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
@@ -115,36 +112,34 @@ final class MessageMethodBuilder {
 
     private MessageMethod.Message findMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         AptMessage result = null;
-        if (annotations.hasMessageAnnotation(method)) {
-            result = new AptMessage();
-            result.hasId = annotations.hasMessageId(method);
-            result.value = annotations.messageValue(method);
-            result.formatType = annotations.messageFormat(method);
-            result.inheritsId = annotations.inheritsMessageId(method);
+        Message message = method.getAnnotation(Message.class);
+        if (message != null) {
+            result = new AptMessage(message);
+            result.hasId = hasMessageId(message);
+            result.inheritsId = message.id() == Message.INHERIT;
             if (result.inheritsId()) {
                 result.id = findMessageId(methods, method);
                 if (result.id > 0) {
                     result.hasId = true;
                 }
             } else {
-                result.id = annotations.messageId(method);
+                result.id = message.id();
             }
         } else {
             final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
             for (ExecutableElement m : allMethods) {
-                if (annotations.hasMessageAnnotation(m)) {
-                    result = new AptMessage();
-                    result.hasId = annotations.hasMessageId(m);
-                    result.value = annotations.messageValue(m);
-                    result.formatType = annotations.messageFormat(m);
-                    result.inheritsId = annotations.inheritsMessageId(m);
+                message = m.getAnnotation(Message.class);
+                if (message != null) {
+                    result = new AptMessage(message);
+                    result.hasId = hasMessageId(message);
+                    result.inheritsId = message.id() == Message.INHERIT;
                     if (result.inheritsId()) {
                         result.id = findMessageId(methods, m);
                         if (result.id > 0) {
                             result.hasId = true;
                         }
                     } else {
-                        result.id = annotations.messageId(m);
+                        result.id = message.id();
                     }
                     break;
                 }
@@ -157,90 +152,74 @@ final class MessageMethodBuilder {
         int result = -2;
         final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
-            if (annotations.hasMessageAnnotation(m)) {
-                if (!annotations.inheritsMessageId(m)) {
-                    result = annotations.messageId(m);
+            final Message message = m.getAnnotation(Message.class);
+            if (message != null) {
+                if (message.id() != Message.INHERIT) {
+                    result = message.id();
                 }
             }
         }
         return result;
     }
 
+    private boolean hasMessageId(final Message message) {
+        return message != null && (message.id() != Message.NONE && message.id() != Message.INHERIT);
+    }
+
+    static MessageMethodBuilder create(final Elements elements, final Types types) {
+        return new MessageMethodBuilder(elements, types);
+    }
 
     /**
      * An implementation for the MessageMethod interface.
      */
     private static class AptMessageMethod implements MessageMethod {
 
-        private final Annotations annotations;
         private final Elements elements;
+        private final Map<ParameterType, Set<Parameter>> parameters;
+        private final Set<ThrowableType> thrownTypes;
+        private final ExecutableElement method;
         private ReturnType returnType;
-
         private Parameter cause;
         private boolean inheritsMessage;
         private boolean isOverloaded;
         private Message message;
-        private final Map<ParameterType, Set<Parameter>> parameters;
-        private final Set<ThrowableType> thrownTypes;
         private String messageMethodName;
-        private final ExecutableElement method;
         private String translationKey;
 
         /**
          * Private constructor for the
          *
-         * @param elements    the elements utility.
-         * @param method      the method to describe.
-         * @param annotations the annotations
+         * @param elements the elements utility.
+         * @param method   the method to describe.
          */
-        AptMessageMethod(final Elements elements, final ExecutableElement method, final Annotations annotations) {
-            this.annotations = annotations;
+        AptMessageMethod(final Elements elements, final ExecutableElement method) {
             this.elements = elements;
             this.method = method;
             inheritsMessage = false;
             isOverloaded = false;
-            parameters = new EnumMap<ParameterType, Set<Parameter>>(ParameterType.class);
-            thrownTypes = new LinkedHashSet<ThrowableType>();
+            parameters = new EnumMap<>(ParameterType.class);
+            thrownTypes = new LinkedHashSet<>();
         }
 
         void add(final Parameter parameter) {
             if (parameters.containsKey(ParameterType.ANY)) {
                 parameters.get(ParameterType.ANY).add(parameter);
             } else {
-                final Set<Parameter> any = new LinkedHashSet<Parameter>();
+                final Set<Parameter> any = new LinkedHashSet<>();
                 any.add(parameter);
                 parameters.put(ParameterType.ANY, any);
             }
             if (parameters.containsKey(parameter.parameterType())) {
                 parameters.get(parameter.parameterType()).add(parameter);
             } else {
-                final Set<Parameter> set = new LinkedHashSet<Parameter>();
+                final Set<Parameter> set = new LinkedHashSet<>();
                 set.add(parameter);
                 parameters.put(parameter.parameterType(), set);
             }
             if (parameter.parameterType() == ParameterType.CAUSE) {
                 cause = parameter;
             }
-        }
-
-        @Override
-        public Message message() {
-            return message;
-        }
-
-        @Override
-        public boolean inheritsMessage() {
-            return inheritsMessage;
-        }
-
-        @Override
-        public String messageMethodName() {
-            return messageMethodName;
-        }
-
-        @Override
-        public String translationKey() {
-            return translationKey;
         }
 
         @Override
@@ -271,6 +250,36 @@ final class MessageMethodBuilder {
         }
 
         @Override
+        public ReturnType returnType() {
+            return returnType;
+        }
+
+        @Override
+        public Set<ThrowableType> thrownTypes() {
+            return unmodifiableSet(thrownTypes);
+        }
+
+        @Override
+        public Message message() {
+            return message;
+        }
+
+        @Override
+        public boolean inheritsMessage() {
+            return inheritsMessage;
+        }
+
+        @Override
+        public String messageMethodName() {
+            return messageMethodName;
+        }
+
+        @Override
+        public String translationKey() {
+            return translationKey;
+        }
+
+        @Override
         public boolean hasCause() {
             return cause != null;
         }
@@ -286,23 +295,31 @@ final class MessageMethodBuilder {
         }
 
         @Override
-        public ReturnType returnType() {
-            return returnType;
-        }
-
-        @Override
         public String loggerMethod() {
-            return annotations.loggerMethod(message.format());
+            switch (message.format()) {
+                case MESSAGE_FORMAT:
+                    return "logv";
+                case NO_FORMAT:
+                    return "log";
+                case PRINTF:
+                    return "logf";
+                default:
+                    // Should never be hit
+                    return "log";
+            }
         }
 
         @Override
         public String logLevel() {
-            return annotations.logLevel(method);
+            // TODO (jrp) possibly return the actual level
+            final LogMessage logMessage = method.getAnnotation(LogMessage.class);
+            final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
+            return String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
         }
 
         @Override
         public int formatParameterCount() {
-            int result =  parameters(ParameterType.FORMAT, ParameterType.TRANSFORM).size();
+            int result = parameters(ParameterType.FORMAT, ParameterType.TRANSFORM).size();
             for (Parameter params : parameters(ParameterType.POS)) {
                 result += params.pos().value().length;
             }
@@ -311,12 +328,7 @@ final class MessageMethodBuilder {
 
         @Override
         public boolean isLoggerMethod() {
-            return annotations.isLoggerMethod(method);
-        }
-
-        @Override
-        public Set<ThrowableType> thrownTypes() {
-            return unmodifiableSet(thrownTypes);
+            return ElementHelper.isAnnotatedWith(method, LogMessage.class);
         }
 
         @Override
@@ -388,13 +400,13 @@ final class MessageMethodBuilder {
 
     private static class AptMessage implements MessageMethod.Message {
 
-        private boolean hasId;
+        private final Message message;
         private int id;
+        private boolean hasId;
         private boolean inheritsId;
-        private String value;
-        private FormatType formatType;
 
-        private AptMessage() {
+        private AptMessage(final Message message) {
+            this.message = message;
         }
 
         @Override
@@ -414,22 +426,22 @@ final class MessageMethodBuilder {
 
         @Override
         public String value() {
-            return value;
+            return message.value();
         }
 
         @Override
-        public FormatType format() {
-            return formatType;
+        public Format format() {
+            return message.format();
         }
 
         @Override
         public String toString() {
             return ToStringBuilder.of(this)
                     .add("hasId", hasId)
-                    .add("id", id)
+                    .add("id", id())
                     .add("inheritsId", inheritsId)
-                    .add("value", value)
-                    .add("formatType", formatType).toString();
+                    .add("value", value())
+                    .add("formatType", format()).toString();
         }
     }
 }
