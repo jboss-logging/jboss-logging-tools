@@ -116,9 +116,11 @@ abstract class ImplementationClassModel extends ClassModel {
 
         switch (message.format()) {
             case MESSAGE_FORMAT: {
-                final JType formatter = $t(MessageFormat.class);
-                formatterCall = formatter.call("format");
-                if (!noFormatParameters) {
+                if (noFormatParameters) {
+                    formatterCall = JExprs.call(messageMethod.messageMethodName());
+                } else {
+                    final JType formatter = $t(MessageFormat.class);
+                    formatterCall = formatter.call("format");
                     formatterCall.arg(JExprs.call(messageMethod.messageMethodName()));
                 }
                 break;
