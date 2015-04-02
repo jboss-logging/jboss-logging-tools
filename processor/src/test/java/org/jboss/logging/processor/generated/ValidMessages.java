@@ -22,8 +22,6 @@
 
 package org.jboss.logging.processor.generated;
 
-import static org.jboss.logging.processor.util.Objects.areEqual;
-
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Field;
@@ -32,8 +30,6 @@ import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Property;
-import org.jboss.logging.processor.util.Objects;
-import org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -65,7 +61,10 @@ public interface ValidMessages {
     @Message(TEST_MSG)
     LoggingException loggingException(@Cause Exception e);
 
-    static class CustomException extends RuntimeException {
+    @Message(TEST_MSG)
+    StringOnlyException stringOnlyException(@Cause Exception e);
+
+    class CustomException extends RuntimeException {
         public int value;
 
         public CustomException() {
@@ -93,7 +92,7 @@ public interface ValidMessages {
         }
     }
 
-    static class LoggingException extends RuntimeException {
+    class LoggingException extends RuntimeException {
 
         public LoggingException(final Exception e) {
             super(e);
@@ -101,6 +100,12 @@ public interface ValidMessages {
 
         public LoggingException(final Exception e, final String msg) {
             super(msg, e);
+        }
+    }
+
+    class StringOnlyException extends RuntimeException {
+        public StringOnlyException(final String msg) {
+            super(msg);
         }
     }
 }
