@@ -22,6 +22,7 @@
 
 package org.jboss.logging.processor.generated;
 
+import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -40,5 +41,9 @@ public class MessagesTest {
         Assert.assertEquals(ValidMessages.MESSAGES.fieldMessage(value).value, value);
         Assert.assertEquals(ValidMessages.MESSAGES.paramMessage(value).value, value);
         Assert.assertEquals(ValidMessages.MESSAGES.propertyMessage(value).value, value);
+
+        final StringOnlyException e = ValidMessages.MESSAGES.stringOnlyException(new RuntimeException());
+        Assert.assertEquals(e.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertNotNull(e.getCause());
     }
 }

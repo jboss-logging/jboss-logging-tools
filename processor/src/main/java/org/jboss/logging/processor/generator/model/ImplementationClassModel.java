@@ -383,7 +383,7 @@ abstract class ImplementationClassModel extends ClassModel {
         }
         // Assign the result field the result value
         if (callInitCause) {
-            body.add(result.call("initCause").arg($v(messageMethod.cause().name())));
+            body.add($v(resultField).call("initCause").arg($v(messageMethod.cause().name())));
         }
 
         // Remove this caller from the stack trace
