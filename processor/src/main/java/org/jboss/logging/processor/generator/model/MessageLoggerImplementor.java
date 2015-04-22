@@ -426,6 +426,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 logOnceVars.put(varName, var);
             }
             body = method.body()._if($v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)).block(Braces.REQUIRED);
+        } else if (!messageMethod.parameters(ParameterType.TRANSFORM).isEmpty()) {
+            body = method.body()._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
         } else {
             body = method.body();
         }
