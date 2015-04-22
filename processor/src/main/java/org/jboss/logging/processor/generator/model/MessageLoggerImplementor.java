@@ -425,7 +425,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 var = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, atomicBoolean, varName, atomicBoolean._new().arg(JExpr.FALSE));
                 logOnceVars.put(varName, var);
             }
-            body = method.body()._if($v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)).block(Braces.REQUIRED);
+            body = method.body()._if(
+                    logger.call("isEnabled").arg($v(messageMethod.logLevel())).and(
+                    $v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)))
+                    .block(Braces.REQUIRED);
         } else if (!messageMethod.parameters(ParameterType.TRANSFORM).isEmpty()) {
             body = method.body()._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
         } else {
