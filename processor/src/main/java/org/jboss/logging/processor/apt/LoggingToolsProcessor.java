@@ -151,33 +151,37 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 try {
                     final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
                     for (TypeElement interfaceElement : interfaces) {
-                        final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
-                        final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
-                        for (ValidationMessage message : validationMessages) {
-                            final Element element = ElementHelper.fromMessageObject(message.getMessageObject());
-                            switch (message.type()) {
-                                case ERROR: {
-                                    logger.error(element, message.getMessage());
-                                    process = false;
-                                    break;
-                                }
-                                case WARN: {
-                                    logger.warn(element, message.getMessage());
-                                    break;
-                                }
-                                default: {
-                                    logger.note(element, message.getMessage());
-                                }
-                            }
-                        }
-                        if (process) {
-                            if (interfaceElement.getKind().isInterface()
-                                    && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
-                                for (AbstractGenerator processor : generators) {
-                                    logger.debug("Executing processor %s", processor.getName());
-                                    processor.processTypeElement(annotation, interfaceElement, messageInterface);
+                        try {
+                            final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
+                            final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
+                            for (ValidationMessage message : validationMessages) {
+                                final Element element = ElementHelper.fromMessageObject(message.getMessageObject());
+                                switch (message.type()) {
+                                    case ERROR: {
+                                        logger.error(element, message.getMessage());
+                                        process = false;
+                                        break;
+                                    }
+                                    case WARN: {
+                                        logger.warn(element, message.getMessage());
+                                        break;
+                                    }
+                                    default: {
+                                        logger.note(element, message.getMessage());
+                                    }
                                 }
                             }
+                            if (process) {
+                                if (interfaceElement.getKind().isInterface()
+                                        && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
+                                    for (AbstractGenerator processor : generators) {
+                                        logger.debug("Executing processor %s", processor.getName());
+                                        processor.processTypeElement(annotation, interfaceElement, messageInterface);
+                                    }
+                                }
+                            }
+                        } catch (ProcessingException e) {
+                            logger.error(e.getElement(), e.getMessage());
                         }
                     }
                 } catch (Throwable t) {

@@ -28,10 +28,13 @@ import static org.jboss.logging.processor.util.Objects.areEqual;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -39,10 +42,13 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.ConstructType;
+import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ReturnType;
 import org.jboss.logging.processor.model.ThrowableType;
+import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.util.Objects;
 
 /**
@@ -118,6 +124,21 @@ final class ReturnTypeFactory {
 
         private void init() {
             if (isThrowable()) {
+                TypeMirror returnType = this.returnType;
+                if (ElementHelper.isAnnotatedWith(method.reference(), ConstructType.class)) {
+                    final List<? extends AnnotationMirror> annotations = method.reference().getAnnotationMirrors();
+                    for (AnnotationMirror annotation : annotations) {
+                        final DeclaredType annotationType = annotation.getAnnotationType();
+                        if (annotationType.toString().equals(ConstructType.class.getName())) {
+                            final AnnotationValue value = annotation.getElementValues().values().iterator().next();
+                            returnType = (((DeclaredType) value.getValue()).asElement()).asType();
+                            break;
+                        }
+                    }
+                    if (!types.isAssignable(returnType, this.returnType)) {
+                        throw new ProcessingException(method.reference(), "The requested type %s can not be assigned to %s.", returnType, this.returnType);
+                    }
+                }
                 throwableType = ThrowableTypeFactory.forReturnType(elements, types, returnType, method);
             }
             final Element e = types.asElement(returnType);

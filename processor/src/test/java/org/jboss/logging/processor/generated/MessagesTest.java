@@ -45,5 +45,7 @@ public class MessagesTest {
         final StringOnlyException e = ValidMessages.MESSAGES.stringOnlyException(new RuntimeException());
         Assert.assertEquals(e.getMessage(), String.format(ValidMessages.TEST_MSG));
         Assert.assertNotNull(e.getCause());
+
+        Assert.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException, "Incorrect type constructed");
     }
 }
