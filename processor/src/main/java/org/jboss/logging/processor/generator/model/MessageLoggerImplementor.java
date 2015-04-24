@@ -54,6 +54,7 @@ import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
@@ -116,22 +117,27 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Add default constructor
         final JMethodDef constructor = classDef.constructor(JMod.PUBLIC);
-        final JParamDeclaration constructorParam = constructor.param(JMod.FINAL, Logger.class, LOG_FIELD_NAME);
+        final JType loggerType = $t(Logger.class);
+        // Import the logger type and the level type
+        sourceFile._import(loggerType);
+        sourceFile._import(Logger.Level.class);
+        final JParamDeclaration constructorParam = constructor.param(JMod.FINAL, loggerType, LOG_FIELD_NAME);
         final JBlock constructorBody = constructor.body();
         final JAssignableExpr logger;
         if (messageInterface().extendsLoggerInterface()) {
             if (useLogging31) {
+                sourceFile._import(DelegatingBasicLogger.class);
                 classDef._extends(DelegatingBasicLogger.class);
                 constructorBody.callSuper().arg($v(constructorParam));
                 logger = $v(constructorParam);
             } else {
-                JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
+                JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggerType, LOG_FIELD_NAME);
                 constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
                 logger = $v(logVar);
                 generateDelegatingLoggerMethods(classDef, logger, fqcn);
             }
         } else {
-            JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, Logger.class, LOG_FIELD_NAME);
+            JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggerType, LOG_FIELD_NAME);
             constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
             logger = $v(logVar);
         }
@@ -159,7 +165,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     }
 
     private void generateDelegatingLoggerMethods(final JClassDef classDef, final JAssignableExpr logVar, JVarDeclaration fqcn) {
-        final Class<?> logLevelClass = Logger.Level.class;
+        final JType logLevelClass = $t(Logger.Level.class);
         // Generate these methods so they look the same as they appear in DelegatedBasicLogger.
         for (String level : Arrays.asList("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL")) {
             // string prep
@@ -237,7 +243,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     xxx1x.body().add(
                             logVar.call(target)
                                     .arg($v(fqcn))
-                                    .arg($t(logLevelClass).$v(level))
+                                    .arg(logLevelClass.$v(level))
                                     .arg(renderThr ? $v(thr) : NULL)
                                     .arg($v(xxx1xFormat))
                                     .arg($v(xxx1xParams))
@@ -255,7 +261,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         }
                         final JCall xxx2xCaller = logVar.call(target);
                         xxx2xCaller.arg($v(fqcn))
-                                .arg($t(logLevelClass).$v(level))
+                                .arg(logLevelClass.$v(level))
                                 .arg(renderThr ? $v(thr) : NULL)
                                 .arg($v(xxx2xFormat));
                         for (int j = 0; j < i; j++) {
@@ -528,14 +534,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final Map<Parameter, JParamDeclaration> result = new LinkedHashMap<>();
         // Create the parameters
         for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
-            final JParamDeclaration var;
-            if (param.isVarArgs()) {
-                var = method.varargParam(JMod.FINAL, param.type(), param.name());
-            } else if (param.isArray()) {
-                var = method.param(JMod.FINAL, $t(param.type()).array(), param.name());
-            } else {
-                var = method.param(JMod.FINAL, param.type(), param.name());
-            }
+            final JParamDeclaration var = addMethodParameter(method, param);
             result.put(param, var);
         }
         return result;
