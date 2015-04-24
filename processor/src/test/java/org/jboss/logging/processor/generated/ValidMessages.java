@@ -24,6 +24,7 @@ package org.jboss.logging.processor.generated;
 
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.ConstructType;
 import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
@@ -63,6 +64,10 @@ public interface ValidMessages {
 
     @Message(TEST_MSG)
     StringOnlyException stringOnlyException(@Cause Exception e);
+
+    @ConstructType(IllegalArgumentException.class)
+    @Message("Invalid user id or password")
+    RuntimeException invalidCredentials();
 
     class CustomException extends RuntimeException {
         public int value;

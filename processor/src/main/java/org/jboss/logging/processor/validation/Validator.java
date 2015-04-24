@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.logging.annotations.ConstructType;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
@@ -307,6 +308,9 @@ public final class Validator {
         } else {
             if (!returnType.isAssignableFrom(String.class)) {
                 messages.add(createError(messageMethod, "Message bundle method (%s) has an invalid return type of %s.", messageMethod.name(), returnType.name()));
+            }
+            if (ElementHelper.isAnnotatedWith(messageMethod.reference(), ConstructType.class)) {
+                messages.add(createError(messageMethod, "ConstructType annotation requires a throwable return type"));
             }
         }
         return messages;
