@@ -24,6 +24,7 @@ package org.jboss.logging.processor.generator.model;
 
 import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.jdeparser.JMod.FINAL;
+import static org.jboss.jdeparser.JTypes.$t;
 import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 
 import java.io.IOException;
@@ -130,7 +131,9 @@ public abstract class ClassModel {
      */
     JClassDef generateModel() throws IllegalStateException {
         // Add generated annotation
-        classDef.annotate(Generated.class)
+        final JType generatedType = $t(Generated.class);
+        sourceFile._import(generatedType);
+        classDef.annotate(generatedType)
                 .value("value", getClass().getName())
                 .value("date", JExprs.str(ClassModelHelper.generatedDateValue()));
 
@@ -150,11 +153,14 @@ public abstract class ClassModel {
         if (!messageInterface.extendedInterfaces().isEmpty()) {
             for (MessageInterface intf : messageInterface.extendedInterfaces()) {
                 // TODO - Temporary fix for implementing nested interfaces.
-                final String interfaceName = typeToString(intf.name());
+                final JType interfaceName = $t(typeToString(intf.name()));
+                sourceFile._import(interfaceName);
                 classDef._implements(interfaceName);
             }
         }
-        classDef._implements(Serializable.class);
+        final JType serializable = $t(Serializable.class);
+        sourceFile._import(serializable);
+        classDef._implements(serializable);
         classDef.field(JMod.PRIVATE | JMod.STATIC | FINAL, JType.LONG, "serialVersionUID", JExprs.decimal(1L));
         return classDef;
     }

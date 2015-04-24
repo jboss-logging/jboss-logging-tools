@@ -29,7 +29,6 @@ import static org.jboss.jdeparser.JTypes.$t;
 import static org.jboss.logging.processor.generator.model.ClassModelHelper.implementationClassName;
 import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,7 +152,9 @@ abstract class ImplementationClassModel extends ClassModel {
                     } else {
                         if (formatterClass == null) {
                             if (param.isArray() || param.isVarArgs()) {
-                                args.add($t(Arrays.class).call("toString").arg($v(var)));
+                                final JType arrays = $t(Arrays.class);
+                                sourceFile._import(arrays);
+                                args.add(arrays.call("toString").arg($v(var)));
                             } else {
                                 args.add($v(var));
                             }
@@ -277,7 +278,9 @@ abstract class ImplementationClassModel extends ClassModel {
             final JIf stmt = methodBody._if(var.eq(NULL));
             stmt.assign(result, JExpr.ZERO);
             if (param.isArray() || param.isVarArgs()) {
-                stmt._else().assign(result, $t(Arrays.class).call("hashCode").arg(var));
+                final JType arrays = $t(Arrays.class);
+                sourceFile._import(arrays);
+                stmt._else().assign(result, arrays.call("hashCode").arg(var));
             } else {
                 stmt._else().assign(result, var.call("hashCode"));
             }
@@ -379,6 +382,7 @@ abstract class ImplementationClassModel extends ClassModel {
 
         // Remove this caller from the stack trace
         final JType arrays = $t(Arrays.class);
+        sourceFile._import(arrays);
         final JVarDeclaration st = body.var(FINAL, $t(StackTraceElement.class).array(), "st", $v(resultField).call("getStackTrace"));
         body.add($v(resultField).call("setStackTrace").arg(arrays.call("copyOfRange").arg($v(st)).arg(JExpr.ONE).arg($v(st).field("length"))));
         return resultField;
@@ -398,22 +402,27 @@ abstract class ImplementationClassModel extends ClassModel {
      *
      * @return the reference to the parameter on the method
      */
-    static JParamDeclaration addMethodParameter(final JMethodDef method, final Parameter param) {
+    protected JParamDeclaration addMethodParameter(final JMethodDef method, final Parameter param) {
         final JParamDeclaration var;
+        JType paramType = $t(param.type());
+        if (!param.isPrimitive()) {
+            sourceFile._import(paramType);
+        }
         if (param.isVarArgs()) {
-            var = method.varargParam(FINAL, $t(param.type()), param.name());
+            var = method.varargParam(FINAL, paramType, param.name());
         } else if (param.isArray()) {
-            var = method.param(JMod.FINAL, $t(param.type()).array(), param.name());
+            var = method.param(JMod.FINAL, paramType.array(), param.name());
         } else {
             final TypeMirror t = ((Element) param.reference()).asType();
-            final JType paramType = JTypes.typeOf(t);
             if (t instanceof DeclaredType) {
                 final Collection<? extends TypeMirror> genericTypes = ((DeclaredType) t).getTypeArguments();
                 for (TypeMirror tm : genericTypes) {
-                    paramType.typeArg(JTypes.typeOf(tm));
+                    final JType gt = JTypes.typeOf(tm);
+                    sourceFile._import(gt);
+                    paramType = paramType.typeArg(gt);
                 }
             }
-            var = method.param(FINAL, JTypes.typeOf(((Element) param.reference()).asType()), param.name());
+            var = method.param(FINAL, paramType, param.name());
         }
         return var;
     }
