@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
@@ -85,14 +87,6 @@ abstract class ImplementationClassModel extends ClassModel {
      */
     ImplementationClassModel(final Filer filer, final MessageInterface messageInterface) {
         super(filer, messageInterface, implementationClassName(messageInterface), null);
-    }
-
-    @Override
-    protected JClassDef generateModel() throws IllegalStateException {
-        JClassDef classDef = super.generateModel();
-        classDef._implements(Serializable.class);
-        classDef.field(JMod.PRIVATE | JMod.STATIC | FINAL, JType.LONG, "serialVersionUID", JExprs.decimal(1L));
-        return classDef;
     }
 
     /**
@@ -149,12 +143,7 @@ abstract class ImplementationClassModel extends ClassModel {
         final List<JExpr> args = new ArrayList<>();
         // Create the parameters
         for (Parameter param : allParameters) {
-            final JParamDeclaration var;
-            if (param.isVarArgs()) {
-                var = method.varargParam(FINAL, $t(param.type()), param.name());
-            } else {
-                var = method.param(FINAL, JTypes.typeOf(((Element) param.reference()).asType()), param.name());
-            }
+            final JParamDeclaration var = addMethodParameter(method, param);
             final String formatterClass = param.formatterClass();
             switch (param.parameterType()) {
                 case FORMAT: {
@@ -261,7 +250,7 @@ abstract class ImplementationClassModel extends ClassModel {
                 // Get the parameter name
                 final String paramName = getUniqueName(parameterNames, param, "Class");
                 parameterNames.add(paramName);
-                result = $v(methodBody.var(FINAL, $t(Class.class), paramName));
+                result = $v(methodBody.var(FINAL, $t(Class.class).typeArg(JType.WILDCARD), paramName));
                 final JIf stmt = methodBody._if(var.eq(NULL));
                 stmt.block(Braces.REQUIRED).assign(result, NULL);
                 stmt._else().assign(result, var.call("getClass"));
@@ -399,5 +388,33 @@ abstract class ImplementationClassModel extends ClassModel {
         for (ThrowableType thrownType : messageMethod.thrownTypes()) {
             jMethod._throws(thrownType.name());
         }
+    }
+
+    /**
+     * Adds the parameter to the method returning the reference to the parameter.
+     *
+     * @param method the method to add the parameter to
+     * @param param  the parameter to add
+     *
+     * @return the reference to the parameter on the method
+     */
+    static JParamDeclaration addMethodParameter(final JMethodDef method, final Parameter param) {
+        final JParamDeclaration var;
+        if (param.isVarArgs()) {
+            var = method.varargParam(FINAL, $t(param.type()), param.name());
+        } else if (param.isArray()) {
+            var = method.param(JMod.FINAL, $t(param.type()).array(), param.name());
+        } else {
+            final TypeMirror t = ((Element) param.reference()).asType();
+            final JType paramType = JTypes.typeOf(t);
+            if (t instanceof DeclaredType) {
+                final Collection<? extends TypeMirror> genericTypes = ((DeclaredType) t).getTypeArguments();
+                for (TypeMirror tm : genericTypes) {
+                    paramType.typeArg(JTypes.typeOf(tm));
+                }
+            }
+            var = method.param(FINAL, JTypes.typeOf(((Element) param.reference()).asType()), param.name());
+        }
+        return var;
     }
 }

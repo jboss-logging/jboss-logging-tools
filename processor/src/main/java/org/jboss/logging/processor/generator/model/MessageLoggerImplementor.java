@@ -528,14 +528,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final Map<Parameter, JParamDeclaration> result = new LinkedHashMap<>();
         // Create the parameters
         for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
-            final JParamDeclaration var;
-            if (param.isVarArgs()) {
-                var = method.varargParam(JMod.FINAL, param.type(), param.name());
-            } else if (param.isArray()) {
-                var = method.param(JMod.FINAL, $t(param.type()).array(), param.name());
-            } else {
-                var = method.param(JMod.FINAL, param.type(), param.name());
-            }
+            final JParamDeclaration var = addMethodParameter(method, param);
             result.put(param, var);
         }
         return result;

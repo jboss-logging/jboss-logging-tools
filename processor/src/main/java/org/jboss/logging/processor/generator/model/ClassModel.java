@@ -23,9 +23,11 @@
 package org.jboss.logging.processor.generator.model;
 
 import static org.jboss.jdeparser.JExprs.$v;
+import static org.jboss.jdeparser.JMod.FINAL;
 import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -152,6 +154,8 @@ public abstract class ClassModel {
                 classDef._implements(interfaceName);
             }
         }
+        classDef._implements(Serializable.class);
+        classDef.field(JMod.PRIVATE | JMod.STATIC | FINAL, JType.LONG, "serialVersionUID", JExprs.decimal(1L));
         return classDef;
     }
 
