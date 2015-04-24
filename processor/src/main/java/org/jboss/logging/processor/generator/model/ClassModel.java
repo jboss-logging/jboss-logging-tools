@@ -137,6 +137,10 @@ public abstract class ClassModel {
                 .value("value", getClass().getName())
                 .value("date", JExprs.str(ClassModelHelper.generatedDateValue()));
 
+        // Suppress all warnings: all for Eclipse, rawtypes & unchecked for javac
+        JAnnotationUse suppressWarningsAnnotation = definedClass.annotate(SuppressWarnings.class);
+        suppressWarningsAnnotation.paramArray("value").param("all").param("rawtypes").param("unchecked");
+
         // Create the default JavaDoc
         classDef.docComment().text("Warning this class consists of generated code.");
 
