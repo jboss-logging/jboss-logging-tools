@@ -98,6 +98,7 @@ abstract class ImplementationClassModel extends ClassModel {
         // Add the message messageMethod.
         addMessageMethod(messageMethod);
         final JType returnType = $t(messageMethod.returnType().name());
+        sourceFile._import(returnType);
         final JMethodDef method = classDef.method(JMod.PUBLIC | FINAL, returnType, messageMethod.name());
         method.annotate(Override.class);
         addThrownTypes(messageMethod, method);
@@ -336,6 +337,8 @@ abstract class ImplementationClassModel extends ClassModel {
         boolean callInitCause = false;
         final ThrowableType returnType = messageMethod.returnType().throwableReturnType();
         final JType type = $t(returnType.name());
+        // Import once more as the throwable return type may be different than the actual return type
+        sourceFile._import(type);
         final JCall result = type._new();
         final JVarDeclaration resultField = body.var(FINAL, type, "result", result);
         if (returnType.useConstructionParameters()) {
