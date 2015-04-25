@@ -29,12 +29,9 @@ import static org.jboss.logging.processor.util.Objects.areEqual;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -68,15 +65,8 @@ final class ParameterFactory {
         final List<? extends VariableElement> params = method.getParameters();
         int index = 0;
         for (VariableElement param : params) {
-            String formatClass = null;
-            // Format class may not yet be compiled, so get it in a roundabout way
-            for (AnnotationMirror mirror : param.getAnnotationMirrors()) {
-                final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.toString().equals(FormatWith.class.getName())) {
-                    final AnnotationValue value = mirror.getElementValues().values().iterator().next();
-                    formatClass = ((TypeElement) (((DeclaredType) value.getValue()).asElement())).getQualifiedName().toString();
-                }
-            }
+            final TypeElement formatClassType = ElementHelper.getClassAnnotationValue(param, FormatWith.class);
+            final String formatClass = formatClassType == null ? null : formatClassType.getQualifiedName().toString();
             final String qualifiedType;
             if (param.asType().getKind().isPrimitive()) {
                 qualifiedType = param.asType().toString();

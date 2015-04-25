@@ -223,7 +223,7 @@ abstract class ImplementationClassModel extends ClassModel {
         // Setup the return type
         final JExpr result;
         if (messageMethod.returnType().isThrowable()) {
-            result = $v(initCause(messageMethod, body, formatterCall));
+            result = $v(createReturnType(messageMethod, body, formatterCall));
         } else {
             result = formatterCall;
         }
@@ -332,14 +332,7 @@ abstract class ImplementationClassModel extends ClassModel {
         return result;
     }
 
-    /*
-     * Initialize the cause (Throwable) return type.
-     *
-     * @param result        the return variable
-     * @param body          the body of the messageMethod
-     * @param format        the format used to format the string cause
-     */
-    private JVarDeclaration initCause(final MessageMethod messageMethod, final JBlock body, final JCall format) {
+    private JVarDeclaration createReturnType(final MessageMethod messageMethod, final JBlock body, final JCall format) {
         boolean callInitCause = false;
         final ThrowableType returnType = messageMethod.returnType().throwableReturnType();
         final JType type = $t(returnType.name());

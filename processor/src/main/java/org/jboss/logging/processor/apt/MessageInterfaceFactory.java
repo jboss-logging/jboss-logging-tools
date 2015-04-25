@@ -32,14 +32,10 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -196,18 +192,12 @@ public final class MessageInterfaceFactory {
                 packageName = null;
                 simpleName = qualifiedName;
             }
-            // Format class may not yet be compiled, so get it in a roundabout way
-            for (AnnotationMirror mirror : interfaceElement.getAnnotationMirrors()) {
-                final DeclaredType annotationType = mirror.getAnnotationType();
-                if (annotationType.toString().equals(MessageLogger.class.getName())) {
-                    final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
-                    for (ExecutableElement key : map.keySet()) {
-                        if (key.getSimpleName().contentEquals("loggingClass")) {
-                            final String value = map.get(key).getValue().toString();
-                            if (!value.equals(Void.class.getName()))
-                                fqcn = value;
-                        }
-                    }
+            // Get the FQCN
+            final TypeElement loggingClass = ElementHelper.getClassAnnotationValue(interfaceElement, MessageLogger.class, "loggingClass");
+            if (loggingClass != null) {
+                final String value = loggingClass.getQualifiedName().toString();
+                if (!value.equals(Void.class.getName())) {
+                    fqcn = value;
                 }
             }
         }
@@ -258,7 +248,6 @@ public final class MessageInterfaceFactory {
         }
 
 
-
         @Override
         public boolean equals(final Object obj) {
             if (obj == this) {
@@ -272,21 +261,16 @@ public final class MessageInterfaceFactory {
         }
 
 
-
         @Override
         public String toString() {
             return ToStringBuilder.of(this).add(qualifiedName).toString();
         }
 
 
-
-
         @Override
         public TypeElement reference() {
             return interfaceElement;
         }
-
-
 
 
     }
