@@ -25,12 +25,17 @@ package org.jboss.logging.processor.util;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Field;
@@ -259,5 +264,80 @@ public final class ElementHelper {
             return (Element) object.reference();
         }
         return null;
+    }
+
+    /**
+     * Retrieves the first attribute value from the annotation and assumes it's a {@link Class class} type.
+     *
+     * @param element    the element the annotation is on
+     * @param annotation the annotation to get the value from
+     *
+     * @return a {@link TypeElement} representing the value for the first annotation attribute or {@code null} if no
+     * attributes were found
+     */
+    public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation) {
+        for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
+            final DeclaredType annotationType = mirror.getAnnotationType();
+            if (annotationType.toString().equals(annotation.getName())) {
+                final AnnotationValue value = mirror.getElementValues().values().iterator().next();
+                return ((TypeElement) (((DeclaredType) value.getValue()).asElement()));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the attribute value from the annotation and assumes it's a {@link Class class} type.
+     *
+     * @param element       the element the annotation is on
+     * @param annotation    the annotation to get the value from
+     * @param attributeName the name of the attribute to retrieve the class value for
+     *
+     * @return a {@link TypeElement} representing the value for the annotation attribute or {@code null} if the
+     * attribute was not found
+     */
+    public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
+        for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
+            final DeclaredType annotationType = mirror.getAnnotationType();
+            if (annotationType.toString().equals(annotation.getName())) {
+                final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
+                for (ExecutableElement key : map.keySet()) {
+                    if (key.getSimpleName().contentEquals(attributeName)) {
+                        return ((TypeElement) (((DeclaredType) map.get(key).getValue()).asElement()));
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the attribute value from the annotation and assumes it's an array {@link Class classes}.
+     *
+     * @param element       the element the annotation is on
+     * @param annotation    the annotation to get the value from
+     * @param attributeName the name of the attribute to retrieve the class value array for
+     *
+     * @return a list of {@link TypeElement} representing the value for the annotation attribute or an empty list
+     */
+    public static List<TypeElement> getClassArrayAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
+        for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
+            final DeclaredType annotationType = mirror.getAnnotationType();
+            if (annotationType.toString().equals(annotation.getName())) {
+                final Map<? extends ExecutableElement, ? extends AnnotationValue> map = mirror.getElementValues();
+                for (ExecutableElement key : map.keySet()) {
+                    if (key.getSimpleName().contentEquals(attributeName)) {
+                        @SuppressWarnings("unchecked")
+                        final List<AnnotationValue> annotationValues = (List<AnnotationValue>) map.get(key).getValue();
+                        final List<TypeElement> result = new ArrayList<>(annotationValues.size());
+                        for (AnnotationValue value : annotationValues) {
+                            result.add((TypeElement) ((DeclaredType) value.getValue()).asElement());
+                        }
+                        return result;
+                    }
+                }
+            }
+        }
+        return Collections.emptyList();
     }
 }
