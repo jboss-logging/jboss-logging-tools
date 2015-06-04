@@ -47,6 +47,7 @@ import org.jboss.jdeparser.JCall;
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JExpr;
 import org.jboss.jdeparser.JExprs;
+import org.jboss.jdeparser.JIf;
 import org.jboss.jdeparser.JMethodDef;
 import org.jboss.jdeparser.JMod;
 import org.jboss.jdeparser.JParamDeclaration;
@@ -55,6 +56,7 @@ import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
@@ -64,6 +66,7 @@ import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.ElementHelper;
+import org.jboss.logging.processor.util.LogLevelHelper;
 
 /**
  * Used to generate a message logger implementation.
@@ -403,7 +406,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param logger        the logger to use.
      */
     private void createLoggerMethod(final MessageMethod messageMethod, final JClassDef classDef, final JAssignableExpr logger) {
-        final String msgMethodName = messageMethod.messageMethodName();
         final JMethodDef method = classDef.method(JMod.PUBLIC | JMod.FINAL, messageMethod.returnType().name(), messageMethod.name());
         method.annotate(Override.class);
         addMessageMethod(messageMethod);
@@ -441,8 +443,32 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             body = method.body();
         }
 
-        // Determine which logger method to invoke
-        final JCall logCaller = logger.call(messageMethod.loggerMethod());
+        if (!messageMethod.hasCause() || (messageMethod.hasCause() && messageMethod.cause().cause().loggedAt() == Level.FATAL)) {
+            // fatal is the highest possible level, so we just call the logger and allow the cause to appear in the log
+            // (if there is one)
+            final JCall logCaller = logger.call(messageMethod.loggerMethod());
+            initLogCaller(logCaller, body, messageMethod, params, parameterNames, true);
+            body.add(logCaller);
+        } else {
+            //the cause should only be logged at certain level or lower. We need to create an "if" for that here.
+            JIf _if = body._if(logger.call("isEnabled").arg($v(LogLevelHelper.toString(messageMethod.cause().cause().loggedAt()))));
+
+            JBlock logCause = _if.block(Braces.REQUIRED);
+            JBlock noLogCause = _if._else().block(Braces.REQUIRED);
+
+            final JCall logCaller = logger.call(messageMethod.loggerMethod());
+            initLogCaller(logCaller, logCause, messageMethod, params, parameterNames, true);
+            logCause.add(logCaller);
+
+            final JCall noCauseLogCaller = logger.call(messageMethod.loggerMethod());
+            initLogCaller(noCauseLogCaller, noLogCause, messageMethod, params, parameterNames, false);
+            noLogCause.add(noCauseLogCaller);
+        }
+    }
+
+    private void initLogCaller(JCall logCaller, JBlock body, MessageMethod messageMethod,
+            Map<Parameter, JParamDeclaration> params, List<String> parameterNames, boolean allowCause) {
+        String msgMethodName = messageMethod.messageMethodName();
         if (messageMethod.parameters(ParameterType.FQCN).isEmpty()) {
             logCaller.arg($v(FQCN_FIELD_NAME));
         } else {
@@ -459,13 +485,13 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             logCaller.arg(NULL);
 
             // The cause is the final argument
-            if (messageMethod.hasCause()) {
+            if (messageMethod.hasCause() && allowCause) {
                 logCaller.arg($v(messageMethod.cause().name()));
             } else {
                 logCaller.arg(NULL);
             }
         } else {
-            if (messageMethod.hasCause()) {
+            if (messageMethod.hasCause() && allowCause) {
                 logCaller.arg($v(messageMethod.cause().name()));
             } else {
                 logCaller.arg(NULL);
@@ -527,7 +553,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 logCaller.arg(arg);
             }
         }
-        body.add(logCaller);
     }
 
     private Map<Parameter, JParamDeclaration> createParameters(final MessageMethod messageMethod, final JMethodDef method) {

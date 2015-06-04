@@ -37,7 +37,11 @@ class MessageListHandler extends ExtHandler {
     @Override
     protected void doPublish(final ExtLogRecord record) {
         super.doPublish(record);
-        messages.add(record.getFormattedMessage());
+        String message = record.getFormattedMessage();
+        if (record.getThrown() != null) {
+            message += " EXCEPTION: " + record.getThrown().getClass().getName();
+        }
+        messages.add(message);
     }
 
     String getMessage(final int index) {

@@ -19,6 +19,8 @@
 
 package org.jboss.logging.annotations;
 
+import org.jboss.logging.Logger;
+
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
@@ -35,4 +37,17 @@ import java.lang.annotation.Target;
 @Target(PARAMETER)
 @Documented
 public @interface Cause {
+    /**
+     * The maximum allowed log level at which the exception cause is actually logged.
+     *
+     * This level is compared against the log level allowed for the logger, i.e. it is independent of the level the
+     * actual message is being logged at.
+     *
+     * The default value, {@link org.jboss.logging.Logger.Level#FATAL} means that the cause is attached to the message
+     * every time.
+     *
+     * If this attribute is set for example to {@link Logger.Level#DEBUG} then the cause will be attached to the message
+     * only if the allowed log level for the logger is {@link Logger.Level#DEBUG} or {@link Logger.Level#TRACE}.
+     */
+    Logger.Level loggedAt() default Logger.Level.FATAL;
 }

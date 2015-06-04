@@ -78,6 +78,10 @@ interface DefaultLogger extends BasicLogger {
     @Message(id = Message.INHERIT, value = "Invalid value '%s'. Valid values are; %s")
     void invalidSelection(String selected, String[] validValues);
 
+    @LogMessage(level  = Level.INFO)
+    @Message(id = 106, value = TEST_MSG)
+    void causeWithLoggedAt(@Cause(loggedAt = Level.DEBUG) Throwable cause);
+
     static class CustomFormatter {
 
         private final String msg;

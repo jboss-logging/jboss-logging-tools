@@ -56,6 +56,7 @@ import org.jboss.logging.processor.model.ReturnType;
 import org.jboss.logging.processor.model.ThrowableType;
 import org.jboss.logging.processor.util.Comparison;
 import org.jboss.logging.processor.util.ElementHelper;
+import org.jboss.logging.processor.util.LogLevelHelper;
 
 /**
  * Date: 29.07.2011
@@ -314,7 +315,7 @@ final class MessageMethodBuilder {
             // TODO (jrp) possibly return the actual level
             final LogMessage logMessage = method.getAnnotation(LogMessage.class);
             final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
-            return String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
+            return LogLevelHelper.toString(logLevel);
         }
 
         @Override

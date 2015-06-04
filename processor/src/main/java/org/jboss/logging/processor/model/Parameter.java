@@ -22,6 +22,7 @@
 
 package org.jboss.logging.processor.model;
 
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 
@@ -176,4 +177,11 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
      * @return the position annotation or {@code null} if not a position parameter
      */
     Pos pos();
+
+    /**
+     * The cause annotation if the {@link #parameterType()} is {@link ParameterType#CAUSE}.
+     *
+     * @return the cause annotation or {@code null} if not a cause parameter
+     */
+    Cause cause();
 }

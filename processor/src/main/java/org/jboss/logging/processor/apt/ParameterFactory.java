@@ -118,6 +118,11 @@ final class ParameterFactory {
             }
 
             @Override
+            public Cause cause() {
+                return null;
+            }
+
+            @Override
             public String type() {
                 return String.class.getName();
             }
@@ -212,6 +217,7 @@ final class ParameterFactory {
         private final ParameterType parameterType;
         private final Transform transform;
         private final Pos pos;
+        private final Cause cause;
 
         /**
          * Only allow construction from within the parent class.
@@ -233,41 +239,49 @@ final class ParameterFactory {
                 parameterType = ParameterType.CONSTRUCTION;
                 transform = null;
                 pos = null;
+                cause = null;
             } else if (ElementHelper.isAnnotatedWith(param, Cause.class)) {
                 paramClass = null;
                 parameterType = ParameterType.CAUSE;
                 transform = null;
                 pos = null;
+                cause = param.getAnnotation(Cause.class);
             } else if (ElementHelper.isAnnotatedWith(param, Field.class)) {
                 paramClass = null;
                 parameterType = ParameterType.FIELD;
                 transform = null;
                 pos = null;
+                cause = null;
             } else if (ElementHelper.isAnnotatedWith(param, Property.class)) {
                 paramClass = null;
                 parameterType = ParameterType.PROPERTY;
                 transform = null;
                 pos = null;
+                cause = null;
             } else if (ElementHelper.isAnnotatedWith(param, LoggingClass.class)) {
                 paramClass = null;
                 parameterType = ParameterType.FQCN;
                 transform = null;
                 pos = null;
+                cause = null;
             } else if (ElementHelper.isAnnotatedWith(param, Transform.class)) {
                 paramClass = null;
                 parameterType = ParameterType.TRANSFORM;
                 transform = param.getAnnotation(Transform.class);
                 pos = null;
+                cause = null;
             } else if (ElementHelper.isAnnotatedWith(param, Pos.class)) {
                 paramClass = null;
                 parameterType = ParameterType.POS;
                 transform = null;
                 pos = param.getAnnotation(Pos.class);
+                cause = null;
             } else {
                 parameterType = ParameterType.FORMAT;
                 paramClass = null;
                 transform = null;
                 pos = null;
+                cause = null;
             }
             this.isVarArgs = isVarArgs;
         }
@@ -344,6 +358,11 @@ final class ParameterFactory {
         @Override
         public Pos pos() {
             return pos;
+        }
+
+        @Override
+        public Cause cause() {
+            return cause;
         }
 
         @Override

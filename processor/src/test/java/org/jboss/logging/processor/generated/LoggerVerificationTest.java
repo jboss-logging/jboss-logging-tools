@@ -30,9 +30,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.jboss.logging.Logger;
 import org.jboss.logging.processor.generated.DefaultLogger.CustomFormatter;
+import org.jboss.logmanager.LogManager;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
@@ -62,15 +64,18 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         DefaultLogger.LOGGER.invalidSelection("G", values);
         DefaultLogger.LOGGER.invalidSelection("A", "B", "C", "D");
 
+        DefaultLogger.LOGGER.causeWithLoggedAt(new Exception("I told you so"));
+
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
-        compare(2, "noFormat", properties);
-        compare(3, "noFormatWithCause", properties);
-        compare(4, "formatWith", properties, new CustomFormatter(msg));
-        compare(5, "invalidSelection.2", properties, "G", Arrays.toString(values));
-        compare(6, "invalidSelection.1", properties, Arrays.toString(values));
+        compare(0, "hello", properties, "", NAME);
+        compare(1, "howAreYou", properties, "", NAME);
+        compare(2, "noFormat", properties, "");
+        compare(3, "noFormatWithCause", properties, " EXCEPTION: java.lang.IllegalArgumentException");
+        compare(4, "formatWith", properties, "", new CustomFormatter(msg));
+        compare(5, "invalidSelection.2", properties, "", "G", Arrays.toString(values));
+        compare(6, "invalidSelection.1", properties, "", Arrays.toString(values));
+        compare(7, "causeWithLoggedAt", properties, " EXCEPTION: java.lang.Exception");
     }
 
     @Test
@@ -80,8 +85,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_de"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare(0, "hello", properties, "", NAME);
+        compare(1, "howAreYou", properties, "", NAME);
     }
 
     @Test
@@ -91,8 +96,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_fr"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare(0, "hello", properties, "", NAME);
+        compare(1, "howAreYou", properties, "", NAME);
     }
 
     @Test
@@ -102,8 +107,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_es"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare(0, "hello", properties, "", NAME);
+        compare(1, "howAreYou", properties, "", NAME);
     }
 
     @Test
@@ -113,8 +118,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_ja"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare(0, "hello", properties, "", NAME);
+        compare(1, "howAreYou", properties, "", NAME);
     }
 
     @Test
@@ -126,26 +131,47 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         final Date date = new Date();
         logger.dukesBirthday(date);
         logger.dukesBirthdayFailure(date);
-        compare(0, "dukesBirthday", es, date);
-        compare(1, "dukesBirthdayFailure", en, date);
+        compare(0, "dukesBirthday", es, "", date);
+        compare(1, "dukesBirthdayFailure", en, "", date);
 
         logger.stringInt("string", 1);
         logger.stringIntFailure("string", 1);
-        compare(2, "stringInt", es, "string", 1);
-        compare(3, "stringIntFailure", en, "string", 1);
+        compare(2, "stringInt", es, "", "string", 1);
+        compare(3, "stringIntFailure", en, "", "string", 1);
 
         logger.repeat("invalid");
         logger.repeatFailure("invalid");
-        compare(4, "repeat", es, "invalid");
-        compare(5, "repeatFailure", en, "invalid");
+        compare(4, "repeat", es, "", "invalid");
+        compare(5, "repeatFailure", en, "", "invalid");
+    }
+
+    @Test
+    public void testCauseWithLoggedAt() throws Exception {
+        java.util.logging.Logger logger = LogManager.getLogManager().getLogger(AbstractLoggerTest.CATEGORY);
+
+        Level origLevel = logger.getLevel();
+
+        logger.setLevel(org.jboss.logmanager.Level.INFO);
+        DefaultLogger.LOGGER.causeWithLoggedAt(new Exception());
+
+        logger.setLevel(Level.ALL);
+        DefaultLogger.LOGGER.causeWithLoggedAt(new Exception());
+
+        final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
+
+        compare(0, "causeWithLoggedAt", properties, "");
+        compare(1, "causeWithLoggedAt", properties, " EXCEPTION: java.lang.Exception");
+
+        logger.setLevel(origLevel);
     }
 
     private static DefaultLogger getLogger(final Locale locale) {
         return Logger.getMessageLogger(DefaultLogger.class, CATEGORY, locale);
     }
 
-    private void compare(final int handlerIndex, final String key, final Properties properties, final Object... params) {
-        final String expectedMessage = getFormattedProperty(key, properties, params);
+    private void compare(final int handlerIndex, final String key, final Properties properties,
+            String logMessageAppendix, final Object... params) {
+        final String expectedMessage = getFormattedProperty(key, properties, params) + logMessageAppendix;
         final String loggedMessage = HANDLER.getMessage(handlerIndex).replaceAll(LOGGER_ID_PATTERN, "");
         Assert.assertEquals(loggedMessage, expectedMessage);
     }
