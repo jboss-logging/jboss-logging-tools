@@ -50,6 +50,9 @@ interface DefaultLogger extends BasicLogger {
      */
     DefaultLogger LOGGER = Logger.getMessageLogger(DefaultLogger.class, AbstractLoggerTest.CATEGORY);
 
+    // Used to test the ambiguous log field in the DelegatingBasicLogger
+    DefaultLogger log = Logger.getMessageLogger(DefaultLogger.class, AbstractLoggerTest.CATEGORY);
+
     @LogMessage(level = Level.INFO)
     @Message(id = 100, value = "Hello %s.")
     void hello(String name);
