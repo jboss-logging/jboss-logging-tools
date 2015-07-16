@@ -129,7 +129,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 sourceFile._import(DelegatingBasicLogger.class);
                 classDef._extends(DelegatingBasicLogger.class);
                 constructorBody.callSuper().arg($v(constructorParam));
-                logger = $v(constructorParam);
+                logger = $v("super").field("log");
             } else {
                 JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggerType, LOG_FIELD_NAME);
                 constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
