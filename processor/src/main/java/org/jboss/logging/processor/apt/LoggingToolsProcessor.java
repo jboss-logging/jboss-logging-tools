@@ -137,6 +137,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         generators.add(new ImplementationClassGenerator(processingEnv));
         generators.add(new TranslationClassGenerator(processingEnv));
         generators.add(new TranslationFileGenerator(processingEnv));
+        generators.add(new ReportFileGenerator(processingEnv));
     }
 
     @Override
