@@ -102,6 +102,7 @@
                         <exclude>**/LegacyMessages.java</exclude>
                         <exclude>**/LegacyMessagesTest.java</exclude>
                         <exclude>**/GeneratedSourceAnalysisTest.java</exclude>
+                        <exclude>**/ReportGenerationTest.java</exclude>
                     </testExcludes>
                 </configuration>
             </plugin>

@@ -37,6 +37,10 @@
 
     <name>JBoss Logging I18n Annotation Processor</name>
 
+    <properties>
+        <test.report.path>${project.build.testOutputDirectory}</test.report.path>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -89,6 +93,36 @@
                             <compilerArgument>-proc:none</compilerArgument>
                         </configuration>
                     </execution>
+                    <!-- Define that asciidoc reports should be generated -->
+                    <execution>
+                        <id>test-compile-adoc</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-AreportType=adoc</arg>
+                                <arg>-AreportPath=${test.report.path}</arg>
+                                <arg>-AreportTitle=Test Title</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <!-- Define that XML reports should be generated -->
+                    <execution>
+                        <id>test-compile-xml</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-AreportType=xml</arg>
+                                <arg>-AreportPath=${test.report.path}</arg>
+                                <arg>-AreportTitle=Test Title</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -99,6 +133,7 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <test.src.path>${project.build.testSourceDirectory}</test.src.path>
                         <test.generated.src.path>${project.build.directory}/generated-test-sources/test-annotations</test.generated.src.path>
+                        <test.report.path>${test.report.path}</test.report.path>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
