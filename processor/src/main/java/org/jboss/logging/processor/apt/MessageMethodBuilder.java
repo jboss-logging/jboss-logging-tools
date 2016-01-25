@@ -75,8 +75,8 @@ final class MessageMethodBuilder {
         methods = new LinkedList<>();
     }
 
-    MessageMethodBuilder add(final ExecutableElement method) {
-        methods.add(method);
+    MessageMethodBuilder add(final Collection<ExecutableElement> methods) {
+        this.methods.addAll(methods);
         return this;
     }
 

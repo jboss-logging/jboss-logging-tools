@@ -53,6 +53,14 @@ interface DefaultLogger extends BasicLogger {
     // Used to test the ambiguous log field in the DelegatingBasicLogger
     DefaultLogger log = Logger.getMessageLogger(DefaultLogger.class, AbstractLoggerTest.CATEGORY);
 
+    static DefaultLogger get(final String category) {
+        return Logger.getMessageLogger(DefaultLogger.class, category);
+    }
+
+    default void initialized() {
+        LOGGER.info("Initialized");
+    }
+
     @LogMessage(level = Level.INFO)
     @Message(id = 100, value = "Hello %s.")
     void hello(String name);
