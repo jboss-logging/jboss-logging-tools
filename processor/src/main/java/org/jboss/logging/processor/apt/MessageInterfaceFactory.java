@@ -33,8 +33,10 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -165,15 +167,10 @@ public final class MessageInterfaceFactory {
         }
 
         private void init() {
-            // Keeping below for now
-            final Collection<ExecutableElement> methods = ElementFilter.methodsIn(interfaceElement.getEnclosedElements());
-            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types);
-            for (ExecutableElement param : methods) {
-                builder.add(param);
-            }
+            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types)
+                    .add(getMessageMethods(interfaceElement));
             final Collection<MessageMethod> m = builder.build();
-            if (m != null)
-                this.messageMethods.addAll(m);
+            this.messageMethods.addAll(m);
             final MessageBundle messageBundle = interfaceElement.getAnnotation(MessageBundle.class);
             final MessageLogger messageLogger = interfaceElement.getAnnotation(MessageLogger.class);
             if (messageBundle != null) {
@@ -287,11 +284,8 @@ public final class MessageInterfaceFactory {
         }
 
         private void init() {
-            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types);
-            List<ExecutableElement> methods = ElementFilter.methodsIn(loggerInterface.getEnclosedElements());
-            for (ExecutableElement method : methods) {
-                builder.add(method);
-            }
+            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types)
+                    .add(getMessageMethods(loggerInterface));
             final Collection<MessageMethod> m = builder.build();
             this.messageMethods.addAll(m);
         }
@@ -393,5 +387,12 @@ public final class MessageInterfaceFactory {
         public String getComment() {
             return elements.getDocComment(loggerInterface);
         }
+    }
+
+    private static Collection<ExecutableElement> getMessageMethods(final TypeElement intf) {
+        return ElementFilter.methodsIn(intf.getEnclosedElements())
+                .stream()
+                .filter(method -> !method.isDefault() && !method.getModifiers().contains(Modifier.STATIC))
+                .collect(Collectors.toList());
     }
 }
