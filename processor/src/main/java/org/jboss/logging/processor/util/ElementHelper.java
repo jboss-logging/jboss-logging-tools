@@ -36,6 +36,9 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Field;
@@ -318,9 +321,9 @@ public final class ElementHelper {
      * @param annotation    the annotation to get the value from
      * @param attributeName the name of the attribute to retrieve the class value array for
      *
-     * @return a list of {@link TypeElement} representing the value for the annotation attribute or an empty list
+     * @return a list of {@link TypeMirror} representing the value for the annotation attribute or an empty list
      */
-    public static List<TypeElement> getClassArrayAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
+    public static List<TypeMirror> getClassArrayAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
             final DeclaredType annotationType = mirror.getAnnotationType();
             if (annotationType.toString().equals(annotation.getName())) {
@@ -329,9 +332,9 @@ public final class ElementHelper {
                     if (key.getSimpleName().contentEquals(attributeName)) {
                         @SuppressWarnings("unchecked")
                         final List<AnnotationValue> annotationValues = (List<AnnotationValue>) map.get(key).getValue();
-                        final List<TypeElement> result = new ArrayList<>(annotationValues.size());
+                        final List<TypeMirror> result = new ArrayList<>(annotationValues.size());
                         for (AnnotationValue value : annotationValues) {
-                            result.add((TypeElement) ((DeclaredType) value.getValue()).asElement());
+                            result.add((TypeMirror) value.getValue());
                         }
                         return result;
                     }
@@ -339,5 +342,39 @@ public final class ElementHelper {
             }
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Checks whether or not a constructor matching the parameters exists.
+     *
+     * @param types   the type utility used to compare the type arguments
+     * @param element the element that contains the constructors
+     * @param args    the arguments the constructor should match
+     *
+     * @return {@code true} if a matching constructor was found otherwise {@code false}
+     */
+    public static boolean hasConstructor(final Types types, final Element element, final List<TypeMirror> args) {
+        final int len = args.size();
+        final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
+        for (ExecutableElement constructor : constructors) {
+            final List<? extends VariableElement> parameters = constructor.getParameters();
+            if (len == parameters.size()) {
+                boolean match = false;
+                for (int i = 0; i < len; i++) {
+                    final TypeMirror type = args.get(i);
+                    final VariableElement parameter = parameters.get(i);
+                    if (types.isSameType(type, parameter.asType())) {
+                        match = true;
+                    } else {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -353,6 +353,7 @@ abstract class ImplementationClassModel extends ClassModel {
 
                 }
             }
+            callInitCause = messageMethod.hasCause() && !returnType.causeSetInConstructor();
         } else if (returnType.hasStringAndThrowableConstructor() && messageMethod.hasCause()) {
             result.arg(format).arg($v(messageMethod.cause().name()));
         } else if (returnType.hasThrowableAndStringConstructor() && messageMethod.hasCause()) {

@@ -26,6 +26,7 @@ import static org.jboss.logging.processor.model.Parameter.ParameterType;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -41,9 +42,11 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ThrowableType;
+import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.util.Objects;
 
 /**
@@ -88,7 +91,7 @@ final class ThrowableTypeFactory {
 
     private static class AptThrowableType extends AbstractMessageObjectType implements ThrowableType {
 
-        private final TypeMirror type;
+        protected final TypeMirror type;
         private final boolean isChecked;
         private boolean defaultConstructor = false;
         private boolean stringConstructor = false;
@@ -118,7 +121,7 @@ final class ThrowableTypeFactory {
         /**
          * Initializes the object.
          */
-        protected final void init() {
+        protected void init() {
             if (!type.getKind().isPrimitive() && type.getKind() != TypeKind.VOID) {
                 final Element element = types.asElement(type);
                 final List<ExecutableElement> constructors = ElementFilter.constructorsIn(element.getEnclosedElements());
@@ -253,6 +256,7 @@ final class ThrowableTypeFactory {
         private final Set<Parameter> constructionParameters;
 
         private boolean useConstructionParameters = false;
+        private boolean causeSet = false;
 
         /**
          * Creates a new descriptor that is not primitive.
@@ -266,6 +270,49 @@ final class ThrowableTypeFactory {
             super(elements, types, type);
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<Parameter>();
+        }
+
+        @Override
+        protected void init() {
+            final ExecutableElement method = messageMethod.reference();
+            final Signature signature = method.getAnnotation(Signature.class);
+            // If using the @Signature annotation we're attempting to use an exact constructor.
+            if (signature != null) {
+                final List<TypeMirror> args = ElementHelper.getClassArrayAnnotationValue(method, Signature.class, "value");
+                // Validate the constructor exists
+                if (!ElementHelper.hasConstructor(types, types.asElement(type), args)) {
+                    throw new ProcessingException(method, "Constructor of type %s could not be found with arguments %s", type, args);
+                }
+                final int causeIndex = signature.causeIndex();
+                final int messageIndex = signature.messageIndex();
+                // Note that the messageIndex is required and must be 0 or greater
+                if (messageIndex < 0) {
+                    throw new ProcessingException(method, "A messageIndex of 0 or greater is required. Value %d is invalid.", messageIndex);
+                }
+                final List<Parameter> methodConstructorParameters = new ArrayList<>(messageMethod.parameters(ParameterType.CONSTRUCTION));
+
+                constructionParameters.clear();
+                useConstructionParameters = true;
+                causeSet = !messageMethod.hasCause();
+                // The required length is the number of parameters plus the message and optional cause.
+                final int len = methodConstructorParameters.size() + (causeIndex < 0 ? 1 : 2);
+                int offset = 0;
+                for (int i = 0; i < len; i++) {
+                    if (causeIndex == i) {
+                        causeSet = true;
+                        constructionParameters.add(messageMethod.cause());
+                        offset++;
+                    } else if (messageIndex == i) {
+                        constructionParameters.add(ParameterFactory.forMessageMethod(messageMethod));
+                        offset++;
+                    } else {
+                        constructionParameters.add(methodConstructorParameters.get(i - offset));
+                    }
+                }
+
+            } else {
+                super.init();
+            }
         }
 
         @Override
@@ -315,6 +362,7 @@ final class ThrowableTypeFactory {
                     constructionParameters.clear();
                     useConstructionParameters = true;
                     constructionParameters.addAll(matchedParams);
+                    causeSet = causeFound;
                 }
             }
         }
@@ -322,6 +370,11 @@ final class ThrowableTypeFactory {
         @Override
         public boolean useConstructionParameters() {
             return useConstructionParameters;
+        }
+
+        @Override
+        public boolean causeSetInConstructor() {
+            return causeSet;
         }
 
         @Override

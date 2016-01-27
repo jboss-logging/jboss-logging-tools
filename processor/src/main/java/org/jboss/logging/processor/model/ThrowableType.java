@@ -78,6 +78,16 @@ public interface ThrowableType extends MessageObject, MessageObjectType, Compara
     boolean useConstructionParameters();
 
     /**
+     * Indicates whether or not the {@linkplain org.jboss.logging.annotations.Cause cause} was set in the constructor.
+     *
+     * @return {@code true} if the cause was set in the constructor, {@code false} if the
+     * {@link Throwable#initCause(Throwable)} should be executed
+     */
+    default boolean causeSetInConstructor() {
+        return false;
+    }
+
+    /**
      * The parameters needed to construct the throwable, if not using the default constructor. If the default
      * constructor should be used an empty set should be returned.
      * <p/>

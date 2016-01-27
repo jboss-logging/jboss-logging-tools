@@ -29,6 +29,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
+import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.processor.util.Objects;
 import org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 
@@ -46,6 +47,9 @@ public interface SignatureMessages {
 
     RedirectException redirect(@Cause Throwable cause, @Param int responseCode, @Param String location);
 
+    @Signature({String.class, String.class})
+    RedirectException redirect(@Cause Throwable cause, @Param String location);
+
     @Message(TEST_MSG)
     TestException test();
 
@@ -55,6 +59,9 @@ public interface SignatureMessages {
     InvalidTextException invalidText(@Param String text);
 
     InvalidTextException invalidText(@Cause Throwable cause, @Param String text);
+
+    @Signature(causeIndex = 1, messageIndex = 3, value = {int.class, Throwable.class, String.class, String.class})
+    InvalidTextException invalidText(@Param int position, @Cause Throwable cause, @Param String text);
 
     @SuppressWarnings("unused")
     static class RedirectException extends RuntimeException {
@@ -78,6 +85,12 @@ public interface SignatureMessages {
         public RedirectException(final String msg, final int statusCode, final String location) {
             super(msg);
             this.statusCode = statusCode;
+            this.location = location;
+        }
+
+        public RedirectException(final String msg, final String location) {
+            super(msg);
+            this.statusCode = 301;
             this.location = location;
         }
 
@@ -165,14 +178,17 @@ public interface SignatureMessages {
     @SuppressWarnings("unused")
     static class InvalidTextException extends RuntimeException {
         final String value;
+        final int position;
 
         public InvalidTextException(final String value) {
             this.value = value;
+            position = -1;
         }
 
         public InvalidTextException(final String msg, final String value) {
             super(msg);
             this.value = value;
+            position = -1;
         }
 
         public InvalidTextException(final Throwable cause) {
@@ -186,12 +202,24 @@ public interface SignatureMessages {
         public InvalidTextException(final String msg, final Throwable cause, final String value) {
             super(msg, cause);
             this.value = value;
+            position = -1;
+        }
+
+        public InvalidTextException(final int position, final Throwable cause, final String value, final String msg) {
+            super(msg, cause);
+            this.value = value;
+            this.position = position;
+        }
+
+        public InvalidTextException(final Integer position, final Throwable cause, final String value, final String msg) {
+            throw new IllegalStateException("Should never be chosen");
         }
 
         @Override
         public int hashCode() {
             return HashCodeBuilder.builder()
                     .add(value)
+                    .add(position)
                     .add(getMessage())
                     .add(getCause())
                     .toHashCode();
@@ -207,6 +235,7 @@ public interface SignatureMessages {
             }
             final InvalidTextException other = (InvalidTextException) obj;
             return areEqual(value, other.value) &&
+                    areEqual(position, other.position) &&
                     areEqual(getMessage(), other.getMessage()) &&
                     areEqual(getCause(), other.getCause());
         }
@@ -215,6 +244,7 @@ public interface SignatureMessages {
         public String toString() {
             return Objects.ToStringBuilder.of(this)
                     .add("value", value)
+                    .add("position", position)
                     .add("message", getMessage())
                     .add("cause", getCause())
                     .toString();
