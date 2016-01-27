@@ -42,6 +42,9 @@ public class ThrowableSignatureTest {
         final String location = "foo";
         RedirectException redirectExpected = new RedirectException(formattedMessage, code, location);
         Assert.assertEquals(SignatureMessages.MESSAGES.redirect(code, location), redirectExpected);
+        redirectExpected = new RedirectException(formattedMessage, location);
+        redirectExpected.initCause(cause);
+        Assert.assertEquals(SignatureMessages.MESSAGES.redirect(cause, location), redirectExpected);
         redirectExpected = new RedirectException(formattedMessage, cause, code, location);
         Assert.assertEquals(SignatureMessages.MESSAGES.redirect(cause, code, location), redirectExpected);
 
@@ -55,5 +58,7 @@ public class ThrowableSignatureTest {
         Assert.assertEquals(SignatureMessages.MESSAGES.invalidText(invalidText), invalidTextExpected);
         invalidTextExpected = new InvalidTextException(formattedMessage, cause, invalidText);
         Assert.assertEquals(SignatureMessages.MESSAGES.invalidText(cause, invalidText), invalidTextExpected);
+        invalidTextExpected = new InvalidTextException(3, cause, invalidText, formattedMessage);
+        Assert.assertEquals(SignatureMessages.MESSAGES.invalidText(3, cause, invalidText), invalidTextExpected);
     }
 }

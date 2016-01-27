@@ -292,6 +292,7 @@ public final class Validator {
             final ThrowableType throwableReturnType = returnType.throwableReturnType();
             if (throwableReturnType.useConstructionParameters()) {
                 // TODO - Check the return type constructor. Currently handled via the ThrowableReturnTypeFactory.
+                // TODO - Validate the @Signature constructor exists, currently handled in the ThrowableTypeFactory
             } else if (!throwableReturnType.useConstructionParameters() && !messageMethod.parameters(ParameterType.CONSTRUCTION).isEmpty()) {
                 messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
             } else {
