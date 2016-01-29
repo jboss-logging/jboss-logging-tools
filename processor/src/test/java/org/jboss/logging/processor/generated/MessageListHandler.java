@@ -32,7 +32,7 @@ import org.jboss.logmanager.ExtLogRecord;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class MessageListHandler extends ExtHandler {
-    private final List<String> messages = new CopyOnWriteArrayList<String>();
+    private final List<String> messages = new CopyOnWriteArrayList<>();
 
     @Override
     protected void doPublish(final ExtLogRecord record) {

@@ -22,7 +22,7 @@
 
 package org.jboss.logging.processor.validation;
 
-import org.jboss.logging.processor.model.MessageObject;
+import javax.lang.model.element.Element;
 
 /**
  * Date: 12.08.2011
@@ -34,7 +34,7 @@ public interface ValidationMessage {
     /**
      * Validation message type enum.
      */
-    public enum Type {
+    enum Type {
         ERROR,
         WARN
     }
@@ -47,11 +47,11 @@ public interface ValidationMessage {
     Type type();
 
     /**
-     * Returns the message object that caused the error.
+     * Returns the element that caused the error.
      *
-     * @return the message object that caused the error.
+     * @return the element that caused the error.
      */
-    MessageObject getMessageObject();
+    Element getElement();
 
     /**
      * Returns the error message.

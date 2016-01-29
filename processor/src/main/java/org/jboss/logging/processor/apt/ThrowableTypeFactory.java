@@ -89,9 +89,9 @@ final class ThrowableTypeFactory {
         return result;
     }
 
-    private static class AptThrowableType extends AbstractMessageObjectType implements ThrowableType {
+    private static class AptThrowableType extends AbstractClassType implements ThrowableType {
 
-        protected final TypeMirror type;
+        private final TypeMirror type;
         private final boolean isChecked;
         private boolean defaultConstructor = false;
         private boolean stringConstructor = false;
@@ -111,10 +111,10 @@ final class ThrowableTypeFactory {
         private AptThrowableType(final Elements elements, final Types types, final TypeMirror type) {
             super(elements, types, type);
             this.type = type;
-            stringType = elements.getTypeElement(String.class.getName()).asType();
-            throwableType = elements.getTypeElement(Throwable.class.getName()).asType();
-            final TypeMirror runtimeException = elements.getTypeElement(RuntimeException.class.getName()).asType();
-            final TypeMirror error = elements.getTypeElement(Error.class.getName()).asType();
+            stringType = ElementHelper.toType(elements, String.class);
+            throwableType = ElementHelper.toType(elements, Throwable.class);
+            final TypeMirror runtimeException = ElementHelper.toType(elements, RuntimeException.class);
+            final TypeMirror error = ElementHelper.toType(elements, Error.class);
             isChecked = !(types.isAssignable(runtimeException, type) && types.isAssignable(error, type));
         }
 
@@ -164,6 +164,11 @@ final class ThrowableTypeFactory {
          */
         protected void init(final List<? extends VariableElement> params) {
 
+        }
+
+        @Override
+        public Element getDelegate() {
+            return types.asElement(type);
         }
 
         @Override
@@ -239,11 +244,6 @@ final class ThrowableTypeFactory {
         }
 
         @Override
-        public TypeMirror reference() {
-            return type;
-        }
-
-        @Override
         public int compareTo(final ThrowableType o) {
             return name().compareTo(o.name());
         }
@@ -269,19 +269,19 @@ final class ThrowableTypeFactory {
         private AptReturnThrowableType(final Elements elements, final Types types, final MessageMethod messageMethod, final TypeMirror type) {
             super(elements, types, type);
             this.messageMethod = messageMethod;
-            constructionParameters = new LinkedHashSet<Parameter>();
+            constructionParameters = new LinkedHashSet<>();
         }
 
         @Override
         protected void init() {
-            final ExecutableElement method = messageMethod.reference();
+            final ExecutableElement method = messageMethod;
             final Signature signature = method.getAnnotation(Signature.class);
             // If using the @Signature annotation we're attempting to use an exact constructor.
             if (signature != null) {
                 final List<TypeMirror> args = ElementHelper.getClassArrayAnnotationValue(method, Signature.class, "value");
                 // Validate the constructor exists
-                if (!ElementHelper.hasConstructor(types, types.asElement(type), args)) {
-                    throw new ProcessingException(method, "Constructor of type %s could not be found with arguments %s", type, args);
+                if (!ElementHelper.hasConstructor(types, this, args)) {
+                    throw new ProcessingException(method, "Constructor of type %s could not be found with arguments %s", this.asType(), args);
                 }
                 final int causeIndex = signature.causeIndex();
                 final int messageIndex = signature.messageIndex();
@@ -328,7 +328,7 @@ final class ThrowableTypeFactory {
                 // Checks for the first constructor that can be used. The compiler will end-up determining the constructor
                 // to use, so a best guess should work.
                 final Iterator<Parameter> methodParameterIterator = methodConstructorParameters.iterator();
-                final Set<Parameter> matchedParams = new LinkedHashSet<Parameter>();
+                final Set<Parameter> matchedParams = new LinkedHashSet<>();
                 boolean match = false;
                 boolean causeFound = false;
                 boolean messageFound = false;
@@ -346,10 +346,7 @@ final class ThrowableTypeFactory {
 
                     if (methodParameterIterator.hasNext()) {
                         final Parameter parameter = methodParameterIterator.next();
-                        if (parameter.reference() instanceof VariableElement) {
-                            final VariableElement refType = (VariableElement) parameter.reference();
-                            match = types.isAssignable(refType.asType(), param.asType());
-                        }
+                        match = types.isAssignable(parameter.asType(), param.asType());
                         if (match) {
                             matchedParams.add(parameter);
                         }

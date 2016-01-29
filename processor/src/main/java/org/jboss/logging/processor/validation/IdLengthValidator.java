@@ -36,10 +36,10 @@ import org.jboss.logging.processor.model.MessageInterface;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class IdLengthValidator {
-    private final Map<String, Integer> lengths = new HashMap<String, Integer>();
+    private final Map<String, Integer> lengths = new HashMap<>();
 
     public Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
-        final List<ValidationMessage> messages = new LinkedList<ValidationMessage>();
+        final List<ValidationMessage> messages = new LinkedList<>();
         final String projectCode = messageInterface.projectCode();
         final int idLength = messageInterface.getIdLength();
         if ((idLength > 0 && idLength < 3) || idLength > 8) {

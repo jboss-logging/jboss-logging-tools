@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.ValidIdRange;
 
 /**
@@ -33,22 +35,7 @@ import org.jboss.logging.annotations.ValidIdRange;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageInterface extends Comparable<MessageInterface>, MessageObject, MessageObjectType, JavaDocComment {
-
-    public enum AnnotatedType {
-        /**
-         * Indicates the interface is annotated with {@code @MessageBundle}
-         */
-        MESSAGE_BUNDLE,
-        /**
-         * Indicates the interface is annotated with {@code @MessageLogger}
-         */
-        MESSAGE_LOGGER,
-        /**
-         * Indicates the interface is not annotated with {@code MessageBundle} or {@code @MessageLogger}
-         */
-        NONE,
-    }
+public interface MessageInterface extends Comparable<MessageInterface>, ClassType, JavaDocComment, DelegatingTypeElement {
 
     /**
      * Checks the interface to see if the {@link org.jboss.logging.BasicLogger logger interface} is being extended in
@@ -73,10 +60,11 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
     Collection<MessageMethod> methods();
 
     /**
-     * The project code for the message interface or {@code null} if {@link #getAnnotatedType()} returns {@link
-     * AnnotatedType#NONE}.
+     * The project code for the message interface or {@code null} if not annotated with
+     * {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}.
      *
-     * @return the project code or {@code null} if {@link #getAnnotatedType()} returns {@link AnnotatedType#NONE}
+     * @return the project code or {@code null} if not annotated with
+     * {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}
      */
     String projectCode();
 
@@ -85,7 +73,6 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
      *
      * @return the qualified name.
      */
-    @Override
     String name();
 
     /**
@@ -109,13 +96,6 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
      * @return the fully qualified class name to use for logging.
      */
     String loggingFQCN();
-
-    /**
-     * Returns the annotation type on the interface.
-     *
-     * @return the annotated type
-     */
-    AnnotatedType getAnnotatedType();
 
     /**
      * Returns a list of {@link ValidIdRange valid id ranges}.

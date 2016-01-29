@@ -25,7 +25,7 @@ package org.jboss.logging.processor.generator.model;
 import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.jdeparser.JMod.FINAL;
 import static org.jboss.jdeparser.JTypes.$t;
-import static org.jboss.logging.processor.util.ElementHelper.typeToString;
+import static org.jboss.jdeparser.JTypes.typeOf;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -146,14 +146,12 @@ public abstract class ClassModel {
         }
 
         // Always implement the interface
-        // TODO - Temporary fix for implementing nested interfaces.
-        classDef._implements(typeToString(messageInterface.name()));
+        classDef._implements(typeOf(messageInterface.asType()));
 
         //Add implements
         if (!messageInterface.extendedInterfaces().isEmpty()) {
             for (MessageInterface intf : messageInterface.extendedInterfaces()) {
-                // TODO - Temporary fix for implementing nested interfaces.
-                final JType interfaceName = $t(typeToString(intf.name()));
+                final JType interfaceName = typeOf(intf.asType());
                 sourceFile._import(interfaceName);
                 classDef._implements(interfaceName);
             }
@@ -255,7 +253,7 @@ public abstract class ClassModel {
      * @return the read resolve method.
      */
     protected JMethodDef createReadResolveMethod() {
-        final JType type = JTypes.typeOf(classDef);
+        final JType type = typeOf(classDef);
         final JVarDeclaration instance = classDef.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, type, INSTANCE_FIELD_NAME, type._new());
         final JMethodDef readResolveMethod = classDef.method(JMod.PROTECTED, Object.class, GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return($v(instance));

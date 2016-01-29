@@ -33,6 +33,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic.Kind;
 
+import org.jboss.logging.processor.model.DelegatingElement;
+
 /**
  * A logger for logging messages for annotation processors.
  *
@@ -287,7 +289,7 @@ public final class ToolLogger {
         if (element == null) {
             messager.printMessage(kind, message);
         } else {
-            messager.printMessage(kind, message, element);
+            messager.printMessage(kind, message, getElement(element));
         }
     }
 
@@ -299,14 +301,14 @@ public final class ToolLogger {
             if (element == null) {
                 messager.printMessage(kind, message);
             } else {
-                messager.printMessage(kind, message, element);
+                messager.printMessage(kind, message, getElement(element));
             }
             // Fail gracefully
         } catch (Throwable t) {
             if (element == null) {
                 messager.printMessage(Kind.ERROR, "Error logging original message: " + messageFormat);
             } else {
-                messager.printMessage(Kind.ERROR, "Error logging original message: " + messageFormat, element);
+                messager.printMessage(Kind.ERROR, "Error logging original message: " + messageFormat, getElement(element));
             }
         }
     }
@@ -319,7 +321,7 @@ public final class ToolLogger {
             log(kind, element, stringCause);
         } else {
             String messageWithCause = messageFormat.concat(", cause : %s");
-            List<Object> newArgs = new ArrayList<Object>();
+            List<Object> newArgs = new ArrayList<>();
             newArgs.addAll(Arrays.asList(args));
             newArgs.add(stringCause);
 
@@ -363,6 +365,11 @@ public final class ToolLogger {
             // Do nothing
         }
         return stringWriter.toString();
+    }
+
+    private static Element getElement(final Element element) {
+        // We need to the delegate element as some implementations rely on private types
+        return (element instanceof DelegatingElement ? ((DelegatingElement) element).getDelegate() : element);
     }
 
 }

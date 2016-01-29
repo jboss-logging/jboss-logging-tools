@@ -72,7 +72,7 @@ public class GeneratedSourceAnalysisTest {
         final List<String> intfMethods = intfDescriptor.get(Descriptor.Type.METHOD);
         for (Descriptor implDescriptor : implDescriptors) {
             if (implDescriptor.filterNames) {
-                List<String> l = new ArrayList<String>();
+                List<String> l = new ArrayList<>();
                 // We're only testing order, so only test methods that are in the implementation
                 final List<String> implMessageMethods = implDescriptor.get(Descriptor.Type.MESSAGE_METHOD);
                 Assert.assertFalse(implMessageMethods.isEmpty(), "No methods found in " + implDescriptor.filename);
@@ -86,7 +86,7 @@ public class GeneratedSourceAnalysisTest {
                     Assert.fail(String.format("Interface %s (%s) failed on %s; %s", intf.getName(), implDescriptor.filename, Descriptor.Type.MESSAGE_METHOD, result.message));
                 }
 
-                l = new ArrayList<String>();
+                l = new ArrayList<>();
                 // We're only testing order, so only test methods that are in the implementation
                 final List<String> implFields = implDescriptor.get(Descriptor.Type.FIELD);
                 Assert.assertFalse(implFields.isEmpty(), "No fields found in " + implDescriptor.filename);
@@ -223,7 +223,7 @@ public class GeneratedSourceAnalysisTest {
         private final List<Descriptor> descriptors;
 
         private Descriptors() {
-            this.descriptors = new ArrayList<Descriptor>();
+            this.descriptors = new ArrayList<>();
         }
 
         public boolean add(final Descriptor descriptor) {
@@ -251,7 +251,7 @@ public class GeneratedSourceAnalysisTest {
         private Descriptor(final String filename) {
             this.filename = filename;
             this.filterNames = filename.matches(".*(\\$[a-z]+)(_\\w+)\\.java$");
-            values = new HashMap<Type, List<String>>();
+            values = new HashMap<>();
         }
 
         public void addMethod(final String methodName) {
@@ -274,7 +274,7 @@ public class GeneratedSourceAnalysisTest {
             if (values.containsKey(type)) {
                 return values.get(type);
             }
-            final List<String> result = new ArrayList<String>();
+            final List<String> result = new ArrayList<>();
             values.put(type, result);
             return result;
         }

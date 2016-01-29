@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.AnnotatedConstruct;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -38,6 +39,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.Cause;
@@ -45,7 +47,6 @@ import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Property;
-import org.jboss.logging.processor.model.MessageObject;
 
 /**
  * An utility class to work with element.
@@ -64,19 +65,19 @@ public final class ElementHelper {
     /**
      * Check if an element is annotated with the given annotation.
      *
-     * @param element the element to look for the annotation on.
-     * @param clazz   the annotation class
+     * @param annotatedConstruct the object to look for the annotation on.
+     * @param clazz              the annotation class
      *
      * @return {@code true} if the element is annotated, otherwise {@code false}
      *
      * @throws IllegalArgumentException if element parameter is null
      */
-    public static boolean isAnnotatedWith(final Element element, final Class<? extends Annotation> clazz) {
-        if (element == null) {
+    public static boolean isAnnotatedWith(final AnnotatedConstruct annotatedConstruct, final Class<? extends Annotation> clazz) {
+        if (annotatedConstruct == null) {
             throw new IllegalArgumentException("The element parameter is null");
         }
 
-        Annotation annotation = element.getAnnotation(clazz);
+        Annotation annotation = annotatedConstruct.getAnnotation(clazz);
         return (annotation != null);
     }
 
@@ -120,7 +121,7 @@ public final class ElementHelper {
      * @return a collection of methods with the same name.
      */
     public static Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName) {
-        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
+        final List<ExecutableElement> result = new ArrayList<>();
         for (ExecutableElement method : methods) {
             if (methodName.equals(method.getSimpleName())) {
                 result.add(method);
@@ -140,7 +141,7 @@ public final class ElementHelper {
      * @return a collection of methods with the same name.
      */
     public static Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName, final int paramCount) {
-        final List<ExecutableElement> result = new ArrayList<ExecutableElement>();
+        final List<ExecutableElement> result = new ArrayList<>();
         for (ExecutableElement method : methods) {
             if (methodName.equals(method.getSimpleName()) && parameterCount(method.getParameters()) == paramCount) {
                 result.add(method);
@@ -226,47 +227,6 @@ public final class ElementHelper {
             }
         }
         return false;
-    }
-
-    /**
-     * Converts a class type to a string recognizable by the
-     * {@link javax.lang.model.util.Elements#getTypeElement(CharSequence)}. Essentially replaces any {@literal $}'s to
-     * {@literal .} (dots).
-     *
-     * @param type the type to convert.
-     *
-     * @return the qualified name of the type.
-     */
-    public static String typeToString(final Class<?> type) {
-        return typeToString(type.getName());
-    }
-
-    /**
-     * Converts a qualified type name to a string recognizable by the
-     * {@link javax.lang.model.util.Elements#getTypeElement(CharSequence)}. Essentially replaces any {@literal $}'s to
-     * {@literal .} (dots).
-     *
-     * @param qualifiedType the qualified type name.
-     *
-     * @return the qualified name of the type.
-     */
-    public static String typeToString(final String qualifiedType) {
-        return qualifiedType.replace("$", ".");
-    }
-
-    /**
-     * If the {@link org.jboss.logging.processor.model.MessageObject#reference()} is an instance of {@link
-     * Element}, then the value is returned, otherwise {@code null} is returned.
-     *
-     * @param object the object to check the reference on
-     *
-     * @return the element reference or {@code null}
-     */
-    public static Element fromMessageObject(final MessageObject object) {
-        if (object.reference() instanceof Element) {
-            return (Element) object.reference();
-        }
-        return null;
     }
 
     /**
@@ -376,5 +336,17 @@ public final class ElementHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the type as a {@link TypeMirror}.
+     *
+     * @param elements the element utility used to generate the tye type
+     * @param type     the type to create the {@link TypeMirror} for
+     *
+     * @return the type
+     */
+    public static TypeMirror toType(final Elements elements, final Class<?> type) {
+        return elements.getTypeElement(type.getCanonicalName()).asType();
     }
 }

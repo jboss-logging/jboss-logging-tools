@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -79,7 +80,7 @@ public final class MessageInterfaceFactory {
     public static MessageInterface of(final ProcessingEnvironment processingEnvironment, final TypeElement interfaceElement) {
         final Types types = processingEnvironment.getTypeUtils();
         final Elements elements = processingEnvironment.getElementUtils();
-        if (types.isSameType(interfaceElement.asType(), elements.getTypeElement(BasicLogger.class.getName()).asType())) {
+        if (types.isSameType(interfaceElement.asType(), ElementHelper.toType(elements, BasicLogger.class))) {
             MessageInterface result = LOGGER_INTERFACE;
             if (result == null) {
                 synchronized (LOCK) {
@@ -105,7 +106,7 @@ public final class MessageInterfaceFactory {
     /**
      * Message interface implementation.
      */
-    private static class AptMessageInterface extends AbstractMessageObjectType implements MessageInterface {
+    private static class AptMessageInterface extends AbstractClassType implements MessageInterface {
         private final TypeElement interfaceElement;
         private final Set<MessageInterface> extendedInterfaces;
         private final List<MessageMethod> messageMethods;
@@ -120,12 +121,12 @@ public final class MessageInterfaceFactory {
         private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
             super(elements, types, interfaceElement);
             this.interfaceElement = interfaceElement;
-            this.messageMethods = new LinkedList<MessageMethod>();
-            this.extendedInterfaces = new LinkedHashSet<MessageInterface>();
+            this.messageMethods = new LinkedList<>();
+            this.extendedInterfaces = new LinkedHashSet<>();
             if (ElementHelper.isAnnotatedWith(interfaceElement, ValidIdRanges.class)) {
                 validIdRanges = Arrays.asList(interfaceElement.getAnnotation(ValidIdRanges.class).value());
             } else if (ElementHelper.isAnnotatedWith(interfaceElement, ValidIdRange.class)) {
-                validIdRanges = Arrays.asList(interfaceElement.getAnnotation(ValidIdRange.class));
+                validIdRanges = Collections.singletonList(interfaceElement.getAnnotation(ValidIdRange.class));
             } else {
                 validIdRanges = Collections.emptyList();
             }
@@ -148,7 +149,7 @@ public final class MessageInterfaceFactory {
 
         @Override
         public int hashCode() {
-            return HashCodeBuilder.builder().add(name()).toHashCode();
+            return Objects.hash(qualifiedName);
         }
 
         @Override
@@ -179,7 +180,9 @@ public final class MessageInterfaceFactory {
             } else if (messageLogger != null) {
                 projectCode = messageLogger.projectCode();
                 idLen = messageLogger.length();
-            } // TODO (jrp) this should cause an error
+            } else {
+                throw new ProcessingException(interfaceElement, "Interface is not annotated with @MessageBundle or @MessageLogger");
+            }
             qualifiedName = elements.getBinaryName(interfaceElement).toString();
             final int lastDot = qualifiedName.lastIndexOf(".");
             if (lastDot > 0) {
@@ -197,11 +200,6 @@ public final class MessageInterfaceFactory {
                     fqcn = value;
                 }
             }
-        }
-
-        @Override
-        public String type() {
-            return name();
         }
 
         @Override
@@ -225,16 +223,6 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public AnnotatedType getAnnotatedType() {
-            if (ElementHelper.isAnnotatedWith(interfaceElement, MessageLogger.class)) {
-                return AnnotatedType.MESSAGE_LOGGER;
-            } else if (ElementHelper.isAnnotatedWith(interfaceElement, MessageBundle.class)) {
-                return AnnotatedType.MESSAGE_BUNDLE;
-            }
-            return AnnotatedType.NONE;
-        }
-
-        @Override
         public List<ValidIdRange> validIdRanges() {
             return validIdRanges;
         }
@@ -244,6 +232,11 @@ public final class MessageInterfaceFactory {
             return idLen;
         }
 
+
+        @Override
+        public TypeElement getDelegate() {
+            return interfaceElement;
+        }
 
         @Override
         public boolean equals(final Object obj) {
@@ -264,23 +257,16 @@ public final class MessageInterfaceFactory {
         }
 
 
-        @Override
-        public TypeElement reference() {
-            return interfaceElement;
-        }
-
-
     }
 
-    private static class LoggerInterface extends AbstractMessageObjectType implements MessageInterface {
+    private static class LoggerInterface extends AbstractClassType implements MessageInterface {
         private final TypeElement loggerInterface;
         private final Set<MessageMethod> messageMethods;
 
-        private LoggerInterface(final Elements elements, final Types types) {
-            // TODO (jrp) BasicLogger type can likely be initialized once
-            super(elements, types, elements.getTypeElement(BasicLogger.class.getName()));
-            messageMethods = new LinkedHashSet<MessageMethod>();
-            this.loggerInterface = elements.getTypeElement(BasicLogger.class.getName());
+        private LoggerInterface(final Elements elements, final Types types, final TypeElement loggerInterface) {
+            super(elements, types, loggerInterface.asType());
+            messageMethods = new LinkedHashSet<>();
+            this.loggerInterface = loggerInterface;
         }
 
         private void init() {
@@ -291,7 +277,7 @@ public final class MessageInterfaceFactory {
         }
 
         static LoggerInterface of(final Elements elements, final Types types) {
-            final LoggerInterface result = new LoggerInterface(elements, types);
+            final LoggerInterface result = new LoggerInterface(elements, types, elements.getTypeElement(BasicLogger.class.getCanonicalName()));
             result.init();
             return result;
         }
@@ -337,11 +323,6 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
-        public AnnotatedType getAnnotatedType() {
-            return AnnotatedType.NONE;
-        }
-
-        @Override
         public List<ValidIdRange> validIdRanges() {
             return Collections.emptyList();
         }
@@ -349,11 +330,6 @@ public final class MessageInterfaceFactory {
         @Override
         public int getIdLength() {
             return -1;
-        }
-
-        @Override
-        public TypeElement reference() {
-            return loggerInterface;
         }
 
         @Override
@@ -386,6 +362,11 @@ public final class MessageInterfaceFactory {
         @Override
         public String getComment() {
             return elements.getDocComment(loggerInterface);
+        }
+
+        @Override
+        public TypeElement getDelegate() {
+            return loggerInterface;
         }
     }
 

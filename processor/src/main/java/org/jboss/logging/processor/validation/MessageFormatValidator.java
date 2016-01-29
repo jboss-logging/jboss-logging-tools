@@ -40,8 +40,8 @@ import java.util.regex.Pattern;
 class MessageFormatValidator extends AbstractFormatValidator {
     public static final Pattern PATTERN = Pattern.compile("\\{}|\\{.+?}");
 
-    private final Set<FormatPart> formatParts = new TreeSet<FormatPart>();
-    private final Set<MessageFormatPart> formats = new TreeSet<MessageFormatPart>();
+    private final Set<FormatPart> formatParts = new TreeSet<>();
+    private final Set<MessageFormatPart> formats = new TreeSet<>();
     private int argumentCount;
     private boolean valid;
     private final String format;
@@ -145,7 +145,7 @@ class MessageFormatValidator extends AbstractFormatValidator {
                 break;
             }
         }
-        final Set<Integer> counted = new HashSet<Integer>();
+        final Set<Integer> counted = new HashSet<>();
         // Initialize the argument count
         for (MessageFormatPart messageFormatPart : formats) {
             if (messageFormatPart.index() >= 0) {

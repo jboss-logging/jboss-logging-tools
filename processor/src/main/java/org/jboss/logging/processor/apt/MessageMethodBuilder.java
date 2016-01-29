@@ -49,6 +49,7 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
+import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.Parameter.ParameterType;
@@ -237,7 +238,7 @@ final class MessageMethodBuilder {
 
         @Override
         public Set<Parameter> parameters(final ParameterType parameterType, final ParameterType... parameterTypes) {
-            final Set<Parameter> result = new LinkedHashSet<Parameter>();
+            final Set<Parameter> result = new LinkedHashSet<>();
             if (parameters.containsKey(parameterType)) {
                 result.addAll(parameters.get(parameterType));
             }
@@ -311,17 +312,16 @@ final class MessageMethodBuilder {
 
         @Override
         public String logLevel() {
-            // TODO (jrp) possibly return the actual level
             final LogMessage logMessage = method.getAnnotation(LogMessage.class);
             final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
-            return String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
+            return String.format("%s.%s", logLevel.getClass().getCanonicalName(), logLevel.name());
         }
 
         @Override
         public int formatParameterCount() {
             int result = parameters(ParameterType.FORMAT, ParameterType.TRANSFORM).size();
             for (Parameter params : parameters(ParameterType.POS)) {
-                result += params.pos().value().length;
+                result += params.getAnnotation(Pos.class).value().length;
             }
             return result;
         }
@@ -337,6 +337,11 @@ final class MessageMethodBuilder {
                     .add(name())
                     .add(parameters(ParameterType.ANY))
                     .add(returnType()).toHashCode();
+        }
+
+        @Override
+        public ExecutableElement getDelegate() {
+            return method;
         }
 
         @Override
@@ -360,11 +365,6 @@ final class MessageMethodBuilder {
                     .add("returnType", returnType())
                     .add("parameters", parameters(ParameterType.ANY))
                     .add("loggerMethod", loggerMethod()).toString();
-        }
-
-        @Override
-        public ExecutableElement reference() {
-            return method;
         }
 
         @Override

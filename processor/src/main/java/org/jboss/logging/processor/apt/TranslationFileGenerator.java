@@ -47,6 +47,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -63,7 +64,7 @@ import org.jboss.logging.processor.util.Strings;
  */
 @SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
 final class TranslationFileGenerator extends AbstractGenerator {
-    private static final Map<String, Integer> levels = new HashMap<String, Integer>();
+    private static final Map<String, Integer> levels = new HashMap<>();
 
     private static final Pattern PATTERN = Pattern.compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
 
@@ -166,7 +167,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
         try {
 
             writer = new BufferedWriter(new FileWriter(file));
-            final Set<String> processed = new HashSet<String>();
+            final Set<String> processed = new HashSet<>();
 
             for (MessageMethod messageMethod : messageInterface.methods()) {
                 if (isMethodWritable(messageMethod)) {
@@ -225,7 +226,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
             writer.write(Strings.fill("#", DEFAULT_FILE_COMMENT.length()));
             writer.newLine();
             writer.newLine();
-            final Set<String> processed = new HashSet<String>();
+            final Set<String> processed = new HashSet<>();
 
             for (MessageMethod messageMethod : messageInterface.methods()) {
                 if (isMethodWritable(messageMethod)) {
@@ -267,7 +268,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
             final String name = parameter.name();
             final String comment = (parameterComments.containsKey(name) ? parameterComments.get(name) : EMPTY_STRING);
             if (parameter.parameterType() == ParameterType.TRANSFORM) {
-                final List<TransformType> transformTypes = Arrays.asList(parameter.transform().value());
+                final List<TransformType> transformTypes = Arrays.asList(parameter.getAnnotation(Transform.class).value());
                 if (transformTypes.contains(TransformType.GET_CLASS)) {
                     if (transformTypes.size() == 1) {
                         writer.write(String.format("# @param class of %s - %s", name, comment));
@@ -299,7 +300,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
     }
 
     private Map<String, String> parseParameterComments(final MessageMethod messageMethod) throws IOException {
-        final Map<String, String> result = new LinkedHashMap<String, String>();
+        final Map<String, String> result = new LinkedHashMap<>();
         final String comment = messageMethod.getComment();
         if (comment != null) {
             final Matcher matcher = PATTERN.matcher(comment);

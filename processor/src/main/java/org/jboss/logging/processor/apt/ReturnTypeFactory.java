@@ -32,6 +32,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.NoType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -62,7 +63,7 @@ final class ReturnTypeFactory {
 
     public static ReturnType of(final Elements elements, final Types types, final TypeMirror returnType, final MessageMethod method) {
         if (returnType.getKind() == TypeKind.VOID) {
-            return ReturnType.VOID;
+            return VoidReturnType.getInstance(types);
         }
         final AptReturnType result = new AptReturnType(elements, types, returnType, method);
         result.init();
@@ -72,7 +73,7 @@ final class ReturnTypeFactory {
     /**
      * Implementation of return type.
      */
-    private static class AptReturnType extends AbstractMessageObjectType implements ReturnType {
+    private static class AptReturnType extends AbstractClassType implements ReturnType {
         private final Map<String, TypeMirror> fields;
         private final Map<String, TypeMirror> methods;
         private final TypeMirror returnType;
@@ -84,8 +85,13 @@ final class ReturnTypeFactory {
             this.returnType = returnType;
             this.method = method;
             throwableType = null;
-            fields = new LinkedHashMap<String, TypeMirror>();
-            methods = new LinkedHashMap<String, TypeMirror>();
+            fields = new LinkedHashMap<>();
+            methods = new LinkedHashMap<>();
+        }
+
+        @Override
+        public Element getDelegate() {
+            return types.asElement(returnType);
         }
 
         @Override
@@ -121,15 +127,15 @@ final class ReturnTypeFactory {
         private void init() {
             if (isThrowable()) {
                 TypeMirror returnType = this.returnType;
-                if (ElementHelper.isAnnotatedWith(method.reference(), ConstructType.class)) {
-                    final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(method.reference(), ConstructType.class);
+                if (ElementHelper.isAnnotatedWith(method, ConstructType.class)) {
+                    final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(method, ConstructType.class);
                     // Shouldn't be null
                     if (constructTypeValue == null) {
-                        throw new ProcessingException(method.reference(), "Class not defined for the ConstructType");
+                        throw new ProcessingException(method, "Class not defined for the ConstructType");
                     }
                     returnType = constructTypeValue.asType();
                     if (!types.isAssignable(returnType, this.returnType)) {
-                        throw new ProcessingException(method.reference(), "The requested type %s can not be assigned to %s.", returnType, this.returnType);
+                        throw new ProcessingException(method, "The requested type %s can not be assigned to %s.", returnType, this.returnType);
                     }
                 }
                 throwableType = ThrowableTypeFactory.forReturnType(elements, types, returnType, method);
@@ -176,37 +182,108 @@ final class ReturnTypeFactory {
                     .add("throwableType", throwableType).toString();
         }
 
-        @Override
-        public TypeMirror reference() {
-            return returnType;
-        }
-
         private boolean checkType(final Parameter parameter, final TypeMirror type) {
             if (parameter.isPrimitive()) {
                 if (type.getKind().isPrimitive()) {
-                    return parameter.type().equalsIgnoreCase(type.getKind().name());
+                    return types.isSameType(parameter.asType(), type);
                 }
-                return types.isAssignable(elements.getTypeElement(unbox(parameter)).asType(), type);
+                return types.isAssignable(types.unboxedType(parameter.asType()), type);
             }
             if (type.getKind().isPrimitive()) {
                 final TypeElement primitiveType = types.boxedClass((PrimitiveType) type);
-                return types.isAssignable(elements.getTypeElement(parameter.type()).asType(), primitiveType.asType());
+                return types.isAssignable(parameter.asType(), primitiveType.asType());
             }
-            return types.isAssignable(elements.getTypeElement(parameter.type()).asType(), type);
+            return types.isAssignable(parameter.asType(), type);
+        }
+    }
+
+    private static class VoidReturnType implements ReturnType {
+        private static VoidReturnType INSTANCE = null;
+        private final Element voidElement;
+        private final NoType voidType;
+        private final int hash;
+
+        private VoidReturnType(final Types types) {
+            voidType = types.getNoType(TypeKind.VOID);
+            voidElement = types.asElement(voidType);
+            hash = "void".hashCode();
         }
 
-        private String unbox(final Parameter parameter) {
-            String result = parameter.type();
-            if (parameter.isPrimitive()) {
-                if ("int".equals(result)) {
-                    result = Integer.class.getName();
-                } else if ("char".equals(result)) {
-                    result = Character.class.getName();
-                } else {
-                    result = "java.lang." + Character.toUpperCase(result.charAt(0)) + result.substring(1);
-                }
+        private static synchronized VoidReturnType getInstance(final Types types) {
+            if (INSTANCE == null) {
+                INSTANCE = new VoidReturnType(types);
             }
-            return result;
+            return INSTANCE;
+        }
+
+        @Override
+        public TypeMirror asType() {
+            return voidType;
+        }
+
+        @Override
+        public boolean hasFieldFor(final Parameter parameter) {
+            return false;
+        }
+
+        @Override
+        public boolean hasMethodFor(final Parameter parameter) {
+            return false;
+        }
+
+        @Override
+        public boolean isThrowable() {
+            return false;
+        }
+
+        @Override
+        public boolean isPrimitive() {
+            return false;
+        }
+
+        @Override
+        public String name() {
+            return "void";
+        }
+
+        @Override
+        public ThrowableType throwableReturnType() {
+            return null;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            return obj == this || obj instanceof VoidReturnType;
+        }
+
+        @Override
+        public String toString() {
+            return "void";
+        }
+
+        @Override
+        public boolean isAssignableFrom(final Class<?> type) {
+            return type == Void.class || type == void.class;
+        }
+
+        @Override
+        public boolean isSubtypeOf(final Class<?> type) {
+            return false;
+        }
+
+        @Override
+        public boolean isSameAs(final Class<?> type) {
+            return type == Void.class || type == void.class;
+        }
+
+        @Override
+        public Element getDelegate() {
+            return voidElement;
         }
     }
 }

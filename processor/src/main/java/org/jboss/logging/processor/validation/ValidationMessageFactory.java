@@ -22,7 +22,7 @@
 
 package org.jboss.logging.processor.validation;
 
-import org.jboss.logging.processor.model.MessageObject;
+import javax.lang.model.element.Element;
 
 /**
  * Date: 12.08.2011
@@ -38,34 +38,34 @@ public final class ValidationMessageFactory {
 
     }
 
-    public static ValidationMessage createError(final MessageObject messageObject, final String message) {
-        return new ValidationErrorMessage(messageObject, message);
+    public static ValidationMessage createError(final Element element, final String message) {
+        return new ValidationErrorMessage(element, message);
     }
 
-    public static ValidationMessage createError(final MessageObject messageObject, final String format, final Object... args) {
-        return new ValidationErrorMessage(messageObject, String.format(format, args));
+    public static ValidationMessage createError(final Element element, final String format, final Object... args) {
+        return new ValidationErrorMessage(element, String.format(format, args));
     }
 
-    public static ValidationMessage createWarning(final MessageObject messageObject, final String message) {
-        return new ValidationWarningMessage(messageObject, message);
+    public static ValidationMessage createWarning(final Element element, final String message) {
+        return new ValidationWarningMessage(element, message);
     }
 
-    public static ValidationMessage createWarning(final MessageObject messageObject, final String format, final Object... args) {
-        return new ValidationWarningMessage(messageObject, String.format(format, args));
+    public static ValidationMessage createWarning(final Element element, final String format, final Object... args) {
+        return new ValidationWarningMessage(element, String.format(format, args));
     }
 
     private static abstract class AbstractValidationMessage implements ValidationMessage {
-        private final MessageObject messageObject;
+        private final Element element;
         private final String message;
 
-        AbstractValidationMessage(final MessageObject messageObject, final String message) {
-            this.messageObject = messageObject;
+        AbstractValidationMessage(final Element element, final String message) {
+            this.element = element;
             this.message = message;
         }
 
         @Override
-        public final MessageObject getMessageObject() {
-            return messageObject;
+        public final Element getElement() {
+            return element;
         }
 
         @Override
@@ -76,8 +76,8 @@ public final class ValidationMessageFactory {
 
     private static class ValidationErrorMessage extends AbstractValidationMessage {
 
-        private ValidationErrorMessage(final MessageObject messageObject, final String message) {
-            super(messageObject, message);
+        private ValidationErrorMessage(final Element element, final String message) {
+            super(element, message);
         }
 
         @Override
@@ -88,8 +88,8 @@ public final class ValidationMessageFactory {
 
     private static class ValidationWarningMessage extends AbstractValidationMessage {
 
-        private ValidationWarningMessage(final MessageObject messageObject, final String message) {
-            super(messageObject, message);
+        private ValidationWarningMessage(final Element element, final String message) {
+            super(element, message);
         }
 
         @Override

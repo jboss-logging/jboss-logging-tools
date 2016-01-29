@@ -22,18 +22,15 @@
 
 package org.jboss.logging.processor.model;
 
-import org.jboss.logging.annotations.Pos;
-import org.jboss.logging.annotations.Transform;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a> - 20.Feb.2011
  */
-public interface Parameter extends Comparable<Parameter>, MessageObjectType {
+public interface Parameter extends Comparable<Parameter>, ClassType, DelegatingElement {
 
     /**
      * The types of parameters.
      */
-    public enum ParameterType {
+    enum ParameterType {
         /**
          * Indicates the parameter can be any other type. All parameters fall under this category.
          */
@@ -83,21 +80,10 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
     }
 
     /**
-     * The full type name of the parameter. For example
-     * {@code java.lang.String} if the parameter is a string. If the
-     * parameter is a primitive, the primitive name is returned.
-     *
-     * @return the qualified type of the parameter.
-     */
-    @Override
-    String type();
-
-    /**
      * The variable name of the parameter.
      *
      * @return the variable name of the parameter.
      */
-    @Override
     String name();
 
     /**
@@ -136,14 +122,6 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
     String formatterClass();
 
     /**
-     * Returns the class if the parameter is annotated with {@link org.jboss.logging.annotations.Param}.
-     * If the annotation is not present, {@code null} is returned.
-     *
-     * @return the parameter class or {@code null}.
-     */
-    Class<?> paramClass();
-
-    /**
      * Returns the name of the target field or method. For example if the {@link #parameterType()} returns
      * {@link ParameterType#FIELD}, the target name is the name of the field to set on the
      * {@link org.jboss.logging.processor.model.ReturnType return type}. If no target name is defined an empty String
@@ -153,27 +131,4 @@ public interface Parameter extends Comparable<Parameter>, MessageObjectType {
      * @return the target field name, method name or an empty string.
      */
     String targetName();
-
-    /**
-     * The transform type if this the {@link #parameterType()} is {@link ParameterType#TRANSFORM}.
-     *
-     * @return the transform annotation or {@code null} if not a transform parameter
-     */
-    Transform transform();
-
-    /**
-     * The position annotation if this the {@link #parameterType()} is {@link ParameterType#POS}.
-     * <p/>
-     * This works the same way the {@link java.util.Formatter formatter} positional characters work.
-     * <p/>
-     * <pre>
-     *      String.format("Numeric value %1$d (%1$x)");
-     *
-     *      &#64;Message(""Numeric value %d (%x)"")
-     *      void logNumericValue(@Pos(1) int value);
-     * </pre>
-     *
-     * @return the position annotation or {@code null} if not a position parameter
-     */
-    Pos pos();
 }

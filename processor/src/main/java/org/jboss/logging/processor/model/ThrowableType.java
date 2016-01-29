@@ -29,7 +29,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface ThrowableType extends MessageObject, MessageObjectType, Comparable<ThrowableType> {
+public interface ThrowableType extends ClassType, Comparable<ThrowableType>, DelegatingElement {
 
     /**
      * Checks to see the throwable has a default constructor.
@@ -110,6 +110,5 @@ public interface ThrowableType extends MessageObject, MessageObjectType, Compara
      *
      * @return the qualified class name fo the return type.
      */
-    @Override
     String name();
 }
