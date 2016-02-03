@@ -52,8 +52,8 @@ public final class StringFormatValidator extends AbstractFormatValidator {
 
     public static final Pattern PATTERN = Pattern.compile("%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])");
 
-    private final Set<FormatPart> formatParts = new TreeSet<FormatPart>();
-    private final Set<StringFormatPart> formats = new TreeSet<StringFormatPart>();
+    private final Set<FormatPart> formatParts = new TreeSet<>();
+    private final Set<StringFormatPart> formats = new TreeSet<>();
     private int argumentCount;
     private boolean valid;
     private final String format;
@@ -179,7 +179,7 @@ public final class StringFormatValidator extends AbstractFormatValidator {
     }
 
     static List<StringFormatPart> sortParts(final Collection<StringFormatPart> parts) {
-        final TreeMap<Integer, StringFormatPart> paramMap = new TreeMap<Integer, StringFormatPart>();
+        final TreeMap<Integer, StringFormatPart> paramMap = new TreeMap<>();
         int index = 0;
         int count = 0;
         for (StringFormatPart part : parts) {
@@ -193,7 +193,7 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                 paramMap.put(index, part);
             }
         }
-        return new ArrayList<StringFormatPart>(paramMap.values());
+        return new ArrayList<>(paramMap.values());
     }
 
     /**
@@ -206,7 +206,7 @@ public final class StringFormatValidator extends AbstractFormatValidator {
             setDetailMessage("The original is '%s' and the reconstructed format is '%s'. This is likely an internal error and should be reported.", format, asFormat());
         } else {
             // Create a multimap to hold the parameter values for sorting
-            final Map<Integer, List<Object>> paramMap = new TreeMap<Integer, List<Object>>();
+            final Map<Integer, List<Object>> paramMap = new TreeMap<>();
             int counter = 0;
             int index = 0;
             // Initialize the argument count
@@ -229,7 +229,7 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                         continue;
                     }
                 } else {
-                    params = new ArrayList<Object>();
+                    params = new ArrayList<>();
                     paramMap.put(index, params);
                 }
                 counter++;
@@ -273,7 +273,7 @@ public final class StringFormatValidator extends AbstractFormatValidator {
             if (valid) {
                 try {
                     // Copy the results in order to a new list.
-                    final List<Object> params = new ArrayList<Object>();
+                    final List<Object> params = new ArrayList<>();
                     for (Map.Entry<Integer, List<Object>> entry : paramMap.entrySet()) {
                         params.addAll(entry.getValue());
                     }
@@ -303,8 +303,8 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                 String.format(format, parameters);
             } catch (final IllegalFormatException e) {
                 valid = false;
-                setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, Arrays.asList(parameters), e.getMessage());
-                setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, Arrays.asList(parameters), this);
+                setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, Arrays.toString(parameters), e.getMessage());
+                setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, Arrays.toString(parameters), this);
             }
         }
     }
@@ -376,7 +376,7 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                 break;
             }
         }
-        final Set<Integer> counted = new HashSet<Integer>();
+        final Set<Integer> counted = new HashSet<>();
         int count = 1;
         // Initialize the argument count
         for (StringFormatPart stringFormatPart : formats) {

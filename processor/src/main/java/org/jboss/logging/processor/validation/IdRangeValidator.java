@@ -41,10 +41,10 @@ import org.jboss.logging.processor.model.MessageInterface;
  */
 public class IdRangeValidator {
 
-    private final Map<String, Map<ValidIdRange, MessageInterface>> processed = new HashMap<String, Map<ValidIdRange, MessageInterface>>();
+    private final Map<String, Map<ValidIdRange, MessageInterface>> processed = new HashMap<>();
 
     public Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
-        final List<ValidationMessage> messages = new LinkedList<ValidationMessage>();
+        final List<ValidationMessage> messages = new LinkedList<>();
         for (ValidIdRange validIdRange : messageInterface.validIdRanges()) {
             if (validIdRange.min() > validIdRange.max()) {
                 messages.add(createError(messageInterface, "Minimum id value (%d) cannot be greater than the maximum value (%d).",
@@ -75,7 +75,7 @@ public class IdRangeValidator {
     }
 
     private Map<ValidIdRange, MessageInterface> findAll(final MessageInterface messageInterface) {
-        final Map<ValidIdRange, MessageInterface> result = new HashMap<ValidIdRange, MessageInterface>();
+        final Map<ValidIdRange, MessageInterface> result = new HashMap<>();
         for (ValidIdRange validIdRange : messageInterface.validIdRanges()) {
             result.put(validIdRange, messageInterface);
         }
@@ -93,7 +93,7 @@ public class IdRangeValidator {
         if (processed.containsKey(projectCode)) {
             return processed.get(projectCode);
         }
-        final Map<ValidIdRange, MessageInterface> result = new HashMap<ValidIdRange, MessageInterface>();
+        final Map<ValidIdRange, MessageInterface> result = new HashMap<>();
         processed.put(projectCode, result);
         return result;
     }

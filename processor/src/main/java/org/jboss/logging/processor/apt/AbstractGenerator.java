@@ -128,7 +128,7 @@ public abstract class AbstractGenerator {
     public final Set<String> getSupportedOptions() {
         SupportedOptions options = this.getClass().getAnnotation(SupportedOptions.class);
         if (options != null) {
-            return new HashSet<String>(Arrays.asList(options.value()));
+            return new HashSet<>(Arrays.asList(options.value()));
         }
 
         return Collections.emptySet();

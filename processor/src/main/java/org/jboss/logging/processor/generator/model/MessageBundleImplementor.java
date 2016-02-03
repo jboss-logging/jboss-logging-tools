@@ -28,9 +28,11 @@ import javax.annotation.processing.Filer;
 
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JMod;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Used to generate a message bundle implementation.
@@ -59,14 +61,12 @@ class MessageBundleImplementor extends ImplementationClassModel {
         // Add default constructor
         classDef.constructor(JMod.PROTECTED);
         createReadResolveMethod();
-        final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
+        final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
-            // Handle logger interface
-            if (messageInterface.getAnnotatedType() == AnnotatedType.NONE) {
-                continue;
+            if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class) || ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+                messageMethods.addAll(messageInterface.methods());
             }
-            messageMethods.addAll(messageInterface.methods());
         }
         // Process the method descriptors and add to the model before
         // writing.

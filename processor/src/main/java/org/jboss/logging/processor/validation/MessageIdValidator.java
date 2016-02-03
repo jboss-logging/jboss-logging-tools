@@ -44,13 +44,13 @@ import org.jboss.logging.processor.util.Comparison;
  */
 public final class MessageIdValidator {
 
-    private final Map<MessageKey, MessageMethod> usedMessageIds = new HashMap<MessageKey, MessageMethod>();
+    private final Map<MessageKey, MessageMethod> usedMessageIds = new HashMap<>();
 
     MessageIdValidator() {
     }
 
     public Collection<ValidationMessage> validate(final MessageInterface messageInterface, final MessageMethod messageMethod) {
-        final List<ValidationMessage> messages = new LinkedList<ValidationMessage>();
+        final List<ValidationMessage> messages = new LinkedList<>();
         final MessageMethod.Message message = messageMethod.message();
         if (message == null) {
             messages.add(createError(messageMethod, "No message annotation found."));

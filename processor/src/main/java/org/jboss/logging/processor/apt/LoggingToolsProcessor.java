@@ -23,6 +23,7 @@ package org.jboss.logging.processor.apt;
 
 import static javax.lang.model.util.ElementFilter.typesIn;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,6 +41,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.ConstructType;
 import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.annotations.LogMessage;
@@ -47,14 +49,15 @@ import org.jboss.logging.annotations.LoggingClass;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
+import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.ValidIdRange;
 import org.jboss.logging.annotations.ValidIdRanges;
 import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.ValidationMessage;
 import org.jboss.logging.processor.validation.Validator;
 
@@ -80,28 +83,30 @@ public class LoggingToolsProcessor extends AbstractProcessor {
      */
     public LoggingToolsProcessor() {
         this.generators = new ArrayList<>();
-        final Set<String> annotations = new HashSet<>();
-        // Interface annotations
-        annotations.addAll(interfaceAnnotations);
-        // Other annotations
-        annotations.add(Cause.class.getName());
-        annotations.add(Field.class.getName());
-        annotations.add(FormatWith.class.getName());
-        annotations.add(LoggingClass.class.getName());
-        annotations.add(LogMessage.class.getName());
-        annotations.add(Message.class.getName());
-        annotations.add(Param.class.getName());
-        annotations.add(Pos.class.getName());
-        annotations.add(Property.class.getName());
-        annotations.add(Transform.class.getName());
-        annotations.add(ValidIdRange.class.getName());
-        annotations.add(ValidIdRanges.class.getName());
-        this.supportedAnnotations = Collections.unmodifiableSet(annotations);
+        this.supportedAnnotations = createSupportedAnnotations(
+                Cause.class,
+                ConstructType.class,
+                Field.class,
+                FormatWith.class,
+                LoggingClass.class,
+                LogMessage.class,
+                Message.class,
+                MessageBundle.class,
+                MessageLogger.class,
+                Once.class,
+                Param.class,
+                Pos.class,
+                Property.class,
+                Signature.class,
+                Transform.class,
+                ValidIdRange.class,
+                ValidIdRanges.class
+        );
     }
 
     @Override
     public Set<String> getSupportedOptions() {
-        Set<String> supportedOptions = new HashSet<String>();
+        Set<String> supportedOptions = new HashSet<>();
 
         //Add global options
         SupportedOptions globalOptions = this.getClass().getAnnotation(SupportedOptions.class);
@@ -142,8 +147,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
-        boolean process = true;
-        final Validator validator = new Validator();
+        boolean generate = true;
+        final Validator validator = new Validator(processingEnv.getElementUtils(), processingEnv.getTypeUtils());
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
@@ -156,11 +161,11 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                             final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
                             final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
                             for (ValidationMessage message : validationMessages) {
-                                final Element element = ElementHelper.fromMessageObject(message.getMessageObject());
+                                final Element element = message.getElement();
                                 switch (message.type()) {
                                     case ERROR: {
                                         logger.error(element, message.getMessage());
-                                        process = false;
+                                        generate = false;
                                         break;
                                     }
                                     case WARN: {
@@ -172,7 +177,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                                     }
                                 }
                             }
-                            if (process) {
+                            if (generate) {
                                 if (interfaceElement.getKind().isInterface()
                                         && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
                                     for (AbstractGenerator processor : generators) {
@@ -190,6 +195,15 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 }
             }
         }
-        return process;
+        return true;
+    }
+
+    @SafeVarargs
+    private static Set<String> createSupportedAnnotations(final Class<? extends Annotation>... annotations) {
+        final Set<String> supportedAnnotations = new HashSet<>(annotations.length);
+        for (Class<?> c : annotations) {
+            supportedAnnotations.add(c.getName());
+        }
+        return Collections.unmodifiableSet(supportedAnnotations);
     }
 }

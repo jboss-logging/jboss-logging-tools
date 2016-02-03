@@ -37,14 +37,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.ConstructType;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ReturnType;
@@ -61,11 +68,15 @@ public final class Validator {
     private final MessageIdValidator messageIdValidator;
     private final IdLengthValidator idLengthValidator;
     private final IdRangeValidator idRangeValidator;
+    private final Elements elements;
+    private final Types types;
 
-    public Validator() {
+    public Validator(final Elements elements, final Types types) {
         messageIdValidator = new MessageIdValidator();
         idLengthValidator = new IdLengthValidator();
         idRangeValidator = new IdRangeValidator();
+        this.elements = elements;
+        this.types = types;
     }
 
     /**
@@ -76,24 +87,19 @@ public final class Validator {
      * @return a collection of validation messages or an empty collection.
      */
     public final Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
-        switch (messageInterface.getAnnotatedType()) {
-            case MESSAGE_BUNDLE: {
-                // Get all messageMethods except logger interface messageMethods
-                final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-                messages.addAll(validateCommon(messageInterface, messageMethods));
-                messages.addAll(validateBundle(messageMethods));
-                break;
-            }
-            case MESSAGE_LOGGER: {
-                // Get all messageMethods except logger interface messageMethods
-                final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
-                messages.addAll(validateCommon(messageInterface, messageMethods));
-                messages.addAll(validateLogger(messageMethods));
-                break;
-            }
-            default:
-                messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
+        final List<ValidationMessage> messages = new ArrayList<>();
+        if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class)) {
+            // Get all messageMethods except logger interface messageMethods
+            final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
+            messages.addAll(validateCommon(messageInterface, messageMethods));
+            messages.addAll(validateBundle(messageMethods));
+        } else if (ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+            // Get all messageMethods except logger interface messageMethods
+            final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
+            messages.addAll(validateCommon(messageInterface, messageMethods));
+            messages.addAll(validateLogger(messageMethods));
+        } else {
+            messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
         }
         return messages;
     }
@@ -107,8 +113,8 @@ public final class Validator {
      * @return a collection of validation messages.
      */
     private Collection<ValidationMessage> validateCommon(final MessageInterface messageInterface, final Set<MessageMethod> messageMethods) {
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
-        final Map<String, MessageMethod> methodNames = new HashMap<String, MessageMethod>();
+        final List<ValidationMessage> messages = new ArrayList<>();
+        final Map<String, MessageMethod> methodNames = new HashMap<>();
 
         messages.addAll(idLengthValidator.validate(messageInterface));
         messages.addAll(idRangeValidator.validate(messageInterface));
@@ -145,16 +151,16 @@ public final class Validator {
                     final Set<Parameter> parameters = messageMethod.parameters(ParameterType.TRANSFORM);
                     // Validate each parameter
                     for (Parameter parameter : parameters) {
-                        validateTransform(messages, parameter, parameter.transform());
+                        validateTransform(messages, parameter, parameter.getAnnotation(Transform.class));
                     }
                 }
                 // Validate the POS annotated parameters
                 if (!messageMethod.parameters(ParameterType.POS).isEmpty()) {
-                    final Map<Integer, Parameter> positions = new TreeMap<Integer, Parameter>();
+                    final Map<Integer, Parameter> positions = new TreeMap<>();
                     final Set<Parameter> parameters = messageMethod.parameters(ParameterType.POS);
                     // Validate each parameter
                     for (Parameter parameter : parameters) {
-                        final Pos pos = parameter.pos();
+                        final Pos pos = parameter.getAnnotation(Pos.class);
                         final Transform[] transforms = pos.transform();
                         if (transforms != null && transforms.length > 0) {
                             if (pos.value().length != transforms.length) {
@@ -166,7 +172,7 @@ public final class Validator {
                             }
                         }
                         // Validate the positions
-                        final Set<Integer> usedPositions = new HashSet<Integer>();
+                        final Set<Integer> usedPositions = new HashSet<>();
                         for (int position : pos.value()) {
                             if (usedPositions.contains(position)) {
                                 messages.add(createError(parameter, "Position '%d' already used for this parameter.", position));
@@ -224,14 +230,14 @@ public final class Validator {
         } else if (transformTypes.contains(TransformType.SIZE)) {
             if (!(parameter.isArray() || parameter.isVarArgs() || parameter.isSubtypeOf(Map.class) ||
                     parameter.isSubtypeOf(Collection.class) || parameter.isSubtypeOf(CharSequence.class))) {
-                messages.add(createError(parameter, "Invalid type (%s) for %s. Must be an array, %s, %s or %s.", parameter.type(),
+                messages.add(createError(parameter, "Invalid type (%s) for %s. Must be an array, %s, %s or %s.", parameter.asType(),
                         TransformType.SIZE, Collection.class.getName(), Map.class.getName(), CharSequence.class.getName()));
             }
         }
     }
 
     private Collection<ValidationMessage> validateParameters(final MessageMethod messageMethod) {
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
+        final List<ValidationMessage> messages = new ArrayList<>();
         boolean foundCause = false;
         final ReturnType returnType = messageMethod.returnType();
         for (Parameter parameter : messageMethod.parameters(ParameterType.ANY)) {
@@ -245,19 +251,19 @@ public final class Validator {
                     break;
                 }
                 case FQCN:
-                    if (!parameter.type().equals(Class.class.getName())) {
+                    if (!parameter.isSameAs(Class.class)) {
                         messages.add(createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.", parameter.name(), messageMethod.name(), Class.class.getName()));
                     }
                     break;
                 case FIELD: {
                     if (!returnType.hasFieldFor(parameter)) {
-                        messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", returnType.type(), parameter.targetName(), parameter.type()));
+                        messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", returnType.asType(), parameter.targetName(), parameter.asType()));
                     }
                     break;
                 }
                 case PROPERTY: {
                     if (!returnType.hasMethodFor(parameter)) {
-                        messages.add(createError(parameter, "No method found in %s with signature %s(%s).", returnType.type(), parameter.targetName(), parameter.type()));
+                        messages.add(createError(parameter, "No method found in %s with signature %s(%s).", returnType.asType(), parameter.targetName(), parameter.asType()));
                     }
                     break;
                 }
@@ -275,7 +281,7 @@ public final class Validator {
      * @return a collection of the validation messages.
      */
     private Collection<ValidationMessage> validateBundle(final Set<MessageMethod> messageMethods) {
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
+        final List<ValidationMessage> messages = new ArrayList<>();
         for (MessageMethod messageMethod : messageMethods) {
             messages.addAll(validateBundleMethod(messageMethod));
         }
@@ -283,16 +289,40 @@ public final class Validator {
     }
 
     private Collection<ValidationMessage> validateBundleMethod(final MessageMethod messageMethod) {
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
+        final List<ValidationMessage> messages = new ArrayList<>();
         // The return type must be a Throwable or String
         final ReturnType returnType = messageMethod.returnType();
-        if (returnType.equals(ReturnType.VOID) || returnType.isPrimitive()) {
+        if (returnType.asType().getKind() == TypeKind.VOID || returnType.isPrimitive()) {
             messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type. Cannot be void or a primitive.", messageMethod.name()));
         } else if (returnType.isThrowable()) {
             final ThrowableType throwableReturnType = returnType.throwableReturnType();
             if (throwableReturnType.useConstructionParameters()) {
-                // TODO - Check the return type constructor. Currently handled via the ThrowableReturnTypeFactory.
-                // TODO - Validate the @Signature constructor exists, currently handled in the ThrowableTypeFactory
+                // Check for a matching constructor
+                final Signature signature = messageMethod.getAnnotation(Signature.class);
+                if (signature != null) {
+                    final List<TypeMirror> args = ElementHelper.getClassArrayAnnotationValue(messageMethod, Signature.class, "value");
+                    // Validate the constructor exists
+                    if (!ElementHelper.hasConstructor(types, returnType, args)) {
+                        messages.add(createError(messageMethod, "Could not find constructor for %s with arguments %s", messageMethod.asType(), args));
+                    }
+                    final int messageIndex = signature.messageIndex();
+                    // Note that the messageIndex is required and must be 0 or greater
+                    if (messageIndex < 0) {
+                        messages.add(createError(messageMethod, "A messageIndex of 0 or greater is required. Value %d is invalid.", messageIndex));
+                    }
+                }
+                // Validate the construct type is valid
+                if (ElementHelper.isAnnotatedWith(messageMethod, ConstructType.class)) {
+                    final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(messageMethod, ConstructType.class);
+                    // Shouldn't be null
+                    if (constructTypeValue == null) {
+                        messages.add(createError(messageMethod, "Class not defined for the ConstructType"));
+                    } else {
+                        if (!types.isAssignable(constructTypeValue.asType(), returnType.asType())) {
+                            messages.add(createError(messageMethod, "The requested type %s can not be assigned to %s.", constructTypeValue.asType(), returnType.asType()));
+                        }
+                    }
+                }
             } else if (!throwableReturnType.useConstructionParameters() && !messageMethod.parameters(ParameterType.CONSTRUCTION).isEmpty()) {
                 messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
             } else {
@@ -310,7 +340,7 @@ public final class Validator {
             if (!returnType.isAssignableFrom(String.class)) {
                 messages.add(createError(messageMethod, "Message bundle method (%s) has an invalid return type of %s.", messageMethod.name(), returnType.name()));
             }
-            if (ElementHelper.isAnnotatedWith(messageMethod.reference(), ConstructType.class)) {
+            if (ElementHelper.isAnnotatedWith(messageMethod, ConstructType.class)) {
                 messages.add(createError(messageMethod, "ConstructType annotation requires a throwable return type"));
             }
         }
@@ -325,13 +355,13 @@ public final class Validator {
      * @return a collection of the validation messages.
      */
     private Collection<ValidationMessage> validateLogger(final Set<MessageMethod> messageMethods) {
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
+        final List<ValidationMessage> messages = new ArrayList<>();
         for (MessageMethod messageMethod : messageMethods) {
             if (messageMethod.isLoggerMethod()) {
                 messages.addAll(validateLoggerMethod(messageMethod));
             } else {
                 messages.addAll(validateBundleMethod(messageMethod));
-                if (ElementHelper.isAnnotatedWith(messageMethod.reference(), Once.class)) {
+                if (ElementHelper.isAnnotatedWith(messageMethod, Once.class)) {
                     messages.add(createError(messageMethod, "Only @LogMessage method can be annoted with @Once"));
                 }
             }
@@ -340,9 +370,9 @@ public final class Validator {
     }
 
     private Collection<ValidationMessage> validateLoggerMethod(final MessageMethod messageMethod) {
-        final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
+        final List<ValidationMessage> messages = new ArrayList<>();
         // The return type must be void
-        if (!ReturnType.VOID.equals(messageMethod.returnType())) {
+        if (messageMethod.returnType().asType().getKind() != TypeKind.VOID) {
             messages.add(createError(messageMethod, "Message logger methods can only have a void return type."));
         }
         return messages;
@@ -356,16 +386,16 @@ public final class Validator {
      * @return a set of all the methods (exception logger interface methods) the interface must implement.
      */
     private Set<MessageMethod> getAllMethods(final MessageInterface messageInterface) {
-        if (messageInterface.getAnnotatedType() == AnnotatedType.NONE) {
-            return Collections.emptySet();
+        if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class) || ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+            final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
+            for (MessageMethod messageMethod : messageInterface.methods()) {
+                messageMethods.add(messageMethod);
+            }
+            for (MessageInterface msgInterface : messageInterface.extendedInterfaces()) {
+                messageMethods.addAll(getAllMethods(msgInterface));
+            }
+            return messageMethods;
         }
-        final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
-        for (MessageMethod messageMethod : messageInterface.methods()) {
-            messageMethods.add(messageMethod);
-        }
-        for (MessageInterface msgInterface : messageInterface.extendedInterfaces()) {
-            messageMethods.addAll(getAllMethods(msgInterface));
-        }
-        return messageMethods;
+        return Collections.emptySet();
     }
 }

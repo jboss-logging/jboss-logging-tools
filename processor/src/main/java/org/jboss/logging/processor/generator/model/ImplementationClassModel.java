@@ -184,7 +184,7 @@ abstract class ImplementationClassModel extends ClassModel {
                         // This should never happen, but let's safe guard against it
                         throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
                     } else {
-                        final Pos pos = param.pos();
+                        final Pos pos = param.getAnnotation(Pos.class);
                         final int[] positions = pos.value();
                         final Transform[] transform = pos.transform();
                         for (int i = 0; i < positions.length; i++) {
@@ -239,7 +239,7 @@ abstract class ImplementationClassModel extends ClassModel {
     }
 
     JAssignableExpr createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final JExpr var) {
-        return createTransformVar(parameterNames, methodBody, param, param.transform(), var);
+        return createTransformVar(parameterNames, methodBody, param, param.getAnnotation(Transform.class), var);
     }
 
     JAssignableExpr createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final Transform transform, final JExpr var) {
@@ -400,27 +400,10 @@ abstract class ImplementationClassModel extends ClassModel {
      * @return the reference to the parameter on the method
      */
     protected JParamDeclaration addMethodParameter(final JMethodDef method, final Parameter param) {
-        final JParamDeclaration var;
-        JType paramType = $t(param.type());
+        final JType paramType = JTypes.typeOf(param.asType());
         if (!param.isPrimitive()) {
             sourceFile._import(paramType);
         }
-        if (param.isVarArgs()) {
-            var = method.varargParam(FINAL, paramType, param.name());
-        } else if (param.isArray()) {
-            var = method.param(JMod.FINAL, paramType.array(), param.name());
-        } else {
-            final TypeMirror t = ((Element) param.reference()).asType();
-            if (t instanceof DeclaredType) {
-                final Collection<? extends TypeMirror> genericTypes = ((DeclaredType) t).getTypeArguments();
-                for (TypeMirror tm : genericTypes) {
-                    final JType gt = JTypes.typeOf(tm);
-                    sourceFile._import(gt);
-                    paramType = paramType.typeArg(gt);
-                }
-            }
-            var = method.param(FINAL, paramType, param.name());
-        }
-        return var;
+        return method.param(FINAL, paramType, param.name());
     }
 }

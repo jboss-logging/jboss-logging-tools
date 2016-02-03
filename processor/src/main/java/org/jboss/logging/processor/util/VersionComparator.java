@@ -77,7 +77,7 @@ public class VersionComparator implements Comparator<String> {
     }
 
     private static List<Integer> convert(final String[] version, final int len) {
-        final List<Integer> result = new ArrayList<Integer>(len);
+        final List<Integer> result = new ArrayList<>(len);
         for (int i = 0; i < len; i++) {
             if (i < version.length) {
                 final String s = version[i];

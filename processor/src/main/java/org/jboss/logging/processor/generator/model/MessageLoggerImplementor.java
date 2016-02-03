@@ -54,13 +54,13 @@ import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Message.Format;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.ElementHelper;
@@ -143,14 +143,12 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         }
 
         // Process the method descriptors and add to the model before writing.
-        final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
+        final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
-            // Handle logger interface
-            if (messageInterface.getAnnotatedType() == AnnotatedType.NONE) {
-                continue;
+            if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class) || ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+                messageMethods.addAll(messageInterface.methods());
             }
-            messageMethods.addAll(messageInterface.methods());
         }
         for (MessageMethod messageMethod : messageMethods) {
 
@@ -232,7 +230,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 final String target = "log" + affix;
 
                 // 4 methods each for with- and without-throwable
-                for (boolean renderThr : new boolean[] {false, true}) {
+                for (boolean renderThr : new boolean[]{false, true}) {
                     JParamDeclaration thr = null;
 
                     final JMethodDef xxx1x = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, name);
@@ -419,7 +417,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Check for the @Once annotation
         final JBlock body;
-        if (ElementHelper.isAnnotatedWith(messageMethod.reference(), Once.class) && messageMethod.isLoggerMethod()) {
+        if (ElementHelper.isAnnotatedWith(messageMethod, Once.class) && messageMethod.isLoggerMethod()) {
             final JType atomicBoolean = $t(AtomicBoolean.class);
             sourceFile._import(atomicBoolean);
             // The variable will be shared with overloaded methods
@@ -433,7 +431,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             }
             body = method.body()._if(
                     logger.call("isEnabled").arg($v(messageMethod.logLevel())).and(
-                    $v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)))
+                            $v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)))
                     .block(Braces.REQUIRED);
         } else if (!messageMethod.parameters(ParameterType.TRANSFORM).isEmpty()) {
             body = method.body()._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
@@ -500,7 +498,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         }
                         break;
                     case POS:
-                        final Pos pos = param.pos();
+                        final Pos pos = param.getAnnotation(Pos.class);
                         final int[] positions = pos.value();
                         final Transform[] transform = pos.transform();
                         for (int i = 0; i < positions.length; i++) {

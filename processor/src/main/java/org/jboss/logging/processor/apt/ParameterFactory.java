@@ -28,7 +28,9 @@ import static org.jboss.logging.processor.util.Objects.areEqual;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -61,7 +63,7 @@ final class ParameterFactory {
     }
 
     public static Set<Parameter> of(final Elements elements, final Types types, final ExecutableElement method) {
-        final Set<Parameter> result = new LinkedHashSet<Parameter>();
+        final Set<Parameter> result = new LinkedHashSet<>();
         final List<? extends VariableElement> params = method.getParameters();
         int index = 0;
         for (VariableElement param : params) {
@@ -90,128 +92,16 @@ final class ParameterFactory {
     }
 
     public static Parameter forMessageMethod(final MessageMethod messageMethod) {
-        return new Parameter() {
-
-            @Override
-            public String formatterClass() {
-                return null;
-            }
-
-            @Override
-            public Class<?> paramClass() {
-                return null;
-            }
-
-            @Override
-            public String targetName() {
-                return "";
-            }
-
-            @Override
-            public Transform transform() {
-                return null;
-            }
-
-            @Override
-            public Pos pos() {
-                return null;
-            }
-
-            @Override
-            public String type() {
-                return String.class.getName();
-            }
-
-            @Override
-            public String name() {
-                return messageMethod.messageMethodName();
-            }
-
-            @Override
-            public boolean isArray() {
-                return false;
-            }
-
-            @Override
-            public boolean isPrimitive() {
-                return false;
-            }
-
-            @Override
-            public boolean isVarArgs() {
-                return false;
-            }
-
-            @Override
-            public ParameterType parameterType() {
-                return ParameterType.MESSAGE;
-            }
-
-            @Override
-            public int hashCode() {
-                return HashCodeBuilder.builder()
-                        .add(type())
-                        .add(name()).toHashCode();
-            }
-
-            @Override
-            public boolean equals(final Object obj) {
-                if (obj == this) {
-                    return true;
-                }
-                if (!(obj instanceof AptParameter)) {
-                    return false;
-                }
-                final AptParameter other = (AptParameter) obj;
-                return areEqual(type(), other.type()) && areEqual(name(), other.name());
-            }
-
-            @Override
-            public int compareTo(final Parameter other) {
-                return Comparison.begin()
-                        .compare(this.type(), other.type())
-                        .compare(this.name(), other.name()).result();
-            }
-
-            @Override
-            public String toString() {
-                return ToStringBuilder.of(this)
-                        .add("name", name())
-                        .add("type", type()).toString();
-            }
-
-            @Override
-            public MessageMethod reference() {
-                return messageMethod;
-            }
-
-            @Override
-            public boolean isAssignableFrom(final Class<?> type) {
-                return String.class.isAssignableFrom(type);
-            }
-
-            @Override
-            public boolean isSubtypeOf(final Class<?> type) {
-                return type.isAssignableFrom(String.class);
-            }
-
-            @Override
-            public boolean isSameAs(final Class<?> type) {
-                return type().equals(type.getName());
-            }
-        };
+        return new MessageMethodParameter(messageMethod);
     }
 
-    private static class AptParameter extends AbstractMessageObjectType implements Parameter {
+    private static class AptParameter extends AbstractClassType implements Parameter {
 
         private final VariableElement param;
         private final String qualifiedType;
         private final String formatterClass;
-        private final Class<?> paramClass;
         private final boolean isVarArgs;
         private final ParameterType parameterType;
-        private final Transform transform;
-        private final Pos pos;
 
         /**
          * Only allow construction from within the parent class.
@@ -229,52 +119,23 @@ final class ParameterFactory {
             this.param = param;
             this.formatterClass = formatterClass;
             if (ElementHelper.isAnnotatedWith(param, Param.class)) {
-                paramClass = Object.class;
                 parameterType = ParameterType.CONSTRUCTION;
-                transform = null;
-                pos = null;
             } else if (ElementHelper.isAnnotatedWith(param, Cause.class)) {
-                paramClass = null;
                 parameterType = ParameterType.CAUSE;
-                transform = null;
-                pos = null;
             } else if (ElementHelper.isAnnotatedWith(param, Field.class)) {
-                paramClass = null;
                 parameterType = ParameterType.FIELD;
-                transform = null;
-                pos = null;
             } else if (ElementHelper.isAnnotatedWith(param, Property.class)) {
-                paramClass = null;
                 parameterType = ParameterType.PROPERTY;
-                transform = null;
-                pos = null;
             } else if (ElementHelper.isAnnotatedWith(param, LoggingClass.class)) {
-                paramClass = null;
                 parameterType = ParameterType.FQCN;
-                transform = null;
-                pos = null;
             } else if (ElementHelper.isAnnotatedWith(param, Transform.class)) {
-                paramClass = null;
                 parameterType = ParameterType.TRANSFORM;
-                transform = param.getAnnotation(Transform.class);
-                pos = null;
             } else if (ElementHelper.isAnnotatedWith(param, Pos.class)) {
-                paramClass = null;
                 parameterType = ParameterType.POS;
-                transform = null;
-                pos = param.getAnnotation(Pos.class);
             } else {
                 parameterType = ParameterType.FORMAT;
-                paramClass = null;
-                transform = null;
-                pos = null;
             }
             this.isVarArgs = isVarArgs;
-        }
-
-        @Override
-        public String type() {
-            return qualifiedType;
         }
 
         @Override
@@ -308,11 +169,6 @@ final class ParameterFactory {
         }
 
         @Override
-        public Class<?> paramClass() {
-            return paramClass;
-        }
-
-        @Override
         public String targetName() {
             String result = "";
             final Field field = param.getAnnotation(Field.class);
@@ -337,16 +193,6 @@ final class ParameterFactory {
         }
 
         @Override
-        public Transform transform() {
-            return transform;
-        }
-
-        @Override
-        public Pos pos() {
-            return pos;
-        }
-
-        @Override
         public int hashCode() {
             return HashCodeBuilder.builder()
                     .add(qualifiedType)
@@ -368,7 +214,7 @@ final class ParameterFactory {
         @Override
         public int compareTo(final Parameter other) {
             return Comparison.begin()
-                    .compare(this.type(), other.type())
+                    .compare(asType().toString(), other.asType().toString())
                     .compare(this.name(), other.name()).result();
         }
 
@@ -376,12 +222,113 @@ final class ParameterFactory {
         public String toString() {
             return ToStringBuilder.of(this)
                     .add("name", name())
-                    .add("type", type()).toString();
+                    .add("type", asType()).toString();
         }
 
         @Override
-        public VariableElement reference() {
+        public Element getDelegate() {
             return param;
+        }
+    }
+
+    private static class MessageMethodParameter implements Parameter {
+        private final MessageMethod messageMethod;
+
+        private MessageMethodParameter(final MessageMethod messageMethod) {
+            this.messageMethod = messageMethod;
+        }
+
+        @Override
+        public Element getDelegate() {
+            return messageMethod;
+        }
+
+        @Override
+        public String formatterClass() {
+            return null;
+        }
+
+        @Override
+        public String targetName() {
+            return "";
+        }
+
+        @Override
+        public String name() {
+            return messageMethod.messageMethodName();
+        }
+
+        @Override
+        public boolean isArray() {
+            return false;
+        }
+
+        @Override
+        public boolean isPrimitive() {
+            return false;
+        }
+
+        @Override
+        public boolean isVarArgs() {
+            return false;
+        }
+
+        @Override
+        public ParameterType parameterType() {
+            return ParameterType.MESSAGE;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(messageMethod);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof MessageMethodParameter)) {
+                return false;
+            }
+            final MessageMethodParameter other = (MessageMethodParameter) obj;
+            return Objects.equals(messageMethod, other.messageMethod);
+        }
+
+        @Override
+        public int compareTo(final Parameter other) {
+            if (other instanceof MessageMethodParameter) {
+                final MessageMethodParameter otherParameter = (MessageMethodParameter) other;
+                return messageMethod.compareTo(otherParameter.messageMethod);
+            }
+            // A little odd, but some kind of comparison should be done by default
+            return Comparison.begin()
+                    .compare(parameterType(), other.parameterType())
+                    .compare(asType().toString(), other.asType().toString())
+                    .compare(name(), other.name())
+                    .result();
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.of(this)
+                    .add("name", name())
+                    .add("type", asType()).toString();
+        }
+
+        @Override
+        public boolean isAssignableFrom(final Class<?> type) {
+            return false;
+        }
+
+        @Override
+        public boolean isSubtypeOf(final Class<?> type) {
+            return false;
+        }
+
+        @Override
+        public boolean isSameAs(final Class<?> type) {
+            return false;
         }
     }
 }

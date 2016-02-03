@@ -76,7 +76,7 @@ public class TransformTest extends AbstractLoggerTest {
         Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.SIZE_MSG, sArray.length));
 
         // Log a map
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         for (int i = 0; i < 10; i++) {
             map.put("key" + i, "value" + i);
         }
@@ -130,7 +130,7 @@ public class TransformTest extends AbstractLoggerTest {
         Assert.assertEquals(TransformMessages.MESSAGES.msgSize(sArray), String.format(TransformLogger.SIZE_MSG, sArray.length));
 
         // Log a map
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<>();
         for (int i = 0; i < 10; i++) {
             map.put("key" + i, "value" + i);
         }

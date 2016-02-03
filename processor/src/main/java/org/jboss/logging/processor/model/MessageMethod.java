@@ -24,8 +24,6 @@ package org.jboss.logging.processor.model;
 
 import java.util.Set;
 
-import javax.lang.model.element.ExecutableElement;
-
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.processor.model.Parameter.ParameterType;
 
@@ -34,14 +32,13 @@ import org.jboss.logging.processor.model.Parameter.ParameterType;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public interface MessageMethod extends Comparable<MessageMethod>, MessageObject, JavaDocComment {
+public interface MessageMethod extends Comparable<MessageMethod>, JavaDocComment, DelegatingExecutableElement {
 
     /**
      * Returns the method name.
      *
      * @return the method name.
      */
-    @Override
     String name();
 
     /**
@@ -144,7 +141,7 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
      * Returns the log level parameter associated with the method only if {@link #isLoggerMethod()} returns
      * {@code true}.
      *
-     * @return the log level annotation
+     * @return the fully qualified log level in canonical form
      */
     String logLevel();
 
@@ -162,13 +159,10 @@ public interface MessageMethod extends Comparable<MessageMethod>, MessageObject,
      */
     boolean isLoggerMethod();
 
-    @Override
-    ExecutableElement reference();
-
     /**
      * Represents a {@link org.jboss.logging.annotations.Message} annotation on a method.
      */
-    public interface Message {
+    interface Message {
 
         /**
          * The message id for the message to use. Any id less than 0 will be ignored.

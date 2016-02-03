@@ -369,7 +369,7 @@ public final class Objects {
      */
     public static class ToStringBuilder {
 
-        private final List<String> fieldValue = new ArrayList<String>();
+        private final List<String> fieldValue = new ArrayList<>();
 
         private final String className;
 

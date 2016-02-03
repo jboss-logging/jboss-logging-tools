@@ -48,10 +48,11 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.processor.generator.model.ClassModel;
 import org.jboss.logging.processor.generator.model.ClassModelFactory;
 import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.model.MessageInterface.AnnotatedType;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.FormatValidator;
@@ -126,7 +127,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
     }
 
     private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
-        final Map<File, Map<MessageMethod, String>> validTranslations = new LinkedHashMap<File, Map<MessageMethod, String>>();
+        final Map<File, Map<MessageMethod, String>> validTranslations = new LinkedHashMap<>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
         }
@@ -183,25 +184,22 @@ final class TranslationClassGenerator extends AbstractGenerator {
      * @return the valid translations messages
      */
     private Map<MessageMethod, String> validateTranslationMessages(final MessageInterface messageInterface, final File file) {
-        Map<MessageMethod, String> validTranslations = new LinkedHashMap<MessageMethod, String>();
+        Map<MessageMethod, String> validTranslations = new LinkedHashMap<>();
 
         try {
 
             //Load translations
             Properties translations = new Properties();
             translations.load(new InputStreamReader(new FileInputStream(file), "utf-8"));
-            final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
+            final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
             messageMethods.addAll(messageInterface.methods());
             for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
-                // Handle logger interface
-                if (msgIntf.getAnnotatedType() == AnnotatedType.NONE) {
-                    continue;
+                if (ElementHelper.isAnnotatedWith(msgIntf, MessageBundle.class) || ElementHelper.isAnnotatedWith(msgIntf, MessageLogger.class)) {
+                    messageMethods.addAll(msgIntf.methods());
                 }
-                messageMethods.addAll(msgIntf.methods());
             }
             for (MessageMethod messageMethod : messageMethods) {
                 final String key = messageMethod.translationKey();
-                final Element methodElement = ElementHelper.fromMessageObject(messageMethod);
                 if (translations.containsKey(key)) {
                     final String translationMessage = translations.getProperty(key);
                     if (!translationMessage.trim().isEmpty()) {
@@ -210,19 +208,19 @@ final class TranslationClassGenerator extends AbstractGenerator {
                             if (validator.argumentCount() == messageMethod.formatParameterCount()) {
                                 validTranslations.put(messageMethod, translationMessage);
                             } else {
-                                logger().warn(methodElement,
+                                logger().warn(messageMethod,
                                         "The parameter count for the format (%d) and the number of format parameters (%d) do not match.",
                                         validator.argumentCount(), messageMethod.formatParameterCount());
                             }
                         } else {
-                            logger().warn(methodElement, "%s Resource Bundle: %s", validator.summaryMessage(), file.getAbsolutePath());
+                            logger().warn(messageMethod, "%s Resource Bundle: %s", validator.summaryMessage(), file.getAbsolutePath());
                         }
                     } else {
-                        logger().warn(methodElement, "The translation message with key %s is ignored because value is empty or contains only whitespace", key);
+                        logger().warn(messageMethod, "The translation message with key %s is ignored because value is empty or contains only whitespace", key);
                     }
 
                 } else {
-                    logger().warn(methodElement, "The translation message with key %s have no corresponding messageMethod.", key);
+                    logger().warn(messageMethod, "The translation message with key %s have no corresponding messageMethod.", key);
                 }
             }
 

@@ -56,7 +56,7 @@ class StringFormatPart extends AbstractFormatPart {
      * @param position the position in the string format.
      */
     private StringFormatPart(final int position) {
-        this.flags = new LinkedHashSet<Flag>();
+        this.flags = new LinkedHashSet<>();
         this.position = position;
     }
 
