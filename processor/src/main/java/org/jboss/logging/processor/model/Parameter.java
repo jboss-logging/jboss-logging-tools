@@ -28,58 +28,6 @@ package org.jboss.logging.processor.model;
 public interface Parameter extends Comparable<Parameter>, ClassType, DelegatingElement {
 
     /**
-     * The types of parameters.
-     */
-    enum ParameterType {
-        /**
-         * Indicates the parameter can be any other type. All parameters fall under this category.
-         */
-        ANY,
-        /**
-         * Indicates the parameter is a cause parameter and needs to be set in the {@link Throwable throwable} return
-         * type.
-         */
-        CAUSE,
-        /**
-         * Indicates the parameter should be used as a format parameter.
-         */
-        FORMAT,
-        /**
-         * Indicates the parameter should be used as the fully qualified class name for the logger.
-         */
-        FQCN,
-        /**
-         * Indicates the parameter is the message.
-         */
-        MESSAGE,
-        /**
-         * Indicates the parameter should be used in the construction of a {@link Throwable throwable} return type.
-         */
-        CONSTRUCTION,
-        /**
-         * Indicates the parameter is a instance field that should be set in the {@link Throwable throwable} return
-         * type.
-         */
-        FIELD,
-        /**
-         * Indicates the parameter is a property and should be set via its setter in the {@link Throwable throwable}
-         * return type.
-         */
-        PROPERTY,
-
-        /**
-         * Transforms the parameter using the {@link org.jboss.logging.annotations.Transform.TransformType transform
-         * type}.
-         */
-        TRANSFORM,
-
-        /**
-         * Indicates the parameter is a positional parameter.
-         */
-        POS,
-    }
-
-    /**
      * The variable name of the parameter.
      *
      * @return the variable name of the parameter.
@@ -108,11 +56,22 @@ public interface Parameter extends Comparable<Parameter>, ClassType, DelegatingE
     boolean isVarArgs();
 
     /**
-     * Returns the {@link ParameterType parameter type} of the parameter.
+     * Indicates whether or not the parameter is used a format parameter for the message.
      *
-     * @return the parameter type of the parameter.
+     * @return {@code true} if this parameter that should used as a format parameter for the message
      */
-    ParameterType parameterType();
+    default boolean isFormatParameter() {
+        return true;
+    }
+
+    /**
+     * Indicates whether or not this parameter represents the message method.
+     *
+     * @return {@code true} if this is the message method parameter
+     */
+    default boolean isMessageMethod() {
+        return false;
+    }
 
     /**
      * The formatter class, or {@code null} if there is none.
@@ -122,11 +81,10 @@ public interface Parameter extends Comparable<Parameter>, ClassType, DelegatingE
     String formatterClass();
 
     /**
-     * Returns the name of the target field or method. For example if the {@link #parameterType()} returns
-     * {@link ParameterType#FIELD}, the target name is the name of the field to set on the
+     * Returns the name of the target field or method. For example if the parameter is annotated with
+     * {@link org.jboss.logging.annotations.Field @Field} the target name is the name of the field to set on the
      * {@link org.jboss.logging.processor.model.ReturnType return type}. If no target name is defined an empty String
-     * is
-     * returned.
+     * is returned.
      *
      * @return the target field name, method name or an empty string.
      */

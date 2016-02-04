@@ -22,7 +22,6 @@
 
 package org.jboss.logging.processor.apt;
 
-import static java.util.Collections.unmodifiableSet;
 import static org.jboss.logging.processor.util.ElementHelper.findByName;
 import static org.jboss.logging.processor.util.ElementHelper.inheritsMessage;
 import static org.jboss.logging.processor.util.ElementHelper.isOverloaded;
@@ -31,28 +30,31 @@ import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
-import org.jboss.logging.processor.model.Parameter.ParameterType;
 import org.jboss.logging.processor.model.ReturnType;
 import org.jboss.logging.processor.model.ThrowableType;
 import org.jboss.logging.processor.util.Comparison;
@@ -177,7 +179,7 @@ final class MessageMethodBuilder {
     private static class AptMessageMethod implements MessageMethod {
 
         private final Elements elements;
-        private final Map<ParameterType, Set<Parameter>> parameters;
+        private final Map<TypeMirror, Set<Parameter>> parameters;
         private final Set<ThrowableType> thrownTypes;
         private final ExecutableElement method;
         private ReturnType returnType;
@@ -187,6 +189,7 @@ final class MessageMethodBuilder {
         private Message message;
         private String messageMethodName;
         private String translationKey;
+        private int formatParameterCount;
 
         /**
          * Private constructor for the
@@ -199,26 +202,36 @@ final class MessageMethodBuilder {
             this.method = method;
             inheritsMessage = false;
             isOverloaded = false;
-            parameters = new EnumMap<>(ParameterType.class);
+            parameters = new HashMap<>();
             thrownTypes = new LinkedHashSet<>();
+            formatParameterCount = 0;
         }
 
         void add(final Parameter parameter) {
-            if (parameters.containsKey(ParameterType.ANY)) {
-                parameters.get(ParameterType.ANY).add(parameter);
+            if (parameter.isFormatParameter()) {
+                if (parameter.isAnnotatedWith(Pos.class)) {
+                    formatParameterCount += parameter.getAnnotation(Pos.class).value().length;
+                } else {
+                    formatParameterCount++;
+                }
+            }
+            if (parameters.containsKey(null)) {
+                parameters.get(null).add(parameter);
             } else {
                 final Set<Parameter> any = new LinkedHashSet<>();
                 any.add(parameter);
-                parameters.put(ParameterType.ANY, any);
+                parameters.put(null, any);
             }
-            if (parameters.containsKey(parameter.parameterType())) {
-                parameters.get(parameter.parameterType()).add(parameter);
-            } else {
-                final Set<Parameter> set = new LinkedHashSet<>();
-                set.add(parameter);
-                parameters.put(parameter.parameterType(), set);
+            for (AnnotationMirror a : parameter.getAnnotationMirrors()) {
+                if (parameters.containsKey(a.getAnnotationType())) {
+                    parameters.get(a.getAnnotationType()).add(parameter);
+                } else {
+                    final Set<Parameter> set = new LinkedHashSet<>();
+                    set.add(parameter);
+                    parameters.put(a.getAnnotationType(), set);
+                }
             }
-            if (parameter.parameterType() == ParameterType.CAUSE) {
+            if (parameter.isAnnotatedWith(Cause.class)) {
                 cause = parameter;
             }
         }
@@ -229,25 +242,17 @@ final class MessageMethodBuilder {
         }
 
         @Override
-        public Set<Parameter> parameters(final ParameterType parameterType) {
-            if (parameters.containsKey(parameterType)) {
-                return parameters.get(parameterType);
+        public Set<Parameter> parameters() {
+            if (parameters.containsKey(null)) {
+                return Collections.unmodifiableSet(parameters.get(null));
             }
             return Collections.emptySet();
         }
 
         @Override
-        public Set<Parameter> parameters(final ParameterType parameterType, final ParameterType... parameterTypes) {
-            final Set<Parameter> result = new LinkedHashSet<>();
-            if (parameters.containsKey(parameterType)) {
-                result.addAll(parameters.get(parameterType));
-            }
-            for (ParameterType pt : parameterTypes) {
-                if (parameters.containsKey(pt)) {
-                    result.addAll(parameters.get(pt));
-                }
-            }
-            return result;
+        public Set<Parameter> parametersAnnotatedWith(final Class<? extends Annotation> annotation) {
+            final TypeElement type = elements.getTypeElement(annotation.getCanonicalName());
+            return parameters.containsKey(type.asType()) ? Collections.unmodifiableSet(parameters.get(type.asType())) : Collections.emptySet();
         }
 
         @Override
@@ -257,7 +262,7 @@ final class MessageMethodBuilder {
 
         @Override
         public Set<ThrowableType> thrownTypes() {
-            return unmodifiableSet(thrownTypes);
+            return Collections.unmodifiableSet(thrownTypes);
         }
 
         @Override
@@ -319,11 +324,7 @@ final class MessageMethodBuilder {
 
         @Override
         public int formatParameterCount() {
-            int result = parameters(ParameterType.FORMAT, ParameterType.TRANSFORM).size();
-            for (Parameter params : parameters(ParameterType.POS)) {
-                result += params.getAnnotation(Pos.class).value().length;
-            }
-            return result;
+            return formatParameterCount;
         }
 
         @Override
@@ -335,7 +336,7 @@ final class MessageMethodBuilder {
         public int hashCode() {
             return HashCodeBuilder.builder()
                     .add(name())
-                    .add(parameters(ParameterType.ANY))
+                    .add(parameters())
                     .add(returnType()).toHashCode();
         }
 
@@ -363,7 +364,7 @@ final class MessageMethodBuilder {
             return ToStringBuilder.of(this)
                     .add("name", name())
                     .add("returnType", returnType())
-                    .add("parameters", parameters(ParameterType.ANY))
+                    .add("parameters", parameters())
                     .add("loggerMethod", loggerMethod()).toString();
         }
 
@@ -372,11 +373,11 @@ final class MessageMethodBuilder {
             int result = name().compareTo(o.name());
             result = (result != Comparison.EQUAL) ? result : returnType.name().compareTo(o.returnType().name());
             // Size does matter
-            result = (result != Comparison.EQUAL) ? result : parameters(ParameterType.ANY).size() - o.parameters(ParameterType.ANY).size();
+            result = (result != Comparison.EQUAL) ? result : parameters().size() - o.parameters().size();
             if (result == Comparison.EQUAL) {
                 // Check element by element
-                final Iterator<Parameter> params1 = parameters(ParameterType.ANY).iterator();
-                final Iterator<Parameter> params2 = o.parameters(ParameterType.ANY).iterator();
+                final Iterator<Parameter> params1 = parameters().iterator();
+                final Iterator<Parameter> params2 = o.parameters().iterator();
                 while (params1.hasNext()) {
                     if (params2.hasNext()) {
                         final Parameter param1 = params1.next();

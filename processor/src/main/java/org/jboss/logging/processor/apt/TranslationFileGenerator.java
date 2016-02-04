@@ -52,7 +52,6 @@ import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
-import org.jboss.logging.processor.model.Parameter.ParameterType;
 import org.jboss.logging.processor.util.Strings;
 
 /**
@@ -262,12 +261,11 @@ final class TranslationFileGenerator extends AbstractGenerator {
         writer.write(String.format("# Message: %s", msg.value()));
         writer.newLine();
         final Map<String, String> parameterComments = parseParameterComments(messageMethod);
-        final Set<Parameter> parameters = messageMethod.parameters(ParameterType.FORMAT, ParameterType.TRANSFORM);
         int i = 0;
-        for (Parameter parameter : parameters) {
+        for (Parameter parameter : messageMethod.parameters()) {
             final String name = parameter.name();
             final String comment = (parameterComments.containsKey(name) ? parameterComments.get(name) : EMPTY_STRING);
-            if (parameter.parameterType() == ParameterType.TRANSFORM) {
+            if (parameter.isAnnotatedWith(Transform.class)) {
                 final List<TransformType> transformTypes = Arrays.asList(parameter.getAnnotation(Transform.class).value());
                 if (transformTypes.contains(TransformType.GET_CLASS)) {
                     if (transformTypes.size() == 1) {
@@ -289,7 +287,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
                     }
                 }
                 writer.newLine();
-            } else {
+            } else if (parameter.isFormatParameter()) {
                 writer.write(String.format("# @param %d: %s - %s", ++i, name, comment));
                 writer.newLine();
             }

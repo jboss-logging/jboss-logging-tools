@@ -26,7 +26,6 @@ import static org.jboss.jdeparser.JExpr.NULL;
 import static org.jboss.jdeparser.JExpr.THIS;
 import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.jdeparser.JTypes.$t;
-import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +53,7 @@ import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LoggingClass;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
@@ -433,7 +433,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     logger.call("isEnabled").arg($v(messageMethod.logLevel())).and(
                             $v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)))
                     .block(Braces.REQUIRED);
-        } else if (!messageMethod.parameters(ParameterType.TRANSFORM).isEmpty()) {
+        } else if (!messageMethod.parametersAnnotatedWith(Transform.class).isEmpty()) {
             body = method.body()._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
         } else {
             body = method.body();
@@ -441,10 +441,11 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Determine which logger method to invoke
         final JCall logCaller = logger.call(messageMethod.loggerMethod());
-        if (messageMethod.parameters(ParameterType.FQCN).isEmpty()) {
+        final Set<Parameter> fqcnParameters = messageMethod.parametersAnnotatedWith(LoggingClass.class);
+        if (fqcnParameters.isEmpty()) {
             logCaller.arg($v(FQCN_FIELD_NAME));
         } else {
-            logCaller.arg($v(params.get(messageMethod.parameters(ParameterType.FQCN).iterator().next())).call("getName"));
+            logCaller.arg($v(params.get(fqcnParameters.iterator().next())).call("getName"));
         }
         logCaller.arg($v(messageMethod.logLevel()));
 
@@ -477,27 +478,19 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 final Parameter param = entry.getKey();
                 final String formatterClass = param.formatterClass();
                 final JParamDeclaration var = entry.getValue();
-                switch (param.parameterType()) {
-                    case FORMAT:
-                        if (formatterClass == null) {
-                            if (param.isArray() || param.isVarArgs()) {
-                                args.add($t(Arrays.class).call("toString").arg($v(var)));
-                            } else {
-                                args.add($v(var));
-                            }
-                        } else {
-                            args.add($t(formatterClass)._new().arg($v(var)));
-                        }
-                        break;
-                    case TRANSFORM:
+
+                boolean added = false;
+                if (param.isFormatParameter()) {
+                    if (param.isAnnotatedWith(Transform.class)) {
                         final JAssignableExpr transformVar = createTransformVar(parameterNames, body, param, $v(var));
                         if (formatterClass == null) {
                             args.add(transformVar);
                         } else {
                             args.add($t(formatterClass)._new().arg(transformVar));
                         }
-                        break;
-                    case POS:
+                        added = true;
+                    }
+                    if (param.isAnnotatedWith(Pos.class)) {
                         final Pos pos = param.getAnnotation(Pos.class);
                         final int[] positions = pos.value();
                         final Transform[] transform = pos.transform();
@@ -518,7 +511,20 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                                 }
                             }
                         }
-                        break;
+                        added = true;
+                    }
+
+                    if (!added) {
+                        if (formatterClass == null) {
+                            if (param.isArray() || param.isVarArgs()) {
+                                args.add($t(Arrays.class).call("toString").arg($v(var)));
+                            } else {
+                                args.add($v(var));
+                            }
+                        } else {
+                            args.add($t(formatterClass)._new().arg($v(var)));
+                        }
+                    }
                 }
             }
             for (JExpr arg : args) {
@@ -531,7 +537,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     private Map<Parameter, JParamDeclaration> createParameters(final MessageMethod messageMethod, final JMethodDef method) {
         final Map<Parameter, JParamDeclaration> result = new LinkedHashMap<>();
         // Create the parameters
-        for (Parameter param : messageMethod.parameters(ParameterType.ANY)) {
+        for (Parameter param : messageMethod.parameters()) {
             final JParamDeclaration var = addMethodParameter(method, param);
             result.put(param, var);
         }

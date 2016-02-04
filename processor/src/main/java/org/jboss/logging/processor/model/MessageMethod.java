@@ -22,10 +22,10 @@
 
 package org.jboss.logging.processor.model;
 
+import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import org.jboss.logging.annotations.Message.Format;
-import org.jboss.logging.processor.model.Parameter.ParameterType;
 
 /**
  * Date: 29.07.2011
@@ -42,23 +42,20 @@ public interface MessageMethod extends Comparable<MessageMethod>, JavaDocComment
     String name();
 
     /**
-     * Returns an unmodifiable collection of the parameters specified by the parameter type or an empty set.
+     * Returns the parameters for the method.
      *
-     * @param parameterType the parameter type to look-up the parameters for.
-     *
-     * @return a collection of the parameters or an empty set.
+     * @return the parameters for the method
      */
-    Set<Parameter> parameters(ParameterType parameterType);
+    Set<Parameter> parameters();
 
     /**
      * Returns an unmodifiable collection of the parameters specified by the parameter type or an empty set.
      *
-     * @param parameterType  the parameter type to look-up the parameters for.
-     * @param parameterTypes an array of types to look-up parameters for.
+     * @param annotation the annotation to get the parameters for
      *
      * @return a collection of the parameters or an empty set.
      */
-    Set<Parameter> parameters(ParameterType parameterType, ParameterType... parameterTypes);
+    Set<Parameter> parametersAnnotatedWith(Class<? extends Annotation> annotation);
 
     /**
      * Returns the return type for the method.

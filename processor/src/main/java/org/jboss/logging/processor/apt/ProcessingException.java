@@ -29,7 +29,7 @@ import javax.lang.model.element.Element;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class ProcessingException extends RuntimeException {
+public class ProcessingException extends RuntimeException {
     private final Element element;
 
     /**

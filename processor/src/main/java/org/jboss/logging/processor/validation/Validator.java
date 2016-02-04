@@ -22,7 +22,6 @@
 
 package org.jboss.logging.processor.validation;
 
-import static org.jboss.logging.processor.model.Parameter.ParameterType;
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createError;
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createWarning;
 
@@ -43,11 +42,16 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.ConstructType;
+import org.jboss.logging.annotations.Field;
+import org.jboss.logging.annotations.LoggingClass;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
+import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
@@ -146,20 +150,16 @@ public final class Validator {
                 if (messageMethod.formatParameterCount() != formatValidator.argumentCount()) {
                     messages.add(createError(messageMethod, "Parameter count does not match for format '%s'. Required: %d Provided: %d", formatValidator.format(), formatValidator.argumentCount(), paramCount));
                 }
-                // Validate the transform parameter
-                if (!messageMethod.parameters(ParameterType.TRANSFORM).isEmpty()) {
-                    final Set<Parameter> parameters = messageMethod.parameters(ParameterType.TRANSFORM);
-                    // Validate each parameter
-                    for (Parameter parameter : parameters) {
+                final Map<Integer, Parameter> positions = new TreeMap<>();
+                boolean validatePositions = false;
+                for (Parameter parameter : messageMethod.parameters()) {
+                    // Validate the transform parameter
+                    if (parameter.isAnnotatedWith(Transform.class)) {
                         validateTransform(messages, parameter, parameter.getAnnotation(Transform.class));
                     }
-                }
-                // Validate the POS annotated parameters
-                if (!messageMethod.parameters(ParameterType.POS).isEmpty()) {
-                    final Map<Integer, Parameter> positions = new TreeMap<>();
-                    final Set<Parameter> parameters = messageMethod.parameters(ParameterType.POS);
-                    // Validate each parameter
-                    for (Parameter parameter : parameters) {
+                    // Validate the POS annotated parameters
+                    if (parameter.isAnnotatedWith(Pos.class)) {
+                        validatePositions = true;
                         final Pos pos = parameter.getAnnotation(Pos.class);
                         final Transform[] transforms = pos.transform();
                         if (transforms != null && transforms.length > 0) {
@@ -186,7 +186,9 @@ public final class Validator {
                             }
                         }
                     }
-                    // Check for missing indexed parameters
+                }
+                // Check for missing indexed parameters
+                if (validatePositions) {
                     for (int i = 0; i < messageMethod.formatParameterCount(); i++) {
                         final int positionIndex = i + 1;
                         if (!positions.containsKey(positionIndex)) {
@@ -240,36 +242,30 @@ public final class Validator {
         final List<ValidationMessage> messages = new ArrayList<>();
         boolean foundCause = false;
         final ReturnType returnType = messageMethod.returnType();
-        for (Parameter parameter : messageMethod.parameters(ParameterType.ANY)) {
-            switch (parameter.parameterType()) {
-                case CAUSE: {
-                    if (foundCause) {
-                        messages.add(createError(messageMethod, "Only one cause parameter is allowed."));
-                    } else {
-                        foundCause = true;
-                    }
-                    break;
+        for (Parameter parameter : messageMethod.parameters()) {
+            if (parameter.isAnnotatedWith(Cause.class)) {
+                if (foundCause) {
+                    messages.add(createError(messageMethod, "Only one cause parameter is allowed."));
+                } else {
+                    foundCause = true;
                 }
-                case FQCN:
-                    if (!parameter.isSameAs(Class.class)) {
-                        messages.add(createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.", parameter.name(), messageMethod.name(), Class.class.getName()));
-                    }
-                    break;
-                case FIELD: {
-                    if (!returnType.hasFieldFor(parameter)) {
-                        messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", returnType.asType(), parameter.targetName(), parameter.asType()));
-                    }
-                    break;
+            }
+            if (parameter.isAnnotatedWith(LoggingClass.class)) {
+                if (!parameter.isSameAs(Class.class)) {
+                    messages.add(createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.", parameter.name(), messageMethod.name(), Class.class.getName()));
                 }
-                case PROPERTY: {
-                    if (!returnType.hasMethodFor(parameter)) {
-                        messages.add(createError(parameter, "No method found in %s with signature %s(%s).", returnType.asType(), parameter.targetName(), parameter.asType()));
-                    }
-                    break;
+            }
+            if (parameter.isAnnotatedWith(Field.class)) {
+                if (!returnType.hasFieldFor(parameter)) {
+                    messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", returnType.asType(), parameter.targetName(), parameter.asType()));
+                }
+            }
+            if (parameter.isAnnotatedWith(Property.class)) {
+                if (!returnType.hasMethodFor(parameter)) {
+                    messages.add(createError(parameter, "No method found in %s with signature %s(%s).", returnType.asType(), parameter.targetName(), parameter.asType()));
                 }
             }
         }
-        // TODO - Check all parameter counts
         return messages;
     }
 
@@ -323,7 +319,7 @@ public final class Validator {
                         }
                     }
                 }
-            } else if (!throwableReturnType.useConstructionParameters() && !messageMethod.parameters(ParameterType.CONSTRUCTION).isEmpty()) {
+            } else if (!throwableReturnType.useConstructionParameters() && !messageMethod.parametersAnnotatedWith(Param.class).isEmpty()) {
                 messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
             } else {
                 final boolean hasMessageConstructor = (throwableReturnType.hasStringAndThrowableConstructor() || throwableReturnType.hasThrowableAndStringConstructor() ||
