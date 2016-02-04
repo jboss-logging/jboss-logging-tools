@@ -22,6 +22,8 @@
 
 package org.jboss.logging.processor.generated;
 
+import java.util.Collection;
+
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.ConstructType;
@@ -31,6 +33,7 @@ import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Property;
+import org.jboss.logging.annotations.Suppressed;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -68,6 +71,22 @@ public interface ValidMessages {
     @ConstructType(IllegalArgumentException.class)
     @Message("Invalid user id or password")
     RuntimeException invalidCredentials();
+
+    String SUPPRESSED_ERROR = "Single error occurred";
+    @Message(SUPPRESSED_ERROR)
+    RuntimeException suppressedError(@Suppressed Throwable t);
+
+    String SUPPRESSED_ERRORS = "Two errors occurred";
+    @Message(SUPPRESSED_ERRORS)
+    RuntimeException suppressedErrors(@Suppressed Throwable error1, @Suppressed Throwable error2);
+
+    String MULTIPLE_ERRORS = "Multiple errors occurred";
+    @Message(MULTIPLE_ERRORS)
+    RuntimeException multipleErrors(@Suppressed Throwable... errors);
+
+    String MULTIPLE_ERRORS_COLLECTION = "Multiple errors occurred";
+    @Message(MULTIPLE_ERRORS_COLLECTION)
+    RuntimeException multipleErrorsCollection(@Suppressed Collection<? extends Throwable> errors);
 
     class CustomException extends RuntimeException {
         public int value;

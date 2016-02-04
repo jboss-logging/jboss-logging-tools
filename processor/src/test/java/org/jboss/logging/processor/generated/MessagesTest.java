@@ -22,6 +22,8 @@
 
 package org.jboss.logging.processor.generated;
 
+import java.util.Arrays;
+
 import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -47,5 +49,72 @@ public class MessagesTest {
         Assert.assertNotNull(e.getCause());
 
         Assert.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException, "Incorrect type constructed");
+    }
+
+    @Test
+    public void testSuppressed() {
+        final IllegalArgumentException e1 = new IllegalArgumentException("First exception");
+        final IllegalStateException e2 = new IllegalStateException("Second exception");
+        final RuntimeException e3 = new RuntimeException("Third exception");
+
+        RuntimeException expected = new RuntimeException(ValidMessages.MULTIPLE_ERRORS);
+        expected.addSuppressed(e1);
+        expected.addSuppressed(e2);
+        expected.addSuppressed(e3);
+
+        RuntimeException actual = ValidMessages.MESSAGES.multipleErrors(e1, e2, e3);
+        compare(expected.getSuppressed(), actual.getSuppressed());
+
+        actual = ValidMessages.MESSAGES.multipleErrorsCollection(Arrays.asList(e1, e2, e3));
+        compare(expected.getSuppressed(), actual.getSuppressed());
+
+        expected = new RuntimeException(ValidMessages.SUPPRESSED_ERROR);
+        expected.addSuppressed(e1);
+
+        actual = ValidMessages.MESSAGES.suppressedError(e1);
+        compare(expected.getSuppressed(), actual.getSuppressed());
+
+        expected = new RuntimeException(ValidMessages.SUPPRESSED_ERRORS);
+        expected.addSuppressed(e1);
+        expected.addSuppressed(e2);
+
+        actual = ValidMessages.MESSAGES.suppressedErrors(e1, e2);
+        compare(expected.getSuppressed(), actual.getSuppressed());
+
+
+    }
+
+    private <T> void compare(final T[] a1, final T[] a2) {
+        Assert.assertTrue(equalsIgnoreOrder(a1, a2), String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)));
+    }
+
+    private <T> boolean equalsIgnoreOrder(final T[] a1, final T[] a2) {
+        if (a1.length != a2.length) {
+            return false;
+        }
+        final T[] ca2 = Arrays.copyOf(a2, a2.length);
+        boolean found = false;
+        for (T t : a1) {
+            final int i = search(ca2, t);
+            if (i >= 0) {
+                found = true;
+                ca2[i] = null;
+            } else {
+                found = false;
+            }
+            if (!found) {
+                break;
+            }
+        }
+        return found;
+    }
+
+    private <T> int search(final T[] a, final T key) {
+        for (int i = 0; i < a.length; i++) {
+            if (key.equals(a[i])) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

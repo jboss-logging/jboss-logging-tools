@@ -36,7 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -53,6 +56,7 @@ import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Signature;
+import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
@@ -184,6 +188,16 @@ public final class Validator {
                             } else {
                                 positions.put(position, parameter);
                             }
+                        }
+                    }
+
+                    // Validate the @Suppressed parameter is on a message bundle, the return type is an exception and the parameter is an exception
+                    if (parameter.isAnnotatedWith(Suppressed.class)) {
+                        if (!messageMethod.returnType().isThrowable()) {
+                            messages.add(createError(messageMethod, "The @Suppressed parameter annotation can only be used with message bundle methods that return an exception."));
+                        }
+                        if (!isTypeAssignableFrom(parameter, Throwable.class)) {
+                            messages.add(createError(parameter, "The parameter annotated with @Suppressed must be assignable to a Throwable type."));
                         }
                     }
                 }
@@ -393,5 +407,27 @@ public final class Validator {
             return messageMethods;
         }
         return Collections.emptySet();
+    }
+
+    /**
+     * Checks the element type, if an array the type of the array is checked, against the class. If the element type is
+     * assignable to the class type.
+     *
+     * @param element the element to test
+     * @param type    the type the element needs to be assignable to
+     *
+     * @return {@code true} if the element type is assignable to the class type, otherwise {@code false}
+     */
+    private boolean isTypeAssignableFrom(final Element element, final Class<?> type) {
+        TypeMirror elementType = element.asType();
+        if (elementType.getKind() == TypeKind.ARRAY) {
+            elementType = ((ArrayType) elementType).getComponentType();
+        }
+        if (types.isAssignable(types.erasure(elementType), elements.getTypeElement(Collection.class.getCanonicalName()).asType())) {
+            // We only need the first type
+            elementType = types.erasure(((DeclaredType) elementType).getTypeArguments().iterator().next());
+        }
+        final TypeMirror classType = elements.getTypeElement(type.getCanonicalName()).asType();
+        return types.isAssignable(elementType, classType);
     }
 }
