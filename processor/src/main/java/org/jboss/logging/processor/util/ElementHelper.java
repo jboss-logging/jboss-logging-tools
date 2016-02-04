@@ -47,6 +47,7 @@ import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Property;
+import org.jboss.logging.annotations.Suppressed;
 
 /**
  * An utility class to work with element.
@@ -179,7 +180,7 @@ public final class ElementHelper {
         int result = params.size();
         for (VariableElement param : params) {
             if (isAnnotatedWith(param, Param.class) || isAnnotatedWith(param, Field.class) ||
-                    isAnnotatedWith(param, Property.class)) {
+                    isAnnotatedWith(param, Property.class) || isAnnotatedWith(param, Suppressed.class)) {
                 --result;
             }
         }

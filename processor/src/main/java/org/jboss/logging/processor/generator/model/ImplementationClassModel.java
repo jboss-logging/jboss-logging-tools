@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Filer;
+import javax.lang.model.type.ArrayType;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
@@ -55,6 +56,7 @@ import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
+import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.apt.ProcessingException;
@@ -374,6 +376,23 @@ abstract class ImplementationClassModel extends ClassModel {
         sourceFile._import(arrays);
         final JVarDeclaration st = body.var(FINAL, $t(StackTraceElement.class).array(), "st", $v(resultField).call("getStackTrace"));
         body.add($v(resultField).call("setStackTrace").arg(arrays.call("copyOfRange").arg($v(st)).arg(JExpr.ONE).arg($v(st).field("length"))));
+
+        // Add any suppressed messages
+        final Set<Parameter> suppressed = messageMethod.parametersAnnotatedWith(Suppressed.class);
+        for (Parameter p : suppressed) {
+            if (p.isArray() || p.isVarArgs()) {
+                final String name = String.format("$%sVar", p.name());
+                // TODO (jrp) the " " can be removed after an upgrade to JDeparser2; this is a workaround for a formatting bug
+                body.forEach(0, JTypes.typeOf(((ArrayType) p.asType()).getComponentType()), " " + name, $v(p.name()))
+                        .block(Braces.REQUIRED)
+                        .add($v(resultField).call("addSuppressed").arg($v(name)));
+            } else if (p.isAssignableFrom(Collection.class)) {
+                final String name = String.format("$%sVar", p.name());
+                body.add($v(p.name()).call("forEach").arg(JExprs.lambda().param(name).body($v(resultField).call("addSuppressed").arg($v(name)))));
+            } else {
+                body.add($v(resultField).call("addSuppressed").arg($v(p.name())));
+            }
+        }
         return resultField;
     }
 
