@@ -38,11 +38,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.FormatWith;
-import org.jboss.logging.annotations.LoggingClass;
-import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Transform;
@@ -101,7 +98,7 @@ final class ParameterFactory {
         private final String qualifiedType;
         private final String formatterClass;
         private final boolean isVarArgs;
-        private final ParameterType parameterType;
+        private final boolean isFormatArg;
 
         /**
          * Only allow construction from within the parent class.
@@ -118,24 +115,11 @@ final class ParameterFactory {
             this.qualifiedType = qualifiedType;
             this.param = param;
             this.formatterClass = formatterClass;
-            if (ElementHelper.isAnnotatedWith(param, Param.class)) {
-                parameterType = ParameterType.CONSTRUCTION;
-            } else if (ElementHelper.isAnnotatedWith(param, Cause.class)) {
-                parameterType = ParameterType.CAUSE;
-            } else if (ElementHelper.isAnnotatedWith(param, Field.class)) {
-                parameterType = ParameterType.FIELD;
-            } else if (ElementHelper.isAnnotatedWith(param, Property.class)) {
-                parameterType = ParameterType.PROPERTY;
-            } else if (ElementHelper.isAnnotatedWith(param, LoggingClass.class)) {
-                parameterType = ParameterType.FQCN;
-            } else if (ElementHelper.isAnnotatedWith(param, Transform.class)) {
-                parameterType = ParameterType.TRANSFORM;
-            } else if (ElementHelper.isAnnotatedWith(param, Pos.class)) {
-                parameterType = ParameterType.POS;
-            } else {
-                parameterType = ParameterType.FORMAT;
-            }
             this.isVarArgs = isVarArgs;
+            isFormatArg = param.getAnnotationMirrors().isEmpty() ||
+                    ElementHelper.isAnnotatedWith(param, FormatWith.class) ||
+                    ElementHelper.isAnnotatedWith(param, Transform.class) ||
+                    ElementHelper.isAnnotatedWith(param, Pos.class);
         }
 
         @Override
@@ -164,8 +148,8 @@ final class ParameterFactory {
         }
 
         @Override
-        public ParameterType parameterType() {
-            return parameterType;
+        public boolean isFormatParameter() {
+            return isFormatArg;
         }
 
         @Override
@@ -274,8 +258,8 @@ final class ParameterFactory {
         }
 
         @Override
-        public ParameterType parameterType() {
-            return ParameterType.MESSAGE;
+        public boolean isMessageMethod() {
+            return true;
         }
 
         @Override
@@ -303,7 +287,6 @@ final class ParameterFactory {
             }
             // A little odd, but some kind of comparison should be done by default
             return Comparison.begin()
-                    .compare(parameterType(), other.parameterType())
                     .compare(asType().toString(), other.asType().toString())
                     .compare(name(), other.name())
                     .result();

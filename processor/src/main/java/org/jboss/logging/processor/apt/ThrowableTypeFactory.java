@@ -22,7 +22,6 @@
 
 package org.jboss.logging.processor.apt;
 
-import static org.jboss.logging.processor.model.Parameter.ParameterType;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
@@ -42,6 +41,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -289,7 +289,7 @@ final class ThrowableTypeFactory {
                 if (messageIndex < 0) {
                     throw new ProcessingException(method, "A messageIndex of 0 or greater is required. Value %d is invalid.", messageIndex);
                 }
-                final List<Parameter> methodConstructorParameters = new ArrayList<>(messageMethod.parameters(ParameterType.CONSTRUCTION));
+                final List<Parameter> methodConstructorParameters = new ArrayList<>(messageMethod.parametersAnnotatedWith(Param.class));
 
                 constructionParameters.clear();
                 useConstructionParameters = true;
@@ -317,7 +317,7 @@ final class ThrowableTypeFactory {
 
         @Override
         protected void init(final List<? extends VariableElement> params) {
-            final Set<Parameter> methodConstructorParameters = messageMethod.parameters(ParameterType.CONSTRUCTION);
+            final Set<Parameter> methodConstructorParameters = messageMethod.parametersAnnotatedWith(Param.class);
             // If there are no construction parameters or a constructor was already found, no need to process
             if (methodConstructorParameters.isEmpty() || useConstructionParameters) {
                 return;

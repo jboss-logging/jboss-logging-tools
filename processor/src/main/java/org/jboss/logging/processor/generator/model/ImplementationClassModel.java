@@ -27,7 +27,6 @@ import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.jdeparser.JMod.FINAL;
 import static org.jboss.jdeparser.JTypes.$t;
 import static org.jboss.logging.processor.generator.model.ClassModelHelper.implementationClassName;
-import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -38,9 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Filer;
-import javax.lang.model.element.Element;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
@@ -56,9 +52,12 @@ import org.jboss.jdeparser.JParamDeclaration;
 import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JTypes;
 import org.jboss.jdeparser.JVarDeclaration;
+import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
+import org.jboss.logging.processor.apt.ProcessingException;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -106,16 +105,15 @@ abstract class ImplementationClassModel extends ClassModel {
         final JBlock body = method.body();
         final MessageMethod.Message message = messageMethod.message();
         final JCall formatterCall;
-        final boolean noFormatParameters = messageMethod.parameters(ParameterType.FORMAT).isEmpty();
 
         switch (message.format()) {
             case MESSAGE_FORMAT: {
-                if (noFormatParameters) {
-                    formatterCall = JExprs.call(messageMethod.messageMethodName());
-                } else {
+                if (messageMethod.formatParameterCount() > 0) {
                     final JType formatter = $t(MessageFormat.class);
                     formatterCall = formatter.call("format");
                     formatterCall.arg(JExprs.call(messageMethod.messageMethodName()));
+                } else {
+                    formatterCall = JExprs.call(messageMethod.messageMethodName());
                 }
                 break;
             }
@@ -131,7 +129,7 @@ abstract class ImplementationClassModel extends ClassModel {
 
         // Create maps for the fields and properties. Key is the field or setter method, value is the parameter to set
         // the value to.
-        final Set<Parameter> allParameters = messageMethod.parameters(ParameterType.ANY);
+        final Set<Parameter> allParameters = messageMethod.parameters();
         final Map<String, JParamDeclaration> fields = new LinkedHashMap<>();
         final Map<String, JParamDeclaration> properties = new LinkedHashMap<>();
 
@@ -145,27 +143,9 @@ abstract class ImplementationClassModel extends ClassModel {
         for (Parameter param : allParameters) {
             final JParamDeclaration var = addMethodParameter(method, param);
             final String formatterClass = param.formatterClass();
-            switch (param.parameterType()) {
-                case FORMAT: {
-                    if (formatterCall == null) {
-                        // This should never happen, but let's safe guard against it
-                        throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
-                    } else {
-                        if (formatterClass == null) {
-                            if (param.isArray() || param.isVarArgs()) {
-                                final JType arrays = $t(Arrays.class);
-                                sourceFile._import(arrays);
-                                args.add(arrays.call("toString").arg($v(var)));
-                            } else {
-                                args.add($v(var));
-                            }
-                        } else {
-                            args.add($t(formatterClass)._new().arg($v(var)));
-                        }
-                    }
-                    break;
-                }
-                case TRANSFORM: {
+            if (param.isFormatParameter()) {
+                boolean added = false;
+                if (param.isAnnotatedWith(Transform.class)) {
                     if (formatterCall == null) {
                         // This should never happen, but let's safe guard against it
                         throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
@@ -177,9 +157,9 @@ abstract class ImplementationClassModel extends ClassModel {
                             args.add($t(formatterClass)._new().arg(transformVar));
                         }
                     }
-                    break;
+                    added = true;
                 }
-                case POS: {
+                if (param.isAnnotatedWith(Pos.class)) {
                     if (formatterCall == null) {
                         // This should never happen, but let's safe guard against it
                         throw new IllegalStateException("No format parameters are allowed when NO_FORMAT is specified.");
@@ -205,16 +185,32 @@ abstract class ImplementationClassModel extends ClassModel {
                             }
                         }
                     }
-                    break;
+                    added = true;
                 }
-                case FIELD: {
-                    fields.put(param.targetName(), var);
-                    break;
+                if (!added) {
+                    if (formatterCall == null) {
+                        // This should never happen, but let's safe guard against it
+                        throw new ProcessingException(messageMethod, "No format parameters are allowed when NO_FORMAT is specified.");
+                    } else {
+                        if (formatterClass == null) {
+                            if (param.isArray() || param.isVarArgs()) {
+                                final JType arrays = $t(Arrays.class);
+                                sourceFile._import(arrays);
+                                args.add(arrays.call("toString").arg($v(var)));
+                            } else {
+                                args.add($v(var));
+                            }
+                        } else {
+                            args.add($t(formatterClass)._new().arg($v(var)));
+                        }
+                    }
                 }
-                case PROPERTY: {
-                    properties.put(param.targetName(), var);
-                    break;
-                }
+            }
+            if (param.isAnnotatedWith(Field.class)) {
+                fields.put(param.targetName(), var);
+            }
+            if (param.isAnnotatedWith(Property.class)) {
+                properties.put(param.targetName(), var);
             }
         }
         // If a format method, add the arguments
@@ -343,14 +339,10 @@ abstract class ImplementationClassModel extends ClassModel {
         final JVarDeclaration resultField = body.var(FINAL, type, "result", result);
         if (returnType.useConstructionParameters()) {
             for (Parameter param : returnType.constructionParameters()) {
-                switch (param.parameterType()) {
-                    case MESSAGE:
-                        result.arg(format);
-                        break;
-                    default:
-                        result.arg($v(param.name()));
-                        break;
-
+                if (param.isMessageMethod()) {
+                    result.arg(format);
+                } else {
+                    result.arg($v(param.name()));
                 }
             }
             callInitCause = messageMethod.hasCause() && !returnType.causeSetInConstructor();
