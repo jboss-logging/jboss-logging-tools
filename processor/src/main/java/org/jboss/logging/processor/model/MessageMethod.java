@@ -138,7 +138,7 @@ public interface MessageMethod extends Comparable<MessageMethod>, JavaDocComment
      * Returns the log level parameter associated with the method only if {@link #isLoggerMethod()} returns
      * {@code true}.
      *
-     * @return the fully qualified log level in canonical form
+     * @return the enum name of the {@linkplain org.jboss.logging.Logger.Level log level}
      */
     String logLevel();
 
