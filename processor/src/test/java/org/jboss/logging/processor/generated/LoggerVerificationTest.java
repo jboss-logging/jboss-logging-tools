@@ -64,13 +64,13 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
 
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
-        compare(2, "noFormat", properties);
-        compare(3, "noFormatWithCause", properties);
-        compare(4, "formatWith", properties, new CustomFormatter(msg));
-        compare(5, "invalidSelection.2", properties, "G", Arrays.toString(values));
-        compare(6, "invalidSelection.1", properties, Arrays.toString(values));
+        compare("hello", properties, NAME);
+        compare("howAreYou", properties, NAME);
+        compare("noFormat", properties);
+        compare("noFormatWithCause", properties);
+        compare("formatWith", properties, new CustomFormatter(msg));
+        compare("invalidSelection.2", properties, "G", Arrays.toString(values));
+        compare("invalidSelection.1", properties, Arrays.toString(values));
     }
 
     @Test
@@ -80,8 +80,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_de"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare("hello", properties, NAME);
+        compare("howAreYou", properties, NAME);
     }
 
     @Test
@@ -91,8 +91,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_fr"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare("hello", properties, NAME);
+        compare("howAreYou", properties, NAME);
     }
 
     @Test
@@ -102,8 +102,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_es"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare("hello", properties, NAME);
+        compare("howAreYou", properties, NAME);
     }
 
     @Test
@@ -113,8 +113,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_ja"));
         Assert.assertEquals(properties.size(), HANDLER.size());
-        compare(0, "hello", properties, NAME);
-        compare(1, "howAreYou", properties, NAME);
+        compare("hello", properties, NAME);
+        compare("howAreYou", properties, NAME);
     }
 
     @Test
@@ -126,27 +126,27 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         final Date date = new Date();
         logger.dukesBirthday(date);
         logger.dukesBirthdayFailure(date);
-        compare(0, "dukesBirthday", es, date);
-        compare(1, "dukesBirthdayFailure", en, date);
+        compare("dukesBirthday", es, date);
+        compare("dukesBirthdayFailure", en, date);
 
         logger.stringInt("string", 1);
         logger.stringIntFailure("string", 1);
-        compare(2, "stringInt", es, "string", 1);
-        compare(3, "stringIntFailure", en, "string", 1);
+        compare("stringInt", es, "string", 1);
+        compare("stringIntFailure", en, "string", 1);
 
         logger.repeat("invalid");
         logger.repeatFailure("invalid");
-        compare(4, "repeat", es, "invalid");
-        compare(5, "repeatFailure", en, "invalid");
+        compare("repeat", es, "invalid");
+        compare("repeatFailure", en, "invalid");
     }
 
     private static DefaultLogger getLogger(final Locale locale) {
         return Logger.getMessageLogger(DefaultLogger.class, CATEGORY, locale);
     }
 
-    private void compare(final int handlerIndex, final String key, final Properties properties, final Object... params) {
+    private void compare(final String key, final Properties properties, final Object... params) throws InterruptedException {
         final String expectedMessage = getFormattedProperty(key, properties, params);
-        final String loggedMessage = HANDLER.getMessage(handlerIndex).replaceAll(LOGGER_ID_PATTERN, "");
+        final String loggedMessage = HANDLER.getMessage().replaceAll(LOGGER_ID_PATTERN, "");
         Assert.assertEquals(loggedMessage, expectedMessage);
     }
 

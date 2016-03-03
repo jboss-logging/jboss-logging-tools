@@ -12,7 +12,6 @@ import org.testng.annotations.Test;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class TransformTest extends AbstractLoggerTest {
-    int pos = 0;
 
     @Test
     public void testLog() throws Exception {
@@ -20,60 +19,60 @@ public class TransformTest extends AbstractLoggerTest {
         // Log strings
         final String s = "This is a test string";
         TransformLogger.LOGGER.logClassHashCode(s);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, s.getClass().hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, s.getClass().hashCode()));
         TransformLogger.LOGGER.logClassIdentityHashCode(s);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(s.getClass())));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(s.getClass())));
         TransformLogger.LOGGER.logObjectClass(s);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.GET_CLASS_MSG, s.getClass()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.GET_CLASS_MSG, s.getClass()));
         TransformLogger.LOGGER.logObjectHashCode(s);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, s.hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, s.hashCode()));
         TransformLogger.LOGGER.logObjectIdentityHashCode(s);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(s)));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(s)));
         TransformLogger.LOGGER.logSize(s);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.SIZE_MSG, s.length()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.SIZE_MSG, s.length()));
 
         // Log collections
         final Collection<String> c = Arrays.asList("test");
         TransformLogger.LOGGER.logClassHashCode(c);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, c.getClass().hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, c.getClass().hashCode()));
         TransformLogger.LOGGER.logClassIdentityHashCode(c);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(c.getClass())));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(c.getClass())));
         TransformLogger.LOGGER.logObjectHashCode(c);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, c.hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, c.hashCode()));
         TransformLogger.LOGGER.logObjectIdentityHashCode(c);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(c)));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(c)));
         TransformLogger.LOGGER.logSize(c);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.SIZE_MSG, c.size()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.SIZE_MSG, c.size()));
 
         // Log an array
         final Object[] array = {"test1", "test2", "test3"};
         TransformLogger.LOGGER.logClassHashCode(array);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, array.getClass().hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, array.getClass().hashCode()));
         TransformLogger.LOGGER.logClassIdentityHashCode(array);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(array.getClass())));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(array.getClass())));
         TransformLogger.LOGGER.logObjectClass(array);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.GET_CLASS_MSG, array.getClass()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.GET_CLASS_MSG, array.getClass()));
         TransformLogger.LOGGER.logObjectHashCode(array);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, Arrays.hashCode(array)));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, Arrays.hashCode(array)));
         TransformLogger.LOGGER.logObjectIdentityHashCode(array);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(array)));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(array)));
         TransformLogger.LOGGER.logSize(array);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.SIZE_MSG, array.length));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.SIZE_MSG, array.length));
 
         // Log vararg array
         final String[] sArray = {"test1", "test2", "test3"};
         TransformLogger.LOGGER.logClassHashCode(sArray);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, sArray.getClass().hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, sArray.getClass().hashCode()));
         TransformLogger.LOGGER.logClassIdentityHashCode(sArray);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(sArray.getClass())));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(sArray.getClass())));
         TransformLogger.LOGGER.logObjectClass(sArray);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.GET_CLASS_MSG, sArray.getClass()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.GET_CLASS_MSG, sArray.getClass()));
         TransformLogger.LOGGER.logObjectHashCode(sArray);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, Arrays.hashCode(sArray)));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, Arrays.hashCode(sArray)));
         TransformLogger.LOGGER.logObjectIdentityHashCode(sArray);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(sArray)));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(sArray)));
         TransformLogger.LOGGER.logSize(sArray);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.SIZE_MSG, sArray.length));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.SIZE_MSG, sArray.length));
 
         // Log a map
         final Map<String, String> map = new HashMap<>();
@@ -81,15 +80,15 @@ public class TransformTest extends AbstractLoggerTest {
             map.put("key" + i, "value" + i);
         }
         TransformLogger.LOGGER.logClassHashCode(map);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, map.getClass().hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, map.getClass().hashCode()));
         TransformLogger.LOGGER.logClassIdentityHashCode(map);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(map.getClass())));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(map.getClass())));
         TransformLogger.LOGGER.logObjectHashCode(map);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.HASH_CODE_MSG, map.hashCode()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.HASH_CODE_MSG, map.hashCode()));
         TransformLogger.LOGGER.logObjectIdentityHashCode(map);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(map)));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(map)));
         TransformLogger.LOGGER.logSize(map);
-        Assert.assertEquals(HANDLER.getMessage(pos++), String.format(TransformLogger.SIZE_MSG, map.size()));
+        Assert.assertEquals(HANDLER.getMessage(), String.format(TransformLogger.SIZE_MSG, map.size()));
     }
 
     @Test
@@ -149,7 +148,7 @@ public class TransformTest extends AbstractLoggerTest {
         final String msg2 = "Test message 2";
         String expected = String.format(TransformLogger.POS_MSG_1, msg2.length(), msg1.hashCode(), System.identityHashCode(msg1));
         TransformLogger.LOGGER.posTest1(msg1, msg2);
-        Assert.assertEquals(HANDLER.getMessage(pos++), expected);
+        Assert.assertEquals(HANDLER.getMessage(), expected);
         Assert.assertEquals(TransformMessages.MESSAGES.posTest1(msg1, msg2), expected);
 
         final Object obj = "Test";
@@ -158,7 +157,7 @@ public class TransformTest extends AbstractLoggerTest {
         final String s2 = "s2";
         expected = String.format(TransformLogger.POS_MSG_2, msg.length(), s1, s2, obj.getClass());
         TransformLogger.LOGGER.posTest2(obj, msg, s1, s2);
-        Assert.assertEquals(HANDLER.getMessage(pos++), expected);
+        Assert.assertEquals(HANDLER.getMessage(), expected);
         Assert.assertEquals(TransformMessages.MESSAGES.posTest2(obj, msg, s1, s2), expected);
     }
 }

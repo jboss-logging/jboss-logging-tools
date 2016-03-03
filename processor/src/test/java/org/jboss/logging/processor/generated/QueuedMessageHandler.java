@@ -22,8 +22,9 @@
 
 package org.jboss.logging.processor.generated;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
@@ -31,17 +32,24 @@ import org.jboss.logmanager.ExtLogRecord;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class MessageListHandler extends ExtHandler {
-    private final List<String> messages = new CopyOnWriteArrayList<>();
+class QueuedMessageHandler extends ExtHandler {
+    //private final List<String> messages = Collections.synchronizedList(new ArrayList<>());
+    private final BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
     @Override
     protected void doPublish(final ExtLogRecord record) {
-        super.doPublish(record);
         messages.add(record.getFormattedMessage());
     }
 
-    String getMessage(final int index) {
-        return messages.get(index);
+    /**
+     * Polls the message from queue waiting for up to 1 second for the message to appear.
+     *
+     * @return the message
+     *
+     * @throws InterruptedException if the poll was interrupted
+     */
+    String getMessage() throws InterruptedException {
+        return messages.poll(1, TimeUnit.SECONDS);
     }
 
     int size() {

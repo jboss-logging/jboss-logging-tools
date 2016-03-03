@@ -42,10 +42,10 @@ public class LevelIdCheckTest extends AbstractLoggerTest {
         ValidLogger.LOGGER.processingError(new IllegalArgumentException());
         ValidLogger.LOGGER.processingError(new IllegalArgumentException(), "generated");
         ValidLogger.LOGGER.processingError(this, "invalid reference");
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage(0)), 203);
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage(1)), 203);
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage(2)), 203);
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage(3)), 203);
+        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
+        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
+        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
+        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
     }
 
 

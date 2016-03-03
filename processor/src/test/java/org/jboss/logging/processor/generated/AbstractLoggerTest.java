@@ -34,19 +34,21 @@ import org.testng.annotations.BeforeClass;
 public abstract class AbstractLoggerTest {
 
     static final String PROJECT_CODE = "LOGL";
-    static final MessageListHandler HANDLER = new MessageListHandler();
+    static final QueuedMessageHandler HANDLER = new QueuedMessageHandler();
     static final String CATEGORY = AbstractLoggerTest.class.getPackage().getName();
     static final String LOGGER_ID_PATTERN = "LOG.*[0-9]:\\s";
 
+    private static final org.jboss.logmanager.Logger LOGGER = org.jboss.logmanager.Logger.getLogger(CATEGORY);
+
     @BeforeClass
     public static void installHandler() {
-        org.jboss.logmanager.Logger.getLogger(CATEGORY).addHandler(HANDLER);
+        LOGGER.addHandler(HANDLER);
     }
 
     @AfterClass
     public static void uninstallHandler() {
+        LOGGER.removeHandler(HANDLER);
         HANDLER.close();
-        org.jboss.logmanager.Logger.getLogger(CATEGORY).removeHandler(HANDLER);
     }
 
     protected String parseStringLoggerId(final String message) {
