@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>18</version>
+        <version>20</version>
     </parent>
 
     <groupId>org.jboss.logging</groupId>
@@ -53,12 +53,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.org.jboss.jdeparser>2.0.1.Final</version.org.jboss.jdeparser>
         <version.org.jboss.logging>3.1.2.GA</version.org.jboss.logging>
-        <version.org.jboss.logmanager>2.0.0.Final</version.org.jboss.logmanager>
+        <version.org.jboss.logmanager>2.0.3.Final</version.org.jboss.logmanager>
         <version.org.testng>6.3.1</version.org.testng>
 
-        <!-- maven-compiler-plugin -->
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
 
     <licenses>
