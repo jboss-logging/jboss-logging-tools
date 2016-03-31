@@ -72,31 +72,30 @@ public final class MessageInterfaceFactory {
      * Creates a message interface from the {@link javax.lang.model.element.TypeElement} specified by the {@code
      * interfaceElement} parameter.
      *
-     * @param processingEnvironment the annotation processing environment.
+     * @param processingEnv the annotation processing environment.
      * @param interfaceElement      the interface element to parse.
      *
      * @return a message interface for the interface element.
      */
-    public static MessageInterface of(final ProcessingEnvironment processingEnvironment, final TypeElement interfaceElement) {
-        final Types types = processingEnvironment.getTypeUtils();
-        final Elements elements = processingEnvironment.getElementUtils();
-        if (types.isSameType(interfaceElement.asType(), ElementHelper.toType(elements, BasicLogger.class))) {
+    public static MessageInterface of(final ProcessingEnvironment processingEnv, final TypeElement interfaceElement) {
+        final Types types = processingEnv.getTypeUtils();
+        if (types.isSameType(interfaceElement.asType(), ElementHelper.toType(processingEnv.getElementUtils(), BasicLogger.class))) {
             MessageInterface result = LOGGER_INTERFACE;
             if (result == null) {
                 synchronized (LOCK) {
                     result = LOGGER_INTERFACE;
                     if (result == null) {
-                        LOGGER_INTERFACE = LoggerInterface.of(elements, types);
+                        LOGGER_INTERFACE = LoggerInterface.of(processingEnv);
                         result = LOGGER_INTERFACE;
                     }
                 }
             }
             return result;
         }
-        final AptMessageInterface result = new AptMessageInterface(interfaceElement, types, elements);
+        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv);
         result.init();
         for (TypeMirror typeMirror : interfaceElement.getInterfaces()) {
-            final MessageInterface extended = MessageInterfaceFactory.of(processingEnvironment, (TypeElement) types.asElement(typeMirror));
+            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv, (TypeElement) types.asElement(typeMirror));
             result.extendedInterfaces.add(extended);
             result.extendedInterfaces.addAll(extended.extendedInterfaces());
         }
@@ -118,8 +117,8 @@ public final class MessageInterfaceFactory {
         private String fqcn;
         private int idLen;
 
-        private AptMessageInterface(final TypeElement interfaceElement, final Types types, final Elements elements) {
-            super(elements, types, interfaceElement);
+        private AptMessageInterface(final TypeElement interfaceElement, final ProcessingEnvironment processingEnv) {
+            super(processingEnv, interfaceElement);
             this.interfaceElement = interfaceElement;
             this.messageMethods = new LinkedList<>();
             this.extendedInterfaces = new LinkedHashSet<>();
@@ -168,7 +167,7 @@ public final class MessageInterfaceFactory {
         }
 
         private void init() {
-            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types)
+            final MessageMethodBuilder builder = MessageMethodBuilder.create(processingEnv)
                     .add(getMessageMethods(interfaceElement));
             final Collection<MessageMethod> m = builder.build();
             this.messageMethods.addAll(m);
@@ -263,21 +262,21 @@ public final class MessageInterfaceFactory {
         private final TypeElement loggerInterface;
         private final Set<MessageMethod> messageMethods;
 
-        private LoggerInterface(final Elements elements, final Types types, final TypeElement loggerInterface) {
-            super(elements, types, loggerInterface.asType());
+        private LoggerInterface(final ProcessingEnvironment processingEnv, final TypeElement loggerInterface) {
+            super(processingEnv, loggerInterface.asType());
             messageMethods = new LinkedHashSet<>();
             this.loggerInterface = loggerInterface;
         }
 
         private void init() {
-            final MessageMethodBuilder builder = MessageMethodBuilder.create(elements, types)
+            final MessageMethodBuilder builder = MessageMethodBuilder.create(processingEnv)
                     .add(getMessageMethods(loggerInterface));
             final Collection<MessageMethod> m = builder.build();
             this.messageMethods.addAll(m);
         }
 
-        static LoggerInterface of(final Elements elements, final Types types) {
-            final LoggerInterface result = new LoggerInterface(elements, types, elements.getTypeElement(BasicLogger.class.getCanonicalName()));
+        static LoggerInterface of(final ProcessingEnvironment processingEnv) {
+            final LoggerInterface result = new LoggerInterface(processingEnv, processingEnv.getElementUtils().getTypeElement(BasicLogger.class.getCanonicalName()));
             result.init();
             return result;
         }

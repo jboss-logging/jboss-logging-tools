@@ -1,5 +1,6 @@
 package org.jboss.logging.processor.apt;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -11,19 +12,22 @@ import org.jboss.logging.processor.model.ClassType;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 abstract class AbstractClassType implements ClassType {
+    protected final ProcessingEnvironment processingEnv;
     protected final Elements elements;
     protected final Types types;
     protected final TypeMirror typeMirror;
 
-    protected AbstractClassType(final Elements elements, final Types types, final TypeMirror typeMirror) {
-        this.elements = elements;
-        this.types = types;
+    AbstractClassType(final ProcessingEnvironment processingEnv, final TypeMirror typeMirror) {
+        this.processingEnv = processingEnv;
+        this.elements = processingEnv.getElementUtils();
+        this.types = processingEnv.getTypeUtils();
         this.typeMirror = typeMirror;
     }
 
-    protected AbstractClassType(final Elements elements, final Types types, final Element element) {
-        this.elements = elements;
-        this.types = types;
+    AbstractClassType(final ProcessingEnvironment processingEnv, final Element element) {
+        this.processingEnv = processingEnv;
+        this.elements = processingEnv.getElementUtils();
+        this.types = processingEnv.getTypeUtils();
         this.typeMirror = element.asType();
     }
 

@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -38,8 +39,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Signature;
@@ -61,15 +60,14 @@ final class ThrowableTypeFactory {
     /**
      * Creates a new descriptor that is not primitive.
      *
-     * @param elements      the element utilities from the annotation processor.
-     * @param types         the type utilities from the annotation process.
-     * @param type          the class name of the return type.
-     * @param messageMethod the message method.
+     * @param processingEnv the annotation processing environment.
+     * @param type                  the class name of the return type.
+     * @param messageMethod         the message method.
      *
      * @return the return type descriptor.
      */
-    public static ThrowableType forReturnType(final Elements elements, final Types types, final TypeMirror type, final MessageMethod messageMethod) {
-        final AptReturnThrowableType result = new AptReturnThrowableType(elements, types, messageMethod, type);
+    public static ThrowableType forReturnType(final ProcessingEnvironment processingEnv, final TypeMirror type, final MessageMethod messageMethod) {
+        final AptReturnThrowableType result = new AptReturnThrowableType(processingEnv, messageMethod, type);
         result.init();
         return result;
     }
@@ -77,14 +75,13 @@ final class ThrowableTypeFactory {
     /**
      * Creates a new descriptor that is not primitive.
      *
-     * @param elements the element utilities from the annotation processor.
-     * @param types    the type utilities from the annotation process.
-     * @param type     the class name of the return type.
+     * @param processingEnv the annotation processing environment.
+     * @param type                  the class name of the return type.
      *
      * @return the return type descriptor.
      */
-    public static ThrowableType of(final Elements elements, final Types types, final TypeMirror type) {
-        final AptThrowableType result = new AptThrowableType(elements, types, type);
+    public static ThrowableType of(final ProcessingEnvironment processingEnv, final TypeMirror type) {
+        final AptThrowableType result = new AptThrowableType(processingEnv, type);
         result.init();
         return result;
     }
@@ -104,12 +101,11 @@ final class ThrowableTypeFactory {
         /**
          * Creates a new descriptor that is not primitive.
          *
-         * @param types    the type utilities from the annotation processor.
-         * @param elements the element utilities from the annotation processor.
-         * @param type     the class name of the return type.
+         * @param processingEnv the annotation processing environment.
+         * @param type                  the class name of the return type.
          */
-        private AptThrowableType(final Elements elements, final Types types, final TypeMirror type) {
-            super(elements, types, type);
+        private AptThrowableType(final ProcessingEnvironment processingEnv, final TypeMirror type) {
+            super(processingEnv, type);
             this.type = type;
             stringType = ElementHelper.toType(elements, String.class);
             throwableType = ElementHelper.toType(elements, Throwable.class);
@@ -261,13 +257,12 @@ final class ThrowableTypeFactory {
         /**
          * Creates a new descriptor that is not primitive.
          *
-         * @param types         the type utilities from the annotation processor.
-         * @param elements      the element utilities from the annotation processor.
-         * @param messageMethod the message method.
-         * @param type          the class name of the return type.
+         * @param processingEnv the annotation processing environment.
+         * @param messageMethod         the message method.
+         * @param type                  the class name of the return type.
          */
-        private AptReturnThrowableType(final Elements elements, final Types types, final MessageMethod messageMethod, final TypeMirror type) {
-            super(elements, types, type);
+        private AptReturnThrowableType(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod, final TypeMirror type) {
+            super(processingEnv, type);
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<>();
         }

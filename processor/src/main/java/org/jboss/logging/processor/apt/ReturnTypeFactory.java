@@ -28,6 +28,7 @@ import static org.jboss.logging.processor.util.Objects.areEqual;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -37,7 +38,6 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.ConstructType;
@@ -61,11 +61,11 @@ final class ReturnTypeFactory {
     }
 
 
-    public static ReturnType of(final Elements elements, final Types types, final TypeMirror returnType, final MessageMethod method) {
+    public static ReturnType of(final ProcessingEnvironment processingEnv, final TypeMirror returnType, final MessageMethod method) {
         if (returnType.getKind() == TypeKind.VOID) {
-            return VoidReturnType.getInstance(types);
+            return VoidReturnType.getInstance(processingEnv.getTypeUtils());
         }
-        final AptReturnType result = new AptReturnType(elements, types, returnType, method);
+        final AptReturnType result = new AptReturnType(processingEnv, returnType, method);
         result.init();
         return result;
     }
@@ -80,8 +80,8 @@ final class ReturnTypeFactory {
         private final MessageMethod method;
         private ThrowableType throwableType;
 
-        AptReturnType(final Elements elements, final Types types, final TypeMirror returnType, final MessageMethod method) {
-            super(elements, types, returnType);
+        AptReturnType(final ProcessingEnvironment processingEnv, final TypeMirror returnType, final MessageMethod method) {
+            super(processingEnv, returnType);
             this.returnType = returnType;
             this.method = method;
             throwableType = null;
@@ -138,7 +138,7 @@ final class ReturnTypeFactory {
                         throw new ProcessingException(method, "The requested type %s can not be assigned to %s.", returnType, this.returnType);
                     }
                 }
-                throwableType = ThrowableTypeFactory.forReturnType(elements, types, returnType, method);
+                throwableType = ThrowableTypeFactory.forReturnType(processingEnv, returnType, method);
             }
             final Element e = types.asElement(returnType);
             if (e instanceof TypeElement) {
