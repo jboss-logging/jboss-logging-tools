@@ -39,6 +39,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -59,6 +60,7 @@ import org.jboss.logging.processor.model.ReturnType;
 import org.jboss.logging.processor.model.ThrowableType;
 import org.jboss.logging.processor.util.Comparison;
 import org.jboss.logging.processor.util.ElementHelper;
+import org.jboss.logging.processor.util.Expressions;
 
 /**
  * Date: 29.07.2011
@@ -70,9 +72,11 @@ final class MessageMethodBuilder {
     private static final String MESSAGE_METHOD_SUFFIX = "$str";
     private final List<ExecutableElement> methods;
     private final ProcessingEnvironment processingEnv;
+    private final Properties expressionProperties;
 
-    private MessageMethodBuilder(final ProcessingEnvironment processingEnv) {
+    private MessageMethodBuilder(final ProcessingEnvironment processingEnv, final Properties expressionProperties) {
         this.processingEnv = processingEnv;
+        this.expressionProperties = expressionProperties;
         methods = new LinkedList<>();
     }
 
@@ -116,7 +120,7 @@ final class MessageMethodBuilder {
         AptMessage result = null;
         Message message = method.getAnnotation(Message.class);
         if (message != null) {
-            result = new AptMessage(message);
+            result = new AptMessage(message, expressionProperties);
             result.hasId = hasMessageId(message);
             result.inheritsId = message.id() == Message.INHERIT;
             if (result.inheritsId()) {
@@ -132,7 +136,7 @@ final class MessageMethodBuilder {
             for (ExecutableElement m : allMethods) {
                 message = m.getAnnotation(Message.class);
                 if (message != null) {
-                    result = new AptMessage(message);
+                    result = new AptMessage(message, expressionProperties);
                     result.hasId = hasMessageId(message);
                     result.inheritsId = message.id() == Message.INHERIT;
                     if (result.inheritsId()) {
@@ -169,7 +173,11 @@ final class MessageMethodBuilder {
     }
 
     static MessageMethodBuilder create(final ProcessingEnvironment processingEnv) {
-        return new MessageMethodBuilder(processingEnv);
+        return create(processingEnv, new Properties());
+    }
+
+    static MessageMethodBuilder create(final ProcessingEnvironment processingEnv, final Properties expressionProperties) {
+        return new MessageMethodBuilder(processingEnv, expressionProperties);
     }
 
     /**
@@ -400,12 +408,18 @@ final class MessageMethodBuilder {
     private static class AptMessage implements MessageMethod.Message {
 
         private final Message message;
+        private final String messageValue;
         private int id;
         private boolean hasId;
         private boolean inheritsId;
 
-        private AptMessage(final Message message) {
+        private AptMessage(final Message message, final Properties expressionProperties) {
             this.message = message;
+            if (expressionProperties.isEmpty()) {
+                this.messageValue = message.value();
+            } else {
+                this.messageValue = Expressions.resolve(expressionProperties, message.value());
+            }
         }
 
         @Override
@@ -425,7 +439,7 @@ final class MessageMethodBuilder {
 
         @Override
         public String value() {
-            return message.value();
+            return messageValue;
         }
 
         @Override

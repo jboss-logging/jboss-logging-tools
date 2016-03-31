@@ -97,6 +97,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <testExcludes>
+                        <exclude>**/ExpressionMessagesTest.java</exclude>
                         <exclude>**/LegacyLogger.java</exclude>
                         <exclude>**/LegacyLoggerTest.java</exclude>
                         <exclude>**/LegacyMessages.java</exclude>
