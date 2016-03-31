@@ -147,6 +147,13 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+        if (!roundEnv.processingOver()) {
+            doProcess(annotations, roundEnv);
+        }
+        return true;
+    }
+
+    private void doProcess(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
         boolean generate = true;
         final Validator validator = new Validator(processingEnv.getElementUtils(), processingEnv.getTypeUtils());
 
@@ -195,7 +202,6 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 }
             }
         }
-        return true;
     }
 
     @SafeVarargs

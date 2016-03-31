@@ -40,12 +40,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -69,12 +69,10 @@ final class MessageMethodBuilder {
 
     private static final String MESSAGE_METHOD_SUFFIX = "$str";
     private final List<ExecutableElement> methods;
-    private final Elements elements;
-    private final Types types;
+    private final ProcessingEnvironment processingEnv;
 
-    private MessageMethodBuilder(final Elements elements, final Types types) {
-        this.elements = elements;
-        this.types = types;
+    private MessageMethodBuilder(final ProcessingEnvironment processingEnv) {
+        this.processingEnv = processingEnv;
         methods = new LinkedList<>();
     }
 
@@ -84,6 +82,7 @@ final class MessageMethodBuilder {
     }
 
     Set<MessageMethod> build() {
+        final Elements elements = processingEnv.getElementUtils();
         final Set<MessageMethod> result = new LinkedHashSet<>();
         for (ExecutableElement elementMethod : methods) {
             final AptMessageMethod resultMethod = new AptMessageMethod(elements, elementMethod);
@@ -91,11 +90,11 @@ final class MessageMethodBuilder {
             resultMethod.message = findMessage(methods, elementMethod);
             resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
             for (TypeMirror thrownType : elementMethod.getThrownTypes()) {
-                resultMethod.thrownTypes.add(ThrowableTypeFactory.of(elements, types, thrownType));
+                resultMethod.thrownTypes.add(ThrowableTypeFactory.of(processingEnv, thrownType));
             }
 
             // Create a list of parameters
-            for (Parameter parameter : ParameterFactory.of(elements, types, resultMethod.method)) {
+            for (Parameter parameter : ParameterFactory.of(processingEnv, resultMethod.method)) {
                 resultMethod.add(parameter);
             }
             // Check to see if the method is overloaded
@@ -107,7 +106,7 @@ final class MessageMethodBuilder {
                 resultMethod.translationKey = resultMethod.name();
             }
             // Set the return type
-            resultMethod.returnType = ReturnTypeFactory.of(elements, types, elementMethod.getReturnType(), resultMethod);
+            resultMethod.returnType = ReturnTypeFactory.of(processingEnv, elementMethod.getReturnType(), resultMethod);
             result.add(resultMethod);
         }
         return Collections.unmodifiableSet(result);
@@ -169,8 +168,8 @@ final class MessageMethodBuilder {
         return message != null && (message.id() != Message.NONE && message.id() != Message.INHERIT);
     }
 
-    static MessageMethodBuilder create(final Elements elements, final Types types) {
-        return new MessageMethodBuilder(elements, types);
+    static MessageMethodBuilder create(final ProcessingEnvironment processingEnv) {
+        return new MessageMethodBuilder(processingEnv);
     }
 
     /**

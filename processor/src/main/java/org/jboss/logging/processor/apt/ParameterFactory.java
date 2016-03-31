@@ -30,12 +30,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.Field;
@@ -59,7 +59,8 @@ final class ParameterFactory {
     private ParameterFactory() {
     }
 
-    public static Set<Parameter> of(final Elements elements, final Types types, final ExecutableElement method) {
+    public static Set<Parameter> of(final ProcessingEnvironment processingEnv, final ExecutableElement method) {
+        final Types types = processingEnv.getTypeUtils();
         final Set<Parameter> result = new LinkedHashSet<>();
         final List<? extends VariableElement> params = method.getParameters();
         int index = 0;
@@ -80,9 +81,9 @@ final class ParameterFactory {
                 }
             }
             if (method.isVarArgs()) {
-                result.add(new AptParameter(elements, types, qualifiedType, param, formatClass, (++index == params.size())));
+                result.add(new AptParameter(processingEnv, qualifiedType, param, formatClass, (++index == params.size())));
             } else {
-                result.add(new AptParameter(elements, types, qualifiedType, param, formatClass, false));
+                result.add(new AptParameter(processingEnv, qualifiedType, param, formatClass, false));
             }
         }
         return result;
@@ -103,15 +104,14 @@ final class ParameterFactory {
         /**
          * Only allow construction from within the parent class.
          *
-         * @param elements       the element utilities from the annotation processor.
-         * @param types          the type utilities from the annotation processor.
-         * @param qualifiedType  the qualified type name of the parameter.
-         * @param param          the parameter.
-         * @param formatterClass the formatter class, or {@code null} if none
-         * @param isVarArgs      {@code true} if this is a vararg parameter, otherwise {@code false}.
+         * @param processingEnv the annotation processing environment.
+         * @param qualifiedType         the qualified type name of the parameter.
+         * @param param                 the parameter.
+         * @param formatterClass        the formatter class, or {@code null} if none
+         * @param isVarArgs             {@code true} if this is a vararg parameter, otherwise {@code false}.
          */
-        AptParameter(final Elements elements, final Types types, final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
-            super(elements, types, param);
+        AptParameter(final ProcessingEnvironment processingEnv, final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
+            super(processingEnv, param);
             this.qualifiedType = qualifiedType;
             this.param = param;
             this.formatterClass = formatterClass;
