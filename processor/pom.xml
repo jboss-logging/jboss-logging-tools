@@ -39,6 +39,7 @@
 
     <properties>
         <test.report.path>${project.build.testOutputDirectory}</test.report.path>
+        <expression.properties.path>${basedir}/src/test/resources/expression.properties</expression.properties.path>
     </properties>
 
     <dependencies>
@@ -105,6 +106,7 @@
                                 <arg>-AreportType=adoc</arg>
                                 <arg>-AreportPath=${test.report.path}</arg>
                                 <arg>-AreportTitle=Test Title</arg>
+                                <arg>-AexpressionProperties=${expression.properties.path}</arg>
                             </compilerArgs>
                         </configuration>
                     </execution>
@@ -120,6 +122,7 @@
                                 <arg>-AreportType=xml</arg>
                                 <arg>-AreportPath=${test.report.path}</arg>
                                 <arg>-AreportTitle=Test Title</arg>
+                                <arg>-AexpressionProperties=${expression.properties.path}</arg>
                             </compilerArgs>
                         </configuration>
                     </execution>

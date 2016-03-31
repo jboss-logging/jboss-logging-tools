@@ -23,13 +23,20 @@ package org.jboss.logging.processor.apt;
 
 import static javax.lang.model.util.ElementFilter.typesIn;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -68,11 +75,13 @@ import org.jboss.logging.processor.validation.Validator;
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
 @SupportedOptions({
-        LoggingToolsProcessor.DEBUG_OPTION
+        LoggingToolsProcessor.DEBUG_OPTION,
+        LoggingToolsProcessor.EXPRESSION_PROPERTIES,
 })
 public class LoggingToolsProcessor extends AbstractProcessor {
 
     public static final String DEBUG_OPTION = "debug";
+    static final String EXPRESSION_PROPERTIES = "expressionProperties";
     private final List<String> interfaceAnnotations = Arrays.asList(MessageBundle.class.getName(), MessageLogger.class.getName());
     private final List<AbstractGenerator> generators;
     private final Set<String> supportedAnnotations;
@@ -154,6 +163,22 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     }
 
     private void doProcess(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+        final String propertiesPath = processingEnv.getOptions().getOrDefault(EXPRESSION_PROPERTIES, "");
+        final Properties expressionProperties = new Properties();
+        if (!propertiesPath.isEmpty()) {
+            final Path path = Paths.get(propertiesPath);
+            if (Files.notExists(path)) {
+                logger.error("Expression properties file %s does not exist.", propertiesPath);
+                return;
+            } else {
+                try (final BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+                    expressionProperties.load(reader);
+                } catch (IOException e) {
+                    logger.error(e, "Error reading expression properties file %s", propertiesPath);
+                    return;
+                }
+            }
+        }
         boolean generate = true;
         final Validator validator = new Validator(processingEnv.getElementUtils(), processingEnv.getTypeUtils());
 
@@ -165,7 +190,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                     final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
                     for (TypeElement interfaceElement : interfaces) {
                         try {
-                            final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement);
+                            final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement, expressionProperties);
                             final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
                             for (ValidationMessage message : validationMessages) {
                                 final Element element = message.getElement();

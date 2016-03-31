@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -41,7 +42,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.jboss.logging.BasicLogger;
@@ -72,12 +72,13 @@ public final class MessageInterfaceFactory {
      * Creates a message interface from the {@link javax.lang.model.element.TypeElement} specified by the {@code
      * interfaceElement} parameter.
      *
-     * @param processingEnv the annotation processing environment.
-     * @param interfaceElement      the interface element to parse.
+     * @param processingEnv        the annotation processing environment.
+     * @param interfaceElement     the interface element to parse.
+     * @param expressionProperties the properties used to resolve expressions
      *
      * @return a message interface for the interface element.
      */
-    public static MessageInterface of(final ProcessingEnvironment processingEnv, final TypeElement interfaceElement) {
+    public static MessageInterface of(final ProcessingEnvironment processingEnv, final TypeElement interfaceElement, final Properties expressionProperties) {
         final Types types = processingEnv.getTypeUtils();
         if (types.isSameType(interfaceElement.asType(), ElementHelper.toType(processingEnv.getElementUtils(), BasicLogger.class))) {
             MessageInterface result = LOGGER_INTERFACE;
@@ -92,10 +93,10 @@ public final class MessageInterfaceFactory {
             }
             return result;
         }
-        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv);
+        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv, expressionProperties);
         result.init();
         for (TypeMirror typeMirror : interfaceElement.getInterfaces()) {
-            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv, (TypeElement) types.asElement(typeMirror));
+            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv, (TypeElement) types.asElement(typeMirror), expressionProperties);
             result.extendedInterfaces.add(extended);
             result.extendedInterfaces.addAll(extended.extendedInterfaces());
         }
@@ -110,6 +111,7 @@ public final class MessageInterfaceFactory {
         private final Set<MessageInterface> extendedInterfaces;
         private final List<MessageMethod> messageMethods;
         private final List<ValidIdRange> validIdRanges;
+        private final Properties expressionProperties;
         private String projectCode;
         private String packageName;
         private String simpleName;
@@ -117,9 +119,10 @@ public final class MessageInterfaceFactory {
         private String fqcn;
         private int idLen;
 
-        private AptMessageInterface(final TypeElement interfaceElement, final ProcessingEnvironment processingEnv) {
+        private AptMessageInterface(final TypeElement interfaceElement, final ProcessingEnvironment processingEnv, final Properties expressionProperties) {
             super(processingEnv, interfaceElement);
             this.interfaceElement = interfaceElement;
+            this.expressionProperties = expressionProperties;
             this.messageMethods = new LinkedList<>();
             this.extendedInterfaces = new LinkedHashSet<>();
             if (ElementHelper.isAnnotatedWith(interfaceElement, ValidIdRanges.class)) {
@@ -167,7 +170,7 @@ public final class MessageInterfaceFactory {
         }
 
         private void init() {
-            final MessageMethodBuilder builder = MessageMethodBuilder.create(processingEnv)
+            final MessageMethodBuilder builder = MessageMethodBuilder.create(processingEnv, expressionProperties)
                     .add(getMessageMethods(interfaceElement));
             final Collection<MessageMethod> m = builder.build();
             this.messageMethods.addAll(m);
