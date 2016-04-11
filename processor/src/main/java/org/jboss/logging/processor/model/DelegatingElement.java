@@ -97,4 +97,15 @@ public interface DelegatingElement extends Element {
     default <A extends Annotation> A[] getAnnotationsByType(final Class<A> annotationType) {
         return getDelegate().getAnnotationsByType(annotationType);
     }
+
+    /**
+     * Checks whether or not the annotation is present on the element.
+     *
+     * @param annotation the annotation to check for
+     *
+     * @return {@code true} if the annotation is present, otherwise {@code false}
+     */
+    default boolean isAnnotatedWith(Class<? extends Annotation> annotation) {
+        return getAnnotation(annotation) != null;
+    }
 }

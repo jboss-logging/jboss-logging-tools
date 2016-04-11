@@ -22,6 +22,8 @@
 
 package org.jboss.logging.processor.apt;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 
 /**
@@ -31,6 +33,8 @@ import javax.lang.model.element.Element;
  */
 public class ProcessingException extends RuntimeException {
     private final Element element;
+    private final AnnotationMirror annotation;
+    private final AnnotationValue annotationValue;
 
     /**
      * Creates a new exception.
@@ -39,8 +43,33 @@ public class ProcessingException extends RuntimeException {
      * @param message the message
      */
     public ProcessingException(final Element element, final String message) {
+        this(element, null, null, message);
+    }
+
+    /**
+     * Creates a new exception.
+     *
+     * @param element    the element the error occurs on
+     * @param annotation the annotation the error occurred on
+     * @param message    the message
+     */
+    public ProcessingException(final Element element, final AnnotationMirror annotation, final String message) {
+        this(element, annotation, null, message);
+    }
+
+    /**
+     * Creates a new exception.
+     *
+     * @param element         the element the error occurs on
+     * @param annotation      the annotation the error occurred on
+     * @param annotationValue the annotation value
+     * @param message         the message
+     */
+    public ProcessingException(final Element element, final AnnotationMirror annotation, final AnnotationValue annotationValue, final String message) {
         super(message);
         this.element = element;
+        this.annotation = annotation;
+        this.annotationValue = annotationValue;
     }
 
     /**
@@ -51,8 +80,35 @@ public class ProcessingException extends RuntimeException {
      * @param args    the arguments for the format
      */
     public ProcessingException(final Element element, final String format, final Object... args) {
+        this(element, null, null, format, args);
+    }
+
+    /**
+     * Creates a new exception.
+     *
+     * @param element    the element the error occurs on
+     * @param annotation the annotation the error occurred on
+     * @param format     the format for the message
+     * @param args       the arguments for the format
+     */
+    public ProcessingException(final Element element, final AnnotationMirror annotation, final String format, final Object... args) {
+        this(element, annotation, null, format, args);
+    }
+
+    /**
+     * Creates a new exception.
+     *
+     * @param element         the element the error occurs on
+     * @param annotation      the annotation the error occurred on
+     * @param annotationValue the annotation value
+     * @param format          the format for the message
+     * @param args            the arguments for the format
+     */
+    public ProcessingException(final Element element, final AnnotationMirror annotation, final AnnotationValue annotationValue, final String format, final Object... args) {
         super(String.format(format, args));
         this.element = element;
+        this.annotation = annotation;
+        this.annotationValue = annotationValue;
     }
 
     /**
@@ -62,5 +118,23 @@ public class ProcessingException extends RuntimeException {
      */
     public Element getElement() {
         return element;
+    }
+
+    /**
+     * The annotation where the error occurred.
+     *
+     * @return the annotation or {@code null} if the error did not occur on an annotation
+     */
+    public AnnotationMirror getAnnotation() {
+        return annotation;
+    }
+
+    /**
+     * The value for the annotation that is invalid.
+     *
+     * @return the annotation value or {@code null}
+     */
+    public AnnotationValue getAnnotationValue() {
+        return annotationValue;
     }
 }

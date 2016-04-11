@@ -37,7 +37,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Filer;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.SimpleAnnotationValueVisitor8;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
@@ -54,7 +59,9 @@ import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JTypes;
 import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.annotations.Field;
+import org.jboss.logging.annotations.Fields;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Properties;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
@@ -64,6 +71,7 @@ import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ThrowableType;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * An abstract code model to create the source file that implements the
@@ -371,6 +379,10 @@ abstract class ImplementationClassModel extends ClassModel {
             body.add($v(resultField).call("initCause").arg($v(messageMethod.cause().name())));
         }
 
+        // Get the @Property or @Properties annotation values
+        addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Properties.class, Property.class), body, $v(resultField), false);
+        addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Fields.class, Field.class), body, $v(resultField), true);
+
         // Remove this caller from the stack trace
         final JType arrays = $t(Arrays.class);
         sourceFile._import(arrays);
@@ -416,5 +428,92 @@ abstract class ImplementationClassModel extends ClassModel {
             sourceFile._import(paramType);
         }
         return method.param(FINAL, paramType, param.name());
+    }
+
+    private void addDefultProperties(final MessageMethod messageMethod, final Collection<AnnotationMirror> annotations, final JBlock body, final JAssignableExpr resultField, final boolean field) {
+        for (AnnotationMirror propertyAnnotation : annotations) {
+            String name = null;
+            AnnotationValue annotationValue = null;
+            for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : propertyAnnotation.getElementValues().entrySet()) {
+                final ExecutableElement attribute = entry.getKey();
+                final AnnotationValue attributeValue = entry.getValue();
+                if ("name".contentEquals(attribute.getSimpleName())) {
+                    name = String.valueOf(attributeValue.getValue());
+                } else {
+                    annotationValue = attributeValue;
+                }
+            }
+            if (name == null) {
+                throw new ProcessingException(messageMethod, propertyAnnotation, "The name attribute is required for the annotation.");
+            }
+            if (annotationValue == null || annotationValue.getValue() == null) {
+                throw new ProcessingException(messageMethod, propertyAnnotation, "A value for one of the default attributes is required.");
+            }
+            final JExpr resultValue = annotationValue.accept(JExprAnnotationValueVisitor.INSTANCE, null);
+            if (resultValue == null) {
+                final Object value = annotationValue.getValue();
+                throw new ProcessingException(messageMethod, propertyAnnotation, annotationValue, "Could not resolve value type for %s (%s)", value, value.getClass());
+            }
+            if (field) {
+                body.add(resultField.field(name).assign(resultValue));
+            } else {
+                body.add(resultField.call("set" + Character.toUpperCase(name.charAt(0)) + name.substring(1)).arg(resultValue));
+            }
+        }
+    }
+
+    private static class JExprAnnotationValueVisitor extends SimpleAnnotationValueVisitor8<JExpr, Void> {
+        private static final JExprAnnotationValueVisitor INSTANCE = new JExprAnnotationValueVisitor();
+        @Override
+        public JExpr visitBoolean(final boolean b, final Void v) {
+            return b ? JExpr.TRUE : JExpr.FALSE;
+        }
+
+        @Override
+        public JExpr visitByte(final byte b, final Void v) {
+            return JExprs.decimal(b).cast(JType.BYTE);
+        }
+
+        @Override
+        public JExpr visitChar(final char c, final Void v) {
+            return JExprs.ch(c);
+        }
+
+        @Override
+        public JExpr visitDouble(final double d, final Void v) {
+            // TODO (jrp) this is fixed in upstream JDeparser, but for now we need to use this
+            // setterValue = JExprs.hex(d);
+            return JExprs.$v(String.format("%ad", d));
+        }
+
+        @Override
+        public JExpr visitFloat(final float f, final Void v) {
+            return JExprs.hex(f);
+        }
+
+        @Override
+        public JExpr visitInt(final int i, final Void v) {
+            return JExprs.decimal(i);
+        }
+
+        @Override
+        public JExpr visitLong(final long i, final Void v) {
+            return JExprs.decimal(i);
+        }
+
+        @Override
+        public JExpr visitShort(final short s, final Void v) {
+            return JExprs.decimal((int) s).cast(JType.SHORT);
+        }
+
+        @Override
+        public JExpr visitString(final String s, final Void v) {
+            return JExprs.str(s);
+        }
+
+        @Override
+        public JExpr visitType(final TypeMirror t, final Void v) {
+            return JExprs.$v(t.toString()+ ".class");
+        }
     }
 }

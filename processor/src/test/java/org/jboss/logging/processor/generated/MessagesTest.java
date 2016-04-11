@@ -84,6 +84,46 @@ public class MessagesTest {
 
     }
 
+    @Test
+    public void testPropertyConstants() {
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.booleanProperty().value, true);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.byteProperty().value, "x".getBytes()[0]);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.charProperty().value, MethodMessageConstants.testChar);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.classProperty().value, MethodMessageConstants.ValueType.class);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.douleProperty().value, Double.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.floatProperty().value, Float.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.intProperty().value, Integer.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.longProperty().value, Long.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.shortProperty().value, Short.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.stringProperty().value, MethodMessageConstants.stringTest);
+        MethodMessageConstants.TypeException exception = MethodMessageConstants.MESSAGES.multiProperty();
+        Assert.assertEquals(exception.type, String.class);
+        Assert.assertEquals(exception.value, MethodMessageConstants.stringTest);
+        exception = MethodMessageConstants.MESSAGES.repeatableProperty();
+        Assert.assertEquals(exception.type, String.class);
+        Assert.assertEquals(exception.value, MethodMessageConstants.stringTest);
+    }
+
+    @Test
+    public void testFieldConstants() {
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.booleanField().value, true);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.byteField().value, "x".getBytes()[0]);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.charField().value, MethodMessageConstants.testChar);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.classField().value, MethodMessageConstants.ValueType.class);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.douleField().value, Double.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.floatField().value, Float.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.intField().value, Integer.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.longField().value, Long.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.shortField().value, Short.MAX_VALUE);
+        Assert.assertEquals(MethodMessageConstants.MESSAGES.stringField().value, MethodMessageConstants.stringTest);
+        MethodMessageConstants.TypeException exception = MethodMessageConstants.MESSAGES.multiField();
+        Assert.assertEquals(exception.type, String.class);
+        Assert.assertEquals(exception.value, MethodMessageConstants.stringTest);
+        exception = MethodMessageConstants.MESSAGES.repeatableField();
+        Assert.assertEquals(exception.type, String.class);
+        Assert.assertEquals(exception.value, MethodMessageConstants.stringTest);
+    }
+
     private <T> void compare(final T[] a1, final T[] a2) {
         Assert.assertTrue(equalsIgnoreOrder(a1, a2), String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)));
     }
