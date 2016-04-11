@@ -22,7 +22,6 @@
 
 package org.jboss.logging.processor.model;
 
-import java.lang.annotation.Annotation;
 import javax.lang.model.AnnotatedConstruct;
 
 /**
@@ -31,17 +30,6 @@ import javax.lang.model.AnnotatedConstruct;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public interface ClassType extends AnnotatedConstruct {
-
-    /**
-     * Checks whether or not the annotation is present on the element.
-     *
-     * @param annotation the annotation to check for
-     *
-     * @return {@code true} if the annotation is present, otherwise {@code false}
-     */
-    default boolean isAnnotatedWith(Class<? extends Annotation> annotation) {
-        return getAnnotation(annotation) != null;
-    }
 
     /**
      * Determines if this type is either the same as, or is a supertype of, the class represented by the {@code type}

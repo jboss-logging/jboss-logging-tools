@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
@@ -76,15 +77,17 @@ public final class Validator {
     private final MessageIdValidator messageIdValidator;
     private final IdLengthValidator idLengthValidator;
     private final IdRangeValidator idRangeValidator;
+    private final ProcessingEnvironment processingEnv;
     private final Elements elements;
     private final Types types;
 
-    public Validator(final Elements elements, final Types types) {
+    public Validator(final ProcessingEnvironment processingEnv) {
         messageIdValidator = new MessageIdValidator();
         idLengthValidator = new IdLengthValidator();
         idRangeValidator = new IdRangeValidator();
-        this.elements = elements;
-        this.types = types;
+        this.processingEnv = processingEnv;
+        this.elements = processingEnv.getElementUtils();
+        this.types = processingEnv.getTypeUtils();
     }
 
     /**
@@ -354,6 +357,7 @@ public final class Validator {
                 messages.add(createError(messageMethod, "ConstructType annotation requires a throwable return type"));
             }
         }
+        messages.addAll(PropertyValidator.validate(processingEnv, messageMethod));
         return messages;
     }
 

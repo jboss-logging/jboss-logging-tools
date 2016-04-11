@@ -306,6 +306,35 @@ public final class ElementHelper {
     }
 
     /**
+     * Returns annotations that are associated with the element that match the {@code annotation} parameter type. If the
+     * {@code groupedAnnotation} is not {@code null} then any repeated annotations that math the {@code annotation}
+     * parameter type are also returned.
+     * <p>
+     * <p>
+     * The {@code groupedAnnotation} must have a value attribute that includes an array of annotations that math the
+     * {@code annotation} parameter type.
+     * </p>
+     *
+     * @param element           the element to search for annotations
+     * @param groupedAnnotation the grouped annotation, e.g. collector for repeatable annotations, or {@code null} if not a repeatable annotation
+     * @param annotation        the annotation to search for
+     *
+     * @return a collection matched annotations
+     */
+    public static Collection<AnnotationMirror> getAnnotations(final Element element, final Class<? extends Annotation> groupedAnnotation, final Class<? extends Annotation> annotation) {
+        final Collection<AnnotationMirror> result = new ArrayList<>();
+        final List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : annotations) {
+            if (isSameType(groupedAnnotation, annotationMirror.getAnnotationType())) {
+                result.addAll(getContainingAnnotations(annotationMirror));
+            } else if (isSameType(annotation, annotationMirror.getAnnotationType())) {
+                result.add(annotationMirror);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Checks whether or not a constructor matching the parameters exists.
      *
      * @param types   the type utility used to compare the type arguments
@@ -349,5 +378,31 @@ public final class ElementHelper {
      */
     public static TypeMirror toType(final Elements elements, final Class<?> type) {
         return elements.getTypeElement(type.getCanonicalName()).asType();
+    }
+
+    private static boolean isSameType(final Class<?> c, final TypeMirror type) {
+        return c != null && c.getCanonicalName().equals(type.toString());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Collection<AnnotationMirror> getContainingAnnotations(final AnnotationMirror annotation) {
+        final Collection<AnnotationMirror> result = new ArrayList<>();
+        // Return any child annotations
+        final Map<? extends ExecutableElement, ? extends AnnotationValue> childAnnotations = annotation.getElementValues();
+        childAnnotations.entrySet().stream().filter(entry -> entry.getKey().getSimpleName().contentEquals("value")).forEach(entry -> {
+            final Object value = entry.getValue().getValue();
+            if (value instanceof List) {
+                final List<? extends AnnotationValue> values = (List<? extends AnnotationValue>) value;
+                for (AnnotationValue subValue : values) {
+                    if (subValue instanceof AnnotationMirror) {
+                        result.add((AnnotationMirror) subValue);
+                    } else {
+                        result.add((AnnotationMirror) subValue.getValue());
+                    }
+                }
+            }
+        });
+
+        return result;
     }
 }

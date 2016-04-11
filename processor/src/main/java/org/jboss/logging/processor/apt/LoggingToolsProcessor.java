@@ -43,9 +43,12 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.ConstructType;
@@ -64,6 +67,7 @@ import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.ValidIdRange;
 import org.jboss.logging.annotations.ValidIdRanges;
+import org.jboss.logging.processor.model.DelegatingElement;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.validation.ValidationMessage;
 import org.jboss.logging.processor.validation.Validator;
@@ -180,7 +184,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
             }
         }
         boolean generate = true;
-        final Validator validator = new Validator(processingEnv.getElementUtils(), processingEnv.getTypeUtils());
+        final Validator validator = new Validator(processingEnv);
 
         //Call jboss logging tools
         for (TypeElement annotation : annotations) {
@@ -193,20 +197,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                             final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement, expressionProperties);
                             final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
                             for (ValidationMessage message : validationMessages) {
-                                final Element element = message.getElement();
-                                switch (message.type()) {
-                                    case ERROR: {
-                                        logger.error(element, message.getMessage());
-                                        generate = false;
-                                        break;
-                                    }
-                                    case WARN: {
-                                        logger.warn(element, message.getMessage());
-                                        break;
-                                    }
-                                    default: {
-                                        logger.note(element, message.getMessage());
-                                    }
+                                if (message.printMessage(processingEnv.getMessager())) {
+                                    generate = false;
                                 }
                             }
                             if (generate) {
@@ -219,7 +211,16 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                                 }
                             }
                         } catch (ProcessingException e) {
-                            logger.error(e.getElement(), e.getMessage());
+                            final AnnotationMirror a = e.getAnnotation();
+                            final AnnotationValue value = e.getAnnotationValue();
+                            final Element element = resolveElement(e.getElement());
+                            if (a == null) {
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element);
+                            } else if (value == null) {
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element, a);
+                            } else {
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element, a, value);
+                            }
                         }
                     }
                 } catch (Throwable t) {
@@ -236,5 +237,12 @@ public class LoggingToolsProcessor extends AbstractProcessor {
             supportedAnnotations.add(c.getName());
         }
         return Collections.unmodifiableSet(supportedAnnotations);
+    }
+
+    private static Element resolveElement(final Element element) {
+        if (element instanceof DelegatingElement) {
+            return ((DelegatingElement) element).getDelegate();
+        }
+        return element;
     }
 }
