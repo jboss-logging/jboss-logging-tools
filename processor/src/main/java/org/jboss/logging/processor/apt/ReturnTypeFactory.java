@@ -74,8 +74,6 @@ final class ReturnTypeFactory {
      * Implementation of return type.
      */
     private static class AptReturnType extends AbstractClassType implements ReturnType {
-        private final Map<String, TypeMirror> fields;
-        private final Map<String, TypeMirror> methods;
         private final TypeMirror returnType;
         private final MessageMethod method;
         private ThrowableType throwableType;
@@ -85,23 +83,11 @@ final class ReturnTypeFactory {
             this.returnType = returnType;
             this.method = method;
             throwableType = null;
-            fields = new LinkedHashMap<>();
-            methods = new LinkedHashMap<>();
         }
 
         @Override
         public Element getDelegate() {
             return types.asElement(returnType);
-        }
-
-        @Override
-        public boolean hasFieldFor(final Parameter parameter) {
-            return fields.containsKey(parameter.targetName()) && checkType(parameter, fields.get(parameter.targetName()));
-        }
-
-        @Override
-        public boolean hasMethodFor(final Parameter parameter) {
-            return methods.containsKey(parameter.targetName()) && checkType(parameter, methods.get(parameter.targetName()));
         }
 
         @Override
@@ -139,20 +125,6 @@ final class ReturnTypeFactory {
                     }
                 }
                 throwableType = ThrowableTypeFactory.forReturnType(processingEnv, returnType, method);
-            }
-            final Element e = types.asElement(returnType);
-            if (e instanceof TypeElement) {
-                final List<ExecutableElement> returnTypeMethods = ElementFilter.methodsIn(elements.getAllMembers((TypeElement) e));
-                for (ExecutableElement executableElement : returnTypeMethods) {
-                    if (executableElement.getModifiers().contains(Modifier.PUBLIC) && executableElement.getParameters().size() == 1) {
-                        methods.put(executableElement.getSimpleName().toString(), executableElement.getParameters().get(0).asType());
-                    }
-                }
-                for (Element element : ElementFilter.fieldsIn(elements.getAllMembers((TypeElement) e))) {
-                    if (element.getModifiers().contains(Modifier.PUBLIC) && !element.getModifiers().contains(Modifier.FINAL)) {
-                        fields.put(element.getSimpleName().toString(), element.asType());
-                    }
-                }
             }
         }
 
@@ -219,16 +191,6 @@ final class ReturnTypeFactory {
         @Override
         public TypeMirror asType() {
             return voidType;
-        }
-
-        @Override
-        public boolean hasFieldFor(final Parameter parameter) {
-            return false;
-        }
-
-        @Override
-        public boolean hasMethodFor(final Parameter parameter) {
-            return false;
         }
 
         @Override

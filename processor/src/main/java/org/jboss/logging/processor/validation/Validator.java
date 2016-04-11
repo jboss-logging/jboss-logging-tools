@@ -48,14 +48,12 @@ import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.ConstructType;
-import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.LoggingClass;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
-import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
@@ -229,6 +227,8 @@ public final class Validator {
             }
             // Validate the parameters
             messages.addAll(validateParameters(messageMethod));
+            // Validate property annotations
+            messages.addAll(PropertyValidator.validate(processingEnv, messageMethod));
         }
         return messages;
     }
@@ -258,7 +258,6 @@ public final class Validator {
     private Collection<ValidationMessage> validateParameters(final MessageMethod messageMethod) {
         final List<ValidationMessage> messages = new ArrayList<>();
         boolean foundCause = false;
-        final ReturnType returnType = messageMethod.returnType();
         for (Parameter parameter : messageMethod.parameters()) {
             if (parameter.isAnnotatedWith(Cause.class)) {
                 if (foundCause) {
@@ -270,16 +269,6 @@ public final class Validator {
             if (parameter.isAnnotatedWith(LoggingClass.class)) {
                 if (!parameter.isSameAs(Class.class)) {
                     messages.add(createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.", parameter.name(), messageMethod.name(), Class.class.getName()));
-                }
-            }
-            if (parameter.isAnnotatedWith(Field.class)) {
-                if (!returnType.hasFieldFor(parameter)) {
-                    messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", returnType.asType(), parameter.targetName(), parameter.asType()));
-                }
-            }
-            if (parameter.isAnnotatedWith(Property.class)) {
-                if (!returnType.hasMethodFor(parameter)) {
-                    messages.add(createError(parameter, "No method found in %s with signature %s(%s).", returnType.asType(), parameter.targetName(), parameter.asType()));
                 }
             }
         }
@@ -357,7 +346,6 @@ public final class Validator {
                 messages.add(createError(messageMethod, "ConstructType annotation requires a throwable return type"));
             }
         }
-        messages.addAll(PropertyValidator.validate(processingEnv, messageMethod));
         return messages;
     }
 

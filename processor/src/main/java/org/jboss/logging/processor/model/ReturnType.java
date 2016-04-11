@@ -30,28 +30,6 @@ package org.jboss.logging.processor.model;
 public interface ReturnType extends ClassType, DelegatingElement {
 
     /**
-     * Checks to see if the return type has a field with the name with the same name and type as the
-     * {@link Parameter parameter}.
-     *
-     * @param parameter the parameter to check.
-     *
-     * @return {@code true} if the field exists, is accessible,  mutable and is assignable from the type otherwise
-     * {@code false}.
-     */
-    boolean hasFieldFor(final Parameter parameter);
-
-    /**
-     * Checks to see if the return type has a method with the name with the same name and parameter type as the
-     * {@link Parameter parameter}.
-     *
-     * @param parameter the parameter to check.
-     *
-     * @return {@code true} if the method exists, is accessible and its parameter is assignable from the type, otherwise
-     * {@code false}.
-     */
-    boolean hasMethodFor(final Parameter parameter);
-
-    /**
      * Checks to see if the return type is an exception, extends Throwable.
      *
      * @return {@code true} if the return type is an exception, otherwise {@code false}.
