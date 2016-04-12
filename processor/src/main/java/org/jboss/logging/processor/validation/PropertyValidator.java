@@ -30,8 +30,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -51,6 +53,7 @@ import org.jboss.logging.annotations.Fields;
 import org.jboss.logging.annotations.Properties;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.ElementHelper;
 
 /**
@@ -71,14 +74,14 @@ class PropertyValidator {
     private static final List<Class<? extends Annotation>> VALIDATING_ANNOTATIONS = Arrays.asList(Properties.class, Property.class, Fields.class, Field.class);
     private final Elements elements;
     private final Types types;
-    private final Element element;
+    private final MessageMethod method;
     private final TypeMirror resultType;
     private final Collection<ValidationMessage> messages;
 
-    private PropertyValidator(final ProcessingEnvironment processingEnv, final Element element, final TypeMirror resultType, final Collection<ValidationMessage> messages) {
+    private PropertyValidator(final ProcessingEnvironment processingEnv, final MessageMethod method, final TypeMirror resultType, final Collection<ValidationMessage> messages) {
         elements = processingEnv.getElementUtils();
         types = processingEnv.getTypeUtils();
-        this.element = element;
+        this.method = method;
         this.resultType = resultType;
         this.messages = messages;
     }
@@ -92,33 +95,21 @@ class PropertyValidator {
      * @return a collection of validation messages
      */
     static Collection<ValidationMessage> validate(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod) {
-        return validate(processingEnv, messageMethod.getDelegate(), messageMethod.getReturnType());
-    }
-
-    /**
-     * Validates the element property annotations and ensures they can be set on the type.
-     *
-     * @param processingEnv the annotation processing environment
-     * @param element       the element that may contain property annotations
-     * @param type          the type the properties will be set on
-     *
-     * @return a collection of validation messages
-     */
-    static Collection<ValidationMessage> validate(final ProcessingEnvironment processingEnv, final Element element, final TypeMirror type) {
-        boolean continueValidation = false;
+        boolean continueValidation = !(messageMethod.parametersAnnotatedWith(Field.class).isEmpty() && messageMethod.parametersAnnotatedWith(Property.class).isEmpty());
         for (Class<? extends Annotation> annotation : VALIDATING_ANNOTATIONS) {
-            if (element.getAnnotation(annotation) != null) {
+            if (messageMethod.isAnnotatedWith(annotation)) {
                 continueValidation = true;
                 break;
             }
         }
         if (continueValidation) {
+            final TypeMirror returnType = messageMethod.getReturnType();
             final List<ValidationMessage> result = new ArrayList<>();
-            if (type.getKind() == TypeKind.DECLARED) {
-                final PropertyValidator validator = new PropertyValidator(processingEnv, element, type, result);
+            if (returnType.getKind() == TypeKind.DECLARED) {
+                final PropertyValidator validator = new PropertyValidator(processingEnv, messageMethod, returnType, result);
                 validator.validate();
             } else {
-                result.add(createError(element, "The return type is invalid for property annotations."));
+                result.add(createError(messageMethod, "The return type is invalid for property annotations."));
             }
             return result;
         }
@@ -126,36 +117,81 @@ class PropertyValidator {
     }
 
     private void validate() {
-        final Map<String, TypeMirror> fields = new HashMap<>();
-        final Map<String, TypeMirror> methods = new HashMap<>();
-        final Element e = types.asElement(resultType);
-        for (ExecutableElement executableElement : ElementFilter.methodsIn(elements.getAllMembers((TypeElement) e))) {
+        final Map<String, Set<TypeMirror>> fields = new HashMap<>();
+        final Map<String, Set<TypeMirror>> methods = new HashMap<>();
+        final TypeElement e = (TypeElement) types.asElement(resultType);
+        for (ExecutableElement executableElement : ElementFilter.methodsIn(elements.getAllMembers(e))) {
             if (executableElement.getModifiers().contains(Modifier.PUBLIC) && executableElement.getParameters().size() == 1) {
                 final String methodName = executableElement.getSimpleName().toString();
                 // Only add setters and use a property style name
                 if (methodName.startsWith("set")) {
                     final String name = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
-                    methods.put(name, executableElement.getParameters().get(0).asType());
+                    final Set<TypeMirror> types = methods.computeIfAbsent(name, (key -> new HashSet<>()));
+                    types.add(executableElement.getParameters().get(0).asType());
                 }
             }
         }
-        for (Element element : ElementFilter.fieldsIn(elements.getAllMembers((TypeElement) e))) {
+        for (Element element : ElementFilter.fieldsIn(elements.getAllMembers(e))) {
             if (element.getModifiers().contains(Modifier.PUBLIC) && !element.getModifiers().contains(Modifier.FINAL)) {
-                fields.put(element.getSimpleName().toString(), element.asType());
+                final Set<TypeMirror> types = fields.computeIfAbsent(element.getSimpleName().toString(), (key -> new HashSet<>()));
+                types.add(element.asType());
             }
         }
-        ElementHelper.getAnnotations(element, Fields.class, Field.class).forEach(a -> validateAnnotation(a, fields));
-        ElementHelper.getAnnotations(element, Properties.class, Property.class).forEach(a -> validateAnnotation(a, methods));
+        // Validate default properties
+        ElementHelper.getAnnotations(method, Fields.class, Field.class).forEach(a -> validateAnnotation(a, fields));
+        ElementHelper.getAnnotations(method, Properties.class, Property.class).forEach(a -> validateAnnotation(a, methods));
+
+        // Validate fields
+        for (Parameter parameter : method.parametersAnnotatedWith(Field.class)) {
+            final Set<TypeMirror> propertyTypes = fields.get(resolveFieldName(parameter));
+            final TypeMirror valueType = parameter.asType();
+            if (!assignablePropertyFound(valueType, propertyTypes)) {
+                messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", resultType, parameter.targetName(), valueType));
+            }
+            validateCommonAnnotation(parameter, Field.class);
+        }
+        // Validate properties
+        for (Parameter parameter : method.parametersAnnotatedWith(Property.class)) {
+            final Set<TypeMirror> propertyTypes = methods.get(resolveSetterName(parameter));
+            final TypeMirror valueType = parameter.asType();
+            if (!assignablePropertyFound(valueType, propertyTypes)) {
+                messages.add(createError(parameter, "No method found in %s with signature %s(%s).", resultType, parameter.targetName(), valueType));
+            }
+            validateCommonAnnotation(parameter, Property.class);
+        }
     }
 
-    private void validateAnnotation(final AnnotationMirror annotationMirror, final Map<String, TypeMirror> properties) {
+    private void validateCommonAnnotation(final Parameter parameter, final Class<? extends Annotation> annotation) {
+        final Collection<AnnotationMirror> annotations = ElementHelper.getAnnotations(parameter, null, annotation);
+        // There should only be one annotation
+        if (annotations.size() != 1) {
+            messages.add(createError(parameter, "Parameters can contain only a single @%s annotation.", annotation.getName()));
+        } else {
+            // We should have a name value and one other value
+            final AnnotationMirror annotationMirror = annotations.iterator().next();
+            final Map<? extends ExecutableElement, ? extends AnnotationValue> map = annotationMirror.getElementValues();
+            if (!map.isEmpty()) {
+                // Look for the name attribute and a single value
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : map.entrySet()) {
+                    final ExecutableElement attribute = entry.getKey();
+                    final AnnotationValue attributeValue = entry.getValue();
+                    if (!"name".contentEquals(attribute.getSimpleName())) {
+                        messages.add(createError(parameter, annotationMirror, attributeValue,
+                                "Default values are not allowed for parameters annotated with @%s. %s", annotation.getName(), annotationMirror));
+                    }
+                }
+            }
+        }
+    }
+
+    private void validateAnnotation(final AnnotationMirror annotationMirror, final Map<String, Set<TypeMirror>> properties) {
         // We should have a name value and one other value
         final Map<? extends ExecutableElement, ? extends AnnotationValue> map = annotationMirror.getElementValues();
         final int size = map.size();
         if (size < 2) {
-            messages.add(createError(element, annotationMirror, "The name attribute and at least one default value are required: %s", annotationMirror));
+            messages.add(createError(method, annotationMirror, "The name attribute and at least one default value are required: %s", annotationMirror));
         } else if (size > 2) {
-            messages.add(createError(element, annotationMirror, "Only the name attribute and one default attribute are allowed to be defined: %s", annotationMirror));
+            messages.add(createError(method, annotationMirror, "Only the name attribute and one default attribute are allowed to be defined: %s", annotationMirror));
         } else {
             // Look for the name attribute and a single value
             String name = null;
@@ -170,22 +206,61 @@ class PropertyValidator {
                 }
             }
             if (name == null) {
-                messages.add(createError(element, annotationMirror, "The name attribute is required on %s", annotationMirror));
+                messages.add(createError(method, annotationMirror, "The name attribute is required on %s", annotationMirror));
             } else if (value == null) {
-                messages.add(createError(element, annotationMirror, "No value could be determined for %s", annotationMirror));
+                messages.add(createError(method, annotationMirror, "No value could be determined for %s", annotationMirror));
             } else {
-                final TypeMirror propertyType = properties.get(name);
-                if (propertyType == null) {
-                    messages.add(createError(element, annotationMirror, value, "Could not find property %s on %s.", name, resultType));
+                final Set<TypeMirror> propertyTypes = properties.get(name);
+                if (propertyTypes == null) {
+                    messages.add(createError(method, annotationMirror, value, "Could not find property %s on %s.", name, resultType));
                 } else {
                     final TypeMirror defaultValueType = value.accept(ValueTypeAnnotationValueVisitor.INSTANCE, elements);
-                    if (!types.isAssignable(types.erasure(defaultValueType), types.erasure(propertyType))) {
-                        messages.add(createError(element, annotationMirror, value, "Expected property with type %s found with type %s",
-                                defaultValueType, propertyType));
+                    if (!assignablePropertyFound(defaultValueType, propertyTypes)) {
+                        messages.add(createError(method, annotationMirror, value, "Expected property with type %s found with type %s",
+                                defaultValueType, propertyTypes));
                     }
                 }
             }
         }
+    }
+
+    private boolean assignablePropertyFound(final TypeMirror valueType, final Set<TypeMirror> propertyTypes) {
+        if (propertyTypes != null) {
+            for (TypeMirror propertyType : propertyTypes) {
+                if (types.isAssignable(types.erasure(valueType), types.erasure(propertyType))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private String resolveFieldName(final Parameter parameter) {
+        String result = "";
+        final Field field = parameter.getAnnotation(Field.class);
+        if (field != null) {
+            final String name = field.name();
+            if (name.isEmpty()) {
+                result = parameter.getSimpleName().toString();
+            } else {
+                result = name;
+            }
+        }
+        return result;
+    }
+
+    private String resolveSetterName(final Parameter parameter) {
+        String result = "";
+        final Property property = parameter.getAnnotation(Property.class);
+        if (property != null) {
+            final String name = property.name();
+            if (name.isEmpty()) {
+                result = parameter.getSimpleName().toString();
+            } else {
+                result = name;
+            }
+        }
+        return result;
     }
 
     private static class ValueTypeAnnotationValueVisitor extends SimpleAnnotationValueVisitor8<TypeMirror, Elements> {
