@@ -249,7 +249,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
 
         //Create source file
-        final ClassModel classModel = ClassModelFactory.translation(filer(), messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
+        final ClassModel classModel = ClassModelFactory.translation(filer(), messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations, true);
 
         try {
             classModel.generateAndWrite();

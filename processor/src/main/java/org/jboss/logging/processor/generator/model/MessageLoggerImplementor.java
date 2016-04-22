@@ -88,9 +88,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param filer            the filer used to create the source file
      * @param messageInterface the message interface to implement.
      * @param useLogging31     {@code true} to use logging 3.1, {@code false} to remain compatible with 3.0
+     * @param annotateOutput   true to have the generated class annotated with javax.annotation.Generated.
      */
-    public MessageLoggerImplementor(final Filer filer, final MessageInterface messageInterface, final boolean useLogging31) {
-        super(filer, messageInterface);
+    public MessageLoggerImplementor(final Filer filer, final MessageInterface messageInterface, final boolean useLogging31, final boolean annotateOutput) {
+        super(filer, messageInterface, annotateOutput);
         this.useLogging31 = useLogging31;
     }
 

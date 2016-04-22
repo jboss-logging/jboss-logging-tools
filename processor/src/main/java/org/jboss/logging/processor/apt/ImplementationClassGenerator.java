@@ -41,6 +41,7 @@ final class ImplementationClassGenerator extends AbstractGenerator {
 
     private static final String LOGGING_VERSION = "loggingVersion";
     private final boolean useLogging31;
+    private final boolean annotateOutput;
 
     /**
      * @param processingEnv the processing environment.
@@ -54,12 +55,18 @@ final class ImplementationClassGenerator extends AbstractGenerator {
         } else {
             useLogging31 = true;
         }
+        if (options.containsKey(LoggingToolsProcessor.SKIP_GENERATED_ANNOTATION)) {
+            final String skipTheGeneratedAnnotation = options.get(LoggingToolsProcessor.SKIP_GENERATED_ANNOTATION);
+            annotateOutput = ! "true".equalsIgnoreCase(skipTheGeneratedAnnotation);
+        } else {
+            annotateOutput = true;
+        }
     }
 
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
-            final ClassModel classModel = ClassModelFactory.implementation(filer(), messageInterface, useLogging31);
+            final ClassModel classModel = ClassModelFactory.implementation(filer(), messageInterface, useLogging31, annotateOutput);
             classModel.generateAndWrite();
         } catch (IllegalStateException | IOException e) {
             logger().error(element, e);
