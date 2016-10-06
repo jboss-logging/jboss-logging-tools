@@ -65,9 +65,11 @@ class MessageLoggerTranslator extends ClassModel {
      * @param className        the implementation class name.
      * @param superClassName   the super class name
      * @param translations     the translation map.
+     * @param annotateOutput   true to have the generated class annotated with javax.annotation.Generated.
      */
-    public MessageLoggerTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
-        super(filer, messageInterface, className, superClassName);
+    public MessageLoggerTranslator(final Filer filer, final MessageInterface messageInterface, final String className,
+           final String superClassName, final Map<MessageMethod, String> translations, final boolean annotateOutput) {
+        super(filer, messageInterface, className, superClassName, annotateOutput);
 
         if (translations != null) {
             this.translations = translations;

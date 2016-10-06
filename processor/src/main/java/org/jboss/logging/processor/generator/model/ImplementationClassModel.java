@@ -92,9 +92,10 @@ abstract class ImplementationClassModel extends ClassModel {
      *
      * @param filer            the filer used to create the source file
      * @param messageInterface the message interface to implement.
+     * @param annotateOutput   true to have the generated class annotated with javax.annotation.Generated.
      */
-    ImplementationClassModel(final Filer filer, final MessageInterface messageInterface) {
-        super(filer, messageInterface, implementationClassName(messageInterface), null);
+    ImplementationClassModel(final Filer filer, final MessageInterface messageInterface, final boolean annotateOutput) {
+        super(filer, messageInterface, implementationClassName(messageInterface), null, annotateOutput);
     }
 
     /**

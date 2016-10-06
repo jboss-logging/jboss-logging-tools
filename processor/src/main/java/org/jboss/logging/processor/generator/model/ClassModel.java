@@ -77,15 +77,19 @@ public abstract class ClassModel {
     private final Map<String, JMethodDef> messageMethods;
     private final Map<String, JVarDeclaration> messageFields;
 
+    private final boolean annotateOutput;
+
     /**
      * Construct a class model.
      *
      * @param filer            the filer used to create the source file
      * @param messageInterface the message interface to implement.
      * @param superClassName   the super class used for the translation implementations.
+     * @param annotateOutput   true to have the generated class annotated with javax.annotation.Generated.
      */
-    ClassModel(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName) {
+    ClassModel(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final boolean annotateOutput) {
         this.messageInterface = messageInterface;
+        this.annotateOutput = annotateOutput;
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
         sources = JDeparser.createSources(JFiler.newInstance(filer), new FormatPreferences(new Properties()));
@@ -131,11 +135,13 @@ public abstract class ClassModel {
      */
     JClassDef generateModel() throws IllegalStateException {
         // Add generated annotation
-        final JType generatedType = $t(Generated.class);
-        sourceFile._import(generatedType);
-        classDef.annotate(generatedType)
+        if (annotateOutput) {
+            final JType generatedType = $t(Generated.class);
+            sourceFile._import(generatedType);
+            classDef.annotate(generatedType)
                 .value("value", getClass().getName())
                 .value("date", JExprs.str(ClassModelHelper.generatedDateValue()));
+        }
 
         // Create the default JavaDoc
         classDef.docComment().text("Warning this class consists of generated code.");
