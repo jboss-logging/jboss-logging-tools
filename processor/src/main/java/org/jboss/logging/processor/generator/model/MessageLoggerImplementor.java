@@ -54,7 +54,6 @@ import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
@@ -120,7 +119,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final JType loggerType = $t(Logger.class);
         // Import the logger type and the level type
         sourceFile._import(loggerType);
-        sourceFile._import(Logger.Level.class);
         final JParamDeclaration constructorParam = constructor.param(JMod.FINAL, loggerType, LOG_FIELD_NAME);
         final JBlock constructorBody = constructor.body();
         final JAssignableExpr logger;
@@ -131,9 +129,14 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 constructorBody.callSuper().arg($v(constructorParam));
                 logger = $v("super").field("log");
             } else {
+                sourceFile._import(Logger.Level.class);
                 JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggerType, LOG_FIELD_NAME);
                 constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
                 logger = $v(logVar);
+                // Add static imports for all the log levels
+                for (Logger.Level level : Logger.Level.values()) {
+                    sourceFile.importStatic(Logger.Level.class, level.name());
+                }
                 generateDelegatingLoggerMethods(classDef, logger, fqcn);
             }
         } else {
@@ -243,7 +246,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     xxx1x.body().add(
                             logVar.call(target)
                                     .arg($v(fqcn))
-                                    .arg(logLevelClass.$v(level))
+                                    .arg($v(level))
                                     .arg(renderThr ? $v(thr) : NULL)
                                     .arg($v(xxx1xFormat))
                                     .arg($v(xxx1xParams))
@@ -261,7 +264,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         }
                         final JCall xxx2xCaller = logVar.call(target);
                         xxx2xCaller.arg($v(fqcn))
-                                .arg(logLevelClass.$v(level))
+                                .arg($v(level))
                                 .arg(renderThr ? $v(thr) : NULL)
                                 .arg($v(xxx2xFormat));
                         for (int j = 0; j < i; j++) {
@@ -448,7 +451,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         } else {
             logCaller.arg($v(params.get(messageMethod.parameters(ParameterType.FQCN).iterator().next())).call("getName"));
         }
-        logCaller.arg($v(messageMethod.logLevel()));
+        // Use static imports for the levels
+        final String levelName = messageMethod.logLevel();
+        sourceFile.importStatic(Logger.Level.class, levelName);
+        logCaller.arg($v(levelName));
 
 
         final MessageMethod.Message message = messageMethod.message();
