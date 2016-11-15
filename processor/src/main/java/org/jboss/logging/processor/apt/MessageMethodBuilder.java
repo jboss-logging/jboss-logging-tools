@@ -311,10 +311,8 @@ final class MessageMethodBuilder {
 
         @Override
         public String logLevel() {
-            // TODO (jrp) possibly return the actual level
             final LogMessage logMessage = method.getAnnotation(LogMessage.class);
-            final Logger.Level logLevel = (logMessage.level() == null ? Logger.Level.INFO : logMessage.level());
-            return String.format("%s.%s.%s", Logger.class.getName(), Logger.Level.class.getSimpleName(), logLevel.name());
+            return (logMessage.level() == null ? Logger.Level.INFO.name() : logMessage.level().name());
         }
 
         @Override
