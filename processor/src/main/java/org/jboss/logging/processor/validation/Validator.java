@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -72,6 +73,8 @@ import org.jboss.logging.processor.util.ElementHelper;
  */
 public final class Validator {
 
+    private static final Collection<String> AVAILABLE_LANGUAGES = new HashSet<>(Arrays.asList(Locale.getISOLanguages()));
+
     private final MessageIdValidator messageIdValidator;
     private final IdLengthValidator idLengthValidator;
     private final IdRangeValidator idRangeValidator;
@@ -97,18 +100,28 @@ public final class Validator {
      */
     public final Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
         final List<ValidationMessage> messages = new ArrayList<>();
+        String locale = null;
         if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class)) {
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateBundle(messageMethods));
+            locale = messageInterface.getAnnotation(MessageBundle.class).rootLocale();
         } else if (ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateLogger(messageMethods));
+            locale = messageInterface.getAnnotation(MessageLogger.class).rootLocale();
         } else {
             messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
+        }
+
+        // Check the locale is in the list of available locales
+        if (locale != null && !locale.isEmpty() && !AVAILABLE_LANGUAGES.contains(Locale.forLanguageTag(locale).getLanguage())) {
+            // Only warn as there may be a change the locale exists on the target runtime
+            messages.add(createWarning(messageInterface, "The locale '%s' may be invalid. The target runtime must " +
+                    "include this locale to ensure formatting is handled correctly.", locale));
         }
         return messages;
     }
