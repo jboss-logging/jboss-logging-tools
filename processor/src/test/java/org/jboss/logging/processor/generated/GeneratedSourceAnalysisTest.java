@@ -22,21 +22,27 @@
 
 package org.jboss.logging.processor.generated;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.Method;
+import org.jboss.forge.roaster.model.Named;
+import org.jboss.forge.roaster.model.Type;
+import org.jboss.forge.roaster.model.source.FieldSource;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
+import org.jboss.logging.DelegatingBasicLogger;
+import org.jboss.logging.Logger;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -49,10 +55,6 @@ public class GeneratedSourceAnalysisTest {
     private static String TEST_SRC_PATH = null;
     private static String TEST_GENERATED_SRC_PATH = null;
 
-    private final Pattern methodNamePattern = Pattern.compile("((?:\\s?|\\s+?)(?:public final)?\\s+)?([\\w\\.]+)\\s+(\\w+)(\\(.*)");
-    private final Pattern fieldNamePattern = Pattern.compile("((?:\\s?|\\s+?)private static final\\s+)([\\w\\.]+String|String)(?:\\s+)(\\w+)(.*)");
-    private final Pattern messageMethodPattern = Pattern.compile("((?:\\s?|\\s+?)protected\\s+)([\\w.]+String|String)(?:\\s+)(\\w+)(\\$str\\(\\))(.*)");
-
     @BeforeClass
     public static void setUp() {
         TEST_SRC_PATH = System.getProperty("test.src.path");
@@ -60,75 +62,90 @@ public class GeneratedSourceAnalysisTest {
     }
 
     @Test
-    public void testGeneratedMethodOrder() throws Exception {
-        compare(DefaultLogger.class);
-        compare(DefaultMessages.class);
-        compare(ValidMessages.class);
+    public void testBundles() throws Exception {
+        compareBundle(DefaultMessages.class);
+        compareBundle(ValidMessages.class);
     }
 
-    private void compare(final Class<?> intf) throws Exception {
-        final Descriptor intfDescriptor = parseInterface(intf);
-        final Descriptors implDescriptors = parseGenerated(intf);
-        final List<String> intfMethods = intfDescriptor.get(Descriptor.Type.METHOD);
-        for (Descriptor implDescriptor : implDescriptors) {
-            if (implDescriptor.filterNames) {
-                List<String> l = new ArrayList<>();
-                // We're only testing order, so only test methods that are in the implementation
-                final List<String> implMessageMethods = implDescriptor.get(Descriptor.Type.MESSAGE_METHOD);
-                Assert.assertFalse(implMessageMethods.isEmpty(), "No methods found in " + implDescriptor.filename);
-                for (String s : intfMethods) {
-                    if (implMessageMethods.contains(s)) {
-                        l.add(s);
-                    }
-                }
-                Result result = compare(l, implMessageMethods);
-                if (result.failed) {
-                    Assert.fail(String.format("Interface %s (%s) failed on %s; %s", intf.getName(), implDescriptor.filename, Descriptor.Type.MESSAGE_METHOD, result.message));
-                }
+    @Test
+    public void testLoggers() throws Exception {
+        compareLogger(DefaultLogger.class);
+        compareLogger(ExtendedLogger.class);
+        compareLogger(ValidLogger.class);
+    }
 
-                l = new ArrayList<>();
-                // We're only testing order, so only test methods that are in the implementation
-                final List<String> implFields = implDescriptor.get(Descriptor.Type.FIELD);
-                Assert.assertFalse(implFields.isEmpty(), "No fields found in " + implDescriptor.filename);
-                for (String s : intfMethods) {
-                    if (implFields.contains(s)) {
-                        l.add(s);
-                    }
-                }
-                result = compare(l, implFields);
-                if (result.failed) {
-                    Assert.fail(String.format("Interface %s (%s) failed on %s; %s", intf.getName(), implDescriptor.filename, Descriptor.Type.FIELD, result.message));
-                }
-            } else {
-                Result result = compare(intfMethods, implDescriptor.get(Descriptor.Type.METHOD));
-                if (result.failed) {
-                    Assert.fail(String.format("Interface %s (%s) failed on %s; %s", intf.getName(), implDescriptor.filename, Descriptor.Type.METHOD, result.message));
-                }
-                result = compare(intfMethods, implDescriptor.get(Descriptor.Type.FIELD));
-                if (result.failed) {
-                    Assert.fail(String.format("Interface %s (%s) failed on %s; %s", intf.getName(), implDescriptor.filename, Descriptor.Type.FIELD, result.message));
-                }
-                result = compare(intfMethods, implDescriptor.get(Descriptor.Type.MESSAGE_METHOD));
-                if (result.failed) {
-                    Assert.fail(String.format("Interface %s (%s) failed on %s; %s", intf.getName(), implDescriptor.filename, Descriptor.Type.MESSAGE_METHOD, result.message));
-                }
-            }
+    private void compareLogger(final Class<?> intf) throws IOException {
+        final JavaInterfaceSource interfaceSource = parseInterface(intf);
+        final JavaClassSource implementationSource = parseGenerated(intf);
+        compareCommon(interfaceSource, implementationSource);
+
+        // Logger implementations should have a single constructor which accepts a org.jboss.logging.Logger
+        final List<MethodSource<JavaClassSource>> implementationMethods = implementationSource.getMethods();
+        final Optional<MethodSource<JavaClassSource>> constructor = findConstructor(implementationMethods);
+        Assert.assertTrue(constructor.isPresent(), "No constructor found for " + implementationSource.getName());
+        final List<ParameterSource<JavaClassSource>> parameters = constructor.get().getParameters();
+        Assert.assertEquals(parameters.size(), 1, "Found more than one parameter for " + implementationSource.getName() + ": " + parameters);
+        final ParameterSource<JavaClassSource> parameter = parameters.get(0);
+        final Type<JavaClassSource> type = parameter.getType();
+        Assert.assertEquals(type.getQualifiedName(), Logger.class.getName());
+
+        // If the logger is not extending the DelegatingBasicLogger there should be a protected final org.jboss.logging.Logger field
+        if (!DelegatingBasicLogger.class.getName().equals(implementationSource.getSuperType())) {
+            final FieldSource<JavaClassSource> log = implementationSource.getField("log");
+            Assert.assertNotNull(log, "Expected a log field in " + implementationSource.getName());
+            Assert.assertTrue(log.isProtected() && log.isFinal(),
+                    "Expected the log field to be protected and final in " + implementationSource.getName());
         }
     }
 
-    private Result compare(final List<String> list1, final List<String> list2) {
-        // If the size is different there's an error... ...in the test
-        if (list1.size() != list2.size()) {
-            return Result.failure("Expected a size of %d but was a size %d%n%s%n%s", list1.size(), list2.size(), list1, list2);
-        }
-        for (int i = 0; i < list1.size(); i++) {
-            final String value1 = list1.get(i);
-            final String value2 = list2.get(i);
-            if (!value1.equals(value2)) {
-                return Result.failure("Values don't match at %d. Expected '%s' found '%s'.", i, value1, value2);
-            }
-        }
-        return Result.SUCCESS;
+    private void compareBundle(final Class<?> intf) throws IOException {
+        final JavaInterfaceSource interfaceSource = parseInterface(intf);
+        final JavaClassSource implementationSource = parseGenerated(intf);
+        compareCommon(interfaceSource, implementationSource);
+
+        // Message bundles should have an INSTANCE field
+        final FieldSource<JavaClassSource> instance = implementationSource.getField("INSTANCE");
+        Assert.assertNotNull(instance, "Expected an INSTANCE field in " + implementationSource.getName());
+        Assert.assertTrue(instance.isStatic() && instance.isFinal() && instance.isPublic(),
+                "Expected the instance field to be public, static and final in " + implementationSource.getName());
+
+        // Expect a protected constructor with no parameters
+        final Optional<MethodSource<JavaClassSource>> constructor = findConstructor(implementationSource.getMethods());
+        Assert.assertTrue(constructor.isPresent(), "No constructor found for " + implementationSource.getName());
+        final MethodSource<JavaClassSource> c = constructor.get();
+        Assert.assertTrue(c.getParameters().isEmpty(), "Expected the constructor parameters to be empty for " + implementationSource.getName());
+        Assert.assertTrue(c.isProtected(), "Expected the constructor to be protected for " + implementationSource.getName());
+    }
+
+    private void compareCommon(final JavaInterfaceSource interfaceSource, final JavaClassSource implementationSource) {
+        final List<MethodSource<JavaInterfaceSource>> interfaceMethods = interfaceSource.getMethods();
+        final List<MethodSource<JavaClassSource>> implementationMethods = implementationSource.getMethods();
+
+        // Validate the implementation has all the interface methods, note this should be the cause
+        final Collection<String> interfaceMethodNames = toNames(interfaceMethods);
+        final Collection<String> implementationMethodNames = toNames(implementationMethods);
+        Assert.assertTrue(implementationMethodNames.containsAll(interfaceMethodNames),
+                String.format("Implementation is missing methods from the interface:%n\timplementation: %s%n\tinterface:%s", implementationMethodNames, interfaceMethodNames));
+
+        // The generates source files should have a serialVersionUID with a value of one
+        Assert.assertTrue(implementationSource.hasField("serialVersionUID"), "Expected a serialVersionUID field in " + implementationSource.getName());
+        final FieldSource<JavaClassSource> serialVersionUID = implementationSource.getField("serialVersionUID");
+        Assert.assertEquals(serialVersionUID.getLiteralInitializer(), "1L", "Expected serialVersionUID  to be set to 1L in " + implementationSource.getName());
+    }
+
+    private Optional<MethodSource<JavaClassSource>> findConstructor(final List<MethodSource<JavaClassSource>> implementationMethods) {
+        return implementationMethods.stream()
+                .filter(Method::isConstructor)
+                .findFirst();
+    }
+
+    private Collection<String> toNames(final List<? extends MethodSource<?>> methods) {
+        return methods.stream()
+                // Skip default methods, static methods and constructors
+                .filter(m -> !m.isDefault() && !m.isStatic() && !m.isConstructor())
+                .map(Named::getName)
+                .collect(Collectors.toList());
+
     }
 
     private String packageToPath(final Package pkg) {
@@ -136,148 +153,22 @@ public class GeneratedSourceAnalysisTest {
         return result.endsWith(File.separator) ? result : result + File.separator;
     }
 
-    private Descriptors parseGenerated(final Class<?> intf) throws IOException {
-        final Pattern pattern = Pattern.compile(Pattern.quote(intf.getSimpleName()) + ".*\\.java$");
+    private JavaClassSource parseGenerated(final Class<?> intf) throws IOException {
+        final Pattern pattern = Pattern.compile(Pattern.quote(intf.getSimpleName()) + "_\\$(logger|bundle)\\.java$");
         // Find all the files that match
-        final FileFilter filter = new FileFilter() {
-            @Override
-            public boolean accept(final File pathname) {
-                return pattern.matcher(pathname.getName()).find();
-            }
-        };
+        final FileFilter filter = pathname -> pattern.matcher(pathname.getName()).find();
         final File dir = new File(TEST_GENERATED_SRC_PATH, packageToPath(intf.getPackage()));
         final File[] files = dir.listFiles(filter);
-        final Descriptors result = new Descriptors();
-        for (File file : files) {
-            result.add(parse(file, true));
-        }
-        return result;
+        // There should only be one file
+        Assert.assertNotNull(files, "Did not find any implementation files for interface " + intf.getName());
+        Assert.assertEquals(1, files.length, "Found more than one implementation for interface " + intf.getName() + " " + Arrays.asList(files));
+
+        return Roaster.parse(JavaClassSource.class, files[0]);
     }
 
-    private Descriptor parseInterface(final Class<?> intf) throws IOException {
+    private JavaInterfaceSource parseInterface(final Class<?> intf) throws IOException {
         final File srcFile = new File(TEST_SRC_PATH, packageToPath(intf.getPackage()) +
                 intf.getSimpleName() + ".java");
-        return parse(srcFile, false);
-    }
-
-    private Descriptor parse(final File file, final boolean isImpl) throws IOException {
-        final Descriptor result = new Descriptor(file.getName());
-        BufferedReader bufferedReader = null;
-        try {
-            bufferedReader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                if (line.isEmpty()) continue;
-                final Matcher methodNameMatcher = methodNamePattern.matcher(line);
-                if (methodNameMatcher.matches()) {
-                    final String returnType = methodNameMatcher.group(2);
-                    final String methodName = methodNameMatcher.group(3);
-                    if (!"public".equals(returnType) || "private".equals(returnType)) {
-                        result.addMethod(methodName);
-                    }
-                } else if (isImpl) {
-                    final Matcher fieldNameMatcher = fieldNamePattern.matcher(line);
-                    if (fieldNameMatcher.matches()) {
-                        final String fieldName = fieldNameMatcher.group(3);
-                        if (!"FQCN".equals(fieldName)) {
-                            result.addField(fieldName.replaceAll("\\d+$", ""));
-                        }
-                    } else {
-                        final Matcher messageMethodMatcher = messageMethodPattern.matcher(line);
-                        if (messageMethodMatcher.matches()) {
-                            final String methodName = messageMethodMatcher.group(3);
-                            result.addMessageMethod(methodName.replaceAll("\\d+$", ""));
-                        }
-                    }
-                }
-            }
-        } finally {
-            safeClose(bufferedReader);
-        }
-        return result;
-    }
-
-    static void safeClose(final Closeable closeable) {
-        if (closeable != null) try {
-            closeable.close();
-        } catch (Exception ignore) {
-        }
-    }
-
-    private static class Result {
-        static final Result SUCCESS = new Result(false, "");
-        final boolean failed;
-        final String message;
-
-        private Result(final boolean failed, final String message) {
-            this.failed = failed;
-            this.message = message;
-        }
-
-        static Result failure(final String format, final Object... args) {
-            return new Result(true, String.format(format, args));
-        }
-    }
-
-    private static class Descriptors implements Iterable<Descriptor> {
-        private final List<Descriptor> descriptors;
-
-        private Descriptors() {
-            this.descriptors = new ArrayList<>();
-        }
-
-        public boolean add(final Descriptor descriptor) {
-            return descriptors.add(descriptor);
-        }
-
-
-        @Override
-        public Iterator<Descriptor> iterator() {
-            return descriptors.iterator();
-        }
-    }
-
-    private static class Descriptor {
-        static enum Type {
-            METHOD,
-            FIELD,
-            MESSAGE_METHOD
-        }
-
-        final String filename;
-        final boolean filterNames;
-        private final Map<Type, List<String>> values;
-
-        private Descriptor(final String filename) {
-            this.filename = filename;
-            this.filterNames = filename.matches(".*(\\$[a-z]+)(_\\w+)\\.java$");
-            values = new HashMap<>();
-        }
-
-        public void addMethod(final String methodName) {
-            getList(Type.METHOD).add(methodName);
-        }
-
-        public void addField(final String fieldName) {
-            getList(Type.FIELD).add(fieldName);
-        }
-
-        public void addMessageMethod(final String methodName) {
-            getList(Type.MESSAGE_METHOD).add(methodName);
-        }
-
-        public List<String> get(final Type type) {
-            return Collections.unmodifiableList(getList(type));
-        }
-
-        private List<String> getList(final Type type) {
-            if (values.containsKey(type)) {
-                return values.get(type);
-            }
-            final List<String> result = new ArrayList<>();
-            values.put(type, result);
-            return result;
-        }
-
+        return Roaster.parse(JavaInterfaceSource.class, srcFile);
     }
 }
