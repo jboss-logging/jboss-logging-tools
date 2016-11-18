@@ -22,6 +22,7 @@
 
 package org.jboss.logging.processor.model;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.jboss.logging.annotations.ValidIdRange;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public interface MessageInterface extends Comparable<MessageInterface>, MessageObject, MessageObjectType, JavaDocComment {
+
 
     public enum AnnotatedType {
         /**
@@ -130,4 +132,23 @@ public interface MessageInterface extends Comparable<MessageInterface>, MessageO
      * @return the length to pad the id with
      */
     int getIdLength();
+
+    /**
+     * Indicates whether or not an annotation is present on the message interface.
+     *
+     * @param annotation the annotation to check for
+     *
+     * @return {@code true} if the annotation is present, otherwise {@code false}
+     */
+    boolean isAnnotatedWith(Class<? extends Annotation> annotation);
+
+    /**
+     * Returns the annotation present on this interface. If the annotation is not present {@code null} is returned.
+     *
+     * @param annotation the annotation to check for
+     * @param <A>        the annotation type
+     *
+     * @return the annotation or {@code null} if the annotation was not present on the interface
+     */
+    <A extends Annotation> A getAnnotation(final Class<A> annotation);
 }

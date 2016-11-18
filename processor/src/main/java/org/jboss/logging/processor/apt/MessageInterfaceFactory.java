@@ -26,6 +26,7 @@ import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -247,6 +248,16 @@ public final class MessageInterfaceFactory {
             return idLen;
         }
 
+        @Override
+        public boolean isAnnotatedWith(final Class<? extends Annotation> annotation) {
+            return getAnnotation(annotation) != null;
+        }
+
+        @Override
+        public <A extends Annotation> A getAnnotation(final Class<A> annotation) {
+            return interfaceElement.getAnnotation(annotation);
+        }
+
 
         @Override
         public boolean equals(final Object obj) {
@@ -355,6 +366,16 @@ public final class MessageInterfaceFactory {
         @Override
         public int getIdLength() {
             return -1;
+        }
+
+        @Override
+        public boolean isAnnotatedWith(final Class<? extends Annotation> annotation) {
+            return getAnnotation(annotation) != null;
+        }
+
+        @Override
+        public <A extends Annotation> A getAnnotation(final Class<A> annotation) {
+            return loggerInterface.getAnnotation(annotation);
         }
 
         @Override

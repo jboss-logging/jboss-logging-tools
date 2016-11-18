@@ -145,6 +145,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             logger = $v(logVar);
         }
 
+        final JCall localeGetter = createLocaleGetter(null, false);
+
         // Process the method descriptors and add to the model before writing.
         final Set<MessageMethod> messageMethods = new LinkedHashSet<MessageMethod>();
         messageMethods.addAll(messageInterface().methods());
@@ -161,7 +163,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             if (messageMethod.isLoggerMethod()) {
                 createLoggerMethod(messageMethod, classDef, logger);
             } else {
-                createBundleMethod(classDef, messageMethod);
+                createBundleMethod(classDef, localeGetter, messageMethod);
             }
         }
         return classDef;

@@ -25,6 +25,7 @@ import static java.lang.annotation.RetentionPolicy.CLASS;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.Locale;
 
 /**
  * Signify that an interface is a message bundle interface.
@@ -54,4 +55,20 @@ public @interface MessageBundle {
      * @return the length the id should be padded
      */
     int length() default 6;
+
+    /**
+     * Specifies the {@linkplain Locale locale} for formatting bundle messages. This is only used in the super
+     * implementation. Subclasses will define their own locale to use based on the name of the resource bundle at
+     * compile time.
+     * <p>
+     * An empty string will default to {@link Locale#ROOT}.
+     * </p>
+     * <p>
+     * A non-empty string will be parsed by the {@link Locale#forLanguageTag(String)}. This uses the
+     * <a href="https://tools.ietf.org/html/bcp47">IETF BCP 47</a> format.
+     * </p>
+     *
+     * @return the default locale message bundles should use for formatting messages
+     */
+    String rootLocale() default "";
 }

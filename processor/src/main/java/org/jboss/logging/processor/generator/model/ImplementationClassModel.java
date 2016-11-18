@@ -29,6 +29,7 @@ import static org.jboss.jdeparser.JTypes.$t;
 import static org.jboss.logging.processor.generator.model.ClassModelHelper.implementationClassName;
 import static org.jboss.logging.processor.model.Parameter.ParameterType;
 
+import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
@@ -77,6 +79,7 @@ import org.jboss.logging.processor.model.ThrowableType;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 abstract class ImplementationClassModel extends ClassModel {
+    private final AtomicBoolean messageFormatMethodGenerated = new AtomicBoolean(false);
 
     /**
      * Class constructor.
@@ -94,7 +97,7 @@ abstract class ImplementationClassModel extends ClassModel {
      * @param classDef      the class definition
      * @param messageMethod the message method.
      */
-    void createBundleMethod(final JClassDef classDef, final MessageMethod messageMethod) {
+    void createBundleMethod(final JClassDef classDef, final JCall localeGetter, final MessageMethod messageMethod) {
         // Add the message messageMethod.
         addMessageMethod(messageMethod);
         final JType returnType = $t(messageMethod.returnType().name());
@@ -110,18 +113,17 @@ abstract class ImplementationClassModel extends ClassModel {
 
         switch (message.format()) {
             case MESSAGE_FORMAT: {
-                if (noFormatParameters) {
-                    formatterCall = JExprs.call(messageMethod.messageMethodName());
-                } else {
-                    final JType formatter = $t(MessageFormat.class);
-                    formatterCall = formatter.call("format");
+                if (messageMethod.formatParameterCount() > 0) {
+                    formatterCall = getFormatMethod(classDef, localeGetter);
                     formatterCall.arg(JExprs.call(messageMethod.messageMethodName()));
+                } else {
+                    formatterCall = JExprs.call(messageMethod.messageMethodName());
                 }
                 break;
             }
             case PRINTF: {
                 final JType formatter = $t(String.class);
-                formatterCall = formatter.call("format").arg(JExprs.call(messageMethod.messageMethodName()));
+                formatterCall = formatter.call("format").arg(localeGetter).arg(JExprs.call(messageMethod.messageMethodName()));
                 break;
             }
             default:
@@ -421,5 +423,57 @@ abstract class ImplementationClassModel extends ClassModel {
             var = method.param(FINAL, paramType, param.name());
         }
         return var;
+    }
+
+    /**
+     * Creates a method for formatting {@link MessageFormat} messages. The method should look something like:
+     * <pre>
+     *     <code>
+     *
+     * private String _formatMessage(final String format, final Object... args) {
+     *     final java.text.MessageFormat formatter = new java.text.MessageFormat(format, getLoggingLocale());
+     *     return formatter.format(args, new StringBuffer(), new java.text.FieldPosition(0)).toString();
+     * }
+     *     </code>
+     * </pre>
+     * <p>
+     * This can be invoked multiple times resulting in only a single method being created in the source.
+     * </p>
+     *
+     * @param classDef     the class to add the method to
+     * @param localeGetter the getter for the locale
+     *
+     * @return a method call representation of the {@code _formatMessage(String, Object...)} method
+     */
+    private JCall getFormatMethod(final JClassDef classDef, final JCall localeGetter) {
+        final String methodName = "_formatMessage";
+        // Create the method if it does not exist yet
+        if (messageFormatMethodGenerated.compareAndSet(false, true)) {
+            // Create the method
+            final JMethodDef method = classDef.method(JMod.PRIVATE, String.class, methodName);
+            final JParamDeclaration format = method.param(JMod.FINAL, String.class, "format");
+            final JParamDeclaration args = method.varargParam(JMod.FINAL, Object.class, "args");
+
+            // Generate the body of the method
+            final JBlock body = method.body();
+            final JType formatterType = $t(MessageFormat.class);
+            final JCall initializer = formatterType._new()
+                    .arg($v(format))
+                    .arg(localeGetter);
+            final JVarDeclaration formatter = body.var(JMod.FINAL, formatterType, "formatter", initializer);
+            // Invoke the formatter and return the toString() value of the StringBuffer result
+            body._return(
+                    $v(formatter)
+                            .call("format")
+                            .arg($v(args))
+                            .arg($t(StringBuffer.class)._new())
+                            .arg($t(FieldPosition.class)._new()
+                                    .arg(JExpr.ZERO)
+                            )
+                            .call("toString")
+            );
+        }
+
+        return JExprs.call(methodName);
     }
 }

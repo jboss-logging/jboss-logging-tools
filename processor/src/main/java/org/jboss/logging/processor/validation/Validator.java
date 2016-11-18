@@ -34,11 +34,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.jboss.logging.annotations.ConstructType;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
@@ -57,6 +60,8 @@ import org.jboss.logging.processor.util.ElementHelper;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class Validator {
+
+    private static final Collection<String> AVAILABLE_LANGUAGES = new HashSet<>(Arrays.asList(Locale.getISOLanguages()));
 
     private final MessageIdValidator messageIdValidator;
     private final IdLengthValidator idLengthValidator;
@@ -77,12 +82,14 @@ public final class Validator {
      */
     public final Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
         final List<ValidationMessage> messages = new ArrayList<ValidationMessage>();
+        String locale = null;
         switch (messageInterface.getAnnotatedType()) {
             case MESSAGE_BUNDLE: {
                 // Get all messageMethods except logger interface messageMethods
                 final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
                 messages.addAll(validateCommon(messageInterface, messageMethods));
                 messages.addAll(validateBundle(messageMethods));
+                locale = messageInterface.getAnnotation(MessageBundle.class).rootLocale();
                 break;
             }
             case MESSAGE_LOGGER: {
@@ -90,10 +97,18 @@ public final class Validator {
                 final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
                 messages.addAll(validateCommon(messageInterface, messageMethods));
                 messages.addAll(validateLogger(messageMethods));
+                locale = messageInterface.getAnnotation(MessageLogger.class).rootLocale();
                 break;
             }
             default:
                 messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
+        }
+
+        // Check the locale is in the list of available locales
+        if (locale != null && !locale.isEmpty() && !AVAILABLE_LANGUAGES.contains(Locale.forLanguageTag(locale).getLanguage())) {
+            // Only warn as there may be a change the locale exists on the target runtime
+            messages.add(createWarning(messageInterface, "The locale '%s' may be invalid. The target runtime must " +
+                    "include this locale to ensure formatting is handled correctly.", locale));
         }
         return messages;
     }
