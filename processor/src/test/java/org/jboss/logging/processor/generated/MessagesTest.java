@@ -22,6 +22,7 @@
 
 package org.jboss.logging.processor.generated;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 
 import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
@@ -49,6 +50,12 @@ public class MessagesTest {
         Assert.assertNotNull(e.getCause());
 
         Assert.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException, "Incorrect type constructed");
+
+        final String arg1 = "value-1";
+        final String arg2 = "value-2";
+        final String messageFormatMessage = MessageFormat.format(ValidMessages.TEST_MESSAGE_FORMAT, arg1, arg2);
+        Assert.assertEquals(ValidMessages.MESSAGES.testMessageFormat(arg1, arg2), messageFormatMessage);
+        Assert.assertEquals(ValidMessages.MESSAGES.testMessageFormatException(arg1, arg2).getMessage(), messageFormatMessage);
     }
 
     @Test

@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.annotation.processing.Filer;
 
+import org.jboss.jdeparser.JCall;
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JMod;
 import org.jboss.logging.annotations.MessageBundle;
@@ -61,6 +62,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
         // Add default constructor
         classDef.constructor(JMod.PROTECTED);
         createReadResolveMethod();
+        final JCall localeGetter = createLocaleGetter(null, false);
         final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
@@ -71,7 +73,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
         // Process the method descriptors and add to the model before
         // writing.
         for (MessageMethod messageMethod : messageMethods) {
-            createBundleMethod(classDef, messageMethod);
+            createBundleMethod(classDef, localeGetter, messageMethod);
         }
         return classDef;
     }
