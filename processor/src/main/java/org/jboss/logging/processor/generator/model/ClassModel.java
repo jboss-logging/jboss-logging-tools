@@ -25,19 +25,24 @@ package org.jboss.logging.processor.generator.model;
 import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.jdeparser.JMod.FINAL;
 import static org.jboss.jdeparser.JTypes.$t;
+import static org.jboss.jdeparser.JTypes.typeOf;
 import static org.jboss.logging.processor.util.ElementHelper.typeToString;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Generated;
 import javax.annotation.processing.Filer;
+import javax.lang.model.element.Element;
 
 import org.jboss.jdeparser.FormatPreferences;
+import org.jboss.jdeparser.JCall;
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JDeparser;
+import org.jboss.jdeparser.JExpr;
 import org.jboss.jdeparser.JExprs;
 import org.jboss.jdeparser.JFiler;
 import org.jboss.jdeparser.JMethodDef;
@@ -47,6 +52,9 @@ import org.jboss.jdeparser.JSources;
 import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JTypes;
 import org.jboss.jdeparser.JVarDeclaration;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.processor.apt.ProcessingException;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -260,5 +268,106 @@ public abstract class ClassModel {
         final JMethodDef readResolveMethod = classDef.method(JMod.PROTECTED, Object.class, GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return($v(instance));
         return readResolveMethod;
+    }
+
+    /**
+     * Creates the method used to get the locale for formatting messages.
+     * <p>
+     * If the {@code locale} parameter is {@code null} the {@link MessageLogger#rootLocale()} or
+     * {@link MessageBundle#rootLocale()} will be used to determine the {@linkplain Locale locale} to use.
+     * </p>
+     *
+     * @param locale   the locale to use
+     * @param override {@code true} if the {@link Override} annotation should be added to the method
+     *
+     * @return the call to the locale getter
+     */
+    JCall createLocaleGetter(final String locale, final boolean override) {
+        final String methodName = "getLoggingLocale";
+        // Create the type and import it
+        final JType localeType = typeOf(Locale.class);
+        sourceFile._import(localeType);
+        final JVarDeclaration defaultInstance = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, localeType, "LOCALE", determineLocale(locale, localeType));
+
+        // Create the method
+        final JMethodDef method = classDef.method(JMod.PROTECTED, localeType, methodName);
+        if (override) {
+            method.annotate(Override.class);
+        }
+        method.body()._return($v(defaultInstance));
+        return JExprs.call(methodName);
+    }
+
+    private JExpr determineLocale(final String locale, final JType localeType) {
+        final JExpr initializer;
+
+        if (locale == null) {
+            // Create a static instance field for the default locale
+            final String bcp47Value;
+            if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
+                bcp47Value = messageInterface.getAnnotation(MessageBundle.class).rootLocale();
+            } else if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
+                bcp47Value = messageInterface.getAnnotation(MessageLogger.class).rootLocale();
+            } else {
+                bcp47Value = "";
+            }
+
+            if (bcp47Value.isEmpty()) {
+                initializer = localeType.$v("ROOT");
+            } else {
+                initializer = localeType.call("forLanguageTag").arg(JExprs.str(bcp47Value));
+            }
+        } else {
+            if ("en_CA".equals(locale)) {
+                initializer = localeType.$v("CANADA");
+            } else if ("fr_CA".equals(locale)) {
+                initializer = localeType.$v("CANADA_FRENCH");
+            } else if ("zh".equals(locale)) {
+                initializer = localeType.$v("CHINESE");
+            } else if ("en".equals(locale)) {
+                initializer = localeType.$v("ENGLISH");
+            } else if ("fr_FR".equals(locale)) {
+                initializer = localeType.$v("FRANCE");
+            } else if ("fr".equals(locale)) {
+                initializer = localeType.$v("FRENCH");
+            } else if ("de".equals(locale)) {
+                initializer = localeType.$v("GERMAN");
+            } else if ("de_DE".equals(locale)) {
+                initializer = localeType.$v("GERMANY");
+            } else if ("it".equals(locale)) {
+                initializer = localeType.$v("ITALIAN");
+            } else if ("it_IT".equals(locale)) {
+                initializer = localeType.$v("ITALY");
+            } else if ("ja_JP".equals(locale)) {
+                initializer = localeType.$v("JAPAN");
+            } else if ("ja".equals(locale)) {
+                initializer = localeType.$v("JAPANESE");
+            } else if ("ko_KR".equals(locale)) {
+                initializer = localeType.$v("KOREA");
+            } else if ("ko".equals(locale)) {
+                initializer = localeType.$v("KOREAN");
+            } else if ("zh_CN".equals(locale)) {
+                initializer = localeType.$v("SIMPLIFIED_CHINESE");
+            } else if ("zh_TW".equals(locale)) {
+                initializer = localeType.$v("TRADITIONAL_CHINESE");
+            } else if ("en_UK".equals(locale)) {
+                initializer = localeType.$v("UK");
+            } else if ("en_US".equals(locale)) {
+                initializer = localeType.$v("US");
+            } else {
+                final JCall newInstance = localeType._new();
+                // Split the locale
+                final String[] parts = locale.split("_");
+                if (parts.length > 3) {
+                    throw new ProcessingException((Element) messageInterface.reference(), "Failed to parse %s to a Locale.", locale);
+                }
+                for (String arg : parts) {
+                    newInstance.arg(JExprs.str(arg));
+                }
+                initializer = newInstance;
+            }
+        }
+
+        return initializer;
     }
 }

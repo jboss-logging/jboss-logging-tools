@@ -69,6 +69,13 @@ public interface ValidMessages {
     @Message("Invalid user id or password")
     RuntimeException invalidCredentials();
 
+    String TEST_MESSAGE_FORMAT = "A two argument message format test. Argument 1 is {0} argument 2 is {1}.";
+    @Message(format = Format.MESSAGE_FORMAT, value = TEST_MESSAGE_FORMAT)
+    String testMessageFormat(final String arg1, final String arg2);
+
+    @Message(format = Format.MESSAGE_FORMAT, value = TEST_MESSAGE_FORMAT)
+    RuntimeException testMessageFormatException(final String arg1, final String arg2);
+
     class CustomException extends RuntimeException {
         public int value;
 

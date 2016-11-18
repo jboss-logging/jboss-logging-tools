@@ -20,47 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.apt;
+package org.jboss.logging.processor.generated;
 
-import javax.lang.model.element.Element;
+import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * An exception that can be used to log which element caused the error.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ProcessingException extends RuntimeException {
-    private final Element element;
+@MessageLogger(projectCode = "LOCALE", rootLocale = "en-UK")
+public interface RootLocaleLogger {
 
-    /**
-     * Creates a new exception.
-     *
-     * @param element the element the error occurs on
-     * @param message the message
-     */
-    public ProcessingException(final Element element, final String message) {
-        super(message);
-        this.element = element;
-    }
+    @LogMessage(level = Level.INFO)
+    @Message(id = 10, value = "Initialised %s")
+    void init(Object object);
 
-    /**
-     * Creates a new exception.
-     *
-     * @param element the element the error occurs on
-     * @param format  the format for the message
-     * @param args    the arguments for the format
-     */
-    public ProcessingException(final Element element, final String format, final Object... args) {
-        super(String.format(format, args));
-        this.element = element;
-    }
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 20, value = "Initialisation failed, behaviour may be unpredictable.")
+    void initFailed();
 
-    /**
-     * The element the error occurred on.
-     *
-     * @return the element
-     */
-    public Element getElement() {
-        return element;
-    }
+    @Message(id = 50, value = "Authorisation failed for %s")
+    RuntimeException authFailed(String user);
 }

@@ -51,16 +51,17 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
 
     @Test
     public void defaultTest() throws Exception {
-        DefaultLogger.LOGGER.hello(NAME);
-        DefaultLogger.LOGGER.howAreYou(NAME);
-        DefaultLogger.LOGGER.noFormat();
-        DefaultLogger.LOGGER.noFormatWithCause(new IllegalArgumentException("No format cause"));
+        final DefaultLogger logger = getLogger(Locale.ROOT);
+        logger.hello(NAME);
+        logger.howAreYou(NAME);
+        logger.noFormat();
+        logger.noFormatWithCause(new IllegalArgumentException("No format cause"));
         final String msg = "This is a test message";
-        DefaultLogger.LOGGER.formatWith(msg);
+        logger.formatWith(msg);
 
         final String[] values = {"A", "B", "C", "D"};
-        DefaultLogger.LOGGER.invalidSelection("G", values);
-        DefaultLogger.LOGGER.invalidSelection("A", "B", "C", "D");
+        logger.invalidSelection("G", values);
+        logger.invalidSelection("A", "B", "C", "D");
 
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
         Assert.assertEquals(properties.size(), HANDLER.size());

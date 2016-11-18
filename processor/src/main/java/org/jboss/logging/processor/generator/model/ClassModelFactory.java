@@ -85,11 +85,13 @@ public class ClassModelFactory {
     public static ClassModel translation(final Filer filer, final MessageInterface messageInterface, final String translationSuffix, final Map<MessageMethod, String> translations) throws IllegalArgumentException {
         final String generatedClassName = implementationClassName(messageInterface, translationSuffix);
         final String superClassName = getEnclosingTranslationClassName(generatedClassName);
+        // The locale should be the same as the translationsSuffix minus the leading _
+        final String locale = translationSuffix.substring(1);
         switch (messageInterface.getAnnotatedType()) {
             case MESSAGE_BUNDLE:
-                return new MessageBundleTranslator(filer, messageInterface, generatedClassName, superClassName, translations);
+                return new MessageBundleTranslator(filer, messageInterface, generatedClassName, superClassName, locale, translations);
             case MESSAGE_LOGGER:
-                return new MessageLoggerTranslator(filer, messageInterface, generatedClassName, superClassName, translations);
+                return new MessageLoggerTranslator(filer, messageInterface, generatedClassName, superClassName, locale, translations);
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
     }

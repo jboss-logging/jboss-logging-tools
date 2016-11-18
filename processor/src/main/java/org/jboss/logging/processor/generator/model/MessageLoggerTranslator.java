@@ -56,6 +56,7 @@ class MessageLoggerTranslator extends ClassModel {
      * The translation map.
      */
     private final Map<MessageMethod, String> translations;
+    private final String locale;
 
     /**
      * Create a MessageLogger with super class and interface.
@@ -64,11 +65,13 @@ class MessageLoggerTranslator extends ClassModel {
      * @param messageInterface the message interface to implement.
      * @param className        the implementation class name.
      * @param superClassName   the super class name
+     *                          @param locale           the locale used to override the default locale
      * @param translations     the translation map.
      */
-    public MessageLoggerTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
+    public MessageLoggerTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final String locale, final Map<MessageMethod, String> translations) {
         super(filer, messageInterface, className, superClassName);
 
+        this.locale = locale;
         if (translations != null) {
             this.translations = translations;
         } else {
@@ -85,6 +88,9 @@ class MessageLoggerTranslator extends ClassModel {
 
         JBlock constructorBody = constructor.body();
         constructorBody.callSuper().arg($v(LOGGER_PARAMETER_NAME));
+
+        // Override the locale getter
+        createLocaleGetter(locale, true);
 
         final Set<Map.Entry<MessageMethod, String>> entries = this.translations.entrySet();
         final Set<JMethodDef> methodNames = new LinkedHashSet<>();

@@ -28,7 +28,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jboss.forge.roaster.Roaster;
@@ -52,6 +55,29 @@ public class GeneratedSourceAnalysisTest {
     private static String TEST_SRC_PATH = null;
     private static String TEST_GENERATED_SRC_PATH = null;
 
+    private static final Map<Locale, String> LOCALE_CONSTANTS = new LinkedHashMap<>();
+
+    static {
+        LOCALE_CONSTANTS.put(Locale.CANADA, "Locale.CANADA");
+        LOCALE_CONSTANTS.put(Locale.CANADA_FRENCH, "Locale.CANADA_FRENCH");
+        LOCALE_CONSTANTS.put(Locale.CHINESE, "Locale.CHINESE");
+        LOCALE_CONSTANTS.put(Locale.ENGLISH, "Locale.ENGLISH");
+        LOCALE_CONSTANTS.put(Locale.FRANCE, "Locale.FRANCE");
+        LOCALE_CONSTANTS.put(Locale.FRENCH, "Locale.FRENCH");
+        LOCALE_CONSTANTS.put(Locale.GERMAN, "Locale.GERMAN");
+        LOCALE_CONSTANTS.put(Locale.GERMANY, "Locale.GERMANY");
+        LOCALE_CONSTANTS.put(Locale.ITALIAN, "Locale.ITALIAN");
+        LOCALE_CONSTANTS.put(Locale.ITALY, "Locale.ITALY");
+        LOCALE_CONSTANTS.put(Locale.JAPAN, "Locale.JAPAN");
+        LOCALE_CONSTANTS.put(Locale.JAPANESE, "Locale.JAPANESE");
+        LOCALE_CONSTANTS.put(Locale.KOREA, "Locale.KOREA");
+        LOCALE_CONSTANTS.put(Locale.KOREAN, "Locale.KOREAN");
+        LOCALE_CONSTANTS.put(Locale.SIMPLIFIED_CHINESE, "Locale.SIMPLIFIED_CHINESE");
+        LOCALE_CONSTANTS.put(Locale.TRADITIONAL_CHINESE, "Locale.TRADITIONAL_CHINESE");
+        LOCALE_CONSTANTS.put(Locale.UK, "Locale.UK");
+        LOCALE_CONSTANTS.put(Locale.US, "Locale.US");
+    }
+
     @BeforeClass
     public static void setUp() {
         TEST_SRC_PATH = System.getProperty("test.src.path");
@@ -69,6 +95,27 @@ public class GeneratedSourceAnalysisTest {
         compareLogger(DefaultLogger.class);
         compareLogger(ExtendedLogger.class);
         compareLogger(ValidLogger.class);
+        compareLogger(RootLocaleLogger.class);
+    }
+
+    @Test
+    public void testGeneratedTranslations() throws Exception {
+        compareTranslations(DefaultLogger.class);
+        compareTranslations(DefaultMessages.class);
+        compareTranslations(RootLocaleLogger.class);
+    }
+
+    @Test
+    public void testRootLocale() throws Exception {
+        JavaClassSource implementationSource = parseGenerated(RootLocaleLogger.class);
+        FieldSource<JavaClassSource> locale = implementationSource.getField("LOCALE");
+        Assert.assertNotNull(locale, "Expected a LOCALE field for " + implementationSource.getName());
+        Assert.assertEquals(locale.getLiteralInitializer(), "Locale.forLanguageTag(\"en-UK\")");
+
+        implementationSource = parseGenerated(DefaultLogger.class);
+        locale = implementationSource.getField("LOCALE");
+        Assert.assertNotNull(locale, "Expected a LOCALE field for " + implementationSource.getName());
+        Assert.assertEquals(locale.getLiteralInitializer(), "Locale.ROOT");
     }
 
     private void compareLogger(final Class<?> intf) throws IOException {
@@ -127,7 +174,73 @@ public class GeneratedSourceAnalysisTest {
         Assert.assertTrue(implementationSource.hasField("serialVersionUID"), "Expected a serialVersionUID field in " + implementationSource.getName());
         final FieldSource<JavaClassSource> serialVersionUID = implementationSource.getField("serialVersionUID");
         Assert.assertEquals(serialVersionUID.getLiteralInitializer(), "1L", "Expected serialVersionUID  to be set to 1L in " + implementationSource.getName());
+        // All bundles should have a getLoggingLocale()
+        final MethodSource<JavaClassSource> getLoggingLocale = implementationSource.getMethod("getLoggingLocale");
+        Assert.assertNotNull(getLoggingLocale, "Expected a getLoggingLocale() method in " + implementationSource.getName());
+        Assert.assertTrue(getLoggingLocale.isProtected(), "Expected the getLoggingLocale() to be protected in " + implementationSource.getName());
     }
+
+    private void compareTranslations(final Class<?> intf) throws IOException {
+        final JavaInterfaceSource interfaceSource = parseInterface(intf);
+        final Collection<JavaClassSource> implementations = parseGeneratedTranslations(intf);
+        // Find the default source file
+        final JavaClassSource superImplementationSource = parseGenerated(intf);
+        for (JavaClassSource implementationSource : implementations) {
+            compareTranslations(interfaceSource, superImplementationSource, implementationSource);
+        }
+    }
+
+    private void compareTranslations(final JavaInterfaceSource interfaceSource, final JavaClassSource superImplementationSource,
+                                     final JavaClassSource implementationSource) {
+        // The implementations should not contain any methods from the interface
+        final List<String> interfaceMethods = new ArrayList<>();
+        for (MethodSource<JavaInterfaceSource> method : interfaceSource.getMethods()) {
+            interfaceMethods.add(method.getName());
+        }
+        final Collection<String> found = new ArrayList<>();
+        for (MethodSource<JavaClassSource> method : implementationSource.getMethods()) {
+            if (interfaceMethods.contains(method.getName())) {
+                found.add(method.getName());
+            }
+        }
+        Assert.assertTrue(found.isEmpty(), "Found methods in implementation that were in the interface " + implementationSource.getName() + " : " + found);
+
+        // The getLoggerLocale() should be overridden
+        final MethodSource<JavaClassSource> getLoggerLocale = implementationSource.getMethod("getLoggingLocale");
+        Assert.assertNotNull(getLoggerLocale, "Missing overridden getLoggingLocale() method " + implementationSource.getName());
+
+        // If the file should have a locale constant, validate the constant is one of the Locale constants
+        for (Map.Entry<Locale, String> entry : LOCALE_CONSTANTS.entrySet()) {
+            final Locale locale = entry.getKey();
+            final String constant = entry.getValue();
+            if (implementationSource.getName().endsWith(locale.toString())) {
+                // Get the LOCALE field
+                final FieldSource<JavaClassSource> localeField = implementationSource.getField("LOCALE");
+                Assert.assertNotNull(localeField, "Expected a LOCALE field " + implementationSource.getName());
+                Assert.assertEquals(localeField.getLiteralInitializer(), constant,
+                        "Expected the LOCALE to be set to " + constant + " in " + implementationSource.getName());
+            }
+        }
+
+        // Get all the method names from the super class
+        final List<String> superMethods = new ArrayList<>();
+        for (MethodSource<JavaClassSource> method : superImplementationSource.getMethods()) {
+            if (!method.isConstructor()) {
+                superMethods.add(method.getName());
+            }
+        }
+
+        // All methods in the translation implementation should be overrides of methods in the super class
+        for (MethodSource<JavaClassSource> method : implementationSource.getMethods()) {
+            if (!method.isConstructor()) {
+                Assert.assertTrue(method.hasAnnotation(Override.class), String.format("Expected method %s to be overridden in %s.",
+                        method.getName(), implementationSource.getName()));
+                Assert.assertTrue(superMethods.contains(method.getName()), String.format("Expected method %s to override the super (%s) method in %s.",
+                        method.getName(), superImplementationSource.getName(), implementationSource.getName()));
+            }
+        }
+    }
+
 
     private MethodSource<JavaClassSource> findConstructor(final List<MethodSource<JavaClassSource>> implementationMethods) {
         for (MethodSource<JavaClassSource> method : implementationMethods) {
@@ -169,6 +282,27 @@ public class GeneratedSourceAnalysisTest {
         Assert.assertEquals(1, files.length, "Found more than one implementation for interface " + intf.getName() + " " + Arrays.asList(files));
 
         return Roaster.parse(JavaClassSource.class, files[0]);
+    }
+
+    private Collection<JavaClassSource> parseGeneratedTranslations(final Class<?> intf) throws IOException {
+        final Pattern pattern = Pattern.compile(Pattern.quote(intf.getSimpleName()) + "_\\$(logger|bundle)_.*\\.java$");
+        // Find all the files that match
+        final FileFilter filter = new FileFilter() {
+            @Override
+            public boolean accept(final File pathname) {
+                return pattern.matcher(pathname.getName()).matches();
+            }
+        };
+        final File dir = new File(TEST_GENERATED_SRC_PATH, packageToPath(intf.getPackage()));
+        final File[] files = dir.listFiles(filter);
+        // There should only be one file
+        Assert.assertNotNull(files, "Did not find any implementation files for interface " + intf.getName());
+        Assert.assertTrue(files.length > 0, "Did not find any translation implementations for interface " + intf.getName());
+        final Collection<JavaClassSource> result = new ArrayList<>();
+        for (final File file : files) {
+            result.add(Roaster.parse(JavaClassSource.class, file));
+        }
+        return result;
     }
 
     private JavaInterfaceSource parseInterface(final Class<?> intf) throws IOException {

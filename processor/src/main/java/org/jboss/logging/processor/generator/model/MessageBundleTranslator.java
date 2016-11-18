@@ -45,6 +45,7 @@ class MessageBundleTranslator extends ClassModel {
      * The translation map.
      */
     private final Map<MessageMethod, String> translations;
+    private final String locale;
 
     /**
      * Create a MessageBundle with super class and interface.
@@ -53,11 +54,13 @@ class MessageBundleTranslator extends ClassModel {
      * @param messageInterface the message interface to implement.
      * @param className        the implementation class name.
      * @param superClassName   the super class name
+     * @param locale           the locale used to override the default locale
      * @param translations     the translation map.
      */
-    public MessageBundleTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final Map<MessageMethod, String> translations) {
+    public MessageBundleTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final String locale, final Map<MessageMethod, String> translations) {
         super(filer, messageInterface, className, superClassName);
 
+        this.locale = locale;
         if (translations != null) {
             this.translations = translations;
         } else {
@@ -74,6 +77,9 @@ class MessageBundleTranslator extends ClassModel {
 
         JMethodDef readResolve = createReadResolveMethod();
         readResolve.annotate(Override.class);
+
+        // Override the locale getter
+        createLocaleGetter(locale, true);
 
         final Set<Map.Entry<MessageMethod, String>> entries = translations.entrySet();
         final Set<JMethodDef> methodNames = new LinkedHashSet<>();
