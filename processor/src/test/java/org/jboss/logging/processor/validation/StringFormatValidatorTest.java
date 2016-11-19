@@ -22,7 +22,8 @@
 
 package org.jboss.logging.processor.validation;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Date;
 
@@ -101,5 +102,25 @@ public class StringFormatValidatorTest {
         validator = StringFormatValidator.of("The error is %s, I repeat %1$s", "invalid");
         assertTrue(validator.isValid(), validator.detailMessage());
 
+    }
+
+    @Test
+    public void translationValidation() {
+        String nonPositional = "Test param 1 %s new line %n param 2 %s%n";
+        String positional = "Test param 2 %2$s new line %n param 1 %1$s%n";
+        // If parameters are specified in the either one of the formats, the validation should pass
+        StringFormatValidator validator = StringFormatValidator.withTranslation(nonPositional, positional);
+        assertTrue(validator.isValid(), validator.detailMessage());
+
+        validator = StringFormatValidator.withTranslation(positional, nonPositional);
+        assertTrue(validator.isValid(), validator.detailMessage());
+
+        nonPositional = "Test param 1 %s percent %% param 2 %s%%%n";
+        positional = "Test param 2 %2$s percent %% param 1 %1$s%%%n";
+        validator = StringFormatValidator.withTranslation(nonPositional, positional);
+        assertTrue(validator.isValid(), validator.detailMessage());
+
+        validator = StringFormatValidator.withTranslation(positional, nonPositional);
+        assertTrue(validator.isValid(), validator.detailMessage());
     }
 }
