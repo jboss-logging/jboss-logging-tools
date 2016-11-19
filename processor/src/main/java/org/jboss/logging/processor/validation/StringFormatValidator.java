@@ -25,6 +25,7 @@ package org.jboss.logging.processor.validation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.IllegalFormatException;
@@ -179,10 +180,22 @@ public final class StringFormatValidator extends AbstractFormatValidator {
     }
 
     static List<StringFormatPart> sortParts(final Collection<StringFormatPart> parts) {
-        final TreeMap<Integer, StringFormatPart> paramMap = new TreeMap<Integer, StringFormatPart>();
+        final TreeMap<Integer, Set<StringFormatPart>> paramMap = new TreeMap<>();
+        final int newLineIndex = Integer.MAX_VALUE - 1;
+        final int percentageIndex = Integer.MAX_VALUE;
         int index = 0;
         int count = 0;
         for (StringFormatPart part : parts) {
+            // Line separators and percentage constants need to be handled specially
+            if (part.conversion().isLineSeparator()) {
+                final Set<StringFormatPart> set = getOrAdd(paramMap, newLineIndex);
+                set.add(part);
+                continue;
+            } else if (part.conversion().isPercent()) {
+                final Set<StringFormatPart> set = getOrAdd(paramMap, percentageIndex);
+                set.add(part);
+                continue;
+            }
             // Check the index and set appropriately
             if (part.index() > 0) {
                 index = part.index();
@@ -190,10 +203,14 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                 index = ++count;
             }
             if (!paramMap.containsKey(index)) {
-                paramMap.put(index, part);
+                paramMap.put(index, Collections.singleton(part));
             }
         }
-        return new ArrayList<StringFormatPart>(paramMap.values());
+        final List<StringFormatPart> result = new ArrayList<>();
+        for (Set<StringFormatPart> p : paramMap.values()) {
+            result.addAll(p);
+        }
+        return result;
     }
 
     /**
@@ -410,5 +427,14 @@ public final class StringFormatValidator extends AbstractFormatValidator {
             final char c = (index > text.length() - 2 ? '%' : text.charAt(index + 1));
             throw new UnknownFormatConversionException(String.valueOf(c));
         }
+    }
+
+    private static <K, V extends Comparable<? super V>> Set<V> getOrAdd(final Map<K, Set<V>> map, final K key) {
+        Set<V> set = map.get(key);
+        if (set == null) {
+            set = new TreeSet<>();
+            map.put(key, set);
+        }
+        return set;
     }
 }
