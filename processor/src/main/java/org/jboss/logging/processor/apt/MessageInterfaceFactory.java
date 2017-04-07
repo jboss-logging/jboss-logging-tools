@@ -78,7 +78,8 @@ public final class MessageInterfaceFactory {
      *
      * @return a message interface for the interface element.
      */
-    public static MessageInterface of(final ProcessingEnvironment processingEnv, final TypeElement interfaceElement, final Properties expressionProperties) {
+    public static MessageInterface of(final ProcessingEnvironment processingEnv, final TypeElement interfaceElement,
+                                      final Properties expressionProperties, final boolean addGeneratedAnnotation) {
         final Types types = processingEnv.getTypeUtils();
         if (types.isSameType(interfaceElement.asType(), ElementHelper.toType(processingEnv.getElementUtils(), BasicLogger.class))) {
             MessageInterface result = LOGGER_INTERFACE;
@@ -93,10 +94,11 @@ public final class MessageInterfaceFactory {
             }
             return result;
         }
-        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv, expressionProperties);
+        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv, expressionProperties, addGeneratedAnnotation);
         result.init();
         for (TypeMirror typeMirror : interfaceElement.getInterfaces()) {
-            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv, (TypeElement) types.asElement(typeMirror), expressionProperties);
+            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv, (TypeElement) types.asElement(typeMirror),
+                    expressionProperties, addGeneratedAnnotation);
             result.extendedInterfaces.add(extended);
             result.extendedInterfaces.addAll(extended.extendedInterfaces());
         }
@@ -112,6 +114,7 @@ public final class MessageInterfaceFactory {
         private final List<MessageMethod> messageMethods;
         private final List<ValidIdRange> validIdRanges;
         private final Properties expressionProperties;
+        private final TypeElement generatedAnnotation;
         private String projectCode;
         private String packageName;
         private String simpleName;
@@ -119,7 +122,8 @@ public final class MessageInterfaceFactory {
         private String fqcn;
         private int idLen;
 
-        private AptMessageInterface(final TypeElement interfaceElement, final ProcessingEnvironment processingEnv, final Properties expressionProperties) {
+        private AptMessageInterface(final TypeElement interfaceElement, final ProcessingEnvironment processingEnv,
+                                    final Properties expressionProperties, final boolean addGeneratedAnnotation) {
             super(processingEnv, interfaceElement);
             this.interfaceElement = interfaceElement;
             this.expressionProperties = expressionProperties;
@@ -132,6 +136,16 @@ public final class MessageInterfaceFactory {
             } else {
                 validIdRanges = Collections.emptyList();
             }
+            // Determine the type for the generated annotation
+            TypeElement generatedAnnotation = null;
+            if (addGeneratedAnnotation) {
+                generatedAnnotation = processingEnv.getElementUtils().getTypeElement("javax.annotation.Generated");
+                if (generatedAnnotation == null) {
+                    // As of Java 9 the annotation has been moved to the javax.annotation.processing package
+                    generatedAnnotation = processingEnv.getElementUtils().getTypeElement("javax.annotation.processing.Generated");
+                }
+            }
+            this.generatedAnnotation = generatedAnnotation;
         }
 
         @Override
@@ -238,6 +252,11 @@ public final class MessageInterfaceFactory {
         @Override
         public TypeElement getDelegate() {
             return interfaceElement;
+        }
+
+        @Override
+        public TypeElement generatedAnnotation() {
+            return generatedAnnotation;
         }
 
         @Override

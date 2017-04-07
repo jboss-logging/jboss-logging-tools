@@ -33,8 +33,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import javax.annotation.Generated;
 import javax.annotation.processing.Filer;
+import javax.lang.model.element.TypeElement;
 
 import org.jboss.jdeparser.FormatPreferences;
 import org.jboss.jdeparser.JCall;
@@ -135,12 +135,15 @@ public abstract class ClassModel {
      * @throws IllegalStateException if the class has already been defined.
      */
     JClassDef generateModel() throws IllegalStateException {
-        // Add generated annotation
-        final JType generatedType = $t(Generated.class);
-        sourceFile._import(generatedType);
-        classDef.annotate(generatedType)
-                .value("value", getClass().getName())
-                .value("date", JExprs.str(ClassModelHelper.generatedDateValue()));
+        // Add generated annotation if required
+        final TypeElement generatedAnnotation = messageInterface.generatedAnnotation();
+        if (generatedAnnotation != null) {
+            final JType generatedType = typeOf(generatedAnnotation.asType());
+            sourceFile._import(generatedType);
+            classDef.annotate(generatedType)
+                    .value("value", getClass().getName())
+                    .value("date", JExprs.str(ClassModelHelper.generatedDateValue()));
+        }
 
         // Create the default JavaDoc
         classDef.docComment().text("Warning this class consists of generated code.");
