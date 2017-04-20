@@ -25,6 +25,7 @@ package org.jboss.logging.processor.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.TypeElement;
 
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
@@ -110,4 +111,14 @@ public interface MessageInterface extends Comparable<MessageInterface>, ClassTyp
      * @return the length to pad the id with
      */
     int getIdLength();
+
+    /**
+     * Returns the type to use for the {@code @Generated} annotation. This may return {@code null} of the implementation
+     * should not be annotated.
+     *
+     * @return the type for the generated annotation or {@code null} if no annotation is wanted
+     */
+    default TypeElement generatedAnnotation() {
+        return null;
+    }
 }
