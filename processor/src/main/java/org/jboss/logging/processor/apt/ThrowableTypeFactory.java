@@ -90,6 +90,7 @@ final class ThrowableTypeFactory {
 
         private final TypeMirror type;
         private final boolean isChecked;
+        private final Element delegate;
         private boolean defaultConstructor = false;
         private boolean stringConstructor = false;
         private boolean throwableConstructor = false;
@@ -107,6 +108,7 @@ final class ThrowableTypeFactory {
         private AptThrowableType(final ProcessingEnvironment processingEnv, final TypeMirror type) {
             super(processingEnv, type);
             this.type = type;
+            this.delegate = types.asElement(type);
             stringType = ElementHelper.toType(elements, String.class);
             throwableType = ElementHelper.toType(elements, Throwable.class);
             final TypeMirror runtimeException = ElementHelper.toType(elements, RuntimeException.class);
@@ -164,7 +166,12 @@ final class ThrowableTypeFactory {
 
         @Override
         public Element getDelegate() {
-            return types.asElement(type);
+            return delegate;
+        }
+
+        @Override
+        public TypeMirror asType() {
+            return type;
         }
 
         @Override

@@ -23,6 +23,7 @@
 package org.jboss.logging.processor.generated;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
@@ -94,6 +95,22 @@ public interface ValidMessages {
 
     @Message(format = Format.MESSAGE_FORMAT, value = TEST_MESSAGE_FORMAT)
     RuntimeException testMessageFormatException(final String arg1, final String arg2);
+
+    @Message(value = TEST_MSG)
+    Supplier<RuntimeException> testSupplierRuntimeException();
+
+    @Message(TEST_MSG)
+    Supplier<CustomException> fieldMessageSupplier(@Field(name = "value") int value);
+
+    @Message(TEST_MSG)
+    Supplier<CustomException> propertyMessageSupplier(@Property int value);
+
+    @ConstructType(IllegalArgumentException.class)
+    @Message("Invalid user id or password")
+    Supplier<RuntimeException> invalidCredentialsSupplier();
+
+    @Message(value = TEST_MSG)
+    Supplier<String> testSupplierString();
 
     class CustomException extends RuntimeException {
         public int value;

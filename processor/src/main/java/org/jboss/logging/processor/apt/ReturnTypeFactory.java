@@ -25,24 +25,17 @@ package org.jboss.logging.processor.apt;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.NoType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 
 import org.jboss.logging.annotations.ConstructType;
 import org.jboss.logging.processor.model.MessageMethod;
-import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ReturnType;
 import org.jboss.logging.processor.model.ThrowableType;
 import org.jboss.logging.processor.util.ElementHelper;
@@ -76,33 +69,39 @@ final class ReturnTypeFactory {
     private static class AptReturnType extends AbstractClassType implements ReturnType {
         private final TypeMirror returnType;
         private final MessageMethod method;
+        private final Element delegate;
         private ThrowableType throwableType;
 
         AptReturnType(final ProcessingEnvironment processingEnv, final TypeMirror returnType, final MessageMethod method) {
             super(processingEnv, returnType);
             this.returnType = returnType;
             this.method = method;
+            delegate = types.asElement(returnType);
             throwableType = null;
         }
 
         @Override
         public Element getDelegate() {
-            return types.asElement(returnType);
+            return delegate;
+        }
+
+        @Override
+        public TypeMirror asType() {
+            return returnType;
         }
 
         @Override
         public boolean isThrowable() {
+            // If this is a supplier, check the suppliers type
+            if (isSubtypeOf(Supplier.class)) {
+                return types.isSubtype(types.erasure(resolvedType()), toType(Throwable.class));
+            }
             return isSubtypeOf(Throwable.class);
         }
 
         @Override
-        public boolean isPrimitive() {
-            return returnType.getKind().isPrimitive();
-        }
-
-        @Override
         public String name() {
-            return returnType.toString();
+            return types.erasure(returnType).toString();
         }
 
         @Override
@@ -112,19 +111,20 @@ final class ReturnTypeFactory {
 
         private void init() {
             if (isThrowable()) {
-                TypeMirror returnType = this.returnType;
+                // The resolved type needs to be used in cases where a Supplier is being returned
+                TypeMirror throwableReturnType = resolvedType();
                 if (ElementHelper.isAnnotatedWith(method, ConstructType.class)) {
                     final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(method, ConstructType.class);
                     // Shouldn't be null
                     if (constructTypeValue == null) {
                         throw new ProcessingException(method, "Class not defined for the ConstructType");
                     }
-                    returnType = constructTypeValue.asType();
-                    if (!types.isAssignable(returnType, this.returnType)) {
-                        throw new ProcessingException(method, "The requested type %s can not be assigned to %s.", returnType, this.returnType);
+                    throwableReturnType = constructTypeValue.asType();
+                    if (!types.isAssignable(throwableReturnType, resolvedType())) {
+                        throw new ProcessingException(method, "The requested type %s can not be assigned to %s.", throwableReturnType, this.returnType);
                     }
                 }
-                throwableType = ThrowableTypeFactory.forReturnType(processingEnv, returnType, method);
+                throwableType = ThrowableTypeFactory.forReturnType(processingEnv, throwableReturnType, method);
             }
         }
 
@@ -149,23 +149,8 @@ final class ReturnTypeFactory {
         public String toString() {
             return Objects.ToStringBuilder.of(this)
                     .add("name", name())
-                    .add("primitive", isPrimitive())
                     .add("throwable", isThrowable())
                     .add("throwableType", throwableType).toString();
-        }
-
-        private boolean checkType(final Parameter parameter, final TypeMirror type) {
-            if (parameter.isPrimitive()) {
-                if (type.getKind().isPrimitive()) {
-                    return types.isSameType(parameter.asType(), type);
-                }
-                return types.isAssignable(types.unboxedType(parameter.asType()), type);
-            }
-            if (type.getKind().isPrimitive()) {
-                final TypeElement primitiveType = types.boxedClass((PrimitiveType) type);
-                return types.isAssignable(parameter.asType(), primitiveType.asType());
-            }
-            return types.isAssignable(parameter.asType(), type);
         }
     }
 
@@ -195,11 +180,6 @@ final class ReturnTypeFactory {
 
         @Override
         public boolean isThrowable() {
-            return false;
-        }
-
-        @Override
-        public boolean isPrimitive() {
             return false;
         }
 

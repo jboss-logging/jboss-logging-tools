@@ -305,9 +305,10 @@ public final class Validator {
 
     private Collection<ValidationMessage> validateBundleMethod(final MessageMethod messageMethod) {
         final List<ValidationMessage> messages = new ArrayList<>();
-        // The return type must be a Throwable or String
+        // The return type must be a Throwable, String or a Supplier that returns a Throwable or String
         final ReturnType returnType = messageMethod.returnType();
-        if (returnType.asType().getKind() == TypeKind.VOID || returnType.isPrimitive()) {
+        final TypeMirror returnTypeMirror = returnType.asType();
+        if (returnTypeMirror.getKind() == TypeKind.VOID || returnTypeMirror.getKind().isPrimitive()) {
             messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type. Cannot be void or a primitive.", messageMethod.name()));
         } else if (returnType.isThrowable()) {
             final ThrowableType throwableReturnType = returnType.throwableReturnType();
@@ -352,11 +353,14 @@ public final class Validator {
                 }
             }
         } else {
-            if (!returnType.isAssignableFrom(String.class)) {
-                messages.add(createError(messageMethod, "Message bundle method (%s) has an invalid return type of %s.", messageMethod.name(), returnType.name()));
+            final TypeMirror resolvedType = returnType.resolvedType();
+            if (!isTypeAssignableFrom(resolvedType, String.class) && !returnType.isThrowable()) {
+                messages.add(createError(messageMethod, "Message bundle method (%s) has an invalid return type of %s. " +
+                        "Return types must be a String, a subtype of Throwable or a java.util.function.Supplier which " +
+                        "returns a String or a subtype of Throwable.", messageMethod.name(), returnTypeMirror));
             }
             if (ElementHelper.isAnnotatedWith(messageMethod, ConstructType.class)) {
-                messages.add(createError(messageMethod, "ConstructType annotation requires a throwable return type"));
+                messages.add(createError(messageMethod, "ConstructType annotation requires a throwable or supplier which produces a throwable return type"));
             }
         }
         return messages;
@@ -424,15 +428,28 @@ public final class Validator {
      * @return {@code true} if the element type is assignable to the class type, otherwise {@code false}
      */
     private boolean isTypeAssignableFrom(final Element element, final Class<?> type) {
-        TypeMirror elementType = element.asType();
-        if (elementType.getKind() == TypeKind.ARRAY) {
-            elementType = ((ArrayType) elementType).getComponentType();
+        return isTypeAssignableFrom(element.asType(), type);
+    }
+
+    /**
+     * Checks the type, if an array the type of the array is checked, against the class. If the element type is
+     * assignable to the class type.
+     *
+     * @param typeMirror the type to test
+     * @param type       the type the element needs to be assignable to
+     *
+     * @return {@code true} if the element type is assignable to the class type, otherwise {@code false}
+     */
+    private boolean isTypeAssignableFrom(final TypeMirror typeMirror, final Class<?> type) {
+        TypeMirror t = typeMirror;
+        if (t.getKind() == TypeKind.ARRAY) {
+            t = ((ArrayType) t).getComponentType();
         }
-        if (types.isAssignable(types.erasure(elementType), elements.getTypeElement(Collection.class.getCanonicalName()).asType())) {
+        if (types.isAssignable(types.erasure(t), elements.getTypeElement(Collection.class.getCanonicalName()).asType())) {
             // We only need the first type
-            elementType = types.erasure(((DeclaredType) elementType).getTypeArguments().iterator().next());
+            t = types.erasure(((DeclaredType) t).getTypeArguments().iterator().next());
         }
         final TypeMirror classType = elements.getTypeElement(type.getCanonicalName()).asType();
-        return types.isAssignable(elementType, classType);
+        return types.isAssignable(t, classType);
     }
 }
