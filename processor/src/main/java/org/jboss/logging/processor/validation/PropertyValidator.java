@@ -103,7 +103,8 @@ class PropertyValidator {
             }
         }
         if (continueValidation) {
-            final TypeMirror returnType = messageMethod.getReturnType();
+            // Use the resolved return type to validate if parameters can be assigned to the type
+            final TypeMirror returnType = messageMethod.returnType().resolvedType();
             final List<ValidationMessage> result = new ArrayList<>();
             if (returnType.getKind() == TypeKind.DECLARED) {
                 final PropertyValidator validator = new PropertyValidator(processingEnv, messageMethod, returnType, result);

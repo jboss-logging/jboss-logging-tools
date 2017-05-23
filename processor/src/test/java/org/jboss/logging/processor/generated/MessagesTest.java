@@ -24,7 +24,9 @@ package org.jboss.logging.processor.generated;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
+import org.jboss.logging.processor.generated.ValidMessages.CustomException;
 import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -129,6 +131,40 @@ public class MessagesTest {
         exception = MethodMessageConstants.MESSAGES.repeatableField();
         Assert.assertEquals(exception.type, String.class);
         Assert.assertEquals(exception.value, MethodMessageConstants.stringTest);
+    }
+
+    @Test
+    public void testSupplierReturnType() throws Exception {
+        Supplier<RuntimeException> runtimeExceptionSupplier = ValidMessages.MESSAGES.testSupplierRuntimeException();
+        Assert.assertNotNull(runtimeExceptionSupplier);
+        RuntimeException runtimeException = runtimeExceptionSupplier.get();
+        Assert.assertEquals(runtimeException.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(runtimeException.getClass(), RuntimeException.class);
+
+        Assert.assertEquals(String.format(ValidMessages.TEST_MSG), ValidMessages.MESSAGES.testSupplierString().get());
+
+        runtimeExceptionSupplier = ValidMessages.MESSAGES.invalidCredentialsSupplier();
+        Assert.assertNotNull(runtimeExceptionSupplier);
+        runtimeException = runtimeExceptionSupplier.get();
+        Assert.assertEquals(runtimeException.getClass(), IllegalArgumentException.class);
+
+        // Test suppliers with fields/properties
+        int value = 5;
+        Supplier<CustomException> customExceptionSupplier = ValidMessages.MESSAGES.fieldMessageSupplier(value);
+        Assert.assertNotNull(customExceptionSupplier);
+        CustomException customException = customExceptionSupplier.get();
+        Assert.assertEquals(customException.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(customException.getClass(), CustomException.class);
+        Assert.assertEquals(customException.value, value);
+
+        value = 20;
+        customExceptionSupplier = ValidMessages.MESSAGES.propertyMessageSupplier(value);
+        Assert.assertNotNull(customExceptionSupplier);
+        customException = customExceptionSupplier.get();
+        Assert.assertEquals(customException.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(customException.getClass(), CustomException.class);
+        Assert.assertEquals(customException.value, value);
+
     }
 
     private <T> void compare(final T[] a1, final T[] a2) {

@@ -22,6 +22,10 @@
 
 package org.jboss.logging.processor.model;
 
+import java.util.List;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
 /**
  * Date: 29.07.2011
  *
@@ -30,18 +34,14 @@ package org.jboss.logging.processor.model;
 public interface ReturnType extends ClassType, DelegatingElement {
 
     /**
-     * Checks to see if the return type is an exception, extends Throwable.
+     * Checks to see if the return type is an exception, extends Throwable or the value of a
+     * {@link java.util.function.Supplier} is a Throwable type.
      *
      * @return {@code true} if the return type is an exception, otherwise {@code false}.
+     *
+     * @see #resolvedType()
      */
     boolean isThrowable();
-
-    /**
-     * Indicates whether or not the return type is a primitive.
-     *
-     * @return {@code true} if a primitive, otherwise {@code false}.
-     */
-    boolean isPrimitive();
 
     /**
      * Returns the qualified class name of the return type.
@@ -57,4 +57,21 @@ public interface ReturnType extends ClassType, DelegatingElement {
      * @return an exception return type, otherwise {@code null}.
      */
     ThrowableType throwableReturnType();
+
+    /**
+     * Determines the type that will be ultimately created. For example in the case of a
+     * {@link java.util.function.Supplier} this would the type the {@code Supplier} returns.
+     *
+     * @return the resolved return type
+     */
+    default TypeMirror resolvedType() {
+        final TypeMirror t = asType();
+        if (t instanceof DeclaredType) {
+            final List<? extends TypeMirror> typeArgs = ((DeclaredType) t).getTypeArguments();
+            if (!typeArgs.isEmpty()) {
+                return typeArgs.get(0);
+            }
+        }
+        return asType();
+    }
 }

@@ -68,7 +68,14 @@ abstract class AbstractClassType implements ClassType {
         return types.isSameType(types.erasure(this.typeMirror), toType(type));
     }
 
-    private TypeMirror toType(final Class<?> type) {
+    /**
+     * Creates a {@link TypeMirror} from a class type.
+     *
+     * @param type the type to create the {@link TypeMirror} for
+     *
+     * @return the {@code TypeMirror} to represent the type
+     */
+    TypeMirror toType(final Class<?> type) {
         return types.erasure(elements.getTypeElement(type.getCanonicalName()).asType());
     }
 }

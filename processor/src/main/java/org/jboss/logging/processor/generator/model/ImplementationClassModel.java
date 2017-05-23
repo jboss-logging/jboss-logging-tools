@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -54,6 +55,7 @@ import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JExpr;
 import org.jboss.jdeparser.JExprs;
 import org.jboss.jdeparser.JIf;
+import org.jboss.jdeparser.JLambda;
 import org.jboss.jdeparser.JMethodDef;
 import org.jboss.jdeparser.JMod;
 import org.jboss.jdeparser.JParamDeclaration;
@@ -110,7 +112,7 @@ abstract class ImplementationClassModel extends ClassModel {
     void createBundleMethod(final JClassDef classDef, final JCall localeGetter, final MessageMethod messageMethod) {
         // Add the message messageMethod.
         addMessageMethod(messageMethod);
-        final JType returnType = $t(messageMethod.returnType().name());
+        final JType returnType = JTypes.typeOf(messageMethod.returnType().asType());
         sourceFile._import(returnType);
         final JMethodDef method = classDef.method(JMod.PUBLIC | FINAL, returnType, messageMethod.name());
         method.annotate(Override.class);
@@ -230,19 +232,26 @@ abstract class ImplementationClassModel extends ClassModel {
         for (JExpr arg : args) {
             formatterCall.arg(arg);
         }
+        final boolean isSupplier = messageMethod.returnType().isSubtypeOf(Supplier.class);
         // Setup the return type
         final JExpr result;
         if (messageMethod.returnType().isThrowable()) {
-            result = $v(createReturnType(messageMethod, body, formatterCall));
+            if (isSupplier) {
+                final JLambda lambda = JExprs.lambda();
+                final JBlock lambdaBody = lambda.body();
+                lambdaBody._return(createReturnType(messageMethod, lambdaBody, formatterCall, fields, properties));
+                result = lambda;
+            } else {
+                result = createReturnType(messageMethod, body, formatterCall, fields, properties);
+            }
         } else {
-            result = formatterCall;
-        }
-        // Set the fields and properties of the return type
-        for (Map.Entry<String, JParamDeclaration> entry : fields.entrySet()) {
-            body.assign(result.field(entry.getKey()), $v(entry.getValue()));
-        }
-        for (Map.Entry<String, JParamDeclaration> entry : properties.entrySet()) {
-            body.add(result.call(entry.getKey()).arg($v(entry.getValue())));
+            if (isSupplier) {
+                final JLambda lambda = JExprs.lambda();
+                lambda.body()._return(formatterCall);
+                result = lambda;
+            } else {
+                result = formatterCall;
+            }
         }
         body._return(result);
     }
@@ -342,10 +351,10 @@ abstract class ImplementationClassModel extends ClassModel {
         return result;
     }
 
-    private JVarDeclaration createReturnType(final MessageMethod messageMethod, final JBlock body, final JCall format) {
+    private JExpr createReturnType(final MessageMethod messageMethod, final JBlock body, final JCall format, final Map<String, JParamDeclaration> fields, final Map<String, JParamDeclaration> properties) {
         boolean callInitCause = false;
         final ThrowableType returnType = messageMethod.returnType().throwableReturnType();
-        final JType type = $t(returnType.name());
+        final JType type = JTypes.typeOf(returnType.asType());
         // Import once more as the throwable return type may be different than the actual return type
         sourceFile._import(type);
         final JCall result = type._new();
@@ -408,7 +417,11 @@ abstract class ImplementationClassModel extends ClassModel {
                 body.add($v(resultField).call("addSuppressed").arg($v(p.name())));
             }
         }
-        return resultField;
+        // Add the possible fields and properties to be set on the returned exception
+        final JExpr resultExpr = $v(resultField);
+        fields.forEach((key, value) -> body.assign(resultExpr.field(key), $v(value)));
+        properties.forEach((key, value) -> body.add(resultExpr.call(key).arg($v(value))));
+        return resultExpr;
     }
 
     protected final void addThrownTypes(final MessageMethod messageMethod, final JMethodDef jMethod) {
