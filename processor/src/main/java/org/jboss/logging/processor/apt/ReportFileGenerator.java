@@ -109,7 +109,7 @@ public class ReportFileGenerator extends AbstractGenerator {
 
     private BufferedWriter createWriter(final String packageName, final String fileName) throws IOException {
         if (reportPath == null) {
-            return new BufferedWriter(filer().createResource(StandardLocation.CLASS_OUTPUT, packageName, fileName).openWriter());
+            return new BufferedWriter(processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, packageName, fileName).openWriter());
         }
         return Files.newBufferedWriter(Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()), fileName), StandardCharsets.UTF_8);
     }

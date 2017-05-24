@@ -94,7 +94,7 @@ final class ReturnTypeFactory {
         public boolean isThrowable() {
             // If this is a supplier, check the suppliers type
             if (isSubtypeOf(Supplier.class)) {
-                return types.isSubtype(types.erasure(resolvedType()), toType(Throwable.class));
+                return types.isSubtype(types.erasure(resolvedType()), ElementHelper.toType(elements, Throwable.class));
             }
             return isSubtypeOf(Throwable.class);
         }
@@ -113,7 +113,7 @@ final class ReturnTypeFactory {
             if (isThrowable()) {
                 // The resolved type needs to be used in cases where a Supplier is being returned
                 TypeMirror throwableReturnType = resolvedType();
-                if (ElementHelper.isAnnotatedWith(method, ConstructType.class)) {
+                if (method.isAnnotatedWith(ConstructType.class)) {
                     final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(method, ConstructType.class);
                     // Shouldn't be null
                     if (constructTypeValue == null) {

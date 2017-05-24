@@ -37,7 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
@@ -85,12 +85,12 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     /**
      * Creates a new message logger code model.
      *
-     * @param filer            the filer used to create the source file
+     * @param processingEnv    the processing environment
      * @param messageInterface the message interface to implement.
      * @param useLogging31     {@code true} to use logging 3.1, {@code false} to remain compatible with 3.0
      */
-    public MessageLoggerImplementor(final Filer filer, final MessageInterface messageInterface, final boolean useLogging31) {
-        super(filer, messageInterface);
+    public MessageLoggerImplementor(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final boolean useLogging31) {
+        super(processingEnv, messageInterface);
         this.useLogging31 = useLogging31;
     }
 
@@ -151,7 +151,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
-            if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class) || ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+            if (messageInterface.isAnnotatedWith(MessageBundle.class) || messageInterface.isAnnotatedWith(MessageLogger.class)) {
                 messageMethods.addAll(messageInterface.methods());
             }
         }
@@ -235,7 +235,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 final String target = "log" + affix;
 
                 // 4 methods each for with- and without-throwable
-                for (boolean renderThr : new boolean[]{false, true}) {
+                for (boolean renderThr : new boolean[] {false, true}) {
                     JParamDeclaration thr = null;
 
                     final JMethodDef xxx1x = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, name);
@@ -422,7 +422,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Check for the @Once annotation
         final JBlock body;
-        if (ElementHelper.isAnnotatedWith(messageMethod, Once.class) && messageMethod.isLoggerMethod()) {
+        if (messageMethod.isAnnotatedWith(Once.class) && messageMethod.isLoggerMethod()) {
             final JType atomicBoolean = $t(AtomicBoolean.class);
             sourceFile._import(atomicBoolean);
             // The variable will be shared with overloaded methods

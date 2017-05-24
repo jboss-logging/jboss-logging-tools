@@ -101,13 +101,13 @@ public final class Validator {
     public final Collection<ValidationMessage> validate(final MessageInterface messageInterface) {
         final List<ValidationMessage> messages = new ArrayList<>();
         String locale = null;
-        if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class)) {
+        if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(messageInterface, messageMethods));
             messages.addAll(validateBundle(messageMethods));
             locale = messageInterface.getAnnotation(MessageBundle.class).rootLocale();
-        } else if (ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+        } else if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
             // Get all messageMethods except logger interface messageMethods
             final Set<MessageMethod> messageMethods = getAllMethods(messageInterface);
             messages.addAll(validateCommon(messageInterface, messageMethods));
@@ -328,7 +328,7 @@ public final class Validator {
                     }
                 }
                 // Validate the construct type is valid
-                if (ElementHelper.isAnnotatedWith(messageMethod, ConstructType.class)) {
+                if (messageMethod.isAnnotatedWith(ConstructType.class)) {
                     final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(messageMethod, ConstructType.class);
                     // Shouldn't be null
                     if (constructTypeValue == null) {
@@ -359,7 +359,7 @@ public final class Validator {
                         "Return types must be a String, a subtype of Throwable or a java.util.function.Supplier which " +
                         "returns a String or a subtype of Throwable.", messageMethod.name(), returnTypeMirror));
             }
-            if (ElementHelper.isAnnotatedWith(messageMethod, ConstructType.class)) {
+            if (messageMethod.isAnnotatedWith(ConstructType.class)) {
                 messages.add(createError(messageMethod, "ConstructType annotation requires a throwable or supplier which produces a throwable return type"));
             }
         }
@@ -380,7 +380,7 @@ public final class Validator {
                 messages.addAll(validateLoggerMethod(messageMethod));
             } else {
                 messages.addAll(validateBundleMethod(messageMethod));
-                if (ElementHelper.isAnnotatedWith(messageMethod, Once.class)) {
+                if (messageMethod.isAnnotatedWith(Once.class)) {
                     messages.add(createError(messageMethod, "Only @LogMessage method can be annoted with @Once"));
                 }
             }
@@ -405,7 +405,7 @@ public final class Validator {
      * @return a set of all the methods (exception logger interface methods) the interface must implement.
      */
     private Set<MessageMethod> getAllMethods(final MessageInterface messageInterface) {
-        if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class) || ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+        if (messageInterface.isAnnotatedWith(MessageBundle.class) || messageInterface.isAnnotatedWith(MessageLogger.class)) {
             final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
             for (MessageMethod messageMethod : messageInterface.methods()) {
                 messageMethods.add(messageMethod);
@@ -447,7 +447,7 @@ public final class Validator {
         }
         if (types.isAssignable(types.erasure(t), elements.getTypeElement(Collection.class.getCanonicalName()).asType())) {
             // We only need the first type
-            t = types.erasure(((DeclaredType) t).getTypeArguments().iterator().next());
+            t = types.erasure(ElementHelper.getTypeArguments(t).iterator().next());
         }
         final TypeMirror classType = elements.getTypeElement(type.getCanonicalName()).asType();
         return types.isAssignable(t, classType);

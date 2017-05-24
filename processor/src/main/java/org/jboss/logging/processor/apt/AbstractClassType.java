@@ -29,6 +29,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.jboss.logging.processor.model.ClassType;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -75,7 +76,7 @@ abstract class AbstractClassType implements ClassType {
      *
      * @return the {@code TypeMirror} to represent the type
      */
-    TypeMirror toType(final Class<?> type) {
-        return types.erasure(elements.getTypeElement(type.getCanonicalName()).asType());
+    private TypeMirror toType(final Class<?> type) {
+        return types.erasure(ElementHelper.toType(elements, type));
     }
 }

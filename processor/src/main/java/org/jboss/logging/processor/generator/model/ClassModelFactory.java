@@ -26,13 +26,12 @@ import static org.jboss.logging.processor.generator.model.ClassModelHelper.imple
 import static org.jboss.logging.processor.util.TranslationHelper.getEnclosingTranslationClassName;
 
 import java.util.Map;
-import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
-import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Creates a class model for the message interface.
@@ -51,7 +50,7 @@ public class ClassModelFactory {
     /**
      * Creates an implementation code model from the message interface.
      *
-     * @param filer            the filer used to create the source file
+     * @param processingEnv    the processing environment
      * @param messageInterface the message interface to implement
      * @param useLogging31     whether or not jboss-logging 3.1 or higher is used
      *
@@ -59,12 +58,12 @@ public class ClassModelFactory {
      *
      * @throws IllegalArgumentException if interface is not annotated with {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}
      */
-    public static ClassModel implementation(final Filer filer, final MessageInterface messageInterface, final boolean useLogging31) throws IllegalArgumentException {
-        if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class)) {
-            return new MessageBundleImplementor(filer, messageInterface);
+    public static ClassModel implementation(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final boolean useLogging31) throws IllegalArgumentException {
+        if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
+            return new MessageBundleImplementor(processingEnv, messageInterface);
         }
-        if (ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
-            return new MessageLoggerImplementor(filer, messageInterface, useLogging31);
+        if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
+            return new MessageLoggerImplementor(processingEnv, messageInterface, useLogging31);
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
     }
@@ -74,7 +73,7 @@ public class ClassModelFactory {
      * <p/>
      * <b>Note:</b> The implementation class must exist before the translation implementations can be created.
      *
-     * @param filer             the filer used to create the source file
+     * @param processingEnv     the processing environment
      * @param messageInterface  the message interface to implement.
      * @param translationSuffix the translation locale suffix.
      * @param translations      a map of the translations for the methods.
@@ -83,16 +82,16 @@ public class ClassModelFactory {
      *
      * @throws IllegalArgumentException if interface is not annotated with {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}
      */
-    public static ClassModel translation(final Filer filer, final MessageInterface messageInterface, final String translationSuffix, final Map<MessageMethod, String> translations) throws IllegalArgumentException {
+    public static ClassModel translation(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String translationSuffix, final Map<MessageMethod, String> translations) throws IllegalArgumentException {
         final String generatedClassName = implementationClassName(messageInterface, translationSuffix);
         final String superClassName = getEnclosingTranslationClassName(generatedClassName);
         // The locale should be the same as the translationsSuffix minus the leading _
         final String locale = translationSuffix.substring(1);
-        if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class)) {
-            return new MessageBundleTranslator(filer, messageInterface, generatedClassName, superClassName, locale, translations);
+        if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
+            return new MessageBundleTranslator(processingEnv, messageInterface, generatedClassName, superClassName, locale, translations);
         }
-        if (ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
-            return new MessageLoggerTranslator(filer, messageInterface, generatedClassName, superClassName, locale, translations);
+        if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
+            return new MessageLoggerTranslator(processingEnv, messageInterface, generatedClassName, superClassName, locale, translations);
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
     }

@@ -22,8 +22,6 @@
 
 package org.jboss.logging.processor.apt;
 
-import static org.jboss.logging.processor.util.ElementHelper.getPrimaryClassNamePrefix;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,6 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -52,7 +51,6 @@ import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
-import org.jboss.logging.processor.util.Strings;
 
 /**
  * The generator of skeletal
@@ -61,24 +59,25 @@ import org.jboss.logging.processor.util.Strings;
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("MagicNumber")
 @SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
 final class TranslationFileGenerator extends AbstractGenerator {
     private static final Map<String, Integer> levels = new HashMap<>();
 
     private static final Pattern PATTERN = Pattern.compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
 
-    public static final String EMPTY_STRING = "";
-    public static final String JAVA_DOC_PARAM = "@param";
+    private static final String EMPTY_STRING = "";
+    private static final String JAVA_DOC_PARAM = "@param";
 
-    public static final String GENERATED_FILES_PATH_OPTION = "generatedTranslationFilesPath";
+    private static final String LEVEL_OPTION = "org.jboss.logging.tools.level";
 
-    public static final String LEVEL_OPTION = "org.jboss.logging.tools.level";
-
-    public static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
-
-    public static final String DEFAULT_FILE_EXTENSION = ".i18n.properties";
+    private static final String DEFAULT_FILE_EXTENSION = ".i18n.properties";
 
     private static final String DEFAULT_FILE_COMMENT = "# This file is for reference only, changes have no effect on the generated interface implementations.";
+
+    static final String GENERATED_FILES_PATH_OPTION = "generatedTranslationFilesPath";
+
+    static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
 
     static {
 
@@ -106,7 +105,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
      *
      * @param processingEnv the processing env
      */
-    public TranslationFileGenerator(final ProcessingEnvironment processingEnv) {
+    TranslationFileGenerator(final ProcessingEnvironment processingEnv) {
         super(processingEnv);
         Map<String, String> options = processingEnv.getOptions();
         this.generatedFilesPath = options.get(GENERATED_FILES_PATH_OPTION);
@@ -133,7 +132,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         if (generatedFilesPath != null) {
             if (element.getKind().isInterface()) {
-                String packageName = elementUtils().getPackageOf(element).getQualifiedName().toString();
+                String packageName = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString();
                 String relativePath = packageName.replace('.', File.separatorChar);
                 String fileName = getPrimaryClassNamePrefix(element) + GENERATED_FILE_EXTENSION;
 
@@ -152,7 +151,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
      * @param fileName         the file name
      * @param messageInterface the message interface
      */
-    void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MessageInterface messageInterface) {
+    private void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MessageInterface messageInterface) {
         if (messageInterface == null) {
             throw new IllegalArgumentException("The translations parameter cannot be null");
         }
@@ -202,7 +201,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
         try {
             if (generatedFilesPath == null) {
-                final FileObject fileObject = filer().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
+                final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
                 // Note the FileObject#openWriter() is used here. The FileObject#openOutputStream() returns an output stream
                 // that writes each byte separately which results in poor performance.
                 writer = new BufferedWriter(fileObject.openWriter());
@@ -214,16 +213,14 @@ final class TranslationFileGenerator extends AbstractGenerator {
                 writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
             }
             // Write comments
-            writer.write(Strings.fill("#", DEFAULT_FILE_COMMENT.length()));
-            writer.newLine();
+            writeSeparatorLine(writer);
             writer.write("#");
             writer.newLine();
             writer.write(DEFAULT_FILE_COMMENT);
             writer.newLine();
             writer.write("#");
             writer.newLine();
-            writer.write(Strings.fill("#", DEFAULT_FILE_COMMENT.length()));
-            writer.newLine();
+            writeSeparatorLine(writer);
             writer.newLine();
             final Set<String> processed = new HashSet<>();
 
@@ -315,6 +312,44 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
     private boolean isMethodWritable(final MessageMethod method) {
         return !(comparator != null && method.isLoggerMethod()) || (comparator.compareTo(method.logLevel()) >= 0);
+    }
+
+    private static void writeSeparatorLine(final BufferedWriter writer) throws IOException {
+        final int len = DEFAULT_FILE_COMMENT.length();
+        for (int i = 0; i < len; i++) {
+            writer.append('#');
+        }
+        writer.newLine();
+    }
+
+    /**
+     * Returns the primary class simple name prefix for an element
+     * who represents a MessageBundle or MessageLogger interface.
+     *
+     * @param element the element
+     *
+     * @return the translation file name prefix
+     *
+     * @throws IllegalArgumentException if element is null or the element is not an interface
+     */
+    private static String getPrimaryClassNamePrefix(final TypeElement element) {
+        if (element == null) {
+            throw new IllegalArgumentException("The element parameter cannot be null");
+        }
+        if (!element.getKind().isInterface()) {
+            throw new IllegalArgumentException("The element parameter is not an interface");
+        }
+
+        String translationFileName = element.getSimpleName().toString();
+
+        //Check if it's an inner interface
+        Element enclosingElt = element.getEnclosingElement();
+        while (enclosingElt != null && enclosingElt instanceof TypeElement) {
+            translationFileName = String.format("%s$%s", enclosingElt.getSimpleName().toString(), translationFileName);
+            enclosingElt = enclosingElt.getEnclosingElement();
+        }
+
+        return translationFileName;
     }
 
     private static final class LevelComparator implements Comparable<String> {

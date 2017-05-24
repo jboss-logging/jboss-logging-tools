@@ -162,7 +162,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
-        if (!roundEnv.processingOver()) {
+        if (!roundEnv.processingOver() && !annotations.isEmpty()) {
             doProcess(annotations, roundEnv);
         }
         return true;

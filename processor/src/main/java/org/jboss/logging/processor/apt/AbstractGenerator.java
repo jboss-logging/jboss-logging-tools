@@ -21,17 +21,28 @@
  */
 package org.jboss.logging.processor.apt;
 
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.jboss.logging.processor.model.DelegatingElement;
+import org.jboss.logging.processor.model.DelegatingTypeElement;
 import org.jboss.logging.processor.model.MessageInterface;
 
 /**
@@ -44,7 +55,7 @@ public abstract class AbstractGenerator {
 
     private final ToolLogger logger;
 
-    private final ProcessingEnvironment processingEnv;
+    final ProcessingEnvironment processingEnv;
 
     /**
      * Constructs a new processor.
@@ -73,42 +84,6 @@ public abstract class AbstractGenerator {
      */
     final ToolLogger logger() {
         return logger;
-    }
-
-    /**
-     * Returns the filer.
-     *
-     * @return the filer
-     */
-    final Filer filer() {
-        return processingEnv.getFiler();
-    }
-
-    /**
-     * Returns the element utils.
-     *
-     * @return the utils
-     */
-    final Elements elementUtils() {
-        return processingEnv.getElementUtils();
-    }
-
-    /**
-     * Returns the type utils.
-     *
-     * @return the utils
-     */
-    public final Types typeUtils() {
-        return processingEnv.getTypeUtils();
-    }
-
-    /**
-     * Returns the processing environment.
-     *
-     * @return the processing environment being used.
-     */
-    public final ProcessingEnvironment processingEnv() {
-        return processingEnv;
     }
 
     /**

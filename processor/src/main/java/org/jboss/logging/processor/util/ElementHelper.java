@@ -28,12 +28,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.AnnotatedConstruct;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -41,13 +41,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.Field;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.Param;
-import org.jboss.logging.annotations.Property;
-import org.jboss.logging.annotations.Suppressed;
 
 /**
  * An utility class to work with element.
@@ -61,6 +54,33 @@ public final class ElementHelper {
      * Disable instantiation.
      */
     private ElementHelper() {
+    }
+
+    /**
+     * Returns the type arguments for the element. If the elements {@linkplain Element#asType() type} is not a
+     * {@link DeclaredType} or the element does not have any type arguments an empty list is returned.
+     *
+     * @param element the element to get the type arguments for
+     *
+     * @return the type arguments or an empty list
+     */
+    public static List<? extends TypeMirror> getTypeArguments(final Element element) {
+        return getTypeArguments(element.asType());
+    }
+
+    /**
+     * Returns the type arguments for the type. If the type is not a {@link DeclaredType} or the type does not have any
+     * type arguments an empty list is returned.
+     *
+     * @param type the type to get the type arguments for
+     *
+     * @return the type arguments or an empty list
+     */
+    public static List<? extends TypeMirror> getTypeArguments(final TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            return ((DeclaredType) type).getTypeArguments();
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -80,154 +100,6 @@ public final class ElementHelper {
 
         Annotation annotation = annotatedConstruct.getAnnotation(clazz);
         return (annotation != null);
-    }
-
-    /**
-     * Returns the primary class simple name prefix for an element
-     * who represents a MessageBundle or MessageLogger interface.
-     *
-     * @param element the element
-     *
-     * @return the translation file name prefix
-     *
-     * @throws IllegalArgumentException if element is null or the element is not an interface
-     */
-    public static String getPrimaryClassNamePrefix(final TypeElement element) {
-        if (element == null) {
-            throw new IllegalArgumentException("The element parameter cannot be null");
-        }
-        if (!element.getKind().isInterface()) {
-            throw new IllegalArgumentException("The element parameter is not an interface");
-        }
-
-        String translationFileName = element.getSimpleName().toString();
-
-        //Check if it's an inner interface
-        Element enclosingElt = element.getEnclosingElement();
-        while (enclosingElt != null && enclosingElt instanceof TypeElement) {
-            translationFileName = String.format("%s$%s", enclosingElt.getSimpleName().toString(), translationFileName);
-            enclosingElt = enclosingElt.getEnclosingElement();
-        }
-
-        return translationFileName;
-    }
-
-
-    /**
-     * Returns a collection of methods with the same name.
-     *
-     * @param methods    the methods to process.
-     * @param methodName the method name to find.
-     *
-     * @return a collection of methods with the same name.
-     */
-    public static Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName) {
-        final List<ExecutableElement> result = new ArrayList<>();
-        for (ExecutableElement method : methods) {
-            if (methodName.equals(method.getSimpleName())) {
-                result.add(method);
-            }
-        }
-        return result;
-    }
-
-
-    /**
-     * Returns a collection of methods with the same name.
-     *
-     * @param methods    the methods to process.
-     * @param methodName the method name to find.
-     * @param paramCount the number of parameters the method must have.
-     *
-     * @return a collection of methods with the same name.
-     */
-    public static Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName, final int paramCount) {
-        final List<ExecutableElement> result = new ArrayList<>();
-        for (ExecutableElement method : methods) {
-            if (methodName.equals(method.getSimpleName()) && parameterCount(method.getParameters()) == paramCount) {
-                result.add(method);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Checks to see if there is a cause parameter.
-     *
-     * @param params the parameters to check.
-     *
-     * @return {@code true} if there is a cause, otherwise {@code false}.
-     */
-    public static boolean hasCause(final Collection<? extends VariableElement> params) {
-        // Look for cause
-        for (VariableElement param : params) {
-            if (isAnnotatedWith(param, Cause.class)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns the number of parameters excluding the {@link org.jboss.logging.annotations.Cause} parameter
-     * and any {@link org.jboss.logging.annotations.Param} parameters if found.
-     *
-     * @param params the parameters to get the count for.
-     *
-     * @return the number of parameters.
-     */
-    public static int parameterCount(final Collection<? extends VariableElement> params) {
-        int result = params.size();
-        for (VariableElement param : params) {
-            if (isAnnotatedWith(param, Param.class) || isAnnotatedWith(param, Field.class) ||
-                    isAnnotatedWith(param, Property.class) || isAnnotatedWith(param, Suppressed.class)) {
-                --result;
-            }
-        }
-        return (result - (hasCause(params) ? 1 : 0));
-    }
-
-    /**
-     * Checks to see if the method has or inherits a {@link org.jboss.logging.annotations.Message}
-     * annotation.
-     *
-     * @param methods the method to search.
-     * @param method  the method to check.
-     *
-     * @return {@code true} if the method has or inherits a message annotation, otherwise {@code false}.
-     */
-    public static boolean inheritsMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
-        if (isAnnotatedWith(method, Message.class)) {
-            return false;
-        }
-        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
-        for (ExecutableElement m : allMethods) {
-            if (isAnnotatedWith(m, Message.class)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Checks to see if the method is overloaded. An overloaded method has a different parameter count based on the
-     * format parameters only. Parameters annotated with {@link org.jboss.logging.annotations.Cause} or
-     * {@link org.jboss.logging.annotations.Param}
-     * are not counted.
-     *
-     * @param methods the method to search.
-     * @param method  the method to check.
-     *
-     * @return {@code true} if the method is overloaded, otherwise {@code false}.
-     */
-    public static boolean isOverloaded(final Collection<ExecutableElement> methods, final ExecutableElement method) {
-        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
-        for (ExecutableElement m : allMethods) {
-            if (method.getSimpleName().equals(m.getSimpleName()) && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -260,6 +132,7 @@ public final class ElementHelper {
      * @return a {@link TypeElement} representing the value for the annotation attribute or {@code null} if the
      * attribute was not found
      */
+    @SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "SameParameterValue"})
     public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
             final DeclaredType annotationType = mirror.getAnnotationType();
@@ -284,7 +157,7 @@ public final class ElementHelper {
      *
      * @return a list of {@link TypeMirror} representing the value for the annotation attribute or an empty list
      */
-    public static List<TypeMirror> getClassArrayAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
+    public static List<TypeMirror> getClassArrayAnnotationValue(final Element element, final Class<? extends Annotation> annotation, @SuppressWarnings("SameParameterValue") final String attributeName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
             final DeclaredType annotationType = mirror.getAnnotationType();
             if (annotationType.toString().equals(annotation.getName())) {
@@ -371,13 +244,49 @@ public final class ElementHelper {
     /**
      * Returns the type as a {@link TypeMirror}.
      *
+     * @param processingEnv the processing environment to get the elements utility
+     * @param type          the type to create the {@link TypeMirror} for
+     *
+     * @return the type
+     */
+    public static TypeElement toTypeElement(final ProcessingEnvironment processingEnv, final Class<?> type) {
+        return toTypeElement(processingEnv.getElementUtils(), type);
+    }
+
+    /**
+     * Returns the type as a {@link TypeMirror}.
+     *
+     * @param elements the element utility used to generate the tye type
+     * @param type     the type to create the {@link TypeMirror} for
+     *
+     * @return the type
+     */
+    public static TypeElement toTypeElement(final Elements elements, final Class<?> type) {
+        return elements.getTypeElement(type.getCanonicalName());
+    }
+
+    /**
+     * Returns the type as a {@link TypeMirror}.
+     *
+     * @param processingEnv the processing environment to get the elements utility
+     * @param type          the type to create the {@link TypeMirror} for
+     *
+     * @return the type
+     */
+    public static TypeMirror toType(final ProcessingEnvironment processingEnv, final Class<?> type) {
+        return toType(processingEnv.getElementUtils(), type);
+    }
+
+    /**
+     * Returns the type as a {@link TypeMirror}.
+     *
      * @param elements the element utility used to generate the tye type
      * @param type     the type to create the {@link TypeMirror} for
      *
      * @return the type
      */
     public static TypeMirror toType(final Elements elements, final Class<?> type) {
-        return elements.getTypeElement(type.getCanonicalName()).asType();
+        return toTypeElement(elements, type).asType();
     }
 
     private static boolean isSameType(final Class<?> c, final TypeMirror type) {

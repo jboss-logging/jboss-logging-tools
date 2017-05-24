@@ -104,7 +104,7 @@ class PropertyValidator {
         }
         if (continueValidation) {
             // Use the resolved return type to validate if parameters can be assigned to the type
-            final TypeMirror returnType = messageMethod.returnType().resolvedType();
+            final TypeMirror returnType = processingEnv.getTypeUtils().erasure(messageMethod.returnType().resolvedType());
             final List<ValidationMessage> result = new ArrayList<>();
             if (returnType.getKind() == TypeKind.DECLARED) {
                 final PropertyValidator validator = new PropertyValidator(processingEnv, messageMethod, returnType, result);
@@ -269,12 +269,12 @@ class PropertyValidator {
 
         @Override
         protected TypeMirror defaultAction(final Object o, final Elements elements) {
-            return elements.getTypeElement(o.getClass().getName()).asType();
+            return ElementHelper.toType(elements, o.getClass());
         }
 
         @Override
         public TypeMirror visitType(final TypeMirror t, final Elements elements) {
-            return elements.getTypeElement(Class.class.getName()).asType();
+            return ElementHelper.toType(elements, Class.class);
         }
     }
 }

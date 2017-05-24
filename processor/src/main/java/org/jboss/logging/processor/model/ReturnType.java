@@ -26,6 +26,8 @@ import java.util.List;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.jboss.logging.processor.util.ElementHelper;
+
 /**
  * Date: 29.07.2011
  *
@@ -65,13 +67,12 @@ public interface ReturnType extends ClassType, DelegatingElement {
      * @return the resolved return type
      */
     default TypeMirror resolvedType() {
-        final TypeMirror t = asType();
-        if (t instanceof DeclaredType) {
-            final List<? extends TypeMirror> typeArgs = ((DeclaredType) t).getTypeArguments();
-            if (!typeArgs.isEmpty()) {
-                return typeArgs.get(0);
-            }
+        final TypeMirror type = asType();
+        final List<? extends TypeMirror> typeArgs = ElementHelper.getTypeArguments(type);
+        if (typeArgs.isEmpty()) {
+            return type;
         }
-        return asType();
+        // Assume the first type only
+        return typeArgs.get(0);
     }
 }
