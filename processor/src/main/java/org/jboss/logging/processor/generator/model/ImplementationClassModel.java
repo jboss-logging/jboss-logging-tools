@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -96,11 +96,11 @@ abstract class ImplementationClassModel extends ClassModel {
     /**
      * Class constructor.
      *
-     * @param filer            the filer used to create the source file
+     * @param processingEnv    the processing environment
      * @param messageInterface the message interface to implement.
      */
-    ImplementationClassModel(final Filer filer, final MessageInterface messageInterface) {
-        super(filer, messageInterface, implementationClassName(messageInterface), null);
+    ImplementationClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface) {
+        super(processingEnv, messageInterface, implementationClassName(messageInterface), null);
     }
 
     /**

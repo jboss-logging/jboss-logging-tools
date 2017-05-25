@@ -24,7 +24,7 @@ package org.jboss.logging.processor.generator.model;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 
 import org.jboss.jdeparser.JCall;
 import org.jboss.jdeparser.JClassDef;
@@ -49,11 +49,11 @@ class MessageBundleImplementor extends ImplementationClassModel {
     /**
      * Creates a new message bundle code model.
      *
-     * @param filer            the filer used to create the source file
+     * @param processingEnv    the processing environment
      * @param messageInterface the message interface to implement.
      */
-    public MessageBundleImplementor(final Filer filer, final MessageInterface messageInterface) {
-        super(filer, messageInterface);
+    public MessageBundleImplementor(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface) {
+        super(processingEnv, messageInterface);
     }
 
     @Override
@@ -66,7 +66,7 @@ class MessageBundleImplementor extends ImplementationClassModel {
         final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
-            if (ElementHelper.isAnnotatedWith(messageInterface, MessageBundle.class) || ElementHelper.isAnnotatedWith(messageInterface, MessageLogger.class)) {
+            if (messageInterface.isAnnotatedWith(MessageBundle.class) || messageInterface.isAnnotatedWith(MessageLogger.class)) {
                 messageMethods.addAll(messageInterface.methods());
             }
         }

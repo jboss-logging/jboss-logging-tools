@@ -298,7 +298,7 @@ public final class MessageInterfaceFactory {
         }
 
         static LoggerInterface of(final ProcessingEnvironment processingEnv) {
-            final LoggerInterface result = new LoggerInterface(processingEnv, processingEnv.getElementUtils().getTypeElement(BasicLogger.class.getCanonicalName()));
+            final LoggerInterface result = new LoggerInterface(processingEnv, ElementHelper.toTypeElement(processingEnv, BasicLogger.class));
             result.init();
             return result;
         }

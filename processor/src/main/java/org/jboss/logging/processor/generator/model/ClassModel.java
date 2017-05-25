@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.jdeparser.FormatPreferences;
@@ -70,7 +70,6 @@ public abstract class ClassModel {
     private final JSources sources;
 
     private final JClassDef classDef;
-    protected final JSourceFile sourceFile;
 
     private final MessageInterface messageInterface;
 
@@ -82,18 +81,23 @@ public abstract class ClassModel {
     private final Map<String, JMethodDef> messageMethods;
     private final Map<String, JVarDeclaration> messageFields;
 
+
+    final JSourceFile sourceFile;
+    final ProcessingEnvironment processingEnv;
+
     /**
      * Construct a class model.
      *
-     * @param filer            the filer used to create the source file
+     * @param processingEnv    the processing environment
      * @param messageInterface the message interface to implement.
      * @param superClassName   the super class used for the translation implementations.
      */
-    ClassModel(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName) {
+    ClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className, final String superClassName) {
+        this.processingEnv = processingEnv;
         this.messageInterface = messageInterface;
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
-        sources = JDeparser.createSources(JFiler.newInstance(filer), new FormatPreferences(new Properties()));
+        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()), new FormatPreferences(new Properties()));
         sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
         classDef = sourceFile._class(JMod.PUBLIC, className);
         final int idLen = messageInterface.getIdLength();

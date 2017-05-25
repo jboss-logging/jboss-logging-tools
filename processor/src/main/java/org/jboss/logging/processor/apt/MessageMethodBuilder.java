@@ -22,15 +22,13 @@
 
 package org.jboss.logging.processor.apt;
 
-import static org.jboss.logging.processor.util.ElementHelper.findByName;
-import static org.jboss.logging.processor.util.ElementHelper.inheritsMessage;
-import static org.jboss.logging.processor.util.ElementHelper.isOverloaded;
-import static org.jboss.logging.processor.util.ElementHelper.parameterCount;
+import static org.jboss.logging.processor.util.ElementHelper.isAnnotatedWith;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.ToStringBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,16 +42,22 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
+import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Property;
+import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ReturnType;
@@ -132,7 +136,7 @@ final class MessageMethodBuilder {
                 result.id = message.id();
             }
         } else {
-            final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName(), parameterCount(method.getParameters()));
+            final Collection<ExecutableElement> allMethods = findByName(methods, method);
             for (ExecutableElement m : allMethods) {
                 message = m.getAnnotation(Message.class);
                 if (message != null) {
@@ -170,6 +174,104 @@ final class MessageMethodBuilder {
 
     private boolean hasMessageId(final Message message) {
         return message != null && (message.id() != Message.NONE && message.id() != Message.INHERIT);
+    }
+
+    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        final Name methodName = method.getSimpleName();
+        final List<ExecutableElement> result = new ArrayList<>();
+        final int paramCount = parameterCount(method.getParameters());
+        for (ExecutableElement m : methods) {
+            if (methodName.equals(m.getSimpleName()) && parameterCount(m.getParameters()) == paramCount) {
+                result.add(m);
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     * Returns a collection of methods with the same name.
+     *
+     * @param methods    the methods to process.
+     * @param methodName the method name to findByName.
+     *
+     * @return a collection of methods with the same name.
+     */
+    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final Name methodName) {
+        final List<ExecutableElement> result = new ArrayList<>();
+        for (ExecutableElement method : methods) {
+            if (methodName.equals(method.getSimpleName())) {
+                result.add(method);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Checks to see if the method has or inherits a {@link org.jboss.logging.annotations.Message}
+     * annotation.
+     *
+     * @param methods the method to search.
+     * @param method  the method to check.
+     *
+     * @return {@code true} if the method has or inherits a message annotation, otherwise {@code false}.
+     */
+
+    private boolean inheritsMessage(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        if (isAnnotatedWith(method, Message.class)) {
+            return false;
+        }
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
+        for (ExecutableElement m : allMethods) {
+            if (isAnnotatedWith(m, Message.class)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks to see if the method is overloaded. An overloaded method has a different parameter count based on the
+     * format parameters only. Parameters annotated with {@link org.jboss.logging.annotations.Cause} or
+     * {@link org.jboss.logging.annotations.Param}
+     * are not counted.
+     *
+     * @param methods the method to search.
+     * @param method  the method to check.
+     *
+     * @return {@code true} if the method is overloaded, otherwise {@code false}.
+     */
+    private boolean isOverloaded(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+        final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
+        for (ExecutableElement m : allMethods) {
+            if (method.getSimpleName().equals(m.getSimpleName()) && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the number of parameters excluding the {@link org.jboss.logging.annotations.Cause} parameter
+     * and any {@link org.jboss.logging.annotations.Param} parameters if found.
+     *
+     * @param params the parameters to get the count for.
+     *
+     * @return the number of parameters.
+     */
+    private int parameterCount(final Collection<? extends VariableElement> params) {
+        int result = params.size();
+        boolean hasCause = false;
+        for (VariableElement param : params) {
+            if (isAnnotatedWith(param, Param.class) || isAnnotatedWith(param, Field.class) ||
+                    isAnnotatedWith(param, Property.class) || isAnnotatedWith(param, Suppressed.class)) {
+                --result;
+            }
+            if (isAnnotatedWith(param, Cause.class)) {
+                hasCause = true;
+            }
+        }
+        return (result - (hasCause ? 1 : 0));
     }
 
     static MessageMethodBuilder create(final ProcessingEnvironment processingEnv) {
@@ -258,7 +360,7 @@ final class MessageMethodBuilder {
 
         @Override
         public Set<Parameter> parametersAnnotatedWith(final Class<? extends Annotation> annotation) {
-            final TypeElement type = elements.getTypeElement(annotation.getCanonicalName());
+            final TypeElement type = ElementHelper.toTypeElement(elements, annotation);
             return parameters.containsKey(type.asType()) ? Collections.unmodifiableSet(parameters.get(type.asType())) : Collections.emptySet();
         }
 
@@ -335,7 +437,7 @@ final class MessageMethodBuilder {
 
         @Override
         public boolean isLoggerMethod() {
-            return ElementHelper.isAnnotatedWith(method, LogMessage.class);
+            return isAnnotatedWith(LogMessage.class);
         }
 
         @Override

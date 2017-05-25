@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JMethodDef;
@@ -50,15 +50,15 @@ class MessageBundleTranslator extends ClassModel {
     /**
      * Create a MessageBundle with super class and interface.
      *
-     * @param filer            the filer used to create the source file
+     * @param processingEnv    the processing environment
      * @param messageInterface the message interface to implement.
      * @param className        the implementation class name.
      * @param superClassName   the super class name
      * @param locale           the locale used to override the default locale
      * @param translations     the translation map.
      */
-    public MessageBundleTranslator(final Filer filer, final MessageInterface messageInterface, final String className, final String superClassName, final String locale, final Map<MessageMethod, String> translations) {
-        super(filer, messageInterface, className, superClassName);
+    public MessageBundleTranslator(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className, final String superClassName, final String locale, final Map<MessageMethod, String> translations) {
+        super(processingEnv, messageInterface, className, superClassName);
         this.locale = locale;
         if (translations != null) {
             this.translations = translations;

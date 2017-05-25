@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -54,7 +53,6 @@ import org.jboss.logging.processor.generator.model.ClassModel;
 import org.jboss.logging.processor.generator.model.ClassModelFactory;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
-import org.jboss.logging.processor.util.ElementHelper;
 import org.jboss.logging.processor.validation.FormatValidator;
 import org.jboss.logging.processor.validation.FormatValidatorFactory;
 import org.jboss.logging.processor.validation.StringFormatValidator;
@@ -151,7 +149,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
             //By default use the class output folder
         } else {
-            FileObject fObj = filer().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
+            FileObject fObj = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
             classTranslationFilesPath = fObj.toUri().getPath().replace(interfaceName, "");
         }
         final List<File> result;
@@ -194,7 +192,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
             final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
             messageMethods.addAll(messageInterface.methods());
             for (MessageInterface msgIntf : messageInterface.extendedInterfaces()) {
-                if (ElementHelper.isAnnotatedWith(msgIntf, MessageBundle.class) || ElementHelper.isAnnotatedWith(msgIntf, MessageLogger.class)) {
+                if (msgIntf.isAnnotatedWith(MessageBundle.class) || msgIntf.isAnnotatedWith(MessageLogger.class)) {
                     messageMethods.addAll(msgIntf.methods());
                 }
             }
@@ -249,7 +247,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
 
         //Create source file
-        final ClassModel classModel = ClassModelFactory.translation(filer(), messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
+        final ClassModel classModel = ClassModelFactory.translation(processingEnv, messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
 
         try {
             classModel.generateAndWrite();
