@@ -61,8 +61,12 @@ public interface ReturnType extends ClassType, DelegatingElement {
     ThrowableType throwableReturnType();
 
     /**
-     * Determines the type that will be ultimately created. For example in the case of a
-     * {@link java.util.function.Supplier} this would the type the {@code Supplier} returns.
+     * Checks this {@linkplain #asType() type} to see if there are any
+     * {@linkplain DeclaredType#getTypeArguments() type arguments}. If any type arguments are found the first type is
+     * returned and assumed to be the resolved type. Otherwise this {@linkplain #asType() type} is returned.
+     * <p>
+     * This is useful for the {@link java.util.function.Supplier Supplier} return type.
+     * </p>
      *
      * @return the resolved return type
      */

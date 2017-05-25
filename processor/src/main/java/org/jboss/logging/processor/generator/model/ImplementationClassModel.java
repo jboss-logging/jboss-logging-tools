@@ -38,14 +38,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleAnnotationValueVisitor8;
+import javax.lang.model.util.Types;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
@@ -65,6 +68,7 @@ import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.Fields;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Producer;
 import org.jboss.logging.annotations.Properties;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Suppressed;
@@ -92,6 +96,7 @@ import org.jboss.logging.processor.util.ElementHelper;
 abstract class ImplementationClassModel extends ClassModel {
 
     private final AtomicBoolean messageFormatMethodGenerated = new AtomicBoolean(false);
+    private final TypeMirror stringType;
 
     /**
      * Class constructor.
@@ -101,6 +106,7 @@ abstract class ImplementationClassModel extends ClassModel {
      */
     ImplementationClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface) {
         super(processingEnv, messageInterface, implementationClassName(messageInterface), null);
+        stringType = ElementHelper.toType(processingEnv, String.class);
     }
 
     /**
@@ -112,11 +118,18 @@ abstract class ImplementationClassModel extends ClassModel {
     void createBundleMethod(final JClassDef classDef, final JCall localeGetter, final MessageMethod messageMethod) {
         // Add the message messageMethod.
         addMessageMethod(messageMethod);
-        final JType returnType = JTypes.typeOf(messageMethod.returnType().asType());
-        sourceFile._import(returnType);
+        final TypeMirror returnTypeMirror = messageMethod.returnType().asType();
+        final JType returnType = JTypes.typeOf(returnTypeMirror);
         final JMethodDef method = classDef.method(JMod.PUBLIC | FINAL, returnType, messageMethod.name());
         method.annotate(Override.class);
         addThrownTypes(messageMethod, method);
+        addMethodTypeParameters(method, returnTypeMirror);
+
+        // If this a declared type we should import it
+        if (returnTypeMirror.getKind() == TypeKind.DECLARED) {
+            sourceFile._import(returnType);
+        }
+
         // Create the body of the method and add the text
         final JBlock body = method.body();
         final MessageMethod.Message message = messageMethod.message();
@@ -351,40 +364,103 @@ abstract class ImplementationClassModel extends ClassModel {
         return result;
     }
 
+    private void addMethodTypeParameters(final JMethodDef method, final TypeMirror type) {
+        final Types types = processingEnv.getTypeUtils();
+        if (type.getKind() == TypeKind.TYPEVAR) {
+            // Determine the extended type
+            final TypeMirror resolved = types.erasure(type);
+            final JType resolvedType = JTypes.typeOf(resolved);
+            sourceFile._import(resolvedType);
+            method.typeParam(type.toString())._extends(resolvedType);
+        } else if (type.getKind() == TypeKind.DECLARED) {
+            final List<? extends TypeMirror> typeArgs = ElementHelper.getTypeArguments(type);
+            for (TypeMirror typeArg : typeArgs) {
+                addMethodTypeParameters(method, typeArg);
+            }
+        }
+    }
+
     private JExpr createReturnType(final MessageMethod messageMethod, final JBlock body, final JCall format, final Map<String, JParamDeclaration> fields, final Map<String, JParamDeclaration> properties) {
         boolean callInitCause = false;
-        final ThrowableType returnType = messageMethod.returnType().throwableReturnType();
-        final JType type = JTypes.typeOf(returnType.asType());
-        // Import once more as the throwable return type may be different than the actual return type
-        sourceFile._import(type);
-        final JCall result = type._new();
-        final JVarDeclaration resultField = body.var(FINAL, type, "result", result);
-        if (returnType.useConstructionParameters()) {
-            for (Parameter param : returnType.constructionParameters()) {
-                if (param.isMessageMethod()) {
-                    result.arg(format);
-                } else {
-                    result.arg($v(param.name()));
+        final Set<Parameter> producers = messageMethod.parametersAnnotatedWith(Producer.class);
+        final JType type;
+        final JVarDeclaration resultField;
+
+        // If there are no producers we need to construct a new return type
+        if (producers.isEmpty()) {
+            final ThrowableType returnType = messageMethod.returnType().throwableReturnType();
+            type = JTypes.typeOf(returnType.asType());
+            // Import once more as the throwable return type may be different than the actual return type
+            sourceFile._import(type);
+            final JCall result = type._new();
+            resultField = body.var(FINAL, type, "result", result);
+            if (returnType.useConstructionParameters()) {
+                for (Parameter param : returnType.constructionParameters()) {
+                    if (param.isMessageMethod()) {
+                        result.arg(format);
+                    } else {
+                        result.arg($v(param.name()));
+                    }
                 }
-            }
-            callInitCause = messageMethod.hasCause() && !returnType.causeSetInConstructor();
-        } else if (returnType.hasStringAndThrowableConstructor() && messageMethod.hasCause()) {
-            result.arg(format).arg($v(messageMethod.cause().name()));
-        } else if (returnType.hasThrowableAndStringConstructor() && messageMethod.hasCause()) {
-            result.arg($v(messageMethod.cause().name())).arg(format);
-        } else if (returnType.hasStringConstructor()) {
-            result.arg(format);
-            if (messageMethod.hasCause()) {
+                callInitCause = messageMethod.hasCause() && !returnType.causeSetInConstructor();
+            } else if (returnType.hasStringAndThrowableConstructor() && messageMethod.hasCause()) {
+                result.arg(format).arg($v(messageMethod.cause().name()));
+            } else if (returnType.hasThrowableAndStringConstructor() && messageMethod.hasCause()) {
+                result.arg($v(messageMethod.cause().name())).arg(format);
+            } else if (returnType.hasStringConstructor()) {
+                result.arg(format);
+                if (messageMethod.hasCause()) {
+                    callInitCause = true;
+                }
+            } else if (returnType.hasThrowableConstructor() && messageMethod.hasCause()) {
+                result.arg($v(messageMethod.cause().name()));
+            } else if (returnType.hasStringAndThrowableConstructor() && !messageMethod.hasCause()) {
+                result.arg(format).arg(NULL);
+            } else if (returnType.hasThrowableAndStringConstructor() && !messageMethod.hasCause()) {
+                result.arg(NULL).arg(format);
+            } else if (messageMethod.hasCause()) {
                 callInitCause = true;
             }
-        } else if (returnType.hasThrowableConstructor() && messageMethod.hasCause()) {
-            result.arg($v(messageMethod.cause().name()));
-        } else if (returnType.hasStringAndThrowableConstructor() && !messageMethod.hasCause()) {
-            result.arg(format).arg(NULL);
-        } else if (returnType.hasThrowableAndStringConstructor() && !messageMethod.hasCause()) {
-            result.arg(NULL).arg(format);
-        } else if (messageMethod.hasCause()) {
-            callInitCause = true;
+        } else {
+            final TypeMirror returnType = messageMethod.returnType().resolvedType();
+            // Should only be one producer
+            final Parameter producer = producers.iterator().next();
+            type = JTypes.typeOf(returnType);
+            JCall result = $v(producer.name()).call("apply");
+
+            // For a BiFunction we pass both the cause, even if null, and the message
+            if (producer.isSubtypeOf(BiFunction.class)) {
+                // Get the type arguments of the BiFunction to determine the order to pass parameters
+                final List<? extends TypeMirror> typeArguments = ElementHelper.getTypeArguments(producer);
+                // If we don't have any type arguments assume String, Throwable
+                if (typeArguments.isEmpty()) {
+                    result = result.arg(format);
+                    result = result.arg($v(messageMethod.cause().name()));
+                } else {
+                    // Just get the first type argument an decide the order based on it
+                    final TypeMirror typeArg = typeArguments.get(0);
+                    if (processingEnv.getTypeUtils().isAssignable(typeArg, stringType)) {
+                        result = result.arg(format);
+                        if (messageMethod.hasCause()) {
+                            result = result.arg($v(messageMethod.cause().name()));
+                        } else {
+                            result = result.arg(JExpr.NULL);
+                        }
+                    } else {
+                        if (messageMethod.hasCause()) {
+                            result = result.arg($v(messageMethod.cause().name()));
+                        } else {
+                            result = result.arg(JExpr.NULL);
+                        }
+                        result = result.arg(format);
+                    }
+                }
+            } else { // Assume this must be a Function
+                // Pass the message as the argument to the function
+                result = result.arg(format);
+                callInitCause = messageMethod.hasCause();
+            }
+            resultField = body.var(FINAL, type, "result", result);
         }
         // Assign the result field the result value
         if (callInitCause) {

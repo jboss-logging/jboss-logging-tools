@@ -25,6 +25,7 @@ package org.jboss.logging.processor.apt;
 import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
+import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -70,6 +71,8 @@ final class ReturnTypeFactory {
         private final TypeMirror returnType;
         private final MessageMethod method;
         private final Element delegate;
+        private final TypeMirror resolvedType;
+        private final boolean isThrowable;
         private ThrowableType throwableType;
 
         AptReturnType(final ProcessingEnvironment processingEnv, final TypeMirror returnType, final MessageMethod method) {
@@ -78,6 +81,17 @@ final class ReturnTypeFactory {
             this.method = method;
             delegate = types.asElement(returnType);
             throwableType = null;
+            if (types.isSubtype(types.erasure(returnType), types.erasure(ElementHelper.toType(elements, Supplier.class)))) {
+                final List<? extends TypeMirror> typeArgs = ElementHelper.getTypeArguments(returnType);
+                if (typeArgs.isEmpty()) {
+                    resolvedType = elements.getTypeElement(Object.class.getCanonicalName()).asType();
+                } else {
+                    resolvedType = typeArgs.get(0);
+                }
+            } else {
+                resolvedType = returnType;
+            }
+            isThrowable = types.isSubtype(types.erasure(resolvedType), ElementHelper.toType(elements, Throwable.class));
         }
 
         @Override
@@ -92,11 +106,7 @@ final class ReturnTypeFactory {
 
         @Override
         public boolean isThrowable() {
-            // If this is a supplier, check the suppliers type
-            if (isSubtypeOf(Supplier.class)) {
-                return types.isSubtype(types.erasure(resolvedType()), ElementHelper.toType(elements, Throwable.class));
-            }
-            return isSubtypeOf(Throwable.class);
+            return isThrowable;
         }
 
         @Override
@@ -109,10 +119,15 @@ final class ReturnTypeFactory {
             return throwableType;
         }
 
+        @Override
+        public TypeMirror resolvedType() {
+            return resolvedType;
+        }
+
         private void init() {
             if (isThrowable()) {
                 // The resolved type needs to be used in cases where a Supplier is being returned
-                TypeMirror throwableReturnType = resolvedType();
+                TypeMirror throwableReturnType = resolvedType;
                 if (method.isAnnotatedWith(ConstructType.class)) {
                     final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(method, ConstructType.class);
                     // Shouldn't be null
@@ -120,8 +135,8 @@ final class ReturnTypeFactory {
                         throw new ProcessingException(method, "Class not defined for the ConstructType");
                     }
                     throwableReturnType = constructTypeValue.asType();
-                    if (!types.isAssignable(throwableReturnType, resolvedType())) {
-                        throw new ProcessingException(method, "The requested type %s can not be assigned to %s.", throwableReturnType, this.returnType);
+                    if (!types.isAssignable(throwableReturnType, resolvedType)) {
+                        throw new ProcessingException(method, "The requested type %s can not be assigned to %s.", throwableReturnType, resolvedType);
                     }
                 }
                 throwableType = ThrowableTypeFactory.forReturnType(processingEnv, throwableReturnType, method);
