@@ -23,6 +23,8 @@
 package org.jboss.logging.processor.generated;
 
 import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.logging.Messages;
@@ -33,6 +35,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
+import org.jboss.logging.annotations.Producer;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Suppressed;
 
@@ -74,22 +77,27 @@ public interface ValidMessages {
     RuntimeException invalidCredentials();
 
     String SUPPRESSED_ERROR = "Single error occurred";
+
     @Message(SUPPRESSED_ERROR)
     RuntimeException suppressedError(@Suppressed Throwable t);
 
     String SUPPRESSED_ERRORS = "Two errors occurred";
+
     @Message(SUPPRESSED_ERRORS)
     RuntimeException suppressedErrors(@Suppressed Throwable error1, @Suppressed Throwable error2);
 
     String MULTIPLE_ERRORS = "Multiple errors occurred";
+
     @Message(MULTIPLE_ERRORS)
     RuntimeException multipleErrors(@Suppressed Throwable... errors);
 
     String MULTIPLE_ERRORS_COLLECTION = "Multiple errors occurred";
+
     @Message(MULTIPLE_ERRORS_COLLECTION)
     RuntimeException multipleErrorsCollection(@Suppressed Collection<? extends Throwable> errors);
 
     String TEST_MESSAGE_FORMAT = "A two argument message format test. Argument 1 is {0} argument 2 is {1}.";
+
     @Message(format = Format.MESSAGE_FORMAT, value = TEST_MESSAGE_FORMAT)
     String testMessageFormat(final String arg1, final String arg2);
 
@@ -111,6 +119,28 @@ public interface ValidMessages {
 
     @Message(value = TEST_MSG)
     Supplier<String> testSupplierString();
+
+    String TEST_OP_FAILED_MSG = "The operation failed due to %s";
+
+    @Message(TEST_OP_FAILED_MSG)
+    <T extends Throwable> T operationFailed(@Producer Function<String, T> function, String op);
+
+    <T extends Throwable> T operationFailed(@Producer BiFunction<String, Throwable, T> function, @Cause Throwable cause, String op);
+
+    @Message(TEST_MSG)
+    <T extends RuntimeException> Supplier<T> supplierFunction(@Producer Function<String, T> function);
+
+    @Message(TEST_MSG)
+    <T extends CustomException> T fieldMessageFunction(@Producer Function<String, T> function, @Field(name = "value") int value);
+
+    @Message(TEST_MSG)
+    <T extends CustomException> T propertyMessageFunction(@Producer Function<String, T> function, @Property int value);
+
+    @Message(TEST_MSG)
+    LoggingException throwableStringBiFunction(@Producer BiFunction<Exception, String, LoggingException> function, @Cause Exception cause);
+
+    @Message(TEST_MSG)
+    <T extends RuntimeException> Supplier<T> throwableStringBiFunctionSupplier(@Producer BiFunction<String, Exception, T> function, @Cause Exception cause);
 
     class CustomException extends RuntimeException {
         public int value;

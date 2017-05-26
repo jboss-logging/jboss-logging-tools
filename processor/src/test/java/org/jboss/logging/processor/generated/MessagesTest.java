@@ -22,11 +22,14 @@
 
 package org.jboss.logging.processor.generated;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.jboss.logging.processor.generated.ValidMessages.CustomException;
+import org.jboss.logging.processor.generated.ValidMessages.LoggingException;
 import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -36,9 +39,11 @@ import org.testng.annotations.Test;
  */
 public class MessagesTest {
 
+    private static final String FORMATTED_TEST_MSG = String.format(ValidMessages.TEST_MSG);
+
     @Test
     public void testFormats() {
-        Assert.assertEquals(ValidMessages.MESSAGES.testWithNewLine(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(ValidMessages.MESSAGES.testWithNewLine(), FORMATTED_TEST_MSG);
         Assert.assertEquals(ValidMessages.MESSAGES.noFormat(), ValidMessages.TEST_MSG);
         Assert.assertEquals(ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage(), ValidMessages.TEST_MSG);
 
@@ -48,7 +53,7 @@ public class MessagesTest {
         Assert.assertEquals(ValidMessages.MESSAGES.propertyMessage(value).value, value);
 
         final StringOnlyException e = ValidMessages.MESSAGES.stringOnlyException(new RuntimeException());
-        Assert.assertEquals(e.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(e.getMessage(), FORMATTED_TEST_MSG);
         Assert.assertNotNull(e.getCause());
 
         Assert.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException, "Incorrect type constructed");
@@ -138,10 +143,10 @@ public class MessagesTest {
         Supplier<RuntimeException> runtimeExceptionSupplier = ValidMessages.MESSAGES.testSupplierRuntimeException();
         Assert.assertNotNull(runtimeExceptionSupplier);
         RuntimeException runtimeException = runtimeExceptionSupplier.get();
-        Assert.assertEquals(runtimeException.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(runtimeException.getMessage(), FORMATTED_TEST_MSG);
         Assert.assertEquals(runtimeException.getClass(), RuntimeException.class);
 
-        Assert.assertEquals(String.format(ValidMessages.TEST_MSG), ValidMessages.MESSAGES.testSupplierString().get());
+        Assert.assertEquals(FORMATTED_TEST_MSG, ValidMessages.MESSAGES.testSupplierString().get());
 
         runtimeExceptionSupplier = ValidMessages.MESSAGES.invalidCredentialsSupplier();
         Assert.assertNotNull(runtimeExceptionSupplier);
@@ -153,7 +158,7 @@ public class MessagesTest {
         Supplier<CustomException> customExceptionSupplier = ValidMessages.MESSAGES.fieldMessageSupplier(value);
         Assert.assertNotNull(customExceptionSupplier);
         CustomException customException = customExceptionSupplier.get();
-        Assert.assertEquals(customException.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(customException.getMessage(), FORMATTED_TEST_MSG);
         Assert.assertEquals(customException.getClass(), CustomException.class);
         Assert.assertEquals(customException.value, value);
 
@@ -161,9 +166,57 @@ public class MessagesTest {
         customExceptionSupplier = ValidMessages.MESSAGES.propertyMessageSupplier(value);
         Assert.assertNotNull(customExceptionSupplier);
         customException = customExceptionSupplier.get();
-        Assert.assertEquals(customException.getMessage(), String.format(ValidMessages.TEST_MSG));
+        Assert.assertEquals(customException.getMessage(), FORMATTED_TEST_MSG);
         Assert.assertEquals(customException.getClass(), CustomException.class);
         Assert.assertEquals(customException.value, value);
+
+    }
+
+    @Test
+    public void testFunctionProducerMessages() throws Exception {
+        RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, "start");
+        Assert.assertEquals(runtimeException.getClass(), IllegalArgumentException.class);
+        Assert.assertEquals(runtimeException.getMessage(), String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"));
+
+        IOException ioException = ValidMessages.MESSAGES.operationFailed(IOException::new, "query");
+        Assert.assertEquals(ioException.getMessage(), String.format(ValidMessages.TEST_OP_FAILED_MSG, "query"));
+
+        final Supplier<IllegalStateException> supplier = ValidMessages.MESSAGES.supplierFunction(IllegalStateException::new);
+        runtimeException = supplier.get();
+        Assert.assertEquals(runtimeException.getClass(), IllegalStateException.class);
+        Assert.assertEquals(runtimeException.getMessage(), FORMATTED_TEST_MSG);
+
+        // Test functions with fields/properties
+        int value = 5;
+        CustomException customException = ValidMessages.MESSAGES.fieldMessageFunction(CustomException::new, value);
+        Assert.assertEquals(customException.getMessage(), FORMATTED_TEST_MSG);
+        Assert.assertEquals(customException.getClass(), CustomException.class);
+        Assert.assertEquals(customException.value, value);
+
+        value = 20;
+        customException = ValidMessages.MESSAGES.propertyMessageFunction(CustomException::new, value);
+        Assert.assertEquals(customException.getMessage(), FORMATTED_TEST_MSG);
+        Assert.assertEquals(customException.getClass(), CustomException.class);
+        Assert.assertEquals(customException.value, value);
+    }
+
+    @Test
+    public void testBiFunctionProducerMessages() throws Exception {
+        final RuntimeException cause = new RuntimeException("This is the cause");
+        RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, cause, "start");
+        Assert.assertEquals(runtimeException.getClass(), IllegalArgumentException.class);
+        Assert.assertEquals(runtimeException.getMessage(), String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"));
+        Assert.assertEquals(runtimeException.getCause(), cause);
+
+        runtimeException = ValidMessages.MESSAGES.throwableStringBiFunction(LoggingException::new, cause);
+        Assert.assertEquals(runtimeException.getClass(), LoggingException.class);
+        Assert.assertEquals(runtimeException.getCause(), cause);
+
+        final Supplier<RuntimeException> supplier = ValidMessages.MESSAGES.throwableStringBiFunctionSupplier(IllegalArgumentException::new, cause);
+        runtimeException = supplier.get();
+        Assert.assertEquals(runtimeException.getClass(), IllegalArgumentException.class);
+        Assert.assertEquals(runtimeException.getMessage(), FORMATTED_TEST_MSG);
+        Assert.assertEquals(runtimeException.getCause(), cause);
 
     }
 

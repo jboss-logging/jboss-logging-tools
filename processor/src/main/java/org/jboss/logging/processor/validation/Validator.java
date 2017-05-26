@@ -37,11 +37,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -55,6 +56,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Producer;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
@@ -271,6 +273,7 @@ public final class Validator {
     private Collection<ValidationMessage> validateParameters(final MessageMethod messageMethod) {
         final List<ValidationMessage> messages = new ArrayList<>();
         boolean foundCause = false;
+        boolean producerFound = false;
         for (Parameter parameter : messageMethod.parameters()) {
             if (parameter.isAnnotatedWith(Cause.class)) {
                 if (foundCause) {
@@ -283,6 +286,80 @@ public final class Validator {
                 if (!parameter.isSameAs(Class.class)) {
                     messages.add(createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.", parameter.name(), messageMethod.name(), Class.class.getName()));
                 }
+            }
+            if (parameter.isAnnotatedWith(Producer.class)) {
+                final boolean isFunction = parameter.isSubtypeOf(Function.class);
+                final boolean isBiFunction = parameter.isSubtypeOf(BiFunction.class);
+
+                // Check the type arguments
+                final TypeMirror requiredReturnType = messageMethod.returnType().resolvedType();
+                final List<? extends TypeMirror> typeArgs = ElementHelper.getTypeArguments(parameter);
+                final int size = typeArgs.size();
+                if (isFunction) {
+                    if (size == 2) {
+                        final TypeMirror message = typeArgs.get(0);
+                        final TypeMirror returnType = typeArgs.get(1);
+                        if (!isTypeAssignableFrom(message, String.class)) {
+                            messages.add(createError(parameter, "The type %s must be assignable to a String.",
+                                    message));
+                        }
+                        if (!isTypeAssignableFrom(returnType, requiredReturnType)) {
+                            messages.add(createError(parameter, "The return type parameter of the function " +
+                                    "must be assignable from %s", requiredReturnType));
+                        }
+                    } else {
+                        messages.add(createError(parameter, "The type parameters could not be validated for the " +
+                                "function. The first type argument of the function must be a String and the second type " +
+                                "parameter must be the same as or a super type of %s.", requiredReturnType));
+                    }
+                } else if (isBiFunction) {
+                    if (size == 3) {
+                        final TypeMirror returnType = typeArgs.get(2);
+                        final TypeMirror first = typeArgs.get(0);
+                        final TypeMirror second = typeArgs.get(1);
+                        if (!isTypeAssignableFrom(first, String.class) && !types.isSubtype(first, ElementHelper.toType(elements, Throwable.class))) {
+                            messages.add(createError(parameter, "The first type type parameter for %s " +
+                                    "must be assignable to a String or a super type of a Throwable.", parameter.asType()));
+                        }
+                        if (!isTypeAssignableFrom(second, String.class) && !types.isSubtype(second, ElementHelper.toType(elements, Throwable.class))) {
+                            messages.add(createError(parameter, "The second type parameter for %s " +
+                                    "must be assignable to a String or a super type of a Throwable.", parameter.asType()));
+                        }
+                        if (!isTypeAssignableFrom(returnType, requiredReturnType)) {
+                            messages.add(createError(parameter, "The return type parameter of the function " +
+                                    "must be assignable from %s", requiredReturnType));
+                        }
+                        if (messageMethod.hasCause()) {
+                            // Make sure the cause parameter can be assigned to the cause parameter for the BiFunction
+                            if (types.isSubtype(first, ElementHelper.toType(elements, Throwable.class)) && !isTypeAssignableFrom(messageMethod.cause().asType(), first)) {
+                                messages.add(createError(parameter, "The first parameter type, %s, of the BiFunction must be assignable to the cause %s.",
+                                        first, messageMethod.cause().asType()));
+                            }
+                            if (types.isSubtype(second, ElementHelper.toType(elements, Throwable.class)) && !isTypeAssignableFrom(messageMethod.cause().asType(), second)) {
+                                messages.add(createError(parameter, "The second parameter type, %s, of the BiFunction must be assignable to the cause %s.",
+                                        second, messageMethod.cause().asType()));
+                            }
+                        } else {
+                            messages.add(createWarning(messageMethod, "No @Cause parameter was found on the method. " +
+                                    "A null value will always be passed as the cause parameter to the BiFunction."));
+                        }
+                    } else {
+                        messages.add(createError(parameter, "The type parameters could not be validated for the " +
+                                        "function. The first and second type arguments of the function must be a String " +
+                                        "or a super type of Throwable. The third type parameter must be the same as or " +
+                                        "a super type of %s.",
+                                requiredReturnType));
+                    }
+                } else {
+                    messages.add(createError(parameter, "Parameter annotated with %s must be a %s or %s type",
+                            Producer.class.getName(), Function.class.getName(), BiFunction.class.getName()));
+                }
+
+                if (producerFound) {
+                    messages.add(createError(messageMethod,
+                            "Only one parameter is allowed to be annotated with %s.", Producer.class.getName()));
+                }
+                producerFound = true;
             }
         }
         return messages;
@@ -308,6 +385,7 @@ public final class Validator {
         // The return type must be a Throwable, String or a Supplier that returns a Throwable or String
         final ReturnType returnType = messageMethod.returnType();
         final TypeMirror returnTypeMirror = returnType.asType();
+        final TypeMirror resolvedReturnType = returnType.resolvedType();
         if (returnTypeMirror.getKind() == TypeKind.VOID || returnTypeMirror.getKind().isPrimitive()) {
             messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type. Cannot be void or a primitive.", messageMethod.name()));
         } else if (returnType.isThrowable()) {
@@ -346,15 +424,23 @@ public final class Validator {
                         throwableReturnType.hasStringConstructor());
                 final boolean usableConstructor = (throwableReturnType.hasDefaultConstructor() || throwableReturnType.hasStringAndThrowableConstructor() ||
                         throwableReturnType.hasStringConstructor() || throwableReturnType.hasThrowableAndStringConstructor() || throwableReturnType.hasThrowableConstructor());
-                if (!usableConstructor) {
+                if (!messageMethod.parametersAnnotatedWith(Producer.class).isEmpty()) {
+                    if (messageMethod.isAnnotatedWith(ConstructType.class)) {
+                        messages.add(createError(messageMethod, "Method annotated with %s cannot have a parameter annotated with %s.",
+                                ConstructType.class.getName(), Producer.class.getName()));
+                    }
+                    final TypeMirror erasure = types.erasure(resolvedReturnType);
+                    if (!isTypeAssignableFrom(erasure, Throwable.class)) {
+                        messages.add(createError(messageMethod, "The return type must be a subclass of a java.lang.Throwable"));
+                    }
+                } else if (!usableConstructor) {
                     messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
                 } else if (!hasMessageConstructor) { // Check to see if there is no message constructor
                     messages.add(createWarning(messageMethod, "The message cannot be set via the throwable constructor and will be ignored."));
                 }
             }
         } else {
-            final TypeMirror resolvedType = returnType.resolvedType();
-            if (!isTypeAssignableFrom(resolvedType, String.class) && !returnType.isThrowable()) {
+            if (!isTypeAssignableFrom(resolvedReturnType, String.class) && !returnType.isThrowable()) {
                 messages.add(createError(messageMethod, "Message bundle method (%s) has an invalid return type of %s. " +
                         "Return types must be a String, a subtype of Throwable or a java.util.function.Supplier which " +
                         "returns a String or a subtype of Throwable.", messageMethod.name(), returnTypeMirror));
@@ -441,15 +527,27 @@ public final class Validator {
      * @return {@code true} if the element type is assignable to the class type, otherwise {@code false}
      */
     private boolean isTypeAssignableFrom(final TypeMirror typeMirror, final Class<?> type) {
+        return isTypeAssignableFrom(typeMirror, ElementHelper.toType(elements, type));
+    }
+
+    /**
+     * Checks the type, if an array the type of the array is checked, against the class. If the element type is
+     * assignable to the class type.
+     *
+     * @param typeMirror the type to test
+     * @param type       the type the element needs to be assignable to
+     *
+     * @return {@code true} if the element type is assignable to the class type, otherwise {@code false}
+     */
+    private boolean isTypeAssignableFrom(final TypeMirror typeMirror, final TypeMirror type) {
         TypeMirror t = typeMirror;
         if (t.getKind() == TypeKind.ARRAY) {
             t = ((ArrayType) t).getComponentType();
         }
-        if (types.isAssignable(types.erasure(t), elements.getTypeElement(Collection.class.getCanonicalName()).asType())) {
+        if (types.isAssignable(types.erasure(t), ElementHelper.toType(elements, Collection.class))) {
             // We only need the first type
             t = types.erasure(ElementHelper.getTypeArguments(t).iterator().next());
         }
-        final TypeMirror classType = elements.getTypeElement(type.getCanonicalName()).asType();
-        return types.isAssignable(t, classType);
+        return types.isAssignable(t, type);
     }
 }
