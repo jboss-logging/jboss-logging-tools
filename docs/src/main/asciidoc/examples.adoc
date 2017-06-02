@@ -1,0 +1,17 @@
+
+:sourcedir: java/org/jboss/logging/tools/examples
+:projecturl: https://github.com/jboss-logging/jboss-logging-tools/docs/src/main
+
+== Example Use Cases
+
+Below are some example use case snippets from the link:{projecturl}/{sourcedir}[examples].
+
+[source,java,indent=0]
+----
+include::../{sourcedir}/ContentWriter.java[tags=write;close]
+----
+<1> Logs the application version. Note this uses the link:{javadocsdir}[@Once] annotation to indicate this should only be logged once regardless of which `write` method is used.
+<2> The `ErrorMessages.nullParam()` returns a `java.lang.function.Supplier`. This allows the message to be lazily formatted only if the `value` is `null`.
+<3> Throws a message if the `value` is an empty string.
+<4> Uses a `java.lang.function.BiFunction` to create a new `UncheckedIOException` with the caught exception set as the cause.
+<5> Logs the caught exception instead of throwing a new exception.

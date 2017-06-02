@@ -1,0 +1,51 @@
+
+== Message Bundle Interfaces
+
+Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is annotated with link:{javadocsdir}[`@MessageBundle`]. Each method in must be annotated with link:{javadocsdir}[`@Message`] which will be used to determine the String used for either the return type or the message for the exception being returned.
+
+The following constraints are placed on methods in a message bundle:
+
+- The return type must be one of the follow
+  * A `java.lang.String`
+  * A `java.lang.Throwable` or a subtype of `java.lang.Throwable`
+  * A `java.lang.function.Supplier` who's return type fits one of the other two constraints above.
+- The method must be annotated with link:{javadocsdir}[`@Message`] or a message must be inheritable.
+- A method can have only one link:{javadocsdir}[`@Cause`] parameter.
+- A method can only have one link:{javadocsdir}[`@Producer`] parameter.
+
+include::default-notes.adoc[]
+
+=== Example Message Bundle
+
+[source,java]
+----
+@MessageBundle(projectCode = "CW") <1>
+public interface ErrorMessages {
+    ErrorMessages MESSAGES = Messages.getBundle(ErrorMessages.class);
+
+    @Message("Version %d.%d.%d.%s") <2>
+    String version(int major, int minor, int macro, String rel);
+
+    @Message(id = 1, value = "Value '%s' is invalid")
+    IllegalArgumentException invalidValue(Object value);
+
+    @Message(id = 2, value = "Failure closing %s") <3>
+    CloseException closeFailure(@Cause Throwable cause, @Param @Pos(1) Closeable c);
+
+    CloseException closeFailure(@Cause Throwable cause, @Param @Pos(1) Closeable c, @Suppressed Throwable... errors);
+
+    @Message(id = 3, value = "Parameter %s cannot be null")
+    Supplier<String> nullParam(String name);
+
+    @Message(id = 4, value = "Operation %s failed.")
+    <T extends RuntimeException> T operationFailed(@Producer Function<String, T> fn, String name); <4>
+
+    <T extends RuntimeException> T operationFailed(@Producer BiFunction<String, IOException, T> fn, @Cause IOException cause, String name);
+}
+----
+<1> The `projectCode` will be prepended to messages which have an `id` specified. For example with `id = 1` the message will be prepended with `CW000001`. You can control the number padding with the `length` property on the annotation.
+<2> No `id` is specified for this message which means no id will be prepended on this message.
+<3> The `@Param` annotation tells the generator that the parameter should be used to construct the `CloseException`. The `@Pos(1)` annotation indicates the parameter should also be used when formatting the message.
+<4> The `@Producer` annotation indicates that the `Function` should be used to create the exception being returned.
+
+TIP: Message bundle interfaces can also contain valid <<Message Logger Interfaces,message logger methods>>.
