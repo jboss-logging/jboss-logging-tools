@@ -113,10 +113,10 @@
                         </goals>
                         <configuration>
                             <compilerArgs>
-                                <arg>-AreportType=adoc</arg>
-                                <arg>-AreportPath=${test.report.path}</arg>
-                                <arg>-AreportTitle=Test Title</arg>
-                                <arg>-AexpressionProperties=${expression.properties.path}</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.type=adoc</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.path=${test.report.path}</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.title=Test Title</arg>
+                                <arg>-Aorg.jboss.logging.tools.expressionProperties=${expression.properties.path}</arg>
                             </compilerArgs>
                         </configuration>
                     </execution>
@@ -129,10 +129,10 @@
                         </goals>
                         <configuration>
                             <compilerArgs>
-                                <arg>-AreportType=xml</arg>
-                                <arg>-AreportPath=${test.report.path}</arg>
-                                <arg>-AreportTitle=Test Title</arg>
-                                <arg>-AexpressionProperties=${expression.properties.path}</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.type=xml</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.path=${test.report.path}</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.title=Test Title</arg>
+                                <arg>-Aorg.jboss.logging.tools.expressionProperties=${expression.properties.path}</arg>
                             </compilerArgs>
                         </configuration>
                     </execution>

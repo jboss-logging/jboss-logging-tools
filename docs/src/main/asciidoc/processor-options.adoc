@@ -1,0 +1,43 @@
+
+== Annotation Processor Options
+
+You can pass options to an annotation processor with the `-A` compiler option. For example to disable generating the `@Generated` annotation from being placed on the generated source files you would pass `-Aorg.jboss.logging.tools.addGeneratedAnnotation=false` to the compiler command.
+
+=== General
+
+[frame=none,grid=none]
+|===
+| Option | Description
+
+| `debug` | This option turns on debug logging for the processor
+| `org.jboss.logging.tools.expressionProperties` | This option allows you to define a path where, at compile-time, expressions in messages can be resolved.
+| `org.jboss.logging.tools.addGeneratedAnnotation` | If set to `false` the `@Generated` annotation will not be placed on the generated source files. The default is `true`.
+|===
+
+NOTE: In Java 9 the `@javax.annotation.Generated` was moved to `@javax.annotation.processor.Generated`. The processor attempts to determine which annotation to use by attempting to find the `@javax.annotation.Generated` first. If it fails the `@javax.annotation.processor.Generated` is attempted. If neither can be found no annotation will be placed on the generated implementations.
+
+
+=== Translation Options
+
+[frame=none,grid=none]
+|===
+| Option | Description
+
+| `translationsFilesPath` | The base path for the translated properties files. This defaults to the location where new class files are placed.
+| `skipTranslations` | If set to `true` source files with the translated tet will not be generated. The default is `false`.
+| `generatedTranslationFilesPath` | If defined this indicates the path a skeleton file should be generated for the interface. The generated skeleton file will be placed in a directory that matches the package with a name that matches the interface with a `.i18n_locale_COUNTRY_VARIANT.properties` suffix.
+| `org.jboss.logging.tools.level` | Sets the maximum level to include in the generated skeleton files. For example if set to `INFO` the skeleton files will not contain any properties where the log level was set to `DEBUG` or `TRACE`.
+
+|===
+
+=== Report Options
+
+[frame=none,grid=none]
+|===
+| Option | Description
+
+| `org.jboss.logging.tools.report.type` | Indicates the type of report that should be generated. The current report types are `adoc` for asciidoc or `xml` for XML.
+| `org.jboss.logging.tools.report.path` | The path where the generated reports should be placed. This defaults to the location where new class files are placed.
+| `org.jboss.logging.tools.report.title` | An optional title for the report. For asciidoc this defaults to `Messages`. For XML the `<title>` element is left off.
+
+|===

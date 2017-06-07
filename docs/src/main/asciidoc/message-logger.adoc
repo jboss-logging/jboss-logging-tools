@@ -1,0 +1,53 @@
+
+== Message Logger Interfaces
+
+Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with link:{javadocsdir}[`@MessageLogger`]. Each method in must be annotated with link:{javadocsdir}[`@Message`] which will be used to determine the message to be logged.
+
+The following constraints are placed on methods in a message logger:
+
+- The method must have a `void` return type
+- The method must be annotated with link:{javadocsdir}[`@LogMessage`]
+- The method must be annotated with link:{javadocsdir}[`@Message`] or a message must be inheritable.
+- A method can have only one link:{javadocsdir}[`@Cause`] parameter.
+
+include::default-notes.adoc[]
+
+A message logger interface may also extend the `org.jboss.logging.BasicLogger`. This allows the logging interface to be usable for standard logging. For example `AppLogger.LOGGER.debugf("Initializing %s", this);`
+
+=== Example Message Logger
+
+[source,java]
+----
+@MessageLogger(projectCode = "CW") <1>
+public interface AppLogger extends BasicLogger {
+
+    AppLogger LOGGER = Logger.getMessageLogger(AppLogger.class, AppLogger.class.getPackage().getName());
+
+    @LogMessage
+    @Once <2>
+    @Message("%s version %d.%d.%d.%s") <3>
+    void appVersion(CharSequence name, int major, int minor, int macro, String rel);
+
+    @LogMessage(level = Logger.Level.ERROR) <4>
+    @Message(id = 100, value = "Failure while closing %s")
+    void closeFailure(@Cause Throwable cause, Object obj);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 101, value = "Encoding %s could not be found. Defaulting to %s.")
+    void encodingNotFound(String encoding, Charset dft);
+
+    @LogMessage
+    @Message(id = 102, value = "Cache size changed to '%d'")
+    void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) Collection<String> c);
+
+    @LogMessage
+    void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) String... array);
+
+    @LogMessage
+    void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) Map<String, Object> map);
+}
+----
+<1> The `projectCode` will be prepended to messages which have an `id` specified. For example with `id = 100` the message will be prepended with `CW000100`. You can control the number padding with the `length` property on the annotation.
+<2> Ensures the log message is only written once.
+<3> No `id` is specified for this message which means no id will be prepended on this message.
+<4> Overrides the default level to `ERROR` to indicate an error message should be logged.

@@ -1,0 +1,3 @@
+NOTE: A message is inheritable if the two methods have the same name and same number of format parameters.
+
+NOTE: A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; link:{javadocsdir}[`@FormatWith`], link:{javadocsdir}[`@Pos`] or link:{javadocsdir}[`@Transform`].

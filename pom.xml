@@ -49,6 +49,12 @@
         </developer>
     </developers>
 
+    <scm>
+        <connection>scm:git:git@github.com:jboss-logging/jboss-logging-tools.git</connection>
+        <developerConnection>scm:git:git@github.com:jboss-logging/jboss-logging-tools.git</developerConnection>
+        <url>http://github.com/jboss-logging/jboss-logging-tools</url>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.org.jboss.jdeparser>2.0.2.Final</version.org.jboss.jdeparser>
@@ -56,7 +62,6 @@
         <version.org.jboss.logmanager>2.0.3.Final</version.org.jboss.logmanager>
         <verion.org.jboss.forge.roaster>2.19.2.Final</verion.org.jboss.forge.roaster>
         <version.org.testng>6.3.1</version.org.testng>
-
     </properties>
 
     <licenses>
@@ -112,9 +117,29 @@
         </dependencies>
     </dependencyManagement>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <links>
+                            <link>http://docs.oracle.com/javase/8/docs/api</link>
+                        </links>
+                        <show>public</show>
+                        <header>JBoss Logging Tools, ${project.version}</header>
+                        <footer>JBoss Logging Tools, ${project.version}</footer>
+                        <doctitle>JBoss Logging Tools, ${project.version}</doctitle>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
     <modules>
         <module>annotations</module>
         <module>processor</module>
         <module>processor-tests</module>
+        <module>docs</module>
     </modules>
 </project>

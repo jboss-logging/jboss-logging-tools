@@ -1,0 +1,25 @@
+= JBoss Logging Tools
+James R. Perkins
+:Author:        James R. Perkins
+:Email:         <jperkins@redhat.com>
+:Date:          2017
+:Revision:      1.0
+:docinfo:       shared
+:toc: left
+:scriptsdir:    ./js
+
+== Introduction
+
+The JBoss logging tools are used to create internationalized log statements and exceptions.
+
+include::getting-started.adoc[]
+
+include::message-bundle.adoc[]
+
+include::message-logger.adoc[]
+
+include::examples.adoc[]
+
+include::translation-property-files.adoc[]
+
+include::processor-options.adoc[]

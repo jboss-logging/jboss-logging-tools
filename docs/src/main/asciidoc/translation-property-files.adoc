@@ -1,0 +1,4 @@
+
+== Translation Property Files
+
+The translation properties files must exist in the same directory structure as the interface. The name of the properties file `InterfaceName.i18n_language_country_variant.properties`. For example if you have a class named `org.jboss.logging.tools.examples.ErrorMessages` and you want to translate this into French you create a properties file called `ErrorMessages.i18n_fr.properties` in a directory `org/jboss/logging/tools/examples`.

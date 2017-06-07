@@ -51,9 +51,9 @@ import org.jboss.logging.processor.model.MessageInterface;
         ReportFileGenerator.REPORT_TITLE
 })
 public class ReportFileGenerator extends AbstractGenerator {
-    public static final String REPORT_TYPE = "reportType";
-    public static final String REPORT_PATH = "reportPath";
-    public static final String REPORT_TITLE = "reportTitle";
+    static final String REPORT_TYPE = "org.jboss.logging.tools.report.type";
+    static final String REPORT_PATH = "org.jboss.logging.tools.report.path";
+    static final String REPORT_TITLE = "org.jboss.logging.tools.report.title";
 
     private final ReportType reportType;
     private final String reportPath;

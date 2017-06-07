@@ -60,7 +60,7 @@ import org.jboss.logging.processor.model.Parameter;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SuppressWarnings("MagicNumber")
-@SupportedOptions(TranslationFileGenerator.GENERATED_FILES_PATH_OPTION)
+@SupportedOptions({TranslationFileGenerator.GENERATED_FILES_PATH_OPTION, TranslationFileGenerator.LEVEL_OPTION})
 final class TranslationFileGenerator extends AbstractGenerator {
     private static final Map<String, Integer> levels = new HashMap<>();
 
@@ -69,8 +69,6 @@ final class TranslationFileGenerator extends AbstractGenerator {
     private static final String EMPTY_STRING = "";
     private static final String JAVA_DOC_PARAM = "@param";
 
-    private static final String LEVEL_OPTION = "org.jboss.logging.tools.level";
-
     private static final String DEFAULT_FILE_EXTENSION = ".i18n.properties";
 
     private static final String DEFAULT_FILE_COMMENT = "# This file is for reference only, changes have no effect on the generated interface implementations.";
@@ -78,6 +76,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
     static final String GENERATED_FILES_PATH_OPTION = "generatedTranslationFilesPath";
 
     static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
+
+    static final String LEVEL_OPTION = "org.jboss.logging.tools.level";
 
     static {
 
