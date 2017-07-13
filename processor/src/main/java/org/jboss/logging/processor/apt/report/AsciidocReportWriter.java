@@ -67,8 +67,13 @@ class AsciidocReportWriter extends ReportWriter {
     @Override
     public void writeDetail(final MessageMethod messageMethod) throws IOException {
         final MessageMethod.Message msg = messageMethod.message();
-        final String id = (msg.hasId() ? String.format(messageIdFormat, msg.id()) : "none");
-        writer.append('|').append(escape(id));
+        final String id = (msg.hasId() ? String.format(messageIdFormat, msg.id()) : DEFAULT_ID);
+        final String url = getUrl(messageMethod, id);
+        if (url.isEmpty()) {
+            writer.append('|').append(escape(id));
+        } else {
+            writer.append("|link:").append(url).append('[').append(id).append(']');
+        }
         writer.newLine();
         writer.append('|').append(escape(msg.value()));
         writer.newLine();
@@ -95,6 +100,11 @@ class AsciidocReportWriter extends ReportWriter {
     @Override
     public void close() throws IOException {
         writer.close();
+    }
+
+    @Override
+    ReportType getReportType() {
+        return ReportType.ASCIIDOC;
     }
 
     private CharSequence escape(final CharSequence s) {

@@ -30,6 +30,7 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
+import org.jboss.logging.annotations.ResolutionDoc;
 import org.jboss.logging.annotations.Transform;
 
 /**
@@ -39,6 +40,7 @@ import org.jboss.logging.annotations.Transform;
  */
 @SuppressWarnings({"unused", "SameParameterValue"})
 @MessageLogger(projectCode = "CW")
+@ResolutionDoc(url = "errors", suffix = ".html")
 public interface AppLogger extends BasicLogger {
 
     AppLogger LOGGER = Logger.getMessageLogger(AppLogger.class, AppLogger.class.getPackage().getName());
@@ -84,6 +86,7 @@ public interface AppLogger extends BasicLogger {
      */
     @LogMessage
     @Message(id = 102, value = "Cache size changed to '%d'")
+    @ResolutionDoc(skip = true)
     void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) Collection<String> c);
 
     /**
@@ -92,6 +95,7 @@ public interface AppLogger extends BasicLogger {
      * @param array the cache arracy
      */
     @LogMessage
+    @ResolutionDoc(skip = true)
     void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) String... array);
 
     /**
@@ -100,5 +104,6 @@ public interface AppLogger extends BasicLogger {
      * @param map the map holding the cache
      */
     @LogMessage
+    @ResolutionDoc(skip = true)
     void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) Map<String, Object> map);
 }

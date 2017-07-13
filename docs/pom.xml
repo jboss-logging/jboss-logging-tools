@@ -89,12 +89,26 @@
                                     <directory>${java.docs.dir}/</directory>
                                 </fileset>
                                 <fileset>
+                                    <directory>examples/</directory>
+                                </fileset>
+                                <fileset>
                                     <directory>${project.basedir}</directory>
                                     <includes>
                                         <include>*.html</include>
                                     </includes>
                                 </fileset>
                             </filesets>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Aorg.jboss.logging.tools.report.type=adoc</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.path=${project.reporting.outputDirectory}/adoc</arg>
+                                <arg>-Aorg.jboss.logging.tools.report.title=Example Messages</arg>
+                            </compilerArgs>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -144,6 +158,24 @@
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctor-maven-plugin</artifactId>
                         <version>${version.asciidoctor}</version>
+                        <configuration>
+                            <backend>html5</backend>
+                            <sourceHighlighter>coderay</sourceHighlighter>
+                            <attributes>
+                                <icons>font</icons>
+                                <sectanchors>true</sectanchors>
+                                <!-- set the idprefix to blank -->
+                                <idprefix/>
+                                <idseparator>-</idseparator>
+                                <docinfo1>true</docinfo1>
+                                <javadocsdir>${java.docs.dir}</javadocsdir>
+                                <version>${project.version}</version>
+                                <nofooter/>
+                                <revnumber>${project.version}</revnumber>
+                                <organization>${project.organization.name}</organization>
+                            </attributes>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>output-html</id>
@@ -152,19 +184,18 @@
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <backend>html5</backend>
-                                    <sourceHighlighter>coderay</sourceHighlighter>
-                                    <attributes>
-                                        <icons>font</icons>
-                                        <sectanchors>true</sectanchors>
-                                        <!-- set the idprefix to blank -->
-                                        <idprefix/>
-                                        <idseparator>-</idseparator>
-                                        <docinfo1>true</docinfo1>
-                                        <javadocsdir>${java.docs.dir}</javadocsdir>
-                                        <version>${project.version}</version>
-                                    </attributes>
-                                    <outputDirectory>${project.basedir}</outputDirectory>
+                                    <preserveDirectories>true</preserveDirectories>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>output-report-html</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${project.reporting.outputDirectory}/adoc/</sourceDirectory>
+                                    <outputDirectory>${project.basedir}/examples/</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>

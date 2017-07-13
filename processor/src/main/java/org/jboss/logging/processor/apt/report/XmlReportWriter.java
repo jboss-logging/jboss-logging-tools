@@ -66,8 +66,16 @@ class XmlReportWriter extends ReportWriter {
         try {
             xmlWriter.writeStartElement("message");
             final MessageMethod.Message msg = messageMethod.message();
+            final String url;
             if (msg.hasId()) {
-                xmlWriter.writeAttribute("id", String.format(messageIdFormat, msg.id()));
+                final String id = String.format(messageIdFormat, msg.id());
+                xmlWriter.writeAttribute("id", id);
+                url = getUrl(messageMethod, id);
+            } else {
+                url = getUrl(messageMethod, DEFAULT_ID);
+            }
+            if (!url.isEmpty()) {
+                xmlWriter.writeAttribute("resolutionUrl", url);
             }
             if (messageMethod.isLoggerMethod()) {
                 xmlWriter.writeAttribute("logLevel", getLogLevel(messageMethod));
@@ -98,5 +106,10 @@ class XmlReportWriter extends ReportWriter {
             if (xmlWriter != null) xmlWriter.close();
         } catch (XMLStreamException ignore) {
         }
+    }
+
+    @Override
+    ReportType getReportType() {
+        return ReportType.XML;
     }
 }

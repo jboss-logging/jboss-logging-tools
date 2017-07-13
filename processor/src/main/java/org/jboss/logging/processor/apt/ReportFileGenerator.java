@@ -27,7 +27,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -119,7 +121,9 @@ public class ReportFileGenerator extends AbstractGenerator {
         if (reportPath == null) {
             return new BufferedWriter(processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, packageName, fileName).openWriter());
         }
-        return Files.newBufferedWriter(Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()), fileName), StandardCharsets.UTF_8);
+        final Path outputPath = Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()), fileName);
+        Files.createDirectories(outputPath.getParent());
+        return Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
     }
 
     /**

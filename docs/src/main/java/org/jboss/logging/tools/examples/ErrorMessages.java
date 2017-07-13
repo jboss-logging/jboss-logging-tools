@@ -27,12 +27,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.BaseUrl;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Producer;
+import org.jboss.logging.annotations.ResolutionDoc;
 import org.jboss.logging.annotations.Suppressed;
 
 /**
@@ -42,6 +44,7 @@ import org.jboss.logging.annotations.Suppressed;
  */
 @SuppressWarnings("unused")
 @MessageBundle(projectCode = "CW")
+@BaseUrl("errors/")
 public interface ErrorMessages {
     /**
      * The static message instance.
@@ -105,6 +108,7 @@ public interface ErrorMessages {
      * @return a supplier for the message
      */
     @Message(id = 3, value = "Parameter %s cannot be null")
+    @ResolutionDoc(suffix = ".html")
     Supplier<String> nullParam(String name);
 
     /**

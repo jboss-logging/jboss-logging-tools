@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,8 +27,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.logging.annotations.BaseUrl;
+import org.jboss.logging.annotations.ResolutionDoc;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
+import org.jboss.logging.processor.util.Expressions;
 
 /**
  * Writes reports based on a {@link MessageInterface}. These reports could be used for documented messages from logging
@@ -37,7 +40,9 @@ import org.jboss.logging.processor.model.MessageMethod;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public abstract class ReportWriter implements Closeable {
+    static final String DEFAULT_ID = "";
 
+    private final String baseUrl;
     final MessageInterface messageInterface;
     final String messageIdFormat;
 
@@ -48,6 +53,11 @@ public abstract class ReportWriter implements Closeable {
             messageIdFormat = messageInterface.projectCode() + "%0" + messageInterface.getIdLength() + "d";
         } else {
             messageIdFormat = messageInterface.projectCode() + "%d";
+        }
+        if (messageInterface.isAnnotatedWith(BaseUrl.class)) {
+            baseUrl = messageInterface.getAnnotation(BaseUrl.class).value();
+        } else {
+            baseUrl = null;
         }
     }
 
@@ -101,6 +111,13 @@ public abstract class ReportWriter implements Closeable {
     public abstract void writeFooter() throws IOException;
 
     /**
+     * The report type for this writer.
+     *
+     * @return the report type
+     */
+    abstract ReportType getReportType();
+
+    /**
      * Gets the log level from the {@code @Message} annotation.
      *
      * @param method the method to get the log level from
@@ -117,5 +134,50 @@ public abstract class ReportWriter implements Closeable {
             return logLevel;
         }
         return "";
+    }
+
+    String getUrl(final MessageMethod messageMethod, final String id) {
+        final ResolutionDoc resolutionDoc = getResolutionDoc(messageMethod);
+        if (resolutionDoc == null || resolutionDoc.skip() || DEFAULT_ID.equals(id)) {
+            return "";
+        }
+
+        final StringBuilder result = new StringBuilder();
+
+        String base = baseUrl == null ? "" : baseUrl;
+        final String path = resolutionDoc.path();
+        final String suffix = resolutionDoc.suffix();
+        final String url = resolutionDoc.url();
+        if (!url.isEmpty()) {
+            base = url;
+        }
+
+        if (!base.isEmpty()) {
+            result.append(base);
+            if (!base.endsWith("/") && !base.endsWith("#")) {
+                result.append('/');
+            }
+        }
+
+        if (path.isEmpty()) {
+            result.append(id);
+        } else {
+            result.append(path);
+        }
+
+        if (suffix.isEmpty()) {
+            result.append(getReportType().getExtension());
+        } else {
+            result.append(suffix);
+        }
+
+        return Expressions.resolve(messageInterface.expressionProperties(), result.toString());
+    }
+
+    private ResolutionDoc getResolutionDoc(final MessageMethod messageMethod) {
+        if (messageMethod.isAnnotatedWith(ResolutionDoc.class)) {
+            return messageMethod.getAnnotation(ResolutionDoc.class);
+        }
+        return messageInterface.getAnnotation(ResolutionDoc.class);
     }
 }

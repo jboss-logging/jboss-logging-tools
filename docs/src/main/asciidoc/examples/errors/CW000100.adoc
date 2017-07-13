@@ -1,0 +1,4 @@
+== CW000100: Close Failure
+
+This error indicates there was a failure closing a resource. Please see previous error messages and contact support if
+required.
