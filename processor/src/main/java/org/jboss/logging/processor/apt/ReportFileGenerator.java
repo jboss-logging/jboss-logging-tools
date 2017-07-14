@@ -30,13 +30,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeSet;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
@@ -134,18 +132,22 @@ public class ReportFileGenerator extends AbstractGenerator {
      * @return a sorted collection of message methods
      */
     private static Collection<MessageMethod> getSortedMessageMethods(final MessageInterface messageInterface) {
-        // Ensure the messages are sorted by the id
-        final List<MessageMethod> messageMethods = new ArrayList<>(messageInterface.methods());
-        messageMethods.sort(MessageIdComparator.INSTANCE);
-        return Collections.unmodifiableCollection(messageMethods);
+        final Collection<MessageMethod> messageMethods = new TreeSet<>(MessageMethodSortComparator.INSTANCE);
+        messageMethods.addAll(messageInterface.methods());
+        return messageMethods;
     }
 
-    private static class MessageIdComparator implements Comparator<MessageMethod> {
-        static final MessageIdComparator INSTANCE = new MessageIdComparator();
+    private static class MessageMethodSortComparator implements Comparator<MessageMethod> {
+        static final MessageMethodSortComparator INSTANCE = new MessageMethodSortComparator();
 
         @Override
         public int compare(final MessageMethod o1, final MessageMethod o2) {
-            return Integer.compare(o1.message().id(), o2.message().id());
+            // First sort by message id, then message to ensure uniqueness
+            int result = Integer.compare(o1.message().id(), o2.message().id());
+            if (result == 0) {
+                result = o1.message().value().compareTo(o2.message().value());
+            }
+            return result;
         }
     }
 }
