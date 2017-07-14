@@ -1,7 +1,7 @@
 
 == Reports
 
-There are currently two types of reports that can be generated. The options are `adoc` for asciidoc and `xml` for XML.
+There are currently two types of reports that can be generated. The options are `adoc` or `asciidoc` for asciidoc and `xml` for XML.
 
 The reports contain the following data:
 

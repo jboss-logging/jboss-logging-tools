@@ -74,9 +74,9 @@ public class ReportFileGenerator extends AbstractGenerator {
             this.reportType = null;
         } else {
             final String s = reportType.toLowerCase(Locale.ROOT);
-            if ("adoc".equalsIgnoreCase(s)) {
+            if ("adoc".equals(s) || "asciidoc".equals(s)) {
                 this.reportType = ReportType.ASCIIDOC;
-            } else if ("xml".equalsIgnoreCase(s)) {
+            } else if ("xml".equals(s)) {
                 this.reportType = ReportType.XML;
             } else {
                 this.reportType = null;

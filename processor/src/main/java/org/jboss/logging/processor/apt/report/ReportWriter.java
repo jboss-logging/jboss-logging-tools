@@ -40,7 +40,7 @@ import org.jboss.logging.processor.util.Expressions;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public abstract class ReportWriter implements Closeable {
-    static final String DEFAULT_ID = "";
+    static final String DEFAULT_ID = "--";
 
     private final String baseUrl;
     final MessageInterface messageInterface;
