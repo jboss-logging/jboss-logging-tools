@@ -1,0 +1,4 @@
+== CW000101: Encoding Error
+
+This error indicates an invalid encoding is attempting to be used and a default encoding of UTF-8 will be used. You can
+fix this by setting a valid encoding value.

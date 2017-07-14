@@ -24,6 +24,7 @@ package org.jboss.logging.processor.model;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
 
@@ -120,5 +121,14 @@ public interface MessageInterface extends Comparable<MessageInterface>, ClassTyp
      */
     default TypeElement generatedAnnotation() {
         return null;
+    }
+
+    /**
+     * The properties used to resolve expressions.
+     *
+     * @return the properties used to resolve expressions
+     */
+    default Properties expressionProperties() {
+        return new Properties();
     }
 }

@@ -1,0 +1,24 @@
+
+== Reports
+
+There are currently two types of reports that can be generated. The options are `adoc` for asciidoc and `xml` for XML.
+
+The reports contain the following data:
+
+* The formatted message id.
+* A possible link to a resolution document for the error.
+* The unformatted message.
+* The log level, if applicable.
+* The return type, if applicable.
+
+=== Annotations
+
+Two annotations can be used to assist withing linking resolution documents for messages.
+
+* link:{javadocsdir}[`@BaseUrl`]
+  - This annotation can be used on a type to define the base URL for linking resolution documents. This annotation is
+    not required for links to be created on reports.
+* link:{javadocsdir}[`@ResolutionDoc`]
+  - This annotation is used to define information about the resolution document for creating links. If placed on an
+    interface all methods that have a defined id will have a link generated. This can also be placed individually on
+    the method to only generate links for specific id's.

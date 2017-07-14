@@ -1,0 +1,4 @@
+== CW000003: Null Parameter
+
+This error indicates you've passed a `null` parameter where a `non-null` value
+is required.

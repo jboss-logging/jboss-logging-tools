@@ -260,6 +260,11 @@ public final class MessageInterfaceFactory {
         }
 
         @Override
+        public Properties expressionProperties() {
+            return expressionProperties;
+        }
+
+        @Override
         public boolean equals(final Object obj) {
             if (obj == this) {
                 return true;

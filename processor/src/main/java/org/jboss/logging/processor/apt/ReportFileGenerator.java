@@ -27,10 +27,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
@@ -39,6 +45,7 @@ import javax.tools.StandardLocation;
 import org.jboss.logging.processor.apt.report.ReportType;
 import org.jboss.logging.processor.apt.report.ReportWriter;
 import org.jboss.logging.processor.model.MessageInterface;
+import org.jboss.logging.processor.model.MessageMethod;
 
 /**
  * Generates reports for logging interfaces and message bundles.
@@ -57,14 +64,14 @@ public class ReportFileGenerator extends AbstractGenerator {
 
     private final ReportType reportType;
     private final String reportPath;
-    private final Optional<String> reportTitle;
+    private final String reportTitle;
 
-    public ReportFileGenerator(final ProcessingEnvironment processingEnv) {
+    ReportFileGenerator(final ProcessingEnvironment processingEnv) {
         super(processingEnv);
         Map<String, String> options = processingEnv.getOptions();
         final String reportType = options.get(REPORT_TYPE);
         reportPath = options.get(REPORT_PATH);
-        reportTitle = Optional.ofNullable(options.get(REPORT_TITLE));
+        reportTitle = options.get(REPORT_TITLE);
         if (reportType == null) {
             this.reportType = null;
         } else {
@@ -95,11 +102,14 @@ public class ReportFileGenerator extends AbstractGenerator {
                 final String fileName = messageInterface.simpleName() + reportType.getExtension();
                 try (
                         final BufferedWriter writer = createWriter(messageInterface.packageName(), fileName);
-                        final ReportWriter reportWriter = ReportWriter.of(reportType, writer)
+                        final ReportWriter reportWriter = ReportWriter.of(reportType, messageInterface, writer)
                 ) {
-                    reportWriter.writeStart(reportTitle);
-                    reportWriter.write(messageInterface);
-                    reportWriter.writeEnd();
+                    reportWriter.writeHeader(reportTitle);
+                    // Process the methods
+                    for (MessageMethod messageMethod : getSortedMessageMethods(messageInterface)) {
+                        reportWriter.writeDetail(messageMethod);
+                    }
+                    reportWriter.writeFooter();
                 }
             } catch (IOException e) {
                 logger().error(element, e, "Failed to generate %s report", reportType);
@@ -111,6 +121,31 @@ public class ReportFileGenerator extends AbstractGenerator {
         if (reportPath == null) {
             return new BufferedWriter(processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, packageName, fileName).openWriter());
         }
-        return Files.newBufferedWriter(Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()), fileName), StandardCharsets.UTF_8);
+        final Path outputPath = Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()), fileName);
+        Files.createDirectories(outputPath.getParent());
+        return Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+    }
+
+    /**
+     * Returns a sorted collection of the message methods on the interface. The methods are sorted by the message id.
+     *
+     * @param messageInterface the message interface to get the methods for
+     *
+     * @return a sorted collection of message methods
+     */
+    private static Collection<MessageMethod> getSortedMessageMethods(final MessageInterface messageInterface) {
+        // Ensure the messages are sorted by the id
+        final List<MessageMethod> messageMethods = new ArrayList<>(messageInterface.methods());
+        messageMethods.sort(MessageIdComparator.INSTANCE);
+        return Collections.unmodifiableCollection(messageMethods);
+    }
+
+    private static class MessageIdComparator implements Comparator<MessageMethod> {
+        static final MessageIdComparator INSTANCE = new MessageIdComparator();
+
+        @Override
+        public int compare(final MessageMethod o1, final MessageMethod o2) {
+            return Integer.compare(o1.message().id(), o2.message().id());
+        }
     }
 }

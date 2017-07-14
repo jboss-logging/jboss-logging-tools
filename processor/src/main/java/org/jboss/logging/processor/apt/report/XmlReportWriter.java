@@ -24,7 +24,6 @@ package org.jboss.logging.processor.apt.report;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Optional;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -36,53 +35,65 @@ import org.jboss.logging.processor.model.MessageMethod;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class XmlReportWriter extends ReportWriter {
-    static final String NAMESPACE = "urn:jboss:logging:report:1.0";
+    private static final String NAMESPACE = "urn:jboss:logging:report:1.0";
     private final XMLStreamWriter xmlWriter;
 
-    protected XmlReportWriter(final BufferedWriter writer) throws XMLStreamException {
-        super(writer);
+    XmlReportWriter(final MessageInterface messageInterface, final BufferedWriter writer) throws XMLStreamException {
+        super(messageInterface);
         final XMLOutputFactory factory = XMLOutputFactory.newInstance();
         xmlWriter = new IndentingXmlWriter(factory.createXMLStreamWriter(writer));
     }
 
     @Override
-    public void write(final MessageInterface messageInterface) throws IOException {
-        try {
-            xmlWriter.writeStartElement("messages");
-            xmlWriter.writeAttribute("interface", messageInterface.name());
-
-            final String idFormat = createMessageIdFormat(messageInterface);
-
-            // Process the methods
-            for (MessageMethod messageMethod : getSortedMessageMethods(messageInterface)) {
-                writeDetail(idFormat, messageMethod);
-            }
-            // End message; </message>
-            xmlWriter.writeEndElement();
-        } catch (XMLStreamException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @Override
-    public void writeStart(final Optional<String> title) throws IOException {
+    public void writeHeader(final String title) throws IOException {
         try {
             xmlWriter.writeStartDocument();
             xmlWriter.setDefaultNamespace(NAMESPACE);
             xmlWriter.writeStartElement("report");
             xmlWriter.writeNamespace(null, NAMESPACE);
-            if (title.isPresent()) {
-                xmlWriter.writeAttribute("title", title.get());
+            if (title != null) {
+                xmlWriter.writeAttribute("title", title);
             }
+            xmlWriter.writeStartElement("messages");
+            xmlWriter.writeAttribute("interface", messageInterface.name());
         } catch (XMLStreamException e) {
             throw new IOException(e);
         }
     }
 
     @Override
-    public void writeEnd() throws IOException {
+    public void writeDetail(final MessageMethod messageMethod) throws IOException {
         try {
+            xmlWriter.writeStartElement("message");
+            final MessageMethod.Message msg = messageMethod.message();
+            final String url;
+            if (msg.hasId()) {
+                final String id = String.format(messageIdFormat, msg.id());
+                xmlWriter.writeAttribute("id", id);
+                url = getUrl(messageMethod, id);
+            } else {
+                url = getUrl(messageMethod, DEFAULT_ID);
+            }
+            if (!url.isEmpty()) {
+                xmlWriter.writeAttribute("resolutionUrl", url);
+            }
+            if (messageMethod.isLoggerMethod()) {
+                xmlWriter.writeAttribute("logLevel", getLogLevel(messageMethod));
+            } else {
+                xmlWriter.writeAttribute("returnType", messageMethod.returnType().name());
+            }
+            xmlWriter.writeCharacters(msg.value());
             xmlWriter.writeEndElement();
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public void writeFooter() throws IOException {
+        try {
+            xmlWriter.writeEndElement(); // end <messages/>
+            xmlWriter.writeEndElement(); // end <report/>
             xmlWriter.writeEndDocument();
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -94,23 +105,11 @@ class XmlReportWriter extends ReportWriter {
         try {
             if (xmlWriter != null) xmlWriter.close();
         } catch (XMLStreamException ignore) {
-        } finally {
-            super.close();
         }
     }
 
-    private void writeDetail(final String idFormat, final MessageMethod method) throws XMLStreamException {
-        xmlWriter.writeStartElement("message");
-        final MessageMethod.Message msg = method.message();
-        if (msg.hasId()) {
-            xmlWriter.writeAttribute("id", String.format(idFormat, msg.id()));
-        }
-        if (method.isLoggerMethod()) {
-            xmlWriter.writeAttribute("logLevel", getLogLevel(method));
-        } else {
-            xmlWriter.writeAttribute("returnType", method.returnType().name());
-        }
-        xmlWriter.writeCharacters(msg.value());
-        xmlWriter.writeEndElement();
+    @Override
+    ReportType getReportType() {
+        return ReportType.XML;
     }
 }
