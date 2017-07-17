@@ -517,6 +517,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">James R. Perkins</span><br>
 <span id="email" class="email">&lt;<a href="mailto:jperkins@redhat.com">jperkins@redhat.com</a>&gt;</span><br>
+<span id="revnumber">version 2.1.0.Beta1</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -531,6 +532,11 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#message-logger-interfaces">Message Logger Interfaces</a>
 <ul class="sectlevel2">
 <li><a href="#example-message-logger">Example Message Logger</a></li>
+</ul>
+</li>
+<li><a href="#reports">Reports</a>
+<ul class="sectlevel2">
+<li><a href="#annotations">Annotations</a></li>
 </ul>
 </li>
 <li><a href="#example-use-cases">Example Use Cases</a></li>
@@ -595,7 +601,7 @@ table.CodeRay td.code>pre{padding:0}
     <span class="tag">&lt;dependency&gt;</span>
         <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
         <span class="tag">&lt;artifactId&gt;</span>jboss-logging-annotations<span class="tag">&lt;/artifactId&gt;</span>
-        <span class="tag">&lt;version&gt;</span>2.1.0.Alpha3-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
+        <span class="tag">&lt;version&gt;</span>2.1.0.Beta1<span class="tag">&lt;/version&gt;</span>
         <span class="comment">&lt;!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
               projects that depend on this project.--&gt;</span>
         <span class="tag">&lt;scope&gt;</span>provided<span class="tag">&lt;/scope&gt;</span>
@@ -605,7 +611,7 @@ table.CodeRay td.code>pre{padding:0}
     <span class="tag">&lt;dependency&gt;</span>
         <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
         <span class="tag">&lt;artifactId&gt;</span>jboss-logging-processor<span class="tag">&lt;/artifactId&gt;</span>
-        <span class="tag">&lt;version&gt;</span>2.1.0.Alpha3-SNAPSHOT<span class="tag">&lt;/version&gt;</span>
+        <span class="tag">&lt;version&gt;</span>2.1.0.Beta1<span class="tag">&lt;/version&gt;</span>
         <span class="comment">&lt;!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
               projects that depend on this project.--&gt;</span>
         <span class="tag">&lt;scope&gt;</span>provided<span class="tag">&lt;/scope&gt;</span>
@@ -623,7 +629,40 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="message-bundle-interfaces"><a class="anchor" href="#message-bundle-interfaces"></a>Message Bundle Interfaces</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is annotated with <a href="apidocs"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a> which will be used to determine the String used for either the return type or the message for the exception being returned.</p>
+<p>Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is
+annotated with <a href="apidocs"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a>
+which will be used to determine the String used for either the return type or the message for the exception being
+returned.</p>
+</div>
+<div class="paragraph">
+<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Expressions are in the form of <code>${key:defaultValue}</code>. If the key is prefixed with <code>sys.</code> a system property is
+used. If the key is prefixed with <code>env.</code> an environment variable is used. In all other cases the properties are resolved
+from the <code>org.jboss.logging.tools.expressionProperties</code> path. If the key is not found in the properties the default
+value will be used.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Expressions are processed at compile time. The values will be hard-coded in the generated source files.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>The following constraints are placed on methods in a message bundle:</p>
@@ -749,7 +788,39 @@ Message bundle interfaces can also contain valid <a href="#message-logger-interf
 <h2 id="message-logger-interfaces"><a class="anchor" href="#message-logger-interfaces"></a>Message Logger Interfaces</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with <a href="apidocs"><code>@MessageLogger</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a> which will be used to determine the message to be logged.</p>
+<p>Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with
+<a href="apidocs"><code>@MessageLogger</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a> which will
+be used to determine the message to be logged.</p>
+</div>
+<div class="paragraph">
+<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Expressions are in the form of <code>${key:defaultValue}</code>. If the key is prefixed with <code>sys.</code> a system property is
+used. If the key is prefixed with <code>env.</code> an environment variable is used. In all other cases the properties are resolved
+from the <code>org.jboss.logging.tools.expressionProperties</code> path. If the key is not found in the properties the default
+value will be used.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Expressions are processed at compile time. The values will be hard-coded in the generated source files.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>The following constraints are placed on methods in a message logger:</p>
@@ -850,6 +921,69 @@ A format parameter is a parameter that has no annotations or is annotated with o
 <td>Overrides the default level to <code>ERROR</code> to indicate an error message should be logged.</td>
 </tr>
 </table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="reports"><a class="anchor" href="#reports"></a>Reports</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are currently two types of reports that can be generated. The options are <code>adoc</code> or <code>asciidoc</code> for asciidoc and <code>xml</code> for XML.</p>
+</div>
+<div class="paragraph">
+<p>The reports contain the following data:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The formatted message id.</p>
+</li>
+<li>
+<p>A possible link to a resolution document for the error.</p>
+</li>
+<li>
+<p>The unformatted message.</p>
+</li>
+<li>
+<p>The log level, if applicable.</p>
+</li>
+<li>
+<p>The return type, if applicable.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="annotations"><a class="anchor" href="#annotations"></a>Annotations</h3>
+<div class="paragraph">
+<p>Two annotations can be used to assist withing linking resolution documents for messages.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="apidocs"><code>@BaseUrl</code></a></p>
+<div class="ulist">
+<ul>
+<li>
+<p>This annotation can be used on a type to define the base URL for linking resolution documents. This annotation is
+not required for links to be created on reports.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="apidocs"><code>@ResolutionDoc</code></a></p>
+<div class="ulist">
+<ul>
+<li>
+<p>This annotation is used to define information about the resolution document for creating links. If placed on an
+interface all methods that have a defined id will have a link generated. This can also be placed individually on
+the method to only generate links for specific id&#8217;s.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1007,6 +1141,33 @@ In Java 9 the <code>@javax.annotation.Generated</code> was moved to <code>@javax
 </tr>
 </table>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Expressions are in the form of <code>${key:defaultValue}</code>. If the key is prefixed with <code>sys.</code> a system property is
+used. If the key is prefixed with <code>env.</code> an environment variable is used. In all other cases the properties are resolved
+from the <code>org.jboss.logging.tools.expressionProperties</code> path. If the key is not found in the properties the default
+value will be used.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Expressions are processed at compile time. The values will be hard-coded in the generated source files.
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="translation-options"><a class="anchor" href="#translation-options"></a>Translation Options</h3>
@@ -1071,11 +1232,6 @@ In Java 9 the <code>@javax.annotation.Generated</code> was moved to <code>@javax
 </table>
 </div>
 </div>
-</div>
-</div>
-<div id="footer">
-<div id="footer-text">
-Last updated 2017-06-02 16:26:01 PDT
 </div>
 </div>
 <script src="js/links.js"></script>

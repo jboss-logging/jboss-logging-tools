@@ -518,7 +518,40 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="message-bundle-interfaces"><a class="anchor" href="#message-bundle-interfaces"></a>Message Bundle Interfaces</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is annotated with <a href="apidocs"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a> which will be used to determine the String used for either the return type or the message for the exception being returned.</p>
+<p>Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is
+annotated with <a href="apidocs"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a>
+which will be used to determine the String used for either the return type or the message for the exception being
+returned.</p>
+</div>
+<div class="paragraph">
+<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Expressions are in the form of <code>${key:defaultValue}</code>. If the key is prefixed with <code>sys.</code> a system property is
+used. If the key is prefixed with <code>env.</code> an environment variable is used. In all other cases the properties are resolved
+from the <code>org.jboss.logging.tools.expressionProperties</code> path. If the key is not found in the properties the default
+value will be used.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Expressions are processed at compile time. The values will be hard-coded in the generated source files.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>The following constraints are placed on methods in a message bundle:</p>
@@ -639,11 +672,6 @@ Message bundle interfaces can also contain valid <a href="#Message Logger Interf
 </div>
 </div>
 </div>
-</div>
-</div>
-<div id="footer">
-<div id="footer-text">
-Last updated 2017-06-02 16:26:01 PDT
 </div>
 </div>
 <script src="js/links.js"></script>

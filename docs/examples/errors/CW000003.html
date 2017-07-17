@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.5">
-<title>Message Logger Interfaces</title>
+<title>CW000003: Null Parameter</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -515,143 +515,11 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="message-logger-interfaces"><a class="anchor" href="#message-logger-interfaces"></a>Message Logger Interfaces</h2>
+<h2 id="cw000003-null-parameter"><a class="anchor" href="#cw000003-null-parameter"></a>CW000003: Null Parameter</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with
-<a href="apidocs"><code>@MessageLogger</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a> which will
-be used to determine the message to be logged.</p>
-</div>
-<div class="paragraph">
-<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-Expressions are in the form of <code>${key:defaultValue}</code>. If the key is prefixed with <code>sys.</code> a system property is
-used. If the key is prefixed with <code>env.</code> an environment variable is used. In all other cases the properties are resolved
-from the <code>org.jboss.logging.tools.expressionProperties</code> path. If the key is not found in the properties the default
-value will be used.
-</td>
-</tr>
-</table>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-Expressions are processed at compile time. The values will be hard-coded in the generated source files.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>The following constraints are placed on methods in a message logger:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>The method must have a <code>void</code> return type</p>
-</li>
-<li>
-<p>The method must be annotated with <a href="apidocs"><code>@LogMessage</code></a></p>
-</li>
-<li>
-<p>The method must be annotated with <a href="apidocs"><code>@Message</code></a> or a message must be inheritable.</p>
-</li>
-<li>
-<p>A method can have only one <a href="apidocs"><code>@Cause</code></a> parameter.</p>
-</li>
-</ul>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-A message is inheritable if the two methods have the same name and same number of format parameters.
-</td>
-</tr>
-</table>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs"><code>@FormatWith</code></a>, <a href="apidocs"><code>@Pos</code></a> or <a href="apidocs"><code>@Transform</code></a>.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>A message logger interface may also extend the <code>org.jboss.logging.BasicLogger</code>. This allows the logging interface to be usable for standard logging. For example <code>AppLogger.LOGGER.debugf("Initializing %s", this);</code></p>
-</div>
-<div class="sect2">
-<h3 id="example-message-logger"><a class="anchor" href="#example-message-logger"></a>Example Message Logger</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@MessageLogger</span>(projectCode = <span class="string"><span class="delimiter">&quot;</span><span class="content">CW</span><span class="delimiter">&quot;</span></span>) <i class="conum" data-value="1"></i><b>(1)</b>
-<span class="directive">public</span> <span class="type">interface</span> <span class="class">AppLogger</span> <span class="directive">extends</span> BasicLogger {
-
-    AppLogger LOGGER = <span class="predefined-type">Logger</span>.getMessageLogger(AppLogger.class, AppLogger.class.getPackage().getName());
-
-    <span class="annotation">@LogMessage</span>
-    <span class="annotation">@Once</span> <i class="conum" data-value="2"></i><b>(2)</b>
-    <span class="annotation">@Message</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">%s version %d.%d.%d.%s</span><span class="delimiter">&quot;</span></span>) <i class="conum" data-value="3"></i><b>(3)</b>
-    <span class="type">void</span> appVersion(<span class="predefined-type">CharSequence</span> name, <span class="type">int</span> major, <span class="type">int</span> minor, <span class="type">int</span> macro, <span class="predefined-type">String</span> rel);
-
-    <span class="annotation">@LogMessage</span>(level = <span class="predefined-type">Logger</span>.Level.ERROR) <i class="conum" data-value="4"></i><b>(4)</b>
-    <span class="annotation">@Message</span>(id = <span class="integer">100</span>, value = <span class="string"><span class="delimiter">&quot;</span><span class="content">Failure while closing %s</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">void</span> closeFailure(<span class="annotation">@Cause</span> <span class="predefined-type">Throwable</span> cause, <span class="predefined-type">Object</span> obj);
-
-    <span class="annotation">@LogMessage</span>(level = <span class="predefined-type">Logger</span>.Level.WARN)
-    <span class="annotation">@Message</span>(id = <span class="integer">101</span>, value = <span class="string"><span class="delimiter">&quot;</span><span class="content">Encoding %s could not be found. Defaulting to %s.</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">void</span> encodingNotFound(<span class="predefined-type">String</span> encoding, <span class="predefined-type">Charset</span> dft);
-
-    <span class="annotation">@LogMessage</span>
-    <span class="annotation">@Message</span>(id = <span class="integer">102</span>, value = <span class="string"><span class="delimiter">&quot;</span><span class="content">Cache size changed to '%d'</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">void</span> cacheSizeChanged(<span class="annotation">@Transform</span>(Transform.TransformType.SIZE) <span class="predefined-type">Collection</span>&lt;<span class="predefined-type">String</span>&gt; c);
-
-    <span class="annotation">@LogMessage</span>
-    <span class="type">void</span> cacheSizeChanged(<span class="annotation">@Transform</span>(Transform.TransformType.SIZE) <span class="predefined-type">String</span>... array);
-
-    <span class="annotation">@LogMessage</span>
-    <span class="type">void</span> cacheSizeChanged(<span class="annotation">@Transform</span>(Transform.TransformType.SIZE) <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">Object</span>&gt; map);
-}</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>The <code>projectCode</code> will be prepended to messages which have an <code>id</code> specified. For example with <code>id = 100</code> the message will be prepended with <code>CW000100</code>. You can control the number padding with the <code>length</code> property on the annotation.</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Ensures the log message is only written once.</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>No <code>id</code> is specified for this message which means no id will be prepended on this message.</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>Overrides the default level to <code>ERROR</code> to indicate an error message should be logged.</td>
-</tr>
-</table>
-</div>
+<p>This error indicates you&#8217;ve passed a <code>null</code> parameter where a <code>non-null</code> value
+is required.</p>
 </div>
 </div>
 </div>
