@@ -1,7 +1,13 @@
 
 == Message Logger Interfaces
 
-Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with link:{javadocsdir}[`@MessageLogger`]. Each method in must be annotated with link:{javadocsdir}[`@Message`] which will be used to determine the message to be logged.
+Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with
+link:{javadocsdir}[`@MessageLogger`]. Each method in must be annotated with link:{javadocsdir}[`@Message`] which will
+be used to determine the message to be logged.
+
+The value for a link:{javadocsdir}[`@Message`] may contain an expression.
+
+include::expressions.adoc[]
 
 The following constraints are placed on methods in a message logger:
 

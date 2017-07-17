@@ -56,9 +56,12 @@ import java.lang.annotation.Target;
  * the resolution document.
  * </p>
  * <p>
- * Expressions in the form of {@code ${system.property.key:default-value}} can be used for the values with the exception
- * of the {@link #skip() skip} attribute. The {@code org.jboss.logging.tools.expressionProperties} processor argument is
- * used to specify the path the properties file which contains the values for the expressions.
+ * Expressions in the form of {@code ${property.key:default-value}} can be used for the values with the exception of the
+ * {@link #skip() skip} attribute. If the property key is prefixed with {@code sys.} a
+ * {@linkplain System#getProperty(String) system property} will be used. If the key is prefixed with {@code env.} an
+ * {@linkplain System#getenv(String) environment variable} will be used. In all other cases the
+ * {@code org.jboss.logging.tools.expressionProperties} processor argument is used to specify the path the properties
+ * file which contains the values for the expressions.
  * </p>
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

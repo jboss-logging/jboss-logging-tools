@@ -2,7 +2,8 @@
 
 The JBoss logging tools are used to create internationalized log statements and exceptions.
 
-For user documentation see https://jboss-logging.github.io/jboss-logging-tools/
+For user documentation see https://jboss-logging.github.io/jboss-logging-tools/. For annotation JavaDoc's see
+https://jboss-logging.github.io/jboss-logging-tools/apidocs/.
 
 == Building
 

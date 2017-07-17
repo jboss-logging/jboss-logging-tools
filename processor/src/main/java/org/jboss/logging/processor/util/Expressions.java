@@ -87,7 +87,14 @@ public class Expressions {
                         case '}':
                         case ',': {
                             final String name = expression.substring(nameStart, i).trim();
-                            final String val = props.getProperty(name);
+                            final String val;
+                            if (name.startsWith("env.")) {
+                                val = System.getenv(name.substring(4));
+                            } else if (name.startsWith("sys.")) {
+                                val = System.getProperty(name.substring(4));
+                            } else {
+                                val = props.getProperty(name);
+                            }
                             if (val != null) {
                                 builder.append(val);
                                 state = ch == '}' ? INITIAL : RESOLVED;

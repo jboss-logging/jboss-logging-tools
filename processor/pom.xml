@@ -142,11 +142,16 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <environmentVariables>
+                        <JBOSS_LOGGING_TEST_VAR>envValue</JBOSS_LOGGING_TEST_VAR>
+                    </environmentVariables>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <test.src.path>${project.build.testSourceDirectory}</test.src.path>
                         <test.generated.src.path>${project.build.directory}/generated-test-sources/test-annotations</test.generated.src.path>
                         <test.report.path>${test.report.path}</test.report.path>
+                        <test.property>sysValue</test.property>
+                        <expressionPropertiesPath>${expression.properties.path}</expressionPropertiesPath>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

@@ -1,7 +1,14 @@
 
 == Message Bundle Interfaces
 
-Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is annotated with link:{javadocsdir}[`@MessageBundle`]. Each method in must be annotated with link:{javadocsdir}[`@Message`] which will be used to determine the String used for either the return type or the message for the exception being returned.
+Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is
+annotated with link:{javadocsdir}[`@MessageBundle`]. Each method in must be annotated with link:{javadocsdir}[`@Message`]
+which will be used to determine the String used for either the return type or the message for the exception being
+returned.
+
+The value for a link:{javadocsdir}[`@Message`] may contain an expression.
+
+include::expressions.adoc[]
 
 The following constraints are placed on methods in a message bundle:
 

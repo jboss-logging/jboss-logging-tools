@@ -30,8 +30,10 @@ import java.lang.annotation.Target;
  * Messages on reports can have a link to a {@linkplain ResolutionDoc resolution document}. This annotation can be used
  * to provide a base URL for these documents.
  * <p>
- * Expressions in the form of {@code ${system.property.key:default-value}} can be used for the value. The
- * {@code org.jboss.logging.tools.expressionProperties} processor argument is used to specify the path the properties
+ * Expressions in the form of {@code ${property.key:default-value}} can be used for the values. If the property key is
+ * prefixed with {@code sys.} a {@linkplain System#getProperty(String) system property} will be used. If the key is
+ * prefixed with {@code env.} an {@linkplain System#getenv(String) environment variable} will be used. In all other cases
+ * the {@code org.jboss.logging.tools.expressionProperties} processor argument is used to specify the path the properties
  * file which contains the values for the expressions.
  * </p>
  *
