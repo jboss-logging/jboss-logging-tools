@@ -43,18 +43,25 @@ class AsciidocReportWriter extends ReportWriter {
     @Override
     public void writeHeader(final String title) throws IOException {
         // Write the title for the document
-        writer.write("= ");
+        final String escapedTitle;
         if (title != null) {
-            writer.write(escape(title).toString());
+            escapedTitle = escape(title).toString();
         } else {
-            writer.write("Messages");
+            escapedTitle = "Messages";
+        }
+        writer.write(escapedTitle);
+        writer.newLine();
+        for (int i = 0; i < escapedTitle.length(); i++) {
+            writer.append('=');
         }
         writer.newLine();
         writer.newLine();
 
-        // Write the table header
         // Write the table title
         writer.append('.').append(messageInterface.name());
+        writer.newLine();
+        // Write the table configuration, 4 columns
+        writer.write("[cols=\"1,5,^1,2m\"]");
         writer.newLine();
         // Write the table header
         writer.write("|===");
