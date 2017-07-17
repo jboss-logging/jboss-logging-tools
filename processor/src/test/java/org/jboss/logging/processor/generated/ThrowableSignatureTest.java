@@ -25,8 +25,8 @@ package org.jboss.logging.processor.generated;
 import org.jboss.logging.processor.generated.SignatureMessages.InvalidTextException;
 import org.jboss.logging.processor.generated.SignatureMessages.RedirectException;
 import org.jboss.logging.processor.generated.SignatureMessages.TestException;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -41,24 +41,24 @@ public class ThrowableSignatureTest {
         final int code = 307;
         final String location = "foo";
         RedirectException redirectExpected = new RedirectException(formattedMessage, code, location);
-        Assert.assertEquals(SignatureMessages.MESSAGES.redirect(code, location), redirectExpected);
+        Assert.assertEquals(redirectExpected, SignatureMessages.MESSAGES.redirect(code, location));
         redirectExpected = new RedirectException(formattedMessage, location);
         redirectExpected.initCause(cause);
-        Assert.assertEquals(SignatureMessages.MESSAGES.redirect(cause, location), redirectExpected);
+        Assert.assertEquals(redirectExpected, SignatureMessages.MESSAGES.redirect(cause, location));
         redirectExpected = new RedirectException(formattedMessage, cause, code, location);
-        Assert.assertEquals(SignatureMessages.MESSAGES.redirect(cause, code, location), redirectExpected);
+        Assert.assertEquals(redirectExpected, SignatureMessages.MESSAGES.redirect(cause, code, location));
 
         TestException testExpected = new TestException(formattedMessage);
-        Assert.assertEquals(SignatureMessages.MESSAGES.test(), testExpected);
+        Assert.assertEquals(testExpected, SignatureMessages.MESSAGES.test());
         testExpected = new TestException(formattedMessage, cause);
-        Assert.assertEquals(SignatureMessages.MESSAGES.test(cause), testExpected);
+        Assert.assertEquals(testExpected, SignatureMessages.MESSAGES.test(cause));
 
         final String invalidText = "invalid";
         InvalidTextException invalidTextExpected = new InvalidTextException(formattedMessage, invalidText);
-        Assert.assertEquals(SignatureMessages.MESSAGES.invalidText(invalidText), invalidTextExpected);
+        Assert.assertEquals(invalidTextExpected, SignatureMessages.MESSAGES.invalidText(invalidText));
         invalidTextExpected = new InvalidTextException(formattedMessage, cause, invalidText);
-        Assert.assertEquals(SignatureMessages.MESSAGES.invalidText(cause, invalidText), invalidTextExpected);
+        Assert.assertEquals(invalidTextExpected, SignatureMessages.MESSAGES.invalidText(cause, invalidText));
         invalidTextExpected = new InvalidTextException(3, cause, invalidText, formattedMessage);
-        Assert.assertEquals(SignatureMessages.MESSAGES.invalidText(3, cause, invalidText), invalidTextExpected);
+        Assert.assertEquals(invalidTextExpected, SignatureMessages.MESSAGES.invalidText(3, cause, invalidText));
     }
 }

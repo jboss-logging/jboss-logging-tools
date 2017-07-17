@@ -33,9 +33,9 @@ import java.util.Properties;
 
 import org.jboss.logging.Logger;
 import org.jboss.logging.processor.generated.DefaultLogger.CustomFormatter;
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -44,7 +44,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
     private static final String NAME = System.getProperty("user.name");
     private static final String FILE_NAME_FORMAT = "DefaultLogger.i18n%s.properties";
 
-    @AfterMethod
+    @After
     public void clearHandler() {
         HANDLER.close();
     }
@@ -64,7 +64,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.invalidSelection("A", "B", "C", "D");
 
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
-        Assert.assertEquals(properties.size(), HANDLER.size());
+        Assert.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
         compare("noFormat", properties);
@@ -80,7 +80,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_de"));
-        Assert.assertEquals(properties.size(), HANDLER.size());
+        Assert.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -91,7 +91,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_fr"));
-        Assert.assertEquals(properties.size(), HANDLER.size());
+        Assert.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -102,7 +102,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_es"));
-        Assert.assertEquals(properties.size(), HANDLER.size());
+        Assert.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -113,7 +113,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_ja"));
-        Assert.assertEquals(properties.size(), HANDLER.size());
+        Assert.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -148,7 +148,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
     private void compare(final String key, final Properties properties, final Object... params) throws InterruptedException {
         final String expectedMessage = getFormattedProperty(key, properties, params);
         final String loggedMessage = HANDLER.getMessage().replaceAll(LOGGER_ID_PATTERN, "");
-        Assert.assertEquals(loggedMessage, expectedMessage);
+        Assert.assertEquals(expectedMessage, loggedMessage);
     }
 
     private String getFormattedProperty(final String key, final Properties properties, final Object... params) {

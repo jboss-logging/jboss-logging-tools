@@ -39,9 +39,9 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.SchemaFactory;
 
 import org.jboss.logging.processor.apt.report.ReportType;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -63,13 +63,13 @@ public class ReportGenerationTest {
     public void testAsciidoc() throws Exception {
         final Collection<Path> paths = findFiles(ReportType.ASCIIDOC);
         // Just ensure they were generated
-        Assert.assertFalse(paths.isEmpty(), "No asciidoc files found");
+        Assert.assertFalse("No asciidoc files found", paths.isEmpty());
     }
 
     @Test
     public void testXml() throws Exception {
         final Collection<Path> paths = findFiles(ReportType.XML);
-        Assert.assertFalse(paths.isEmpty(), "No XML files found");
+        Assert.assertFalse("No XML files found", paths.isEmpty());
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
 

@@ -47,9 +47,9 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -113,13 +113,13 @@ public class GeneratedSourceAnalysisTest {
     public void testRootLocale() throws Exception {
         JavaClassSource implementationSource = parseGenerated(RootLocaleLogger.class);
         FieldSource<JavaClassSource> locale = implementationSource.getField("LOCALE");
-        Assert.assertNotNull(locale, "Expected a LOCALE field for " + implementationSource.getName());
-        Assert.assertEquals(locale.getLiteralInitializer(), "Locale.forLanguageTag(\"en-UK\")");
+        Assert.assertNotNull("Expected a LOCALE field for " + implementationSource.getName(), locale);
+        Assert.assertEquals("Locale.forLanguageTag(\"en-UK\")", locale.getLiteralInitializer());
 
         implementationSource = parseGenerated(DefaultLogger.class);
         locale = implementationSource.getField("LOCALE");
-        Assert.assertNotNull(locale, "Expected a LOCALE field for " + implementationSource.getName());
-        Assert.assertEquals(locale.getLiteralInitializer(), "Locale.ROOT");
+        Assert.assertNotNull("Expected a LOCALE field for " + implementationSource.getName(), locale);
+        Assert.assertEquals("Locale.ROOT", locale.getLiteralInitializer());
     }
 
     private void compareLogger(final Class<?> intf) throws IOException {
@@ -130,19 +130,20 @@ public class GeneratedSourceAnalysisTest {
         // Logger implementations should have a single constructor which accepts a org.jboss.logging.Logger
         final List<MethodSource<JavaClassSource>> implementationMethods = implementationSource.getMethods();
         final Optional<MethodSource<JavaClassSource>> constructor = findConstructor(implementationMethods);
-        Assert.assertTrue(constructor.isPresent(), "No constructor found for " + implementationSource.getName());
+        Assert.assertTrue("No constructor found for " + implementationSource.getName(), constructor.isPresent());
         final List<ParameterSource<JavaClassSource>> parameters = constructor.get().getParameters();
-        Assert.assertEquals(parameters.size(), 1, "Found more than one parameter for " + implementationSource.getName() + ": " + parameters);
+        Assert.assertEquals("Found more than one parameter for " + implementationSource.getName() + ": " + parameters,
+                1, parameters.size());
         final ParameterSource<JavaClassSource> parameter = parameters.get(0);
         final Type<JavaClassSource> type = parameter.getType();
-        Assert.assertEquals(type.getQualifiedName(), Logger.class.getName());
+        Assert.assertEquals(Logger.class.getName(), type.getQualifiedName());
 
         // If the logger is not extending the DelegatingBasicLogger there should be a protected final org.jboss.logging.Logger field
         if (!DelegatingBasicLogger.class.getName().equals(implementationSource.getSuperType())) {
             final FieldSource<JavaClassSource> log = implementationSource.getField("log");
-            Assert.assertNotNull(log, "Expected a log field in " + implementationSource.getName());
-            Assert.assertTrue(log.isProtected() && log.isFinal(),
-                    "Expected the log field to be protected and final in " + implementationSource.getName());
+            Assert.assertNotNull("Expected a log field in " + implementationSource.getName(), log);
+            Assert.assertTrue("Expected the log field to be protected and final in " + implementationSource.getName(),
+                    log.isProtected() && log.isFinal());
         }
     }
 
@@ -153,16 +154,16 @@ public class GeneratedSourceAnalysisTest {
 
         // Message bundles should have an INSTANCE field
         final FieldSource<JavaClassSource> instance = implementationSource.getField("INSTANCE");
-        Assert.assertNotNull(instance, "Expected an INSTANCE field in " + implementationSource.getName());
-        Assert.assertTrue(instance.isStatic() && instance.isFinal() && instance.isPublic(),
-                "Expected the instance field to be public, static and final in " + implementationSource.getName());
+        Assert.assertNotNull("Expected an INSTANCE field in " + implementationSource.getName(), instance);
+        Assert.assertTrue("Expected the instance field to be public, static and final in " + implementationSource.getName(),
+                instance.isStatic() && instance.isFinal() && instance.isPublic());
 
         // Expect a protected constructor with no parameters
         final Optional<MethodSource<JavaClassSource>> constructor = findConstructor(implementationSource.getMethods());
-        Assert.assertTrue(constructor.isPresent(), "No constructor found for " + implementationSource.getName());
+        Assert.assertTrue("No constructor found for " + implementationSource.getName(), constructor.isPresent());
         final MethodSource<JavaClassSource> c = constructor.get();
-        Assert.assertTrue(c.getParameters().isEmpty(), "Expected the constructor parameters to be empty for " + implementationSource.getName());
-        Assert.assertTrue(c.isProtected(), "Expected the constructor to be protected for " + implementationSource.getName());
+        Assert.assertTrue("Expected the constructor parameters to be empty for " + implementationSource.getName(), c.getParameters().isEmpty());
+        Assert.assertTrue("Expected the constructor to be protected for " + implementationSource.getName(), c.isProtected());
     }
 
     private void compareCommon(final JavaInterfaceSource interfaceSource, final JavaClassSource implementationSource) {
@@ -172,18 +173,18 @@ public class GeneratedSourceAnalysisTest {
         // Validate the implementation has all the interface methods, note this should be the cause
         final Collection<String> interfaceMethodNames = toNames(interfaceMethods);
         final Collection<String> implementationMethodNames = toNames(implementationMethods);
-        Assert.assertTrue(implementationMethodNames.containsAll(interfaceMethodNames),
-                String.format("Implementation is missing methods from the interface:%n\timplementation: %s%n\tinterface:%s", implementationMethodNames, interfaceMethodNames));
+        Assert.assertTrue(String.format("Implementation is missing methods from the interface:%n\timplementation: %s%n\tinterface:%s", implementationMethodNames, interfaceMethodNames),
+                implementationMethodNames.containsAll(interfaceMethodNames));
 
         // The generates source files should have a serialVersionUID with a value of one
-        Assert.assertTrue(implementationSource.hasField("serialVersionUID"), "Expected a serialVersionUID field in " + implementationSource.getName());
+        Assert.assertTrue("Expected a serialVersionUID field in " + implementationSource.getName(), implementationSource.hasField("serialVersionUID"));
         final FieldSource<JavaClassSource> serialVersionUID = implementationSource.getField("serialVersionUID");
-        Assert.assertEquals(serialVersionUID.getLiteralInitializer(), "1L", "Expected serialVersionUID  to be set to 1L in " + implementationSource.getName());
+        Assert.assertEquals("Expected serialVersionUID  to be set to 1L in " + implementationSource.getName(), "1L", serialVersionUID.getLiteralInitializer());
 
         // All bundles should have a getLoggingLocale()
         final MethodSource<JavaClassSource> getLoggingLocale = implementationSource.getMethod("getLoggingLocale");
-        Assert.assertNotNull(getLoggingLocale, "Expected a getLoggingLocale() method in " + implementationSource.getName());
-        Assert.assertTrue(getLoggingLocale.isProtected(), "Expected the getLoggingLocale() to be protected in " + implementationSource.getName());
+        Assert.assertNotNull("Expected a getLoggingLocale() method in " + implementationSource.getName(), getLoggingLocale);
+        Assert.assertTrue("Expected the getLoggingLocale() to be protected in " + implementationSource.getName(), getLoggingLocale.isProtected());
     }
 
     private void compareTranslations(final Class<?> intf) throws IOException {
@@ -209,20 +210,20 @@ public class GeneratedSourceAnalysisTest {
                 found.add(method.getName());
             }
         }
-        Assert.assertTrue(found.isEmpty(), "Found methods in implementation that were in the interface " + implementationSource.getName() + " : " + found);
+        Assert.assertTrue("Found methods in implementation that were in the interface " + implementationSource.getName() + " : " + found, found.isEmpty());
 
         // The getLoggerLocale() should be overridden
         final MethodSource<JavaClassSource> getLoggerLocale = implementationSource.getMethod("getLoggingLocale");
-        Assert.assertNotNull(getLoggerLocale, "Missing overridden getLoggingLocale() method " + implementationSource.getName());
+        Assert.assertNotNull("Missing overridden getLoggingLocale() method " + implementationSource.getName(), getLoggerLocale);
 
         // If the file should have a locale constant, validate the constant is one of the Locale constants
         LOCALE_CONSTANTS.forEach((locale, constant) -> {
             if (implementationSource.getName().endsWith(locale.toString())) {
                 // Get the LOCALE field
                 final FieldSource<JavaClassSource> localeField = implementationSource.getField("LOCALE");
-                Assert.assertNotNull(localeField, "Expected a LOCALE field " + implementationSource.getName());
-                Assert.assertEquals(localeField.getLiteralInitializer(), constant,
-                        "Expected the LOCALE to be set to " + constant + " in " + implementationSource.getName());
+                Assert.assertNotNull("Expected a LOCALE field " + implementationSource.getName(), localeField);
+                Assert.assertEquals("Expected the LOCALE to be set to " + constant + " in " + implementationSource.getName(), constant,
+                        localeField.getLiteralInitializer());
             }
         });
 
@@ -236,16 +237,12 @@ public class GeneratedSourceAnalysisTest {
         // All methods in the translation implementation should be overrides of methods in the super class
         implementationSource.getMethods().forEach(method -> {
             if (!method.isConstructor()) {
-                Assert.assertTrue(method.hasAnnotation(Override.class), String.format("Expected method %s to be overridden in %s.",
-                        method.getName(), implementationSource.getName()));
-                Assert.assertTrue(superMethods.contains(method.getName()), String.format("Expected method %s to override the super (%s) method in %s.",
-                        method.getName(), superImplementationSource.getName(), implementationSource.getName()));
+                Assert.assertTrue(String.format("Expected method %s to be overridden in %s.",
+                        method.getName(), implementationSource.getName()), method.hasAnnotation(Override.class));
+                Assert.assertTrue(String.format("Expected method %s to override the super (%s) method in %s.",
+                        method.getName(), superImplementationSource.getName(), implementationSource.getName()), superMethods.contains(method.getName()));
             }
         });
-    }
-
-    private void compareRootLocale(final Class<?> intf, final String expectedLocaleString) throws IOException {
-        final JavaClassSource implementationSource = parseGenerated(intf);
     }
 
     private Optional<MethodSource<JavaClassSource>> findConstructor(final List<MethodSource<JavaClassSource>> implementationMethods) {
@@ -275,8 +272,8 @@ public class GeneratedSourceAnalysisTest {
         final File dir = new File(TEST_GENERATED_SRC_PATH, packageToPath(intf.getPackage()));
         final File[] files = dir.listFiles(filter);
         // There should only be one file
-        Assert.assertNotNull(files, "Did not find any implementation files for interface " + intf.getName());
-        Assert.assertEquals(1, files.length, "Found more than one implementation for interface " + intf.getName() + " " + Arrays.asList(files));
+        Assert.assertNotNull("Did not find any implementation files for interface " + intf.getName(), files);
+        Assert.assertEquals("Found more than one implementation for interface " + intf.getName() + " " + Arrays.asList(files), 1, files.length);
 
         return Roaster.parse(JavaClassSource.class, files[0]);
     }
@@ -288,8 +285,8 @@ public class GeneratedSourceAnalysisTest {
         final File dir = new File(TEST_GENERATED_SRC_PATH, packageToPath(intf.getPackage()));
         final File[] files = dir.listFiles(filter);
         // There should only be one file
-        Assert.assertNotNull(files, "Did not find any implementation files for interface " + intf.getName());
-        Assert.assertTrue(files.length > 0, "Did not find any translation implementations for interface " + intf.getName());
+        Assert.assertNotNull("Did not find any implementation files for interface " + intf.getName(), files);
+        Assert.assertTrue("Did not find any translation implementations for interface " + intf.getName(), files.length > 0);
         final Collection<JavaClassSource> result = new ArrayList<>();
         for (final File file : files) {
             result.add(Roaster.parse(JavaClassSource.class, file));

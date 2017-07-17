@@ -25,8 +25,8 @@ package org.jboss.logging.processor.generated;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

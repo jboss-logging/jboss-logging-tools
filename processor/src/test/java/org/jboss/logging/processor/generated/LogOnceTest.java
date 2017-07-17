@@ -29,16 +29,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LogOnceTest extends AbstractLoggerTest {
 
-    @AfterMethod
+    @After
     public void clearHandler() {
         HANDLER.close();
     }
@@ -47,25 +50,25 @@ public class LogOnceTest extends AbstractLoggerTest {
     public void logOnce() throws Exception {
         LogOnceLogger.LOGGER.deprecated("test.property");
         LogOnceLogger.LOGGER.deprecated("test.property");
-        Assert.assertEquals(HANDLER.size(), 1, "Only one message should have been logged");
+        Assert.assertEquals("Only one message should have been logged", 1, HANDLER.size());
 
         LogOnceLogger.LOGGER.deprecated("test.property", "new.test.property");
-        Assert.assertEquals(HANDLER.size(), 1, "Only one message should have been logged");
+        Assert.assertEquals("Only one message should have been logged", 1, HANDLER.size());
 
         final Method method = LogOnceTest.class.getMethod("logOnce");
         LogOnceLogger.LOGGER.deprecated(method);
         LogOnceLogger.LOGGER.deprecated(method);
-        Assert.assertEquals(HANDLER.size(), 3, "The message should have been logged twice");
+        Assert.assertEquals("The message should have been logged three times", 3, HANDLER.size());
     }
 
     @Test
     public void newLogger() throws Exception {
         final LogOnceLogger logger = Logger.getMessageLogger(LogOnceLogger.class, CATEGORY);
         logger.deprecated("test.property");
-        Assert.assertEquals(HANDLER.size(), 0, "No messages should have been logged");
+        Assert.assertEquals("No messages should have been logged", 0, HANDLER.size());
 
         logger.deprecated("test.property", "new.test.property");
-        Assert.assertEquals(HANDLER.size(), 0, "No messages should have been logged");
+        Assert.assertEquals("No messages should have been logged", 0, HANDLER.size());
 
     }
 
@@ -74,17 +77,17 @@ public class LogOnceTest extends AbstractLoggerTest {
         final List<String> listCache = Arrays.asList("item1", "item2", "item3");
         LogOnceLogger.LOGGER.cacheSizeChanged(listCache);
         LogOnceLogger.LOGGER.cacheSizeChanged(listCache);
-        Assert.assertEquals(HANDLER.size(), 1, "Only one message should have been logged");
+        Assert.assertEquals("Only one message should have been logged", 1, HANDLER.size());
 
         final Map<String, Object> mapCache = new HashMap<>();
         for (int i = 0; i < 5; i++) {
             mapCache.put("item" + i, "value " + i);
         }
         LogOnceLogger.LOGGER.cacheSizeChanged(mapCache);
-        Assert.assertEquals(HANDLER.size(), 1, "Only one message should have been logged");
+        Assert.assertEquals("Only one message should have been logged", 1, HANDLER.size());
 
         LogOnceLogger.LOGGER.cacheSizeChanged("item1", "item2", "item3", "item4");
         LogOnceLogger.LOGGER.cacheSizeChanged("item1", "item2", "item3", "item4", "item5", "item6");
-        Assert.assertEquals(HANDLER.size(), 3, "The message should have been logged twice");
+        Assert.assertEquals("The message should have been logged twice", 3, HANDLER.size());
     }
 }
