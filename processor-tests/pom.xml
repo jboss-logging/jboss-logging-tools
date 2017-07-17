@@ -98,6 +98,7 @@
                 <configuration>
                     <testExcludes>
                         <exclude>**/ExpressionMessagesTest.java</exclude>
+                        <exclude>**/ExpressionsTest.java</exclude>
                         <exclude>**/LegacyLogger.java</exclude>
                         <exclude>**/LegacyLoggerTest.java</exclude>
                         <exclude>**/LegacyMessages.java</exclude>

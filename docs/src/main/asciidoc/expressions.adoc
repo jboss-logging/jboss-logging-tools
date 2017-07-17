@@ -1,0 +1,7 @@
+
+NOTE: Expressions are in the form of `${key:defaultValue}`. If the key is prefixed with `sys.` a system property is
+used. If the key is prefixed with `env.` an environment variable is used. In all other cases the properties are resolved
+from the `org.jboss.logging.tools.expressionProperties` path. If the key is not found in the properties the default
+value will be used.
+
+IMPORTANT: Expressions are processed at compile time. The values will be hard-coded in the generated source files.

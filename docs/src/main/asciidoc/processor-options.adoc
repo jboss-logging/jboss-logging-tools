@@ -16,6 +16,7 @@ You can pass options to an annotation processor with the `-A` compiler option. F
 
 NOTE: In Java 9 the `@javax.annotation.Generated` was moved to `@javax.annotation.processor.Generated`. The processor attempts to determine which annotation to use by attempting to find the `@javax.annotation.Generated` first. If it fails the `@javax.annotation.processor.Generated` is attempted. If neither can be found no annotation will be placed on the generated implementations.
 
+include::expressions.adoc[]
 
 === Translation Options
 
