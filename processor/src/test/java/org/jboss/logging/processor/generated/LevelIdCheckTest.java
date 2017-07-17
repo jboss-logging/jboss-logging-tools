@@ -22,16 +22,16 @@
 
 package org.jboss.logging.processor.generated;
 
-import org.testng.annotations.AfterMethod;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class LevelIdCheckTest extends AbstractLoggerTest {
 
-    @AfterMethod
+    @After
     public void clearHandler() {
         HANDLER.close();
     }
@@ -42,10 +42,10 @@ public class LevelIdCheckTest extends AbstractLoggerTest {
         ValidLogger.LOGGER.processingError(new IllegalArgumentException());
         ValidLogger.LOGGER.processingError(new IllegalArgumentException(), "generated");
         ValidLogger.LOGGER.processingError(this, "invalid reference");
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
-        Assert.assertEquals(parseLoggerId(HANDLER.getMessage()), 203);
+        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
+        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
+        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
+        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
     }
 
 

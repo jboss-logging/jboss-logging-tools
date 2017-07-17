@@ -22,16 +22,16 @@
 
 package org.jboss.logging.processor.generated;
 
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class ExpressionMessagesTest extends AbstractLoggerTest {
 
-    @AfterMethod
+    @After
     public void clearHandler() {
         HANDLER.close();
     }
@@ -39,12 +39,12 @@ public class ExpressionMessagesTest extends AbstractLoggerTest {
     @Test
     public void testExpressions() throws Exception {
         ExpressionLogger.LOGGER.logProperty();
-        Assert.assertEquals(HANDLER.getMessage(), "test property value");
+        Assert.assertEquals("test property value", HANDLER.getMessage());
 
         ExpressionLogger.LOGGER.logPropertyDefault();
-        Assert.assertEquals(HANDLER.getMessage(), "default value");
+        Assert.assertEquals("default value", HANDLER.getMessage());
 
-        Assert.assertEquals(ExpressionLogger.LOGGER.property(), "test property value");
-        Assert.assertEquals(ExpressionLogger.LOGGER.propertyDefault(), "default value");
+        Assert.assertEquals("test property value", ExpressionLogger.LOGGER.property());
+        Assert.assertEquals("default value", ExpressionLogger.LOGGER.propertyDefault());
     }
 }
