@@ -519,6 +519,9 @@ abstract class ImplementationClassModel extends ClassModel {
         if (!param.isPrimitive()) {
             sourceFile._import(paramType);
         }
+        if (param.isVarArgs()) {
+            return method.varargParam(FINAL, paramType.elementType(), param.name());
+        }
         return method.param(FINAL, paramType, param.name());
     }
 
