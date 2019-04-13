@@ -59,7 +59,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.org.jboss.jdeparser>2.0.2.Final</version.org.jboss.jdeparser>
         <version.org.jboss.logging>3.4.0.Final</version.org.jboss.logging>
-        <version.org.jboss.logmanager>2.0.3.Final</version.org.jboss.logmanager>
+        <version.org.jboss.logmanager>2.1.9.Final</version.org.jboss.logmanager>
         <verion.org.jboss.forge.roaster>2.19.2.Final</verion.org.jboss.forge.roaster>
         <version.junit>4.12</version.junit>
     </properties>
