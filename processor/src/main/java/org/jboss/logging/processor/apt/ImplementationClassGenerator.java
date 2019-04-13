@@ -41,7 +41,6 @@ import org.jboss.logging.processor.util.VersionComparator;
 final class ImplementationClassGenerator extends AbstractGenerator {
 
     private static final String LOGGING_VERSION = "loggingVersion";
-    private final boolean useLogging31;
 
     /**
      * @param processingEnv the processing environment.
@@ -50,17 +49,14 @@ final class ImplementationClassGenerator extends AbstractGenerator {
         super(processingEnv);
         final Map<String, String> options = processingEnv.getOptions();
         if (options.containsKey(LOGGING_VERSION)) {
-            final String loggingVersion = options.get(LOGGING_VERSION);
-            useLogging31 = (VersionComparator.compareVersion(loggingVersion, "3.1") >= 0);
-        } else {
-            useLogging31 = true;
+            logger().warn(null, "The option %s has been deprecated and is no longer used.", LOGGING_VERSION);
         }
     }
 
     @Override
     public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
         try {
-            final ClassModel classModel = ClassModelFactory.implementation(processingEnv, messageInterface, useLogging31);
+            final ClassModel classModel = ClassModelFactory.implementation(processingEnv, messageInterface);
             classModel.generateAndWrite();
         } catch (IllegalStateException | IOException e) {
             logger().error(element, e);

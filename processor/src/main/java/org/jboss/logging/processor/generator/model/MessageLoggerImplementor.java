@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,7 +62,6 @@ import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
-import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Used to generate a message logger implementation.
@@ -79,28 +77,16 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     private static final String LOG_FIELD_NAME = "log";
     private static final String FQCN_FIELD_NAME = "FQCN";
 
-    private final boolean useLogging31;
     private final Map<String, JVarDeclaration> logOnceVars = new HashMap<>();
 
     /**
      * Creates a new message logger code model.
      *
      * @param processingEnv    the processing environment
-     * @param messageInterface the message interface to implement.
-     * @param useLogging31     {@code true} to use logging 3.1, {@code false} to remain compatible with 3.0
+     * @param messageInterface the message interface to implement
      */
-    public MessageLoggerImplementor(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final boolean useLogging31) {
+    public MessageLoggerImplementor(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface) {
         super(processingEnv, messageInterface);
-        this.useLogging31 = useLogging31;
-    }
-
-    /**
-     * Determine whether to use JBoss Logging 3.1 constructs.  Defaults to {@code true}.
-     *
-     * @return {@code true} to use JBoss Logging 3.1 constructs, {@code false} to remain compatible with 3.0
-     */
-    public boolean isUseLogging31() {
-        return useLogging31;
     }
 
     @Override
@@ -108,11 +94,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final JClassDef classDef = super.generateModel();
 
         // Add FQCN
-        final JVarDeclaration fqcn;
         if (messageInterface().loggingFQCN() == null) {
-            fqcn = classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME, $t(classDef)._class().call("getName"));
+            classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME, $t(classDef)._class().call("getName"));
         } else {
-            fqcn = classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME, $t(messageInterface().loggingFQCN())._class().call("getName"));
+            classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME, $t(messageInterface().loggingFQCN())._class().call("getName"));
         }
 
         // Add default constructor
@@ -124,22 +109,10 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final JBlock constructorBody = constructor.body();
         final JAssignableExpr logger;
         if (messageInterface().extendsLoggerInterface()) {
-            if (useLogging31) {
-                sourceFile._import(DelegatingBasicLogger.class);
-                classDef._extends(DelegatingBasicLogger.class);
-                constructorBody.callSuper().arg($v(constructorParam));
-                logger = $v("super").field("log");
-            } else {
-                sourceFile._import(Logger.Level.class);
-                JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggerType, LOG_FIELD_NAME);
-                constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
-                logger = $v(logVar);
-                // Add static imports for all the log levels
-                for (Logger.Level level : Logger.Level.values()) {
-                    sourceFile.importStatic(Logger.Level.class, level.name());
-                }
-                generateDelegatingLoggerMethods(classDef, logger, fqcn);
-            }
+            sourceFile._import(DelegatingBasicLogger.class);
+            classDef._extends(DelegatingBasicLogger.class);
+            constructorBody.callSuper().arg($v(constructorParam));
+            logger = $v("super").field("log");
         } else {
             JVarDeclaration logVar = classDef.field(JMod.PROTECTED | JMod.FINAL, loggerType, LOG_FIELD_NAME);
             constructorBody.assign(THIS.field(logVar.name()), $v(constructorParam));
@@ -165,237 +138,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             }
         }
         return classDef;
-    }
-
-    private void generateDelegatingLoggerMethods(final JClassDef classDef, final JAssignableExpr logVar, JVarDeclaration fqcn) {
-        final JType logLevelClass = $t(Logger.Level.class);
-        // Generate these methods so they look the same as they appear in DelegatedBasicLogger.
-        for (String level : Arrays.asList("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL")) {
-            // string prep
-            String firstUppered = level.charAt(0) + level.substring(1).toLowerCase(Locale.US);
-            String lowered = level.toLowerCase(Locale.US);
-
-            if ("TRACE".equals(level) || "DEBUG".equals(level) || "INFO".equals(level)) {
-                // isXxxEnabled...
-                final String isXxxEnabledStr = "is" + firstUppered + "Enabled";
-                final JMethodDef isXxxEnabled = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.BOOLEAN, isXxxEnabledStr);
-                isXxxEnabled.annotate(Override.class);
-                isXxxEnabled.body()._return(logVar.call(isXxxEnabledStr));
-            }
-
-            // now, the four "raw" level-specific methods
-            final JMethodDef xxx1 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, lowered);
-            xxx1.annotate(Override.class);
-            final JParamDeclaration xxx1message = xxx1.param(Object.class, "message");
-            xxx1.body().add(
-                    logVar.call(lowered).arg($v(fqcn))
-                            .arg($v(xxx1message))
-                            .arg(NULL)
-            );
-
-            final JMethodDef xxx2 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, lowered);
-            xxx2.annotate(Override.class);
-            final JParamDeclaration xxx2message = xxx2.param(Object.class, "message");
-            final JParamDeclaration xxx2t = xxx2.param(Throwable.class, "t");
-            xxx2.body().add(
-                    logVar.call(lowered).arg($v(fqcn))
-                            .arg($v(xxx2message))
-                            .arg($v(xxx2t))
-            );
-
-            final JMethodDef xxx3 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, lowered);
-            xxx3.annotate(Override.class);
-            final JParamDeclaration xxx3loggerFqcn = xxx3.param(String.class, "loggerFqcn");
-            final JParamDeclaration xxx3message = xxx3.param(Object.class, "message");
-            final JParamDeclaration xxx3t = xxx3.param(Throwable.class, "t");
-            xxx3.body().add(
-                    logVar.call(lowered)
-                            .arg($v(xxx3loggerFqcn))
-                            .arg($v(xxx3message))
-                            .arg($v(xxx3t))
-            );
-
-            final JMethodDef xxx4 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, lowered);
-            xxx4.annotate(Override.class);
-            final JParamDeclaration xxx4loggerFqcn = xxx4.param(String.class, "loggerFqcn");
-            final JParamDeclaration xxx4message = xxx4.param(Object.class, "message");
-            final JParamDeclaration xxx4params = xxx4.param($t(Object.class).array(), "params");
-            final JParamDeclaration xxx4t = xxx4.param(Throwable.class, "t");
-            xxx4.body().add(
-                    logVar.call(lowered)
-                            .arg($v(xxx4loggerFqcn))
-                            .arg($v(xxx4message))
-                            .arg($v(xxx4params))
-                            .arg($v(xxx4t))
-            );
-
-            // 8 methods each for v and f
-            for (String affix : Arrays.asList("v", "f")) {
-                final String name = lowered + affix;
-                final String target = "log" + affix;
-
-                // 4 methods each for with- and without-throwable
-                for (boolean renderThr : new boolean[] {false, true}) {
-                    JParamDeclaration thr = null;
-
-                    final JMethodDef xxx1x = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, name);
-                    xxx1x.annotate(Override.class);
-                    if (renderThr) thr = xxx1x.param(Throwable.class, "t");
-                    final JParamDeclaration xxx1xFormat = xxx1x.param(String.class, "format");
-                    final JParamDeclaration xxx1xParams = xxx1x.varargParam(Object.class, "params");
-                    xxx1x.body().add(
-                            logVar.call(target)
-                                    .arg($v(fqcn))
-                                    .arg($v(level))
-                                    .arg(renderThr ? $v(thr) : NULL)
-                                    .arg($v(xxx1xFormat))
-                                    .arg($v(xxx1xParams))
-                    );
-
-                    // 3 methods for 3 parameter counts
-                    for (int i = 1; i <= 3; i++) {
-                        final JMethodDef xxx2x = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, name);
-                        xxx2x.annotate(Override.class);
-                        if (renderThr) thr = xxx2x.param(Throwable.class, "t");
-                        final JParamDeclaration xxx2xFormat = xxx2x.param(String.class, "format");
-                        final JParamDeclaration[] params = new JParamDeclaration[i];
-                        for (int j = 0; j < i; j++) {
-                            params[j] = xxx2x.param(Object.class, "param" + (j + 1));
-                        }
-                        final JCall xxx2xCaller = logVar.call(target);
-                        xxx2xCaller.arg($v(fqcn))
-                                .arg($v(level))
-                                .arg(renderThr ? $v(thr) : NULL)
-                                .arg($v(xxx2xFormat));
-                        for (int j = 0; j < i; j++) {
-                            xxx2xCaller.arg($v(params[j]));
-                        }
-                        xxx2x.body().add(xxx2xCaller);
-                    }
-                }
-            }
-        }
-
-        // Now the plain "log" methods which take a level
-
-        // isEnabled...
-        final JMethodDef isEnabled = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.BOOLEAN, "isEnabled");
-        isEnabled.annotate(Override.class);
-        final JParamDeclaration isEnabledLevel = isEnabled.param(logLevelClass, "level");
-        isEnabled.body()._return(
-                logVar.call("isEnabled")
-                        .arg($v(isEnabledLevel))
-        );
-
-        // now, the four "raw" log methods
-        final JMethodDef log1 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, "log");
-        log1.annotate(Override.class);
-        final JParamDeclaration log1Level = log1.param(logLevelClass, "level");
-        final JParamDeclaration log1Message = log1.param(Object.class, "message");
-        log1.body().add(
-                logVar.call("log")
-                        .arg($v(fqcn))
-                        .arg($v(log1Level))
-                        .arg($v(log1Message))
-                        .arg(NULL)
-                        .arg(NULL)
-        );
-
-        final JMethodDef log2 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, "log");
-        log2.annotate(Override.class);
-        final JParamDeclaration log2Level = log2.param(logLevelClass, "level");
-        final JParamDeclaration log2message = log2.param(Object.class, "message");
-        final JParamDeclaration log2t = log2.param(Throwable.class, "t");
-        log2.body().add(
-                logVar.call("log")
-                        .arg($v(fqcn))
-                        .arg($v(log2Level))
-                        .arg($v(log2message))
-                        .arg(NULL)
-                        .arg($v(log2t))
-        );
-
-        final JMethodDef log3 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, "log");
-        log3.annotate(Override.class);
-        final JParamDeclaration log3Level = log3.param(logLevelClass, "level");
-        final JParamDeclaration log3loggerFqcn = log3.param(String.class, "loggerFqcn");
-        final JParamDeclaration log3message = log3.param(Object.class, "message");
-        final JParamDeclaration log3t = log3.param(Throwable.class, "t");
-        log3.body().add(
-                logVar.call("log")
-                        .arg($v(log3Level))
-                        .arg($v(log3loggerFqcn))
-                        .arg($v(log3message))
-                        .arg($v(log3t))
-        );
-
-        final JMethodDef log4 = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, "log");
-        log4.annotate(Override.class);
-        final JParamDeclaration log4loggerFqcn = log4.param(String.class, "loggerFqcn");
-        final JParamDeclaration log4Level = log4.param(logLevelClass, "level");
-        final JParamDeclaration log4message = log4.param(Object.class, "message");
-        final JParamDeclaration log4params = log4.param($t(Object.class).array(), "params");
-        final JParamDeclaration log4t = log4.param(Throwable.class, "t");
-        log4.body().add(
-                logVar.call("log")
-                        .arg($v(log4loggerFqcn))
-                        .arg($v(log4Level))
-                        .arg($v(log4message))
-                        .arg($v(log4params))
-                        .arg($v(log4t))
-        );
-
-        // 12 methods each for v and f
-        for (String affix : Arrays.asList("v", "f")) {
-            final String name = "log" + affix;
-
-            // 4 methods each for with- and without-throwable and fqcn
-            for (RenderLog render : RenderLog.values()) {
-                JParamDeclaration logFqcn = null;
-                JParamDeclaration thr = null;
-                final boolean renderThr = render.isThr();
-                final boolean renderFqcn = render.isFqcn();
-
-                final JMethodDef log1x = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, name);
-                log1x.annotate(Override.class);
-                if (renderFqcn) logFqcn = log1x.param(String.class, "loggerFqcn");
-                final JParamDeclaration log1xLevel = log1x.param(logLevelClass, "level");
-                if (renderThr) thr = log1x.param(Throwable.class, "t");
-                final JParamDeclaration log1xFormat = log1x.param(String.class, "format");
-                final JParamDeclaration log1xParams = log1x.varargParam(Object.class, "params");
-                log1x.body().add(
-                        logVar.call(name)
-                                .arg(renderFqcn ? $v(logFqcn) : $v(fqcn))
-                                .arg($v(log1xLevel))
-                                .arg(renderThr ? $v(thr) : NULL)
-                                .arg($v(log1xFormat))
-                                .arg($v(log1xParams))
-                );
-
-                // 3 methods for 3 parameter counts
-                for (int i = 1; i <= 3; i++) {
-                    final JMethodDef log2x = classDef.method(JMod.PUBLIC | JMod.FINAL, JType.VOID, name);
-                    log2x.annotate(Override.class);
-                    if (renderFqcn) logFqcn = log2x.param(String.class, "loggerFqcn");
-                    final JParamDeclaration log2xLevel = log2x.param(logLevelClass, "level");
-                    if (renderThr) thr = log2x.param(Throwable.class, "t");
-                    final JParamDeclaration log2xFormat = log2x.param(String.class, "format");
-                    final JParamDeclaration[] params = new JParamDeclaration[i];
-                    for (int j = 0; j < i; j++) {
-                        params[j] = log2x.param(Object.class, "param" + (j + 1));
-                    }
-                    final JCall log2xCaller = logVar.call(name);
-                    log2xCaller.arg(renderFqcn ? $v(logFqcn) : $v(fqcn))
-                            .arg($v(log2xLevel))
-                            .arg(renderThr ? $v(thr) : NULL)
-                            .arg($v(log2xFormat));
-                    for (int j = 0; j < i; j++) {
-                        log2xCaller.arg($v(params[j]));
-                    }
-                    log2x.body().add(log2xCaller);
-                }
-            }
-        }
     }
 
     /**
@@ -550,26 +292,5 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             result.put(param, var);
         }
         return result;
-    }
-
-    enum RenderLog {
-        NONE(false, false),
-        CAUSE(true, false),
-        FQCN(true, true),;
-        private final boolean thr;
-        private final boolean fqcn;
-
-        private RenderLog(boolean thr, boolean fqcn) {
-            this.thr = thr;
-            this.fqcn = fqcn;
-        }
-
-        public boolean isThr() {
-            return thr;
-        }
-
-        public boolean isFqcn() {
-            return fqcn;
-        }
     }
 }
