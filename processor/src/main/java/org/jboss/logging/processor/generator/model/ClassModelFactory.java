@@ -52,18 +52,17 @@ public class ClassModelFactory {
      *
      * @param processingEnv    the processing environment
      * @param messageInterface the message interface to implement
-     * @param useLogging31     whether or not jboss-logging 3.1 or higher is used
      *
      * @return the class model used to implement the interface.
      *
      * @throws IllegalArgumentException if interface is not annotated with {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}
      */
-    public static ClassModel implementation(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final boolean useLogging31) throws IllegalArgumentException {
+    public static ClassModel implementation(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface) throws IllegalArgumentException {
         if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
             return new MessageBundleImplementor(processingEnv, messageInterface);
         }
         if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
-            return new MessageLoggerImplementor(processingEnv, messageInterface, useLogging31);
+            return new MessageLoggerImplementor(processingEnv, messageInterface);
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
     }

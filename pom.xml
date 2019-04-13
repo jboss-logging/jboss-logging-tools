@@ -140,7 +140,6 @@
     <modules>
         <module>annotations</module>
         <module>processor</module>
-        <module>processor-tests</module>
         <module>docs</module>
     </modules>
 </project>
