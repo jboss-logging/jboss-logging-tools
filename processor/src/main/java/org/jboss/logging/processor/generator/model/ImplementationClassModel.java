@@ -96,6 +96,7 @@ import org.jboss.logging.processor.util.ElementHelper;
 abstract class ImplementationClassModel extends ClassModel {
 
     private final AtomicBoolean messageFormatMethodGenerated = new AtomicBoolean(false);
+    private final AtomicBoolean copyStackTraceMethodGenerated = new AtomicBoolean(false);
     private final TypeMirror stringType;
 
     /**
@@ -252,10 +253,10 @@ abstract class ImplementationClassModel extends ClassModel {
             if (isSupplier) {
                 final JLambda lambda = JExprs.lambda();
                 final JBlock lambdaBody = lambda.body();
-                lambdaBody._return(createReturnType(messageMethod, lambdaBody, formatterCall, fields, properties));
+                lambdaBody._return(createReturnType(classDef, messageMethod, lambdaBody, formatterCall, fields, properties));
                 result = lambda;
             } else {
-                result = createReturnType(messageMethod, body, formatterCall, fields, properties);
+                result = createReturnType(classDef, messageMethod, body, formatterCall, fields, properties);
             }
         } else {
             if (isSupplier) {
@@ -380,7 +381,7 @@ abstract class ImplementationClassModel extends ClassModel {
         }
     }
 
-    private JExpr createReturnType(final MessageMethod messageMethod, final JBlock body, final JCall format, final Map<String, JParamDeclaration> fields, final Map<String, JParamDeclaration> properties) {
+    private JExpr createReturnType(final JClassDef classDef, final MessageMethod messageMethod, final JBlock body, final JCall format, final Map<String, JParamDeclaration> fields, final Map<String, JParamDeclaration> properties) {
         boolean callInitCause = false;
         final Set<Parameter> producers = messageMethod.parametersAnnotatedWith(Producer.class);
         final JType type;
@@ -472,10 +473,7 @@ abstract class ImplementationClassModel extends ClassModel {
         addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Fields.class, Field.class), body, $v(resultField), true);
 
         // Remove this caller from the stack trace
-        final JType arrays = $t(Arrays.class);
-        sourceFile._import(arrays);
-        final JVarDeclaration st = body.var(FINAL, $t(StackTraceElement.class).array(), "st", $v(resultField).call("getStackTrace"));
-        body.add($v(resultField).call("setStackTrace").arg(arrays.call("copyOfRange").arg($v(st)).arg(JExpr.ONE).arg($v(st).field("length"))));
+        body.add(getCopyStackMethod(classDef).arg($v(resultField)));
 
         // Add any suppressed messages
         final Set<Parameter> suppressed = messageMethod.parametersAnnotatedWith(Suppressed.class);
@@ -606,6 +604,23 @@ abstract class ImplementationClassModel extends ClassModel {
             );
         }
 
+        return JExprs.call(methodName);
+    }
+
+    private JCall getCopyStackMethod(final JClassDef classDef) {
+        final String methodName = "_copyStackTraceMinusOne";
+
+        if (copyStackTraceMethodGenerated.compareAndSet(false, true)) {
+            final JMethodDef method = classDef.method(JMod.PRIVATE | JMod.STATIC, JType.VOID, methodName);
+            final JParamDeclaration param = method.param(JMod.FINAL, Throwable.class, "e");
+            final JBlock body = method.body();
+            // Remove this caller from the stack trace
+            final JType arrays = $t(Arrays.class);
+            sourceFile._import(arrays);
+            final JExpr e = $v(param);
+            final JVarDeclaration st = body.var(FINAL, $t(StackTraceElement.class).array(), "st", e.call("getStackTrace"));
+            body.add(e.call("setStackTrace").arg(arrays.call("copyOfRange").arg($v(st)).arg(JExpr.ONE).arg($v(st).field("length"))));
+        }
         return JExprs.call(methodName);
     }
 
