@@ -37,6 +37,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.jdeparser.FormatPreferences;
+import org.jboss.jdeparser.JBlock;
 import org.jboss.jdeparser.JCall;
 import org.jboss.jdeparser.JClassDef;
 import org.jboss.jdeparser.JDeparser;
@@ -79,7 +80,6 @@ public abstract class ClassModel {
     private final String format;
 
     private final Map<String, JMethodDef> messageMethods;
-    private final Map<String, JVarDeclaration> messageFields;
 
 
     final JSourceFile sourceFile;
@@ -107,7 +107,6 @@ public abstract class ClassModel {
             format = "%s%d: %s";
         }
         messageMethods = new HashMap<>();
-        messageFields = new HashMap<>();
     }
 
     /**
@@ -219,30 +218,20 @@ public abstract class ClassModel {
         if (messageValue == null) {
             return null;
         }
-        final String methodName;
-        if (messageMethod.isOverloaded()) {
-            methodName = messageMethod.name() + messageMethod.formatParameterCount();
-        } else {
-            methodName = messageMethod.name();
-        }
 
         // Create the method that returns the string message for formatting
         JMethodDef method = messageMethods.get(messageMethod.messageMethodName());
         if (method == null) {
-            JVarDeclaration field = messageFields.get(methodName);
-            if (field == null) {
-                final String msg;
-                if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
-                    // Prefix the id to the string message
-                    msg = String.format(format, messageInterface.projectCode(), messageMethod.message().id(), messageValue);
-                } else {
-                    msg = messageValue;
-                }
-                field = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, String.class, methodName, JExprs.str(msg));
-                messageFields.put(field.name(), field);
-            }
             method = classDef.method(JMod.PROTECTED, String.class, messageMethod.messageMethodName());
-            method.body()._return($v(field));
+            final JBlock body = method.body();
+            final String msg;
+            if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
+                // Prefix the id to the string message
+                msg = String.format(format, messageInterface.projectCode(), messageMethod.message().id(), messageValue);
+            } else {
+                msg = messageValue;
+            }
+            body._return(JExprs.str(msg));
             messageMethods.put(messageMethod.messageMethodName(), method);
         }
 
