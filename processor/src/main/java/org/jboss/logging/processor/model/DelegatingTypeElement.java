@@ -42,6 +42,11 @@ public interface DelegatingTypeElement extends TypeElement, DelegatingElement {
     TypeElement getDelegate();
 
     @Override
+    default TypeMirror asType() {
+        return getDelegate().asType();
+    }
+
+    @Override
     default List<? extends Element> getEnclosedElements() {
         return getDelegate().getEnclosedElements();
     }
