@@ -28,6 +28,7 @@ include::expressions.adoc[]
 | `skipTranslations` | If set to `true` source files with the translated tet will not be generated. The default is `false`.
 | `generatedTranslationFilesPath` | If defined this indicates the path a skeleton file should be generated for the interface. The generated skeleton file will be placed in a directory that matches the package with a name that matches the interface with a `.i18n_locale_COUNTRY_VARIANT.properties` suffix.
 | `org.jboss.logging.tools.level` | Sets the maximum level to include in the generated skeleton files. For example if set to `INFO` the skeleton files will not contain any properties where the log level was set to `DEBUG` or `TRACE`.
+| `org.jboss.logging.tools.generated.skip.index` | By default when generating a skeleton translation file an index will be appended to the format pattern. For example `Example %s and %d` becomes `Example %1$s and %2$d`. This option allows this behavior to be disabled.
 
 |===
 

@@ -46,11 +46,13 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
+import org.jboss.logging.processor.validation.StringFormatValidator;
 
 /**
  * The generator of skeletal
@@ -60,7 +62,7 @@ import org.jboss.logging.processor.model.Parameter;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SuppressWarnings("MagicNumber")
-@SupportedOptions({TranslationFileGenerator.GENERATED_FILES_PATH_OPTION, TranslationFileGenerator.LEVEL_OPTION})
+@SupportedOptions({TranslationFileGenerator.GENERATED_FILES_PATH_OPTION, TranslationFileGenerator.LEVEL_OPTION, TranslationFileGenerator.SKIP_INDEX})
 final class TranslationFileGenerator extends AbstractGenerator {
     private static final Map<String, Integer> levels = new HashMap<>();
 
@@ -78,6 +80,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
     static final String GENERATED_FILE_EXTENSION = ".i18n_locale_COUNTRY_VARIANT.properties";
 
     static final String LEVEL_OPTION = "org.jboss.logging.tools.level";
+
+    static final String SKIP_INDEX = "org.jboss.logging.tools.generated.skip.index";
 
     static {
 
@@ -99,6 +103,7 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
     private final String generatedFilesPath;
     private final LevelComparator comparator;
+    private final boolean skipIndex;
 
     /**
      * The constructor.
@@ -126,6 +131,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
         } else {
             comparator = null;
         }
+        final String value = options.get(SKIP_INDEX);
+        this.skipIndex = options.containsKey(SKIP_INDEX) && (value == null || value.isEmpty() || Boolean.parseBoolean(value));
     }
 
     @Override
@@ -290,7 +297,11 @@ final class TranslationFileGenerator extends AbstractGenerator {
             }
         }
         writer.write(String.format("%s=", messageMethod.translationKey()));
-        writer.write(messageMethod.message().value());
+        if (!skipIndex && messageMethod.message().format() == Message.Format.PRINTF) {
+            writer.write(addIndexesToFormat(messageMethod));
+        } else {
+            writer.write(messageMethod.message().value());
+        }
         writer.newLine();
     }
 
@@ -350,6 +361,73 @@ final class TranslationFileGenerator extends AbstractGenerator {
         }
 
         return translationFileName;
+    }
+
+    private String addIndexesToFormat(final MessageMethod method) {
+        final String format = method.message().value();
+        int pos = 0;
+        int i = 0;
+        final Matcher matcher = StringFormatValidator.PATTERN.matcher(format);
+        final StringBuilder newFormat = new StringBuilder();
+        while (i < format.length()) {
+            if (matcher.find(i)) {
+                if (matcher.start() != i) {
+                    newFormat.append(format, i, matcher.start());
+                }
+                // Pattern should produce 6 groups.
+                if (matcher.groupCount() != 6) {
+                    logger().warn(method, "Invalid format using \"%s\" for the skeleton value.", format);
+                    return format;
+                }
+                // The % is stripped so we need to add it back
+                newFormat.append('%');
+                // Initialize the parts so they can be added if they're not null
+                final String index = matcher.group(1);
+                final String flags = matcher.group(2);
+                final String width = matcher.group(3);
+                final String precision = matcher.group(4);
+                final String t = matcher.group(5);
+                final char conversion = matcher.group(6).charAt(0);
+
+                if (index == null) {
+                    // If the flags contain < that's a previous index identifier so we should not replace it. Also new
+                    // line (%n) and an escaped percent (%%) do not allow index arguments.
+                    if (flags != null && !flags.contains("<") && conversion != 'n' && conversion != '%') {
+                        newFormat.append(++pos).append('$');
+                    }
+                } else {
+                    // The index already exists so we'll use that
+                    newFormat.append(index);
+                }
+                if (flags != null) {
+                    newFormat.append(flags);
+                }
+                if (width != null) {
+                    newFormat.append(width);
+                }
+                if (precision != null) {
+                    newFormat.append(precision);
+                }
+                if (t != null) {
+                    newFormat.append(t);
+                }
+                newFormat.append(conversion);
+                i = matcher.end();
+            } else {
+                // No more formats found, but validate for invalid remaining characters.
+                newFormat.append(format, i, format.length());
+                break;
+            }
+        }
+
+        final String result = newFormat.toString();
+        // Validate if the changed format is valid and if not fallback to the default format from the message annotation
+        final StringFormatValidator validator = StringFormatValidator.of(result);
+        if (!validator.isValid()) {
+            logger().warn(method, "Could not properly use indexes in the format %s.", format);
+            return format;
+        }
+        return result;
     }
 
     private static final class LevelComparator implements Comparable<String> {

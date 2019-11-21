@@ -151,6 +151,7 @@
                         <test.generated.src.path>${project.build.directory}/generated-test-sources/test-annotations</test.generated.src.path>
                         <test.report.path>${test.report.path}</test.report.path>
                         <test.property>sysValue</test.property>
+                        <test.skeleton.file.path>${project.build.testOutputDirectory}</test.skeleton.file.path>
                         <expressionPropertiesPath>${expression.properties.path}</expressionPropertiesPath>
                     </systemPropertyVariables>
                 </configuration>
