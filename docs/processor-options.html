@@ -630,6 +630,10 @@ Expressions are processed at compile time. The values will be hard-coded in the 
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.jboss.logging.tools.level</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Sets the maximum level to include in the generated skeleton files. For example if set to <code>INFO</code> the skeleton files will not contain any properties where the log level was set to <code>DEBUG</code> or <code>TRACE</code>.</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.jboss.logging.tools.generated.skip.index</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">By default when generating a skeleton translation file an index will be appended to the format pattern. For example <code>Example %s and %d</code> becomes <code>Example %1$s and %2$d</code>. This option allows this behavior to be disabled.</p></td>
+</tr>
 </tbody>
 </table>
 </div>

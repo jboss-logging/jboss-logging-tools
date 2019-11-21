@@ -529,7 +529,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">James R. Perkins</span><br>
 <span id="email" class="email">&lt;<a href="mailto:jperkins@redhat.com">jperkins@redhat.com</a>&gt;</span><br>
-<span id="revnumber">version 2.2.0.Final</span>
+<span id="revnumber">version 2.2.1.Final</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -613,7 +613,7 @@ table.CodeRay td.code>pre{padding:0}
     <span class="tag">&lt;dependency&gt;</span>
         <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
         <span class="tag">&lt;artifactId&gt;</span>jboss-logging-annotations<span class="tag">&lt;/artifactId&gt;</span>
-        <span class="tag">&lt;version&gt;</span>2.2.0.Final<span class="tag">&lt;/version&gt;</span>
+        <span class="tag">&lt;version&gt;</span>2.2.1.Final<span class="tag">&lt;/version&gt;</span>
         <span class="comment">&lt;!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
               projects that depend on this project.--&gt;</span>
         <span class="tag">&lt;scope&gt;</span>provided<span class="tag">&lt;/scope&gt;</span>
@@ -623,7 +623,7 @@ table.CodeRay td.code>pre{padding:0}
     <span class="tag">&lt;dependency&gt;</span>
         <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
         <span class="tag">&lt;artifactId&gt;</span>jboss-logging-processor<span class="tag">&lt;/artifactId&gt;</span>
-        <span class="tag">&lt;version&gt;</span>2.2.0.Final<span class="tag">&lt;/version&gt;</span>
+        <span class="tag">&lt;version&gt;</span>2.2.1.Final<span class="tag">&lt;/version&gt;</span>
         <span class="comment">&lt;!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
               projects that depend on this project.--&gt;</span>
         <span class="tag">&lt;scope&gt;</span>provided<span class="tag">&lt;/scope&gt;</span>
@@ -1210,6 +1210,10 @@ Expressions are processed at compile time. The values will be hard-coded in the 
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.jboss.logging.tools.level</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Sets the maximum level to include in the generated skeleton files. For example if set to <code>INFO</code> the skeleton files will not contain any properties where the log level was set to <code>DEBUG</code> or <code>TRACE</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.jboss.logging.tools.generated.skip.index</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">By default when generating a skeleton translation file an index will be appended to the format pattern. For example <code>Example %s and %d</code> becomes <code>Example %1$s and %2$d</code>. This option allows this behavior to be disabled.</p></td>
 </tr>
 </tbody>
 </table>
