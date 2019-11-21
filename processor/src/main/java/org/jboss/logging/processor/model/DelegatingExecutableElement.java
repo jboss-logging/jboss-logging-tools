@@ -42,6 +42,11 @@ public interface DelegatingExecutableElement extends ExecutableElement, Delegati
     ExecutableElement getDelegate();
 
     @Override
+    default TypeMirror asType() {
+        return getDelegate().asType();
+    }
+
+    @Override
     default List<? extends TypeParameterElement> getTypeParameters() {
         return getDelegate().getTypeParameters();
     }
