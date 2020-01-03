@@ -20,7 +20,7 @@
 package org.jboss.logging.annotations;
 
 import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.CLASS;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -34,7 +34,7 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@Retention(CLASS)
+@Retention(RUNTIME)
 @Target(METHOD)
 @Documented
 public @interface LogMessage {

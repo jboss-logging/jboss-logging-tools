@@ -21,7 +21,7 @@ package org.jboss.logging.annotations;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.CLASS;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@Retention(CLASS)
+@Retention(RUNTIME)
 @Target({PARAMETER, METHOD})
 @Repeatable(Fields.class)
 @Documented

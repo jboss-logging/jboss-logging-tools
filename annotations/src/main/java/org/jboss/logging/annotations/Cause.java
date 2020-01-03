@@ -20,7 +20,7 @@
 package org.jboss.logging.annotations;
 
 import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.CLASS;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@Retention(CLASS)
+@Retention(RUNTIME)
 @Target(PARAMETER)
 @Documented
 public @interface Cause {
