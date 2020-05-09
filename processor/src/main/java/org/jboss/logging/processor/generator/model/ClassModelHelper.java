@@ -52,7 +52,11 @@ public final class ClassModelHelper {
      */
     static String generatedDateValue() {
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        return sdf.format(new Date());
+        Date d;
+        d = System.getenv("SOURCE_DATE_EPOCH") == null ?
+          new Date() :
+          new Date(1000 * Long.parseLong(System.getenv("SOURCE_DATE_EPOCH")));
+        return sdf.format(d);
     }
 
     /**
