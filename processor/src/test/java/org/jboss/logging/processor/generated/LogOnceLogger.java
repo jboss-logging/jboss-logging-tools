@@ -49,7 +49,7 @@ public interface LogOnceLogger {
     @Message("'%s' has been deprecated.")
     void deprecated(String key);
 
-    @LogMessage(level = Level.WARN)
+    @LogMessage(level = Level.WARN, useThreadContext = true)
     @Once
     @Message("'%s' has been deprecated. Please use '%s'.")
     void deprecated(String key, String replacement);

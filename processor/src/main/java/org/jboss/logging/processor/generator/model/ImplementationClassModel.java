@@ -352,17 +352,16 @@ abstract class ImplementationClassModel extends ClassModel {
     private String getUniqueName(final List<String> parameterNames, final Parameter parameter, final String suffix) {
         String result = (suffix == null ? parameter.name() : parameter.name().concat(suffix));
         if (parameterNames.contains(result)) {
-            return getUniqueName(parameterNames, new StringBuilder(result), 0);
+            return getUniqueName(parameterNames, result, 0);
         }
         return result;
     }
 
-    private String getUniqueName(final List<String> parameterNames, final StringBuilder sb, final int index) {
-        String result = sb.append(index).toString();
-        if (parameterNames.contains(result)) {
-            return getUniqueName(parameterNames, sb, index + 1);
+    protected String getUniqueName(final List<String> parameterNames, final String name, final int index) {
+        if (parameterNames.contains(name)) {
+            return getUniqueName(parameterNames, name + index, index + 1);
         }
-        return result;
+        return name;
     }
 
     private void addMethodTypeParameters(final JMethodDef method, final TypeMirror type) {

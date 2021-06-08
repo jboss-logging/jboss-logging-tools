@@ -73,11 +73,11 @@ interface DefaultLogger extends BasicLogger {
     @Message(id = 102, format = Format.NO_FORMAT, value = TEST_MSG)
     void noFormat();
 
-    @LogMessage(level = Level.INFO)
+    @LogMessage(level = Level.INFO, useThreadContext = true)
     @Message(id = 103, format = Format.NO_FORMAT, value = TEST_MSG)
     void noFormatWithCause(@Cause Throwable cause);
 
-    @LogMessage(level = Level.INFO)
+    @LogMessage(level = Level.INFO, useThreadContext = true)
     @Message(id = 104, value = "Test Message: %s")
     void formatWith(@FormatWith(CustomFormatter.class) String msg);
 
