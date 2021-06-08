@@ -60,7 +60,7 @@
         <version.org.jboss.jdeparser>2.0.3.Final</version.org.jboss.jdeparser>
         <version.org.jboss.logging>3.4.2.Final</version.org.jboss.logging>
         <version.org.jboss.logmanager>2.1.18.Final</version.org.jboss.logmanager>
-        <verion.org.jboss.forge.roaster>2.20.8.Final</verion.org.jboss.forge.roaster>
+        <verion.org.jboss.forge.roaster>2.22.3.Final</verion.org.jboss.forge.roaster>
         <version.junit>4.12</version.junit>
     </properties>
 
