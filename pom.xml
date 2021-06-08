@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>34</version>
+        <version>38</version>
     </parent>
 
     <groupId>org.jboss.logging</groupId>
@@ -58,9 +58,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.org.jboss.jdeparser>2.0.3.Final</version.org.jboss.jdeparser>
-        <version.org.jboss.logging>3.4.0.Final</version.org.jboss.logging>
-        <version.org.jboss.logmanager>2.1.9.Final</version.org.jboss.logmanager>
-        <verion.org.jboss.forge.roaster>2.20.8.Final</verion.org.jboss.forge.roaster>
+        <version.org.jboss.logging>3.4.2.Final</version.org.jboss.logging>
+        <version.org.jboss.logmanager>2.1.18.Final</version.org.jboss.logmanager>
+        <verion.org.jboss.forge.roaster>2.22.3.Final</verion.org.jboss.forge.roaster>
         <version.junit>4.12</version.junit>
     </properties>
 
