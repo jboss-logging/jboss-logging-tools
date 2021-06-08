@@ -40,6 +40,7 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.Method;
 import org.jboss.forge.roaster.model.Named;
 import org.jboss.forge.roaster.model.Type;
+import org.jboss.forge.roaster.model.source.AnnotationSource;
 import org.jboss.forge.roaster.model.source.FieldSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaInterfaceSource;
@@ -47,6 +48,7 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,10 +58,9 @@ import org.junit.Test;
  */
 public class GeneratedSourceAnalysisTest {
 
+    private static final Map<Locale, String> LOCALE_CONSTANTS = new LinkedHashMap<>();
     private static String TEST_SRC_PATH = null;
     private static String TEST_GENERATED_SRC_PATH = null;
-
-    private static final Map<Locale, String> LOCALE_CONSTANTS = new LinkedHashMap<>();
 
     static {
         LOCALE_CONSTANTS.put(Locale.CANADA, "Locale.CANADA");
@@ -100,6 +101,8 @@ public class GeneratedSourceAnalysisTest {
         compareLogger(ExtendedLogger.class);
         compareLogger(ValidLogger.class);
         compareLogger(RootLocaleLogger.class);
+        compareLogger(TransformLogger.class);
+        compareLogger(LogOnceLogger.class);
     }
 
     @Test
@@ -144,6 +147,43 @@ public class GeneratedSourceAnalysisTest {
             Assert.assertNotNull("Expected a log field in " + implementationSource.getName(), log);
             Assert.assertTrue("Expected the log field to be protected and final in " + implementationSource.getName(),
                     log.isProtected() && log.isFinal());
+        }
+
+        // Check the interface for log messages that should wrap the TCCL
+        final List<MethodSource<JavaInterfaceSource>> interfaceMethods = interfaceSource.getMethods();
+        for (MethodSource<JavaInterfaceSource> method : interfaceMethods) {
+            if (method.hasAnnotation(LogMessage.class)) {
+                final AnnotationSource<JavaInterfaceSource> annotation = method.getAnnotation(LogMessage.class);
+                final String value = annotation.getStringValue("useThreadContext");
+                if (Boolean.parseBoolean(value)) {
+                    // Find the implementation method
+                    final MethodSource<JavaClassSource> implementationMethod = findImplementationMethod(method, implementationMethods);
+                    Assert.assertNotNull("Could not find implementation method for " + method, implementationMethod);
+                    final String body = implementationMethod.getBody();
+                    String[] lines = body.split(System.lineSeparator());
+                    Assert.assertTrue("Expected at least 5 lines: " + body, (lines.length > 5));
+
+                    // First line should be getting the current TCCL
+                    Assert.assertEquals("final ClassLoader currentTccl=Thread.currentThread().getContextClassLoader();", lines[0].trim());
+                    // The third line should be setting the log context
+                    Assert.assertEquals("Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());", lines[2].trim());
+
+                    lines = Arrays.copyOfRange(lines, 3, lines.length);
+                    boolean finallyFound = false;
+                    // The first line should be the message retrieval
+                    for (String line : lines) {
+                        // Process until we find a finally block
+                        if (line.contains("finally {")) {
+                            finallyFound = true;
+                            continue;
+                        }
+                        if (finallyFound && !"}".equals(line)) {
+                            Assert.assertEquals("Thread.currentThread().setContextClassLoader(currentTccl);", line.trim());
+                        }
+                    }
+                    Assert.assertTrue("Expected a finally block: " + body, finallyFound);
+                }
+            }
         }
     }
 
@@ -249,6 +289,30 @@ public class GeneratedSourceAnalysisTest {
         return implementationMethods.stream()
                 .filter(Method::isConstructor)
                 .findFirst();
+    }
+
+    private MethodSource<JavaClassSource> findImplementationMethod(final MethodSource<JavaInterfaceSource> interfaceMethod,
+                                                                   final List<MethodSource<JavaClassSource>> implementationMethods) {
+        for (MethodSource<JavaClassSource> method : implementationMethods) {
+            if (interfaceMethod.getName().equals(method.getName())) {
+                final List<ParameterSource<JavaInterfaceSource>> interfaceParams = interfaceMethod.getParameters();
+                final List<ParameterSource<JavaClassSource>> parameters = method.getParameters();
+                if (interfaceParams.size() == parameters.size()) {
+                    boolean matched = true;
+                    for (int i = 0; i < interfaceParams.size(); i++) {
+                        final ParameterSource<JavaInterfaceSource> param1 = interfaceParams.get(i);
+                        final ParameterSource<JavaClassSource> param2 = parameters.get(i);
+                        if (!param1.getType().getQualifiedNameWithGenerics().equals(param2.getType().getQualifiedNameWithGenerics())) {
+                            matched = false;
+                        }
+                    }
+                    if (matched) {
+                        return method;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private Collection<String> toNames(final List<? extends MethodSource<?>> methods) {

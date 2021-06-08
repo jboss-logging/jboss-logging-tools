@@ -48,10 +48,12 @@ import org.jboss.jdeparser.JExprs;
 import org.jboss.jdeparser.JMethodDef;
 import org.jboss.jdeparser.JMod;
 import org.jboss.jdeparser.JParamDeclaration;
+import org.jboss.jdeparser.JTry;
 import org.jboss.jdeparser.JType;
 import org.jboss.jdeparser.JVarDeclaration;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.LoggingClass;
 import org.jboss.logging.annotations.Message.Format;
 import org.jboss.logging.annotations.MessageBundle;
@@ -162,6 +164,15 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             parameterNames.add(param.name());
         }
 
+        final LogMessage logMessage = messageMethod.getAnnotation(LogMessage.class);
+
+        final JBlock baseBody;
+        if (logMessage.useThreadContext()) {
+            baseBody = wrapTccl(method.body(), getUniqueName(parameterNames, "currentTccl", 0));
+        } else {
+            baseBody = method.body();
+        }
+
         // Check for the @Once annotation
         final JBlock body;
         if (messageMethod.isAnnotatedWith(Once.class) && messageMethod.isLoggerMethod()) {
@@ -176,14 +187,14 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                 var = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, atomicBoolean, varName, atomicBoolean._new().arg(JExpr.FALSE));
                 logOnceVars.put(varName, var);
             }
-            body = method.body()._if(
+            body = baseBody._if(
                     logger.call("isEnabled").arg($v(messageMethod.logLevel())).and(
                             $v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)))
                     .block(Braces.REQUIRED);
         } else if (!messageMethod.parametersAnnotatedWith(Transform.class).isEmpty()) {
-            body = method.body()._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
+            body = baseBody._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
         } else {
-            body = method.body();
+            body = baseBody;
         }
 
         // Determine which logger method to invoke
@@ -198,7 +209,6 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final String levelName = messageMethod.logLevel();
         sourceFile.importStatic(Logger.Level.class, levelName);
         logCaller.arg($v(levelName));
-
 
         final MessageMethod.Message message = messageMethod.message();
         // No format log messages need the message before the cause
@@ -292,5 +302,24 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             result.put(param, var);
         }
         return result;
+    }
+
+    private JBlock wrapTccl(final JBlock body, final String currentName) {
+        final JExpr classExpression = THIS.call("getClass");
+        final JType thread = $t(Thread.class);
+
+        // Capture the current TCCL
+        final JAssignableExpr currentTccl = $v(body.var(JMod.FINAL, $t(ClassLoader.class), currentName,
+                JExprs.callStatic(thread, "currentThread").call("getContextClassLoader")));
+
+        final JTry tryBlock = body._try();
+        // Set the new TCCL then log the message
+        tryBlock.add(JExprs.callStatic(thread, "currentThread").call("setContextClassLoader").arg(classExpression.call("getClassLoader")));
+
+        final JBlock finallyBlock = tryBlock._finally();
+        // Reset the TCCL
+        finallyBlock.add(JExprs.callStatic(thread, "currentThread").call("setContextClassLoader").arg(currentTccl));
+
+        return tryBlock;
     }
 }

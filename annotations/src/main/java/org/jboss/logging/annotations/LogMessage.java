@@ -29,10 +29,11 @@ import java.lang.annotation.Target;
 import org.jboss.logging.Logger;
 
 /**
- * A typed logger method.  Indicates that this method will log the associated {@link Message} to the logger system, as
+ * A typed logger method. Indicates that this method will log the associated {@link Message} to the logger system, as
  * opposed to being a simple message lookup.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @Retention(CLASS)
 @Target(METHOD)
@@ -52,4 +53,23 @@ public @interface LogMessage {
      * @return the logging class name
      */
     Class<?> loggingClass() default Void.class;
+
+    /**
+     * Indicates before the message is logged the {@linkplain Thread#currentThread() current threads}
+     * {@linkplain Thread#setContextClassLoader(ClassLoader) context class loader} is set to the the class loader from
+     * this type.
+     * <p>
+     * Note that special permissions may be required if running under a {@linkplain SecurityManager security manager}.
+     * </p>
+     * <p>
+     * It is suggested this not be used on methods which are invoked frequently as there is overhead to this.
+     * </p>
+     *
+     * @return {@code true} if the current threads context loader should be used for the log call
+     *
+     * @see Thread#getContextClassLoader()
+     * @see Thread#setContextClassLoader(ClassLoader)
+     * @since 2.3.0
+     */
+    boolean useThreadContext() default false;
 }

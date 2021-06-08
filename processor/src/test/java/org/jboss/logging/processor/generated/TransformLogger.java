@@ -54,7 +54,7 @@ public interface TransformLogger {
     @Message(HASH_CODE_MSG)
     void logClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) String s);
 
-    @LogMessage
+    @LogMessage(useThreadContext = true)
     void logClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) Collection<String> c);
 
     @LogMessage
