@@ -69,6 +69,15 @@ public class MessagesTest {
     }
 
     @Test
+    public void testCauseInitialized() {
+        final IOException exception = new IOException("Write failure");
+        final ValidMessages.UncheckedException wrapped = ValidMessages.MESSAGES.wrapped(exception);
+        Assertions.assertEquals(FORMATTED_TEST_MSG, wrapped.getMessage());
+        Assertions.assertTrue((wrapped.getCause() instanceof IOException),
+                "Expected the cause to be an IOException but was " + wrapped.getCause());
+    }
+
+    @Test
     public void testSuppressed() {
         final IllegalArgumentException e1 = new IllegalArgumentException("First exception");
         final IllegalStateException e2 = new IllegalStateException("Second exception");
