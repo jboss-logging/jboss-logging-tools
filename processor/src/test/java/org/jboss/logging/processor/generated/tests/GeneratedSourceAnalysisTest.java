@@ -166,8 +166,8 @@ public class GeneratedSourceAnalysisTest {
                     final MethodSource<JavaClassSource> implementationMethod = findImplementationMethod(method, implementationMethods);
                     Assertions.assertNotNull(implementationMethod, "Could not find implementation method for " + method);
                     final String body = implementationMethod.getBody();
-                    String[] lines = body.split(System.lineSeparator());
-                    Assertions.assertTrue((lines.length > 5), "Expected at least 5 lines: " + body);
+                    String[] lines = body.split("[\n\f\r]");
+                    Assertions.assertTrue((lines.length > 5), String.format("Expected at least 5 lines found %d: %s", lines.length, body));
 
                     // First line should be getting the current TCCL
                     Assertions.assertEquals("final ClassLoader currentTccl=Thread.currentThread().getContextClassLoader();", lines[0].trim());
