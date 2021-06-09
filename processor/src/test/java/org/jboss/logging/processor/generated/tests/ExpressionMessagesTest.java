@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.jboss.logging.processor.generated.ExpressionLogger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class ExpressionMessagesTest extends AbstractLoggerTest {
 
-    @After
+    @AfterEach
     public void clearHandler() {
         HANDLER.close();
     }
@@ -39,12 +40,12 @@ public class ExpressionMessagesTest extends AbstractLoggerTest {
     @Test
     public void testExpressions() throws Exception {
         ExpressionLogger.LOGGER.logProperty();
-        Assert.assertEquals("test property value", HANDLER.getMessage());
+        Assertions.assertEquals("test property value", HANDLER.getMessage());
 
         ExpressionLogger.LOGGER.logPropertyDefault();
-        Assert.assertEquals("default value", HANDLER.getMessage());
+        Assertions.assertEquals("default value", HANDLER.getMessage());
 
-        Assert.assertEquals("test property value", ExpressionLogger.LOGGER.property());
-        Assert.assertEquals("default value", ExpressionLogger.LOGGER.propertyDefault());
+        Assertions.assertEquals("test property value", ExpressionLogger.LOGGER.property());
+        Assertions.assertEquals("default value", ExpressionLogger.LOGGER.propertyDefault());
     }
 }

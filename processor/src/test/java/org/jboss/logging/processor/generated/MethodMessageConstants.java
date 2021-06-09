@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -150,6 +150,7 @@ public interface MethodMessageConstants {
     })
     TypeException multiField();
 
+    @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
     class TypeException extends RuntimeException {
         public Class<?> type;
         public Object value;
@@ -179,6 +180,7 @@ public interface MethodMessageConstants {
     }
 
     class IntTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public int value;
 
         public IntTypeException(final String message) {
@@ -191,6 +193,7 @@ public interface MethodMessageConstants {
     }
 
     class LongTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public long value;
 
         public LongTypeException(final String message) {
@@ -203,6 +206,7 @@ public interface MethodMessageConstants {
     }
 
     class ShortTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public short value;
 
         public ShortTypeException(final String message) {
@@ -215,6 +219,7 @@ public interface MethodMessageConstants {
     }
 
     class FloatTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public float value;
 
         public FloatTypeException(final String message) {
@@ -227,6 +232,7 @@ public interface MethodMessageConstants {
     }
 
     class DoubleTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public double value;
 
         public DoubleTypeException(final String message) {
@@ -239,6 +245,7 @@ public interface MethodMessageConstants {
     }
 
     class BooleanTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public boolean value;
 
         public BooleanTypeException(final String message) {
@@ -251,6 +258,7 @@ public interface MethodMessageConstants {
     }
 
     class ByteTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public byte value;
 
         public ByteTypeException(final String message) {
@@ -263,6 +271,7 @@ public interface MethodMessageConstants {
     }
 
     class CharTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public char value;
 
         public CharTypeException(final String message) {
@@ -275,6 +284,7 @@ public interface MethodMessageConstants {
     }
 
     class ClassTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public Class<?> value;
 
         public ClassTypeException(final String message) {
@@ -287,6 +297,7 @@ public interface MethodMessageConstants {
     }
 
     class StringTypeException extends RuntimeException {
+        @SuppressWarnings("InstanceVariableMayNotBeInitialized")
         public String value;
 
         public StringTypeException(final String message) {

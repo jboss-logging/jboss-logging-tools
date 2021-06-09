@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
 import org.jboss.logging.Logger;
+import org.jboss.logging.processor.generated.DefaultLogger;
 import org.jboss.logging.processor.generated.DefaultLogger.CustomFormatter;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.jboss.logging.processor.generated.StringFormatLogger;
+import org.jboss.logging.processor.generated.TestConstants;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -44,7 +48,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
     private static final String NAME = System.getProperty("user.name");
     private static final String FILE_NAME_FORMAT = "DefaultLogger.i18n%s.properties";
 
-    @After
+    @AfterEach
     public void clearHandler() {
         HANDLER.close();
     }
@@ -64,7 +68,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.invalidSelection("A", "B", "C", "D");
 
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, ""));
-        Assert.assertEquals(HANDLER.size(), properties.size());
+        Assertions.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
         compare("noFormat", properties);
@@ -80,7 +84,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_de"));
-        Assert.assertEquals(HANDLER.size(), properties.size());
+        Assertions.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -91,7 +95,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_fr"));
-        Assert.assertEquals(HANDLER.size(), properties.size());
+        Assertions.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -102,7 +106,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_es"));
-        Assert.assertEquals(HANDLER.size(), properties.size());
+        Assertions.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -113,7 +117,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         logger.hello(NAME);
         logger.howAreYou(NAME);
         final Properties properties = findFile(String.format(FILE_NAME_FORMAT, "_ja"));
-        Assert.assertEquals(HANDLER.size(), properties.size());
+        Assertions.assertEquals(HANDLER.size(), properties.size());
         compare("hello", properties, NAME);
         compare("howAreYou", properties, NAME);
     }
@@ -123,7 +127,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         final String fileName = "StringFormatLogger.i18n%s.properties";
         final Properties en = findFile(String.format(fileName, ""));
         final Properties es = findFile(String.format(fileName, "_es"));
-        final StringFormatLogger logger = Logger.getMessageLogger(StringFormatLogger.class, CATEGORY, new Locale("es"));
+        final StringFormatLogger logger = Logger.getMessageLogger(StringFormatLogger.class, TestConstants.CATEGORY, new Locale("es"));
         final Date date = new Date();
         logger.dukesBirthday(date);
         logger.dukesBirthdayFailure(date);
@@ -142,13 +146,13 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
     }
 
     private static DefaultLogger getLogger(final Locale locale) {
-        return Logger.getMessageLogger(DefaultLogger.class, CATEGORY, locale);
+        return Logger.getMessageLogger(DefaultLogger.class, TestConstants.CATEGORY, locale);
     }
 
     private void compare(final String key, final Properties properties, final Object... params) throws InterruptedException {
         final String expectedMessage = getFormattedProperty(key, properties, params);
         final String loggedMessage = HANDLER.getMessage().replaceAll(LOGGER_ID_PATTERN, "");
-        Assert.assertEquals(expectedMessage, loggedMessage);
+        Assertions.assertEquals(expectedMessage, loggedMessage);
     }
 
     private String getFormattedProperty(final String key, final Properties properties, final Object... params) {
@@ -163,9 +167,10 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
 
     private static Properties findFile(final String fileName) throws IOException {
         final Properties properties = new Properties();
-        final String name = CATEGORY.replace(".", File.separator) + File.separator + fileName;
+        final String name = TestConstants.CATEGORY.replace(".", File.separator) + File.separator + fileName;
         final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
-        properties.load(new InputStreamReader(in, "utf-8"));
+        Assertions.assertNotNull(in);
+        properties.load(new InputStreamReader(in, StandardCharsets.UTF_8));
         return properties;
     }
 

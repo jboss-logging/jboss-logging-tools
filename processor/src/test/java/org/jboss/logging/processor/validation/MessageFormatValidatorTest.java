@@ -22,10 +22,10 @@
 
 package org.jboss.logging.processor.validation;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Date: 14.06.2011
@@ -37,10 +37,10 @@ public class MessageFormatValidatorTest {
     @Test
     public void validFormats() {
         MessageFormatValidator validator = MessageFormatValidator.of("Message {} is valid.");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = MessageFormatValidator.of("Parameter {1} is not compatible with {2}.");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
     }
 
     @Test
@@ -52,12 +52,12 @@ public class MessageFormatValidatorTest {
     @Test
     public void validateParameterCount() {
         MessageFormatValidator validator = MessageFormatValidator.of("{}", "Test");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = MessageFormatValidator.of("{1} {0}", "Test", "Test2");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = MessageFormatValidator.of("{0} {0}", "Test");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
     }
 }

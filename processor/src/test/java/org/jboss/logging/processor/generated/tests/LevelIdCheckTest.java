@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.util;
+package org.jboss.logging.processor.generated.tests;
 
+import org.jboss.logging.processor.generated.ValidLogger;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Date: 09.11.2011
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class VersionComparatorTest {
+public class LevelIdCheckTest extends AbstractLoggerTest {
 
-    @Test
-    public void testComparator() {
-        final String version = "3.1";
-        Assertions.assertTrue(VersionComparator.compareVersion("3.1.1", version) > 0);
-        Assertions.assertEquals(0, VersionComparator.compareVersion("3.1", version));
-        Assertions.assertTrue(VersionComparator.compareVersion("3.0", version) < 0);
-        Assertions.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
-        Assertions.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
-        Assertions.assertEquals(0, VersionComparator.compareVersion("3.1.x", version));
+    @AfterEach
+    public void clearHandler() {
+        HANDLER.close();
     }
+
+    @SuppressWarnings("MagicNumber")
+    @Test
+    public void inheritedId() throws Exception {
+        ValidLogger.LOGGER.processingError();
+        ValidLogger.LOGGER.processingError(new IllegalArgumentException());
+        ValidLogger.LOGGER.processingError(new IllegalArgumentException(), "generated");
+        ValidLogger.LOGGER.processingError(this, "invalid reference");
+        Assertions.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
+        Assertions.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
+        Assertions.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
+        Assertions.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
+    }
+
+
 }

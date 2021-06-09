@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.jboss.logging.Messages;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Pos;
@@ -36,18 +35,18 @@ import org.jboss.logging.annotations.Transform.TransformType;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageBundle(projectCode = AbstractLoggerTest.PROJECT_CODE)
+@MessageBundle(projectCode = TestConstants.PROJECT_CODE)
 public interface TransformMessages {
 
-    final TransformMessages MESSAGES = Messages.getBundle(TransformMessages.class);
+    TransformMessages MESSAGES = Messages.getBundle(TransformMessages.class);
 
-    final String HASH_CODE_MSG = "hashCode: %d";
+    String HASH_CODE_MSG = "hashCode: %d";
 
-    final String IDENTITY_HASH_CODE_MSG = "SystemIdentity: %d";
+    String IDENTITY_HASH_CODE_MSG = "SystemIdentity: %d";
 
-    final String GET_CLASS_MSG = "getClass: %s";
+    String GET_CLASS_MSG = "getClass: %s";
 
-    final String SIZE_MSG = "size: %d";
+    String SIZE_MSG = "size: %d";
 
     // getClass().hashCode();
     @Message(HASH_CODE_MSG)

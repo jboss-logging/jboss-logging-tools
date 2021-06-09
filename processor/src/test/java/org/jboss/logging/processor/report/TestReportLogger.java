@@ -33,6 +33,7 @@ import org.jboss.logging.annotations.ResolutionDoc;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("unused")
 @MessageLogger(projectCode = "RPTL", length = 5)
 @ResolutionDoc
 public interface TestReportLogger {
