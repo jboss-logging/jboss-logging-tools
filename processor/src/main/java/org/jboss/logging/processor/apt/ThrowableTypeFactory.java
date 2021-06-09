@@ -61,8 +61,8 @@ final class ThrowableTypeFactory {
      * Creates a new descriptor that is not primitive.
      *
      * @param processingEnv the annotation processing environment.
-     * @param type                  the class name of the return type.
-     * @param messageMethod         the message method.
+     * @param type          the class name of the return type.
+     * @param messageMethod the message method.
      *
      * @return the return type descriptor.
      */
@@ -76,18 +76,20 @@ final class ThrowableTypeFactory {
      * Creates a new descriptor that is not primitive.
      *
      * @param processingEnv the annotation processing environment.
-     * @param type                  the class name of the return type.
+     * @param type          the class name of the return type.
      *
      * @return the return type descriptor.
      */
     public static ThrowableType of(final ProcessingEnvironment processingEnv, final TypeMirror type) {
-        final AptThrowableType result = new AptThrowableType(processingEnv, type);
+        final AptThrowableType result = new AptThrowableType(processingEnv, type, null);
         result.init();
         return result;
     }
 
     private static class AptThrowableType extends AbstractClassType implements ThrowableType {
 
+        protected final TypeMirror stringType;
+        protected final TypeMirror causeType;
         private final TypeMirror type;
         private final boolean isChecked;
         private final Element delegate;
@@ -96,21 +98,21 @@ final class ThrowableTypeFactory {
         private boolean throwableConstructor = false;
         private boolean stringAndThrowableConstructor = false;
         private boolean throwableAndStringConstructor = false;
-        protected final TypeMirror stringType;
-        protected final TypeMirror throwableType;
 
         /**
          * Creates a new descriptor that is not primitive.
          *
          * @param processingEnv the annotation processing environment.
-         * @param type                  the class name of the return type.
+         * @param type          the class name of the return type.
+         * @param causeType     the {@linkplain org.jboss.logging.annotations.Cause cause type} of the parameter, if
+         *                      {@code null} {@link Throwable} will be used
          */
-        private AptThrowableType(final ProcessingEnvironment processingEnv, final TypeMirror type) {
+        private AptThrowableType(final ProcessingEnvironment processingEnv, final TypeMirror type, final TypeMirror causeType) {
             super(processingEnv, type);
             this.type = type;
             this.delegate = types.asElement(type);
             stringType = ElementHelper.toType(elements, String.class);
-            throwableType = ElementHelper.toType(elements, Throwable.class);
+            this.causeType = causeType == null ? ElementHelper.toType(elements, Throwable.class) : causeType;
             final TypeMirror runtimeException = ElementHelper.toType(elements, RuntimeException.class);
             final TypeMirror error = ElementHelper.toType(elements, Error.class);
             isChecked = !(types.isAssignable(runtimeException, type) && types.isAssignable(error, type));
@@ -136,15 +138,15 @@ final class ThrowableTypeFactory {
                         case 1:
                             if (types.isAssignable(stringType, params.get(0).asType())) {
                                 stringConstructor = true;
-                            } else if (types.isAssignable(params.get(0).asType(), throwableType)) {
+                            } else if (types.isAssignable(causeType, params.get(0).asType())) {
                                 throwableConstructor = true;
                             }
                             break;
                         case 2:
                             if (types.isAssignable(stringType, params.get(0).asType())
-                                    && types.isAssignable(params.get(1).asType(), throwableType)) {
+                                    && types.isAssignable(causeType, params.get(1).asType())) {
                                 stringAndThrowableConstructor = true;
-                            } else if (types.isAssignable(params.get(0).asType(), throwableType)
+                            } else if (types.isAssignable(causeType, params.get(0).asType())
                                     && types.isAssignable(stringType, params.get(1).asType())) {
                                 throwableAndStringConstructor = true;
                             }
@@ -265,11 +267,11 @@ final class ThrowableTypeFactory {
          * Creates a new descriptor that is not primitive.
          *
          * @param processingEnv the annotation processing environment.
-         * @param messageMethod         the message method.
-         * @param type                  the class name of the return type.
+         * @param messageMethod the message method.
+         * @param type          the class name of the return type.
          */
         private AptReturnThrowableType(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod, final TypeMirror type) {
-            super(processingEnv, type);
+            super(processingEnv, type, (messageMethod.hasCause() ? messageMethod.cause().asType() : null));
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<>();
         }
@@ -335,7 +337,7 @@ final class ThrowableTypeFactory {
                 boolean causeFound = false;
                 boolean messageFound = false;
                 for (VariableElement param : params) {
-                    if (!causeFound && messageMethod.hasCause() && types.isAssignable(throwableType, param.asType())) {
+                    if (!causeFound && messageMethod.hasCause() && types.isAssignable(causeType, param.asType())) {
                         causeFound = true;
                         matchedParams.add(messageMethod.cause());
                         continue;
@@ -372,13 +374,13 @@ final class ThrowableTypeFactory {
         }
 
         @Override
-        public boolean causeSetInConstructor() {
-            return causeSet;
+        public Set<Parameter> constructionParameters() {
+            return constructionParameters;
         }
 
         @Override
-        public Set<Parameter> constructionParameters() {
-            return constructionParameters;
+        public boolean causeSetInConstructor() {
+            return causeSet;
         }
     }
 }

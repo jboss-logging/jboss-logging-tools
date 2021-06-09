@@ -143,6 +143,9 @@ public interface ValidMessages {
     @Message(TEST_MSG)
     <T extends RuntimeException> Supplier<T> throwableStringBiFunctionSupplier(@Producer BiFunction<String, Exception, T> function, @Cause Exception cause);
 
+    @Message(TEST_MSG)
+    UncheckedException wrapped(@Cause Throwable cause);
+
     @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
     class CustomException extends RuntimeException {
         public int value;
@@ -187,6 +190,17 @@ public interface ValidMessages {
     class StringOnlyException extends RuntimeException {
         public StringOnlyException(final String msg) {
             super(msg);
+        }
+    }
+
+    class UncheckedException extends RuntimeException {
+
+        public UncheckedException(final String msg) {
+            super(msg);
+        }
+
+        public UncheckedException(final Exception e) {
+            super(e);
         }
     }
 }
