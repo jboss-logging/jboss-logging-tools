@@ -61,7 +61,7 @@
         <version.org.jboss.logging>3.4.2.Final</version.org.jboss.logging>
         <version.org.jboss.logmanager>2.1.18.Final</version.org.jboss.logmanager>
         <verion.org.jboss.forge.roaster>2.22.3.Final</verion.org.jboss.forge.roaster>
-        <version.junit>4.12</version.junit>
+        <version.org.junit>5.7.2</version.org.junit>
     </properties>
 
     <licenses>
@@ -108,12 +108,12 @@
                 <artifactId>roaster-jdt</artifactId>
                 <version>${verion.org.jboss.forge.roaster}</version>
             </dependency>
-
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
-                <scope>test</scope>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${version.org.junit}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

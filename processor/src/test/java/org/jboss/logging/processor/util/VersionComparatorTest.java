@@ -22,8 +22,8 @@
 
 package org.jboss.logging.processor.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Date: 09.11.2011
@@ -35,11 +35,11 @@ public class VersionComparatorTest {
     @Test
     public void testComparator() {
         final String version = "3.1";
-        Assert.assertTrue(VersionComparator.compareVersion("3.1.1", version) > 0);
-        Assert.assertEquals(0, VersionComparator.compareVersion("3.1", version));
-        Assert.assertTrue(VersionComparator.compareVersion("3.0", version) < 0);
-        Assert.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
-        Assert.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
-        Assert.assertEquals(0, VersionComparator.compareVersion("3.1.x", version));
+        Assertions.assertTrue(VersionComparator.compareVersion("3.1.1", version) > 0);
+        Assertions.assertEquals(0, VersionComparator.compareVersion("3.1", version));
+        Assertions.assertTrue(VersionComparator.compareVersion("3.0", version) < 0);
+        Assertions.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
+        Assertions.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
+        Assertions.assertEquals(0, VersionComparator.compareVersion("3.1.x", version));
     }
 }

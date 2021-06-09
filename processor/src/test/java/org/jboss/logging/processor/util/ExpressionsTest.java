@@ -25,9 +25,9 @@ package org.jboss.logging.processor.util;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -36,27 +36,27 @@ public class ExpressionsTest {
 
     private static final Properties PROPERTIES = new Properties();
 
-    @BeforeClass
+    @BeforeAll
     public static void configureProperties() throws IOException {
         PROPERTIES.load(ExpressionsTest.class.getResourceAsStream("/expression.properties"));
     }
 
     @Test
     public void testEnvironmentVariables() {
-        Assert.assertEquals("envValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_VAR}"));
-        Assert.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_INVALID:defaultValue}"));
+        Assertions.assertEquals("envValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_VAR}"));
+        Assertions.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_INVALID:defaultValue}"));
     }
 
     @Test
     public void testSystemProperties() {
-        Assert.assertEquals(System.getProperty("user.home"), Expressions.resolve(PROPERTIES, "${sys.user.home}"));
-        Assert.assertEquals("sysValue", Expressions.resolve(PROPERTIES, "${sys.test.property}"));
-        Assert.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${sys.invalid.property:defaultValue}"));
+        Assertions.assertEquals(System.getProperty("user.home"), Expressions.resolve(PROPERTIES, "${sys.user.home}"));
+        Assertions.assertEquals("sysValue", Expressions.resolve(PROPERTIES, "${sys.test.property}"));
+        Assertions.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${sys.invalid.property:defaultValue}"));
     }
 
     @Test
     public void testProperties() {
-        Assert.assertEquals("test property value", Expressions.resolve(PROPERTIES, "${test.property}"));
-        Assert.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${invalid.property:defaultValue}"));
+        Assertions.assertEquals("test property value", Expressions.resolve(PROPERTIES, "${test.property}"));
+        Assertions.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${invalid.property:defaultValue}"));
     }
 }

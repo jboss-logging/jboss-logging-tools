@@ -39,12 +39,11 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.SchemaFactory;
 
 import org.jboss.logging.processor.apt.report.ReportType;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
@@ -54,7 +53,7 @@ import org.xml.sax.XMLReader;
 public class ReportGenerationTest {
     private static String TEST_REPORT_PATH = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         TEST_REPORT_PATH = System.getProperty("test.report.path");
     }
@@ -63,13 +62,13 @@ public class ReportGenerationTest {
     public void testAsciidoc() throws Exception {
         final Collection<Path> paths = findFiles(ReportType.ASCIIDOC);
         // Just ensure they were generated
-        Assert.assertFalse("No asciidoc files found", paths.isEmpty());
+        Assertions.assertFalse(paths.isEmpty(), "No asciidoc files found");
     }
 
     @Test
     public void testXml() throws Exception {
         final Collection<Path> paths = findFiles(ReportType.XML);
-        Assert.assertFalse("No XML files found", paths.isEmpty());
+        Assertions.assertFalse(paths.isEmpty(), "No XML files found");
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
 
@@ -98,7 +97,7 @@ public class ReportGenerationTest {
                 }
 
                 private void fail(final SAXParseException exception) {
-                    Assert.fail(String.format("%s - Line: %d Column: %d%nPath: %s", exception.getMessage(), exception.getLineNumber(), exception.getColumnNumber(), path));
+                    Assertions.fail(String.format("%s - Line: %d Column: %d%nPath: %s", exception.getMessage(), exception.getLineNumber(), exception.getColumnNumber(), path));
                 }
             });
             try (final Reader fileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {

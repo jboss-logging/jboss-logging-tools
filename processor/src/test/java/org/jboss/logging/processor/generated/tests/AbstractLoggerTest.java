@@ -26,8 +26,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.logging.processor.generated.TestConstants;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -39,12 +39,12 @@ public abstract class AbstractLoggerTest {
 
     private static final org.jboss.logmanager.Logger LOGGER = org.jboss.logmanager.Logger.getLogger(TestConstants.CATEGORY);
 
-    @BeforeClass
+    @BeforeAll
     public static void installHandler() {
         LOGGER.addHandler(HANDLER);
     }
 
-    @AfterClass
+    @AfterAll
     public static void uninstallHandler() {
         LOGGER.removeHandler(HANDLER);
         HANDLER.close();

@@ -34,8 +34,8 @@ import java.util.Properties;
 
 import org.jboss.logging.processor.generated.StringFormatLogger;
 import org.jboss.logging.processor.generated.StringFormatMessages;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -47,9 +47,9 @@ public class GeneratedSkeletonTest {
     @Test
     public void testLoggerIndexes() throws Exception {
         final Properties properties = resolveProperties(StringFormatLogger.class);
-        Assert.assertEquals("String %1$s integer %2$d", properties.getProperty("stringInt"));
-        Assert.assertEquals("Duke's Birthday: %1$tm %<te,%<tY", properties.getProperty("dukesBirthday"));
-        Assert.assertEquals("The error is %1$s, I repeat %1$s", properties.getProperty("repeat"));
+        Assertions.assertEquals("String %1$s integer %2$d", properties.getProperty("stringInt"));
+        Assertions.assertEquals("Duke's Birthday: %1$tm %<te,%<tY", properties.getProperty("dukesBirthday"));
+        Assertions.assertEquals("The error is %1$s, I repeat %1$s", properties.getProperty("repeat"));
     }
 
     @Test
@@ -57,33 +57,33 @@ public class GeneratedSkeletonTest {
         final Properties properties = resolveProperties(StringFormatMessages.class);
         String foundFormat = properties.getProperty("stringInt");
         test("String %1$s integer %2$d", foundFormat, "value1", 2);
-        Assert.assertEquals(StringFormatMessages.MESSAGES.stringInt("value1", 2), String.format(foundFormat, "value1", 2));
+        Assertions.assertEquals(StringFormatMessages.MESSAGES.stringInt("value1", 2), String.format(foundFormat, "value1", 2));
 
         foundFormat = properties.getProperty("dukesBirthday");
         test("Duke's Birthday: %1$tm %<te,%<tY", foundFormat, new Date());
         final Date date = new Date();
-        Assert.assertEquals(StringFormatMessages.MESSAGES.dukesBirthday(date), String.format(foundFormat, date));
+        Assertions.assertEquals(StringFormatMessages.MESSAGES.dukesBirthday(date), String.format(foundFormat, date));
 
         foundFormat = properties.getProperty("repeat");
         test("The error is %1$s, I repeat %1$s", foundFormat, "value1");
-        Assert.assertEquals(StringFormatMessages.MESSAGES.repeat("value1"), String.format(foundFormat, "value1"));
+        Assertions.assertEquals(StringFormatMessages.MESSAGES.repeat("value1"), String.format(foundFormat, "value1"));
 
         foundFormat = properties.getProperty("twoMixedIndexes");
         test("Second %2$s first %1$s", foundFormat, "second", "first");
-        Assert.assertEquals(StringFormatMessages.MESSAGES.twoMixedIndexes("second", "first"), String.format(foundFormat, "second", "first"));
+        Assertions.assertEquals(StringFormatMessages.MESSAGES.twoMixedIndexes("second", "first"), String.format(foundFormat, "second", "first"));
 
         foundFormat = properties.getProperty("threeMixedIndexes");
         test("Third %3$s first %1$s second %2$s", foundFormat, 3, 1, 2);
-        Assert.assertEquals(StringFormatMessages.MESSAGES.threeMixedIndexes(3, 1, 2), String.format(foundFormat, 3, 1, 2));
+        Assertions.assertEquals(StringFormatMessages.MESSAGES.threeMixedIndexes(3, 1, 2), String.format(foundFormat, 3, 1, 2));
 
         foundFormat = properties.getProperty("fourMixedIndexes");
         test("Third %3$s first %1$s second %2$s repeat second %2$s", foundFormat, 3, 1, 2);
-        Assert.assertEquals(StringFormatMessages.MESSAGES.fourMixedIndexes(3, 1, 2), String.format(foundFormat, 3, 1, 2));
+        Assertions.assertEquals(StringFormatMessages.MESSAGES.fourMixedIndexes(3, 1, 2), String.format(foundFormat, 3, 1, 2));
     }
 
     private void test(final String expectedFormat, final String found, final Object... args) {
-        Assert.assertEquals(expectedFormat, found);
-        Assert.assertEquals(String.format(expectedFormat, args), String.format(found, args));
+        Assertions.assertEquals(expectedFormat, found);
+        Assertions.assertEquals(String.format(expectedFormat, args), String.format(found, args));
     }
 
     private static Properties resolveProperties(final Class<?> type) throws IOException {
@@ -96,9 +96,9 @@ public class GeneratedSkeletonTest {
     }
     private static Path findFile(final Class<?> type) {
         final String filePath = type.getName().replace('.', File.separatorChar) + ".i18n.properties";
-        Assert.assertNotNull("Could not find the test.skeleton.file.path", DIR);
+        Assertions.assertNotNull(DIR, "Could not find the test.skeleton.file.path");
         final Path file = Paths.get(DIR, filePath);
-        Assert.assertTrue(String.format("File %s was not found.", file), Files.exists(file));
+        Assertions.assertTrue(Files.exists(file), String.format("File %s was not found.", file));
         return file;
     }
 }

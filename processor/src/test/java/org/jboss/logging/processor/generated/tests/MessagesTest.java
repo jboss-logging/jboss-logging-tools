@@ -32,8 +32,8 @@ import org.jboss.logging.processor.generated.ValidMessages;
 import org.jboss.logging.processor.generated.ValidMessages.CustomException;
 import org.jboss.logging.processor.generated.ValidMessages.LoggingException;
 import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -46,26 +46,26 @@ public class MessagesTest {
 
     @Test
     public void testFormats() {
-        Assert.assertEquals(FORMATTED_TEST_MSG, ValidMessages.MESSAGES.testWithNewLine());
-        Assert.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormat());
-        Assert.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage());
+        Assertions.assertEquals(FORMATTED_TEST_MSG, ValidMessages.MESSAGES.testWithNewLine());
+        Assertions.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormat());
+        Assertions.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage());
 
         final int value = 10;
-        Assert.assertEquals(value, ValidMessages.MESSAGES.fieldMessage(value).value);
-        Assert.assertEquals(value, ValidMessages.MESSAGES.paramMessage(value).value);
-        Assert.assertEquals(value, ValidMessages.MESSAGES.propertyMessage(value).value);
+        Assertions.assertEquals(value, ValidMessages.MESSAGES.fieldMessage(value).value);
+        Assertions.assertEquals(value, ValidMessages.MESSAGES.paramMessage(value).value);
+        Assertions.assertEquals(value, ValidMessages.MESSAGES.propertyMessage(value).value);
 
         final StringOnlyException e = ValidMessages.MESSAGES.stringOnlyException(new RuntimeException());
-        Assert.assertEquals(FORMATTED_TEST_MSG, e.getMessage());
-        Assert.assertNotNull(e.getCause());
+        Assertions.assertEquals(FORMATTED_TEST_MSG, e.getMessage());
+        Assertions.assertNotNull(e.getCause());
 
-        Assert.assertTrue("Incorrect type constructed", ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException);
+        Assertions.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException, "Incorrect type constructed");
 
         final String arg1 = "value-1";
         final String arg2 = "value-2";
         final String messageFormatMessage = MessageFormat.format(ValidMessages.TEST_MESSAGE_FORMAT, arg1, arg2);
-        Assert.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormat(arg1, arg2));
-        Assert.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormatException(arg1, arg2).getMessage());
+        Assertions.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormat(arg1, arg2));
+        Assertions.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormatException(arg1, arg2).getMessage());
     }
 
     @Test
@@ -103,128 +103,128 @@ public class MessagesTest {
 
     @Test
     public void testPropertyConstants() {
-        Assert.assertTrue(MethodMessageConstants.MESSAGES.booleanProperty().value);
-        Assert.assertEquals("x".getBytes()[0], MethodMessageConstants.MESSAGES.byteProperty().value);
-        Assert.assertEquals(MethodMessageConstants.testChar, MethodMessageConstants.MESSAGES.charProperty().value);
-        Assert.assertEquals(MethodMessageConstants.ValueType.class, MethodMessageConstants.MESSAGES.classProperty().value);
-        Assert.assertEquals(Double.MAX_VALUE, MethodMessageConstants.MESSAGES.douleProperty().value, 0);
-        Assert.assertEquals(Float.MAX_VALUE, MethodMessageConstants.MESSAGES.floatProperty().value, 0);
-        Assert.assertEquals(Integer.MAX_VALUE, MethodMessageConstants.MESSAGES.intProperty().value);
-        Assert.assertEquals(Long.MAX_VALUE, MethodMessageConstants.MESSAGES.longProperty().value);
-        Assert.assertEquals(Short.MAX_VALUE, MethodMessageConstants.MESSAGES.shortProperty().value);
-        Assert.assertEquals(MethodMessageConstants.stringTest, MethodMessageConstants.MESSAGES.stringProperty().value);
+        Assertions.assertTrue(MethodMessageConstants.MESSAGES.booleanProperty().value);
+        Assertions.assertEquals("x".getBytes()[0], MethodMessageConstants.MESSAGES.byteProperty().value);
+        Assertions.assertEquals(MethodMessageConstants.testChar, MethodMessageConstants.MESSAGES.charProperty().value);
+        Assertions.assertEquals(MethodMessageConstants.ValueType.class, MethodMessageConstants.MESSAGES.classProperty().value);
+        Assertions.assertEquals(Double.MAX_VALUE, MethodMessageConstants.MESSAGES.douleProperty().value, 0);
+        Assertions.assertEquals(Float.MAX_VALUE, MethodMessageConstants.MESSAGES.floatProperty().value, 0);
+        Assertions.assertEquals(Integer.MAX_VALUE, MethodMessageConstants.MESSAGES.intProperty().value);
+        Assertions.assertEquals(Long.MAX_VALUE, MethodMessageConstants.MESSAGES.longProperty().value);
+        Assertions.assertEquals(Short.MAX_VALUE, MethodMessageConstants.MESSAGES.shortProperty().value);
+        Assertions.assertEquals(MethodMessageConstants.stringTest, MethodMessageConstants.MESSAGES.stringProperty().value);
         MethodMessageConstants.TypeException exception = MethodMessageConstants.MESSAGES.multiProperty();
-        Assert.assertEquals(String.class, exception.type);
-        Assert.assertEquals(MethodMessageConstants.stringTest, exception.value);
+        Assertions.assertEquals(String.class, exception.type);
+        Assertions.assertEquals(MethodMessageConstants.stringTest, exception.value);
         exception = MethodMessageConstants.MESSAGES.repeatableProperty();
-        Assert.assertEquals(String.class, exception.type);
-        Assert.assertEquals(MethodMessageConstants.stringTest, exception.value);
+        Assertions.assertEquals(String.class, exception.type);
+        Assertions.assertEquals(MethodMessageConstants.stringTest, exception.value);
     }
 
     @Test
     public void testFieldConstants() {
-        Assert.assertTrue(MethodMessageConstants.MESSAGES.booleanField().value);
-        Assert.assertEquals("x".getBytes()[0], MethodMessageConstants.MESSAGES.byteField().value);
-        Assert.assertEquals(MethodMessageConstants.testChar, MethodMessageConstants.MESSAGES.charField().value);
-        Assert.assertEquals(MethodMessageConstants.ValueType.class, MethodMessageConstants.MESSAGES.classField().value);
-        Assert.assertEquals(Double.MAX_VALUE, MethodMessageConstants.MESSAGES.douleField().value, 0);
-        Assert.assertEquals(Float.MAX_VALUE, MethodMessageConstants.MESSAGES.floatField().value, 0);
-        Assert.assertEquals(Integer.MAX_VALUE, MethodMessageConstants.MESSAGES.intField().value);
-        Assert.assertEquals(Long.MAX_VALUE, MethodMessageConstants.MESSAGES.longField().value);
-        Assert.assertEquals(Short.MAX_VALUE, MethodMessageConstants.MESSAGES.shortField().value);
-        Assert.assertEquals(MethodMessageConstants.stringTest, MethodMessageConstants.MESSAGES.stringField().value);
+        Assertions.assertTrue(MethodMessageConstants.MESSAGES.booleanField().value);
+        Assertions.assertEquals("x".getBytes()[0], MethodMessageConstants.MESSAGES.byteField().value);
+        Assertions.assertEquals(MethodMessageConstants.testChar, MethodMessageConstants.MESSAGES.charField().value);
+        Assertions.assertEquals(MethodMessageConstants.ValueType.class, MethodMessageConstants.MESSAGES.classField().value);
+        Assertions.assertEquals(Double.MAX_VALUE, MethodMessageConstants.MESSAGES.douleField().value, 0);
+        Assertions.assertEquals(Float.MAX_VALUE, MethodMessageConstants.MESSAGES.floatField().value, 0);
+        Assertions.assertEquals(Integer.MAX_VALUE, MethodMessageConstants.MESSAGES.intField().value);
+        Assertions.assertEquals(Long.MAX_VALUE, MethodMessageConstants.MESSAGES.longField().value);
+        Assertions.assertEquals(Short.MAX_VALUE, MethodMessageConstants.MESSAGES.shortField().value);
+        Assertions.assertEquals(MethodMessageConstants.stringTest, MethodMessageConstants.MESSAGES.stringField().value);
         MethodMessageConstants.TypeException exception = MethodMessageConstants.MESSAGES.multiField();
-        Assert.assertEquals(String.class, exception.type);
-        Assert.assertEquals(MethodMessageConstants.stringTest, exception.value);
+        Assertions.assertEquals(String.class, exception.type);
+        Assertions.assertEquals(MethodMessageConstants.stringTest, exception.value);
         exception = MethodMessageConstants.MESSAGES.repeatableField();
-        Assert.assertEquals(String.class, exception.type);
-        Assert.assertEquals(MethodMessageConstants.stringTest, exception.value);
+        Assertions.assertEquals(String.class, exception.type);
+        Assertions.assertEquals(MethodMessageConstants.stringTest, exception.value);
     }
 
     @Test
     public void testSupplierReturnType() {
         Supplier<RuntimeException> runtimeExceptionSupplier = ValidMessages.MESSAGES.testSupplierRuntimeException();
-        Assert.assertNotNull(runtimeExceptionSupplier);
+        Assertions.assertNotNull(runtimeExceptionSupplier);
         RuntimeException runtimeException = runtimeExceptionSupplier.get();
-        Assert.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
-        Assert.assertEquals(RuntimeException.class, runtimeException.getClass());
+        Assertions.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
+        Assertions.assertEquals(RuntimeException.class, runtimeException.getClass());
 
-        Assert.assertEquals(ValidMessages.MESSAGES.testSupplierString().get(), FORMATTED_TEST_MSG);
+        Assertions.assertEquals(ValidMessages.MESSAGES.testSupplierString().get(), FORMATTED_TEST_MSG);
 
         runtimeExceptionSupplier = ValidMessages.MESSAGES.invalidCredentialsSupplier();
-        Assert.assertNotNull(runtimeExceptionSupplier);
+        Assertions.assertNotNull(runtimeExceptionSupplier);
         runtimeException = runtimeExceptionSupplier.get();
-        Assert.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
+        Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
 
         // Test suppliers with fields/properties
         int value = 5;
         Supplier<CustomException> customExceptionSupplier = ValidMessages.MESSAGES.fieldMessageSupplier(value);
-        Assert.assertNotNull(customExceptionSupplier);
+        Assertions.assertNotNull(customExceptionSupplier);
         CustomException customException = customExceptionSupplier.get();
-        Assert.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assert.assertEquals(CustomException.class, customException.getClass());
-        Assert.assertEquals(value, customException.value);
+        Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
+        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(value, customException.value);
 
         value = 20;
         customExceptionSupplier = ValidMessages.MESSAGES.propertyMessageSupplier(value);
-        Assert.assertNotNull(customExceptionSupplier);
+        Assertions.assertNotNull(customExceptionSupplier);
         customException = customExceptionSupplier.get();
-        Assert.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assert.assertEquals(CustomException.class, customException.getClass());
-        Assert.assertEquals(value, customException.value);
+        Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
+        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(value, customException.value);
 
     }
 
     @Test
     public void testFunctionProducerMessages() {
         RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, "start");
-        Assert.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
-        Assert.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
+        Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
+        Assertions.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
 
         IOException ioException = ValidMessages.MESSAGES.operationFailed(IOException::new, "query");
-        Assert.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "query"), ioException.getMessage());
+        Assertions.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "query"), ioException.getMessage());
 
         final Supplier<IllegalStateException> supplier = ValidMessages.MESSAGES.supplierFunction(IllegalStateException::new);
         runtimeException = supplier.get();
-        Assert.assertEquals(IllegalStateException.class, runtimeException.getClass());
-        Assert.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
+        Assertions.assertEquals(IllegalStateException.class, runtimeException.getClass());
+        Assertions.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
 
         // Test functions with fields/properties
         int value = 5;
         CustomException customException = ValidMessages.MESSAGES.fieldMessageFunction(CustomException::new, value);
-        Assert.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assert.assertEquals(CustomException.class, customException.getClass());
-        Assert.assertEquals(customException.value, value);
+        Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
+        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(customException.value, value);
 
         value = 20;
         customException = ValidMessages.MESSAGES.propertyMessageFunction(CustomException::new, value);
-        Assert.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assert.assertEquals(CustomException.class, customException.getClass());
-        Assert.assertEquals(value, customException.value);
+        Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
+        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(value, customException.value);
     }
 
     @Test
     public void testBiFunctionProducerMessages() {
         final RuntimeException cause = new RuntimeException("This is the cause");
         RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, cause, "start");
-        Assert.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
-        Assert.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
-        Assert.assertEquals(cause, runtimeException.getCause());
+        Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
+        Assertions.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
+        Assertions.assertEquals(cause, runtimeException.getCause());
 
         runtimeException = ValidMessages.MESSAGES.throwableStringBiFunction(LoggingException::new, cause);
-        Assert.assertEquals(LoggingException.class, runtimeException.getClass());
-        Assert.assertEquals(cause, runtimeException.getCause());
+        Assertions.assertEquals(LoggingException.class, runtimeException.getClass());
+        Assertions.assertEquals(cause, runtimeException.getCause());
 
         final Supplier<RuntimeException> supplier = ValidMessages.MESSAGES.throwableStringBiFunctionSupplier(IllegalArgumentException::new, cause);
         runtimeException = supplier.get();
-        Assert.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
-        Assert.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
-        Assert.assertEquals(cause, runtimeException.getCause());
+        Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
+        Assertions.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
+        Assertions.assertEquals(cause, runtimeException.getCause());
 
     }
 
     private <T> void compare(final T[] a1, final T[] a2) {
-        Assert.assertTrue(String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)), equalsIgnoreOrder(a1, a2));
+        Assertions.assertTrue(equalsIgnoreOrder(a1, a2), String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)));
     }
 
     private <T> boolean equalsIgnoreOrder(final T[] a1, final T[] a2) {

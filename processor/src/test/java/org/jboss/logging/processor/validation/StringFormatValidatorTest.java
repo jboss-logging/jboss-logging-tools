@@ -22,12 +22,12 @@
 
 package org.jboss.logging.processor.validation;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Date;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Date: 14.06.2011
@@ -49,7 +49,7 @@ public class StringFormatValidatorTest {
             }
         }
         StringFormatValidator validator = StringFormatValidator.of(sb.toString());
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         final String[] validFormats = {
                 "%1$s %1$s %1$s",
@@ -61,7 +61,7 @@ public class StringFormatValidatorTest {
         };
         for (String s : validFormats) {
             validator = StringFormatValidator.of(s);
-            assertTrue(validator.detailMessage(), validator.isValid());
+            assertTrue(validator.isValid(), validator.detailMessage());
         }
     }
 
@@ -74,10 +74,10 @@ public class StringFormatValidatorTest {
     @Test
     public void validateParameterCount() {
         StringFormatValidator validator = StringFormatValidator.of("%1$s %1$s %1$s", "Test");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.of("Duke's Birthday: %1$tm %1$te,%1$tY", new Date());
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.of("Duke's Birthday: %1$tm %<te,%<tY", new Date(), new Date());
         assertFalse(validator.isValid());
@@ -86,22 +86,22 @@ public class StringFormatValidatorTest {
     @Test
     public void validateParameterTypePerPosition() {
         StringFormatValidator validator = StringFormatValidator.of("%1$s %2$d %3$s", "Test", 10, "Again");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.of("%3$s %1$d %2$s", "Test", 42, "order");
-        assertFalse(validator.detailMessage(), validator.isValid());
+        assertFalse(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.of("%2$d %1$s", "Test", 42);
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.of("%3$s %1$d %3$s %2$tm", 42, new Date(), "Test");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.of("%2$d %<d %s", "Test", 42);
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.of("The error is %s, I repeat %1$s", "invalid");
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
     }
 
@@ -111,17 +111,17 @@ public class StringFormatValidatorTest {
         String positional = "Test param 2 %2$s new line %n param 1 %1$s%n";
         // If parameters are specified in the either one of the formats, the validation should pass
         StringFormatValidator validator = StringFormatValidator.withTranslation(nonPositional, positional);
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.withTranslation(positional, nonPositional);
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         nonPositional = "Test param 1 %s percent %% param 2 %s%%%n";
         positional = "Test param 2 %2$s percent %% param 1 %1$s%%%n";
         validator = StringFormatValidator.withTranslation(nonPositional, positional);
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
 
         validator = StringFormatValidator.withTranslation(positional, nonPositional);
-        assertTrue(validator.detailMessage(), validator.isValid());
+        assertTrue(validator.isValid(), validator.detailMessage());
     }
 }
