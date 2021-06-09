@@ -31,7 +31,8 @@ import org.jboss.logging.annotations.ResolutionDoc;
  * Used for validating the XML for a {@code resolutionUrl} attribute.
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@BaseUrl("http://jboss.org/")
+@SuppressWarnings("unused")
+@BaseUrl("https://jboss.org/")
 @MessageBundle(projectCode = "RPTM")
 public interface TestReportMessages {
 

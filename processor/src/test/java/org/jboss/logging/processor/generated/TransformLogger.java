@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -36,18 +36,18 @@ import org.jboss.logging.annotations.Transform.TransformType;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
+@MessageLogger(projectCode = TestConstants.PROJECT_CODE)
 public interface TransformLogger {
 
-    final TransformLogger LOGGER = Logger.getMessageLogger(TransformLogger.class, AbstractLoggerTest.CATEGORY);
+    TransformLogger LOGGER = Logger.getMessageLogger(TransformLogger.class, TestConstants.CATEGORY);
 
-    final String HASH_CODE_MSG = "hashCode: %d";
+    String HASH_CODE_MSG = "hashCode: %d";
 
-    final String IDENTITY_HASH_CODE_MSG = "SystemIdentity: %d";
+    String IDENTITY_HASH_CODE_MSG = "SystemIdentity: %d";
 
-    final String GET_CLASS_MSG = "getClass: %s";
+    String GET_CLASS_MSG = "getClass: %s";
 
-    final String SIZE_MSG = "size: %d";
+    String SIZE_MSG = "size: %d";
 
     // getClass().hashCode();
     @LogMessage

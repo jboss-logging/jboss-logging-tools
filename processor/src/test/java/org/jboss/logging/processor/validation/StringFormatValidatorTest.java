@@ -34,6 +34,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("MagicNumber")
 public class StringFormatValidatorTest {
 
     @Test

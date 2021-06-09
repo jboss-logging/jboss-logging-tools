@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
 import org.jboss.logging.Logger;
+import org.jboss.logging.processor.generated.DefaultLogger;
 import org.jboss.logging.processor.generated.DefaultLogger.CustomFormatter;
+import org.jboss.logging.processor.generated.StringFormatLogger;
+import org.jboss.logging.processor.generated.TestConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -123,7 +127,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         final String fileName = "StringFormatLogger.i18n%s.properties";
         final Properties en = findFile(String.format(fileName, ""));
         final Properties es = findFile(String.format(fileName, "_es"));
-        final StringFormatLogger logger = Logger.getMessageLogger(StringFormatLogger.class, CATEGORY, new Locale("es"));
+        final StringFormatLogger logger = Logger.getMessageLogger(StringFormatLogger.class, TestConstants.CATEGORY, new Locale("es"));
         final Date date = new Date();
         logger.dukesBirthday(date);
         logger.dukesBirthdayFailure(date);
@@ -142,7 +146,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
     }
 
     private static DefaultLogger getLogger(final Locale locale) {
-        return Logger.getMessageLogger(DefaultLogger.class, CATEGORY, locale);
+        return Logger.getMessageLogger(DefaultLogger.class, TestConstants.CATEGORY, locale);
     }
 
     private void compare(final String key, final Properties properties, final Object... params) throws InterruptedException {
@@ -163,9 +167,10 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
 
     private static Properties findFile(final String fileName) throws IOException {
         final Properties properties = new Properties();
-        final String name = CATEGORY.replace(".", File.separator) + File.separator + fileName;
+        final String name = TestConstants.CATEGORY.replace(".", File.separator) + File.separator + fileName;
         final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
-        properties.load(new InputStreamReader(in, "utf-8"));
+        Assert.assertNotNull(in);
+        properties.load(new InputStreamReader(in, StandardCharsets.UTF_8));
         return properties;
     }
 

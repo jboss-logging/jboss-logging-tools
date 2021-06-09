@@ -36,10 +36,10 @@ public class VersionComparatorTest {
     public void testComparator() {
         final String version = "3.1";
         Assert.assertTrue(VersionComparator.compareVersion("3.1.1", version) > 0);
-        Assert.assertTrue(VersionComparator.compareVersion("3.1", version) == 0);
+        Assert.assertEquals(0, VersionComparator.compareVersion("3.1", version));
         Assert.assertTrue(VersionComparator.compareVersion("3.0", version) < 0);
         Assert.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
         Assert.assertTrue(VersionComparator.compareVersion("3.0.1", version) < 0);
-        Assert.assertTrue(VersionComparator.compareVersion("3.1.x", version) == 0);
+        Assert.assertEquals(0, VersionComparator.compareVersion("3.1.x", version));
     }
 }

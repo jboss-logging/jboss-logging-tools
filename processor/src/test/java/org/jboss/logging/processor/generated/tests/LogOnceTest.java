@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
+import org.jboss.logging.processor.generated.LogOnceLogger;
+import org.jboss.logging.processor.generated.TestConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -62,8 +64,8 @@ public class LogOnceTest extends AbstractLoggerTest {
     }
 
     @Test
-    public void newLogger() throws Exception {
-        final LogOnceLogger logger = Logger.getMessageLogger(LogOnceLogger.class, CATEGORY);
+    public void newLogger() {
+        final LogOnceLogger logger = Logger.getMessageLogger(LogOnceLogger.class, TestConstants.CATEGORY);
         logger.deprecated("test.property");
         Assert.assertEquals("No messages should have been logged", 0, HANDLER.size());
 
@@ -73,7 +75,7 @@ public class LogOnceTest extends AbstractLoggerTest {
     }
 
     @Test
-    public void transformTests() throws Exception {
+    public void transformTests() {
         final List<String> listCache = Arrays.asList("item1", "item2", "item3");
         LogOnceLogger.LOGGER.cacheSizeChanged(listCache);
         LogOnceLogger.LOGGER.cacheSizeChanged(listCache);

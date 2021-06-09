@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,13 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
+import org.jboss.logging.processor.generated.MethodMessageConstants;
+import org.jboss.logging.processor.generated.ValidMessages;
 import org.jboss.logging.processor.generated.ValidMessages.CustomException;
 import org.jboss.logging.processor.generated.ValidMessages.LoggingException;
 import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
@@ -36,8 +38,10 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("MagicNumber")
 public class MessagesTest {
 
+    @SuppressWarnings("RedundantStringFormatCall")
     private static final String FORMATTED_TEST_MSG = String.format(ValidMessages.TEST_MSG);
 
     @Test
@@ -99,7 +103,7 @@ public class MessagesTest {
 
     @Test
     public void testPropertyConstants() {
-        Assert.assertEquals(true, MethodMessageConstants.MESSAGES.booleanProperty().value);
+        Assert.assertTrue(MethodMessageConstants.MESSAGES.booleanProperty().value);
         Assert.assertEquals("x".getBytes()[0], MethodMessageConstants.MESSAGES.byteProperty().value);
         Assert.assertEquals(MethodMessageConstants.testChar, MethodMessageConstants.MESSAGES.charProperty().value);
         Assert.assertEquals(MethodMessageConstants.ValueType.class, MethodMessageConstants.MESSAGES.classProperty().value);
@@ -119,7 +123,7 @@ public class MessagesTest {
 
     @Test
     public void testFieldConstants() {
-        Assert.assertEquals(true, MethodMessageConstants.MESSAGES.booleanField().value);
+        Assert.assertTrue(MethodMessageConstants.MESSAGES.booleanField().value);
         Assert.assertEquals("x".getBytes()[0], MethodMessageConstants.MESSAGES.byteField().value);
         Assert.assertEquals(MethodMessageConstants.testChar, MethodMessageConstants.MESSAGES.charField().value);
         Assert.assertEquals(MethodMessageConstants.ValueType.class, MethodMessageConstants.MESSAGES.classField().value);
@@ -138,7 +142,7 @@ public class MessagesTest {
     }
 
     @Test
-    public void testSupplierReturnType() throws Exception {
+    public void testSupplierReturnType() {
         Supplier<RuntimeException> runtimeExceptionSupplier = ValidMessages.MESSAGES.testSupplierRuntimeException();
         Assert.assertNotNull(runtimeExceptionSupplier);
         RuntimeException runtimeException = runtimeExceptionSupplier.get();
@@ -172,7 +176,7 @@ public class MessagesTest {
     }
 
     @Test
-    public void testFunctionProducerMessages() throws Exception {
+    public void testFunctionProducerMessages() {
         RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, "start");
         Assert.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
         Assert.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
@@ -200,7 +204,7 @@ public class MessagesTest {
     }
 
     @Test
-    public void testBiFunctionProducerMessages() throws Exception {
+    public void testBiFunctionProducerMessages() {
         final RuntimeException cause = new RuntimeException("This is the cause");
         RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, cause, "start");
         Assert.assertEquals(IllegalArgumentException.class, runtimeException.getClass());

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,11 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jboss.logging.processor.generated.TestConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -33,12 +34,10 @@ import org.junit.BeforeClass;
  */
 public abstract class AbstractLoggerTest {
 
-    static final String PROJECT_CODE = "LOGL";
     static final QueuedMessageHandler HANDLER = new QueuedMessageHandler();
-    static final String CATEGORY = AbstractLoggerTest.class.getPackage().getName();
     static final String LOGGER_ID_PATTERN = "LOG.*[0-9]:\\s";
 
-    private static final org.jboss.logmanager.Logger LOGGER = org.jboss.logmanager.Logger.getLogger(CATEGORY);
+    private static final org.jboss.logmanager.Logger LOGGER = org.jboss.logmanager.Logger.getLogger(TestConstants.CATEGORY);
 
     @BeforeClass
     public static void installHandler() {

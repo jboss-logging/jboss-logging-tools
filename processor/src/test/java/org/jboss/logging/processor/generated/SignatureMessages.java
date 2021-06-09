@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -38,9 +38,9 @@ import org.jboss.logging.processor.util.Objects.HashCodeBuilder;
  */
 @MessageBundle(projectCode = "SIG")
 public interface SignatureMessages {
-    final String TEST_MSG = "Test signature message";
+    String TEST_MSG = "Test signature message";
 
-    final SignatureMessages MESSAGES = Messages.getBundle(SignatureMessages.class);
+    SignatureMessages MESSAGES = Messages.getBundle(SignatureMessages.class);
 
     @Message(TEST_MSG)
     RedirectException redirect(@Param int responseCode, @Param String location);
@@ -64,7 +64,7 @@ public interface SignatureMessages {
     InvalidTextException invalidText(@Param int position, @Cause Throwable cause, @Param String text);
 
     @SuppressWarnings("unused")
-    static class RedirectException extends RuntimeException {
+    class RedirectException extends RuntimeException {
         final int statusCode;
         final String location;
 
@@ -131,7 +131,7 @@ public interface SignatureMessages {
     }
 
     @SuppressWarnings("unused")
-    static class TestException extends RuntimeException {
+    class TestException extends RuntimeException {
 
         public TestException(final String message) {
             super(message);
@@ -176,7 +176,7 @@ public interface SignatureMessages {
     }
 
     @SuppressWarnings("unused")
-    static class InvalidTextException extends RuntimeException {
+    class InvalidTextException extends RuntimeException {
         final String value;
         final int position;
 

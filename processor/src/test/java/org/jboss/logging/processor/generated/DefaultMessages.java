@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,9 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- *
- */
 package org.jboss.logging.processor.generated;
 
 import org.jboss.logging.annotations.Message;
@@ -32,9 +29,9 @@ import org.jboss.logging.annotations.ValidIdRange;
 /**
  * @author James R. Perkins Jr. (jrp)
  */
-@MessageBundle(projectCode = AbstractLoggerTest.PROJECT_CODE)
+@MessageBundle(projectCode = TestConstants.PROJECT_CODE)
 @ValidIdRange(min = 10000, max = 10050)
-interface DefaultMessages {
+public interface DefaultMessages {
 
     @Message(id = 10000, value = "Hello %s.")
     String hello(String name);
@@ -42,6 +39,7 @@ interface DefaultMessages {
     @Message(id = 10001, value = "How are you %s?")
     String howAreYou(String name);
 
+    @SuppressWarnings("unused")
     @Message(id = 10002, value = "Username %s is invalid.")
     RuntimeException invalidUser(String name);
 }

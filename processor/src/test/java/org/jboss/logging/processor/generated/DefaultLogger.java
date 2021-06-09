@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,10 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-/**
- *
- */
 package org.jboss.logging.processor.generated;
 
 import org.jboss.logging.BasicLogger;
@@ -39,19 +35,20 @@ import org.jboss.logging.annotations.ValidIdRange;
 /**
  * @author James R. Perkins Jr. (jrp)
  */
-@MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
+@SuppressWarnings("unused")
+@MessageLogger(projectCode = TestConstants.PROJECT_CODE)
 @ValidIdRange(min = 100, max = 150)
-interface DefaultLogger extends BasicLogger {
+public interface DefaultLogger extends BasicLogger {
 
-    final String TEST_MSG = "No format%n";
+    String TEST_MSG = "No format%n";
 
     /**
      * The default logger.
      */
-    DefaultLogger LOGGER = Logger.getMessageLogger(DefaultLogger.class, AbstractLoggerTest.CATEGORY);
+    DefaultLogger LOGGER = Logger.getMessageLogger(DefaultLogger.class, TestConstants.CATEGORY);
 
     // Used to test the ambiguous log field in the DelegatingBasicLogger
-    DefaultLogger log = Logger.getMessageLogger(DefaultLogger.class, AbstractLoggerTest.CATEGORY);
+    DefaultLogger log = Logger.getMessageLogger(DefaultLogger.class, TestConstants.CATEGORY);
 
     static DefaultLogger get(final String category) {
         return Logger.getMessageLogger(DefaultLogger.class, category);
@@ -86,10 +83,10 @@ interface DefaultLogger extends BasicLogger {
     void invalidSelection(String... validValues);
 
     @LogMessage(level = Level.ERROR)
-    @Message(id = Message.INHERIT, value = "Invalid value '%s'. Valid values are; %s")
+    @Message(value = "Invalid value '%s'. Valid values are; %s")
     void invalidSelection(String selected, String[] validValues);
 
-    static class CustomFormatter {
+    class CustomFormatter {
 
         private final String msg;
 

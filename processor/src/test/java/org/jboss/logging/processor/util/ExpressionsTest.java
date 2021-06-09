@@ -42,7 +42,7 @@ public class ExpressionsTest {
     }
 
     @Test
-    public void testEnvironmentVariables() throws Exception {
+    public void testEnvironmentVariables() {
         Assert.assertEquals("envValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_VAR}"));
         Assert.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_INVALID:defaultValue}"));
     }

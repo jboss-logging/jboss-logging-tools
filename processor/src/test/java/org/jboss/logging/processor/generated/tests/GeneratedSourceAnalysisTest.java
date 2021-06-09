@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -49,6 +49,14 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import org.jboss.logging.DelegatingBasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.processor.generated.DefaultLogger;
+import org.jboss.logging.processor.generated.DefaultMessages;
+import org.jboss.logging.processor.generated.ExtendedLogger;
+import org.jboss.logging.processor.generated.LogOnceLogger;
+import org.jboss.logging.processor.generated.RootLocaleLogger;
+import org.jboss.logging.processor.generated.TransformLogger;
+import org.jboss.logging.processor.generated.ValidLogger;
+import org.jboss.logging.processor.generated.ValidMessages;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

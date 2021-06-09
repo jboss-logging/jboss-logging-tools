@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,13 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.logging.processor.generated.TransformLogger;
+import org.jboss.logging.processor.generated.TransformMessages;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -54,7 +57,7 @@ public class TransformTest extends AbstractLoggerTest {
         Assert.assertEquals(String.format(TransformLogger.SIZE_MSG, s.length()), HANDLER.getMessage());
 
         // Log collections
-        final Collection<String> c = Arrays.asList("test");
+        final Collection<String> c = Collections.singletonList("test");
         TransformLogger.LOGGER.logClassHashCode(c);
         Assert.assertEquals(String.format(TransformLogger.HASH_CODE_MSG, c.getClass().hashCode()), HANDLER.getMessage());
         TransformLogger.LOGGER.logClassIdentityHashCode(c);
@@ -114,7 +117,7 @@ public class TransformTest extends AbstractLoggerTest {
     }
 
     @Test
-    public void testMessage() throws Exception {
+    public void testMessage() {
         // Log strings
         final String s = "This is a test string";
         Assert.assertEquals(String.format(TransformLogger.HASH_CODE_MSG, s.getClass().hashCode()), TransformMessages.MESSAGES.msgClassHashCode(s));
@@ -125,7 +128,7 @@ public class TransformTest extends AbstractLoggerTest {
         Assert.assertEquals(String.format(TransformLogger.SIZE_MSG, s.length()), TransformMessages.MESSAGES.msgSize(s));
 
         // Log collections
-        final Collection<String> c = Arrays.asList("test");
+        final Collection<String> c = Collections.singletonList("test");
         Assert.assertEquals(String.format(TransformLogger.HASH_CODE_MSG, c.getClass().hashCode()), TransformMessages.MESSAGES.msgClassHashCode(c));
         Assert.assertEquals(String.format(TransformLogger.IDENTITY_HASH_CODE_MSG, System.identityHashCode(c.getClass())), TransformMessages.MESSAGES.msgClassIdentityHashCode(c));
         Assert.assertEquals(String.format(TransformLogger.HASH_CODE_MSG, c.hashCode()), TransformMessages.MESSAGES.msgObjectHashCode(c));

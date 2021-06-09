@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,31 +22,10 @@
 
 package org.jboss.logging.processor.generated;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class LevelIdCheckTest extends AbstractLoggerTest {
-
-    @After
-    public void clearHandler() {
-        HANDLER.close();
-    }
-
-    @Test
-    public void inheritedId() throws Exception {
-        ValidLogger.LOGGER.processingError();
-        ValidLogger.LOGGER.processingError(new IllegalArgumentException());
-        ValidLogger.LOGGER.processingError(new IllegalArgumentException(), "generated");
-        ValidLogger.LOGGER.processingError(this, "invalid reference");
-        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
-        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
-        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
-        Assert.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
-    }
-
-
+public class TestConstants {
+    public static final String PROJECT_CODE = "LOGL";
+    public static final String CATEGORY = TestConstants.class.getPackage().getName();
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -31,8 +31,9 @@ import org.jboss.logging.annotations.ValidIdRange;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("unused")
 @ValidIdRange(min = 1000, max = 1500)
-@MessageLogger(projectCode = AbstractLoggerTest.PROJECT_CODE)
+@MessageLogger(projectCode = TestConstants.PROJECT_CODE)
 public interface ExtendedLogger extends DefaultLogger {
 
     @LogMessage(level = Level.ERROR)

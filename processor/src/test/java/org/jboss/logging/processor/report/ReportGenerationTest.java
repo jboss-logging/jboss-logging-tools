@@ -83,17 +83,17 @@ public class ReportGenerationTest {
             final XMLReader reader = parser.getXMLReader();
             reader.setErrorHandler(new ErrorHandler() {
                 @Override
-                public void warning(final SAXParseException exception) throws SAXException {
+                public void warning(final SAXParseException exception) {
                     // ignore
                 }
 
                 @Override
-                public void error(final SAXParseException exception) throws SAXException {
+                public void error(final SAXParseException exception) {
                     fail(exception);
                 }
 
                 @Override
-                public void fatalError(final SAXParseException exception) throws SAXException {
+                public void fatalError(final SAXParseException exception) {
                     fail(exception);
                 }
 
@@ -115,7 +115,7 @@ public class ReportGenerationTest {
         Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
 
             @Override
-            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) {
                 if (file.toString().endsWith(reportType.getExtension())) {
                     paths.add(file);
                 }

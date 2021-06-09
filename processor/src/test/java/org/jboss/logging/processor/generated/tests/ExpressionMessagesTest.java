@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,34 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.report;
+package org.jboss.logging.processor.generated.tests;
 
-import org.jboss.logging.Logger.Level;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.logging.annotations.ResolutionDoc;
+import org.jboss.logging.processor.generated.ExpressionLogger;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Used for validating the XML for a {@code resolutionUrl} attribute.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@SuppressWarnings("unused")
-@MessageLogger(projectCode = "RPTL", length = 5)
-@ResolutionDoc
-public interface TestReportLogger {
+public class ExpressionMessagesTest extends AbstractLoggerTest {
 
-    @LogMessage(level = Level.INFO)
-    @Message(id = 1, value = "Test message")
-    @ResolutionDoc(suffix = ".html")
-    void containsUrl();
+    @After
+    public void clearHandler() {
+        HANDLER.close();
+    }
 
-    @LogMessage(level = Level.INFO)
-    @Message("Test message")
-    void noUrl();
+    @Test
+    public void testExpressions() throws Exception {
+        ExpressionLogger.LOGGER.logProperty();
+        Assert.assertEquals("test property value", HANDLER.getMessage());
 
-    @LogMessage(level = Level.INFO)
-    @Message(id = 2, value = "Test message")
-    void defaultResolutionUrl();
+        ExpressionLogger.LOGGER.logPropertyDefault();
+        Assert.assertEquals("default value", HANDLER.getMessage());
+
+        Assert.assertEquals("test property value", ExpressionLogger.LOGGER.property());
+        Assert.assertEquals("default value", ExpressionLogger.LOGGER.propertyDefault());
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.logging.processor.generated;
+package org.jboss.logging.processor.generated.tests;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,6 +32,8 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 
+import org.jboss.logging.processor.generated.StringFormatLogger;
+import org.jboss.logging.processor.generated.StringFormatMessages;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -42,11 +42,12 @@ import org.jboss.logging.annotations.Suppressed;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings("unused")
 @MessageBundle(projectCode = "MSG")
 public interface ValidMessages {
-    final String TEST_MSG = "Test%n";
+    String TEST_MSG = "Test%n";
 
-    final ValidMessages MESSAGES = Messages.getBundle(ValidMessages.class);
+    ValidMessages MESSAGES = Messages.getBundle(ValidMessages.class);
 
     @Message(value = TEST_MSG)
     String testWithNewLine();
@@ -142,6 +143,7 @@ public interface ValidMessages {
     @Message(TEST_MSG)
     <T extends RuntimeException> Supplier<T> throwableStringBiFunctionSupplier(@Producer BiFunction<String, Exception, T> function, @Cause Exception cause);
 
+    @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
     class CustomException extends RuntimeException {
         public int value;
 
@@ -170,6 +172,7 @@ public interface ValidMessages {
         }
     }
 
+    @SuppressWarnings("unused")
     class LoggingException extends RuntimeException {
 
         public LoggingException(final Exception e) {
