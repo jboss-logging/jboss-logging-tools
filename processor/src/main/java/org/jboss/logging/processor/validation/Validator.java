@@ -61,6 +61,7 @@ import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
+import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -462,7 +463,7 @@ public final class Validator {
     private Collection<ValidationMessage> validateLogger(final Set<MessageMethod> messageMethods) {
         final List<ValidationMessage> messages = new ArrayList<>();
         for (MessageMethod messageMethod : messageMethods) {
-            if (messageMethod.isLoggerMethod()) {
+            if (messageMethod instanceof LoggerMessageMethod) {
                 messages.addAll(validateLoggerMethod(messageMethod));
             } else {
                 messages.addAll(validateBundleMethod(messageMethod));

@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.logging.annotations.BaseUrl;
 import org.jboss.logging.annotations.ResolutionDoc;
+import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.util.Expressions;
@@ -124,16 +125,13 @@ public abstract class ReportWriter implements Closeable {
      *
      * @return the log level or an empty string
      */
-    String getLogLevel(final MessageMethod method) {
-        if (method.isLoggerMethod()) {
-            final String logLevel = method.logLevel();
-            final int index = logLevel.lastIndexOf('.');
-            if (index > 0) {
-                return logLevel.substring(index + 1);
-            }
-            return logLevel;
+    String getLogLevel(final LoggerMessageMethod method) {
+        final String logLevel = method.logLevel();
+        final int index = logLevel.lastIndexOf('.');
+        if (index > 0) {
+            return logLevel.substring(index + 1);
         }
-        return "";
+        return logLevel;
     }
 
     String getUrl(final MessageMethod messageMethod, final String id) {

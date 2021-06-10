@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.AnnotatedConstruct;
 import javax.lang.model.element.AnnotationMirror;
@@ -54,6 +55,18 @@ public final class ElementHelper {
      * Disable instantiation.
      */
     private ElementHelper() {
+    }
+
+    /**
+     * Returns a single type argument for the element. If more than one type is found only the first one is returned.
+     *
+     * @param element the element to get the type arguments for
+     *
+     * @return an optional type argument
+     */
+    public static Optional<TypeMirror> getTypeArgument(final Element element) {
+        final List<? extends TypeMirror> types = getTypeArguments(element);
+        return types.isEmpty() ? Optional.empty() : Optional.of(types.get(0));
     }
 
     /**

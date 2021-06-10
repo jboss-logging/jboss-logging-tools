@@ -34,9 +34,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import org.jboss.jdeparser.JAssignableExpr;
 import org.jboss.jdeparser.JBlock;
@@ -61,9 +65,11 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
+import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Used to generate a message logger implementation.
@@ -133,8 +139,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         for (MessageMethod messageMethod : messageMethods) {
 
             // Create the messageMethod body
-            if (messageMethod.isLoggerMethod()) {
-                createLoggerMethod(messageMethod, classDef, logger);
+            if (messageMethod instanceof LoggerMessageMethod) {
+                createLoggerMethod((LoggerMessageMethod) messageMethod, classDef, logger);
             } else {
                 createBundleMethod(classDef, localeGetter, messageMethod);
             }
@@ -149,7 +155,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param classDef      the class definition used to create the method on
      * @param logger        the logger to use.
      */
-    private void createLoggerMethod(final MessageMethod messageMethod, final JClassDef classDef, final JAssignableExpr logger) {
+    private void createLoggerMethod(final LoggerMessageMethod messageMethod, final JClassDef classDef, final JAssignableExpr logger) {
         final String msgMethodName = messageMethod.messageMethodName();
         final JMethodDef method = classDef.method(JMod.PUBLIC | JMod.FINAL, messageMethod.returnType().name(), messageMethod.name());
         method.annotate(Override.class);
@@ -175,7 +181,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Check for the @Once annotation
         final JBlock body;
-        if (messageMethod.isAnnotatedWith(Once.class) && messageMethod.isLoggerMethod()) {
+        if (messageMethod.isAnnotatedWith(Once.class)) {
             final JType atomicBoolean = $t(AtomicBoolean.class);
             sourceFile._import(atomicBoolean);
             // The variable will be shared with overloaded methods
@@ -191,7 +197,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     logger.call("isEnabled").arg($v(messageMethod.logLevel())).and(
                             $v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)))
                     .block(Braces.REQUIRED);
-        } else if (!messageMethod.parametersAnnotatedWith(Transform.class).isEmpty()) {
+        } else if (messageMethod.wrapInEnabledCheck()) {
             body = baseBody._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
         } else {
             body = baseBody;
@@ -256,7 +262,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         final Transform[] transform = pos.transform();
                         for (int i = 0; i < positions.length; i++) {
                             final int index = positions[i] - 1;
-                            if (transform != null && transform.length > 0) {
+                            if (transform.length > 0) {
                                 final JAssignableExpr tVar = createTransformVar(parameterNames, body, param, transform[i], $v(var));
                                 if (index < args.size()) {
                                     args.add(index, tVar);
@@ -264,10 +270,16 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                                     args.add(tVar);
                                 }
                             } else {
-                                if (index < args.size()) {
-                                    args.add(index, $v(var));
+                                final JExpr resolvedVar;
+                                if (param.isSubtypeOf(Supplier.class)) {
+                                    resolvedVar = $v(var).call("get");
                                 } else {
-                                    args.add($v(var));
+                                    resolvedVar = $v(var);
+                                }
+                                if (index < args.size()) {
+                                    args.add(index, resolvedVar);
+                                } else {
+                                    args.add(resolvedVar);
                                 }
                             }
                         }
@@ -276,10 +288,26 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
                     if (!added) {
                         if (formatterClass == null) {
+                            final JExpr resolvedVar;
+                            if (param.isSubtypeOf(Supplier.class)) {
+                                // Handle the supplier type, if it's an array we need to invoke Arrays.toString(supplier.get())
+                                final Optional<TypeMirror> typeArg = ElementHelper.getTypeArgument(param);
+                                if (typeArg.isPresent() && typeArg.get().getKind() == TypeKind.ARRAY) {
+                                    sourceFile._import(Arrays.class);
+                                    resolvedVar = $t(Arrays.class).call("toString").arg($v(var).call("get"));
+                                } else {
+                                    // Get the value from the supplier
+                                    resolvedVar = $v(var).call("get");
+                                }
+                            } else {
+                                // We are not a supplier, so just wrap the var
+                                resolvedVar = $v(var);
+                            }
                             if (param.isArray() || param.isVarArgs()) {
+                                sourceFile._import(Arrays.class);
                                 args.add($t(Arrays.class).call("toString").arg($v(var)));
                             } else {
-                                args.add($v(var));
+                                args.add(resolvedVar);
                             }
                         } else {
                             args.add($t(formatterClass)._new().arg($v(var)));

@@ -22,6 +22,8 @@
 
 package org.jboss.logging.processor.generated;
 
+import java.util.function.Supplier;
+
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
@@ -99,4 +101,20 @@ public interface ValidLogger {
 
     @Message(id = 204, value = "Bundle message inside a logger")
     String bundleMessage();
+
+    @LogMessage(level = Level.ERROR)
+    @Message("Error: %s")
+    void expensiveLog(Supplier<String> error);
+
+    @LogMessage(level = Level.ERROR)
+    @Message( "Error: %s")
+    void expensiveLogArray(Supplier<Object[]> error);
+
+    @LogMessage(level = Level.WARN)
+    @Message("Expected: %s")
+    void expectedValues(String... expected);
+
+    @LogMessage(level = Level.DEBUG)
+    @Message("Debug: %s")
+    void debugValues(Supplier<String> values);
 }
