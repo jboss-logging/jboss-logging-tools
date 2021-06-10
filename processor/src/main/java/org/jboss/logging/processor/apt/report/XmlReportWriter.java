@@ -28,6 +28,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -77,8 +78,8 @@ class XmlReportWriter extends ReportWriter {
             if (!url.isEmpty()) {
                 xmlWriter.writeAttribute("resolutionUrl", url);
             }
-            if (messageMethod.isLoggerMethod()) {
-                xmlWriter.writeAttribute("logLevel", getLogLevel(messageMethod));
+            if (messageMethod instanceof LoggerMessageMethod) {
+                xmlWriter.writeAttribute("logLevel", getLogLevel((LoggerMessageMethod) messageMethod));
             } else {
                 xmlWriter.writeAttribute("returnType", messageMethod.returnType().name());
             }

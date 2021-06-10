@@ -49,6 +49,7 @@ import javax.tools.StandardLocation;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
+import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
@@ -258,8 +259,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
         final MessageMethod.Message msg = messageMethod.message();
         writer.write(String.format("# Id: %s", (msg.hasId() ? msg.id() : "none")));
         writer.newLine();
-        if (messageMethod.isLoggerMethod()) {
-            writer.write(String.format("# Level: %s", messageMethod.logLevel()));
+        if (messageMethod instanceof LoggerMessageMethod) {
+            writer.write(String.format("# Level: %s", ((LoggerMessageMethod) messageMethod).logLevel()));
             writer.newLine();
         }
         writer.write(String.format("# Message: %s", msg.value()));
@@ -322,7 +323,12 @@ final class TranslationFileGenerator extends AbstractGenerator {
     }
 
     private boolean isMethodWritable(final MessageMethod method) {
-        return !(comparator != null && method.isLoggerMethod()) || (comparator.compareTo(method.logLevel()) >= 0);
+        if (method instanceof LoggerMessageMethod) {
+            if (comparator != null) {
+                return comparator.compareTo(((LoggerMessageMethod) method).logLevel()) >= 0;
+            }
+        }
+        return true;
     }
 
     private static void writeSeparatorLine(final BufferedWriter writer) throws IOException {

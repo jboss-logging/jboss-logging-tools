@@ -127,34 +127,11 @@ public interface MessageMethod extends Comparable<MessageMethod>, JavaDocComment
     Parameter cause();
 
     /**
-     * Returns the LogMessage annotation associated with this method only if {@link #isLoggerMethod()} returns
-     * {@code true}.
-     *
-     * @return the log message annotation
-     */
-    String loggerMethod();
-
-    /**
-     * Returns the log level parameter associated with the method only if {@link #isLoggerMethod()} returns
-     * {@code true}.
-     *
-     * @return the enum name of the {@linkplain org.jboss.logging.Logger.Level log level}
-     */
-    String logLevel();
-
-    /**
      * Returns the number of parameters minus the cause parameter count for the method.
      *
      * @return the number of parameters minus the cause parameter count for the method.
      */
     int formatParameterCount();
-
-    /**
-     * Returns {@code true} if this is a logger method, otherwise {@code false}.
-     *
-     * @return {@code true} if this is a logger method, otherwise {@code false}.
-     */
-    boolean isLoggerMethod();
 
     /**
      * Represents a {@link org.jboss.logging.annotations.Message} annotation on a method.

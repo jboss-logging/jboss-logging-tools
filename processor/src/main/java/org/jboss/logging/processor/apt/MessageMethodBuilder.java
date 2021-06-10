@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -48,7 +49,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Field;
 import org.jboss.logging.annotations.LogMessage;
@@ -58,6 +58,8 @@ import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Suppressed;
+import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ReturnType;
@@ -93,7 +95,7 @@ final class MessageMethodBuilder {
         final Elements elements = processingEnv.getElementUtils();
         final Set<MessageMethod> result = new LinkedHashSet<>();
         for (ExecutableElement elementMethod : methods) {
-            final AptMessageMethod resultMethod = new AptMessageMethod(elements, elementMethod);
+            final AptMessageMethod resultMethod = createMessageMethod(elements, elementMethod);
             resultMethod.inheritsMessage = inheritsMessage(methods, elementMethod);
             resultMethod.message = findMessage(methods, elementMethod);
             resultMethod.isOverloaded = isOverloaded(methods, elementMethod);
@@ -282,23 +284,30 @@ final class MessageMethodBuilder {
         return new MessageMethodBuilder(processingEnv, expressionProperties);
     }
 
+    private static AptMessageMethod createMessageMethod(final Elements elements, final ExecutableElement elementMethod) {
+        if (elementMethod.getAnnotation(LogMessage.class) == null) {
+            return new AptMessageMethod(elements, elementMethod);
+        }
+        return new AptLoggerMessageMethod(elements, elementMethod);
+    }
+
     /**
      * An implementation for the MessageMethod interface.
      */
     private static class AptMessageMethod implements MessageMethod {
 
-        private final Elements elements;
-        private final Map<TypeMirror, Set<Parameter>> parameters;
-        private final Set<ThrowableType> thrownTypes;
-        private final ExecutableElement method;
-        private ReturnType returnType;
-        private Parameter cause;
-        private boolean inheritsMessage;
-        private boolean isOverloaded;
-        private Message message;
-        private String messageMethodName;
-        private String translationKey;
-        private int formatParameterCount;
+        final Elements elements;
+        final Map<TypeMirror, Set<Parameter>> parameters;
+        final Set<ThrowableType> thrownTypes;
+        final ExecutableElement method;
+        ReturnType returnType;
+        Parameter cause;
+        boolean inheritsMessage;
+        boolean isOverloaded;
+        Message message;
+        String messageMethodName;
+        String translationKey;
+        int formatParameterCount;
 
         /**
          * Private constructor for the
@@ -410,34 +419,8 @@ final class MessageMethodBuilder {
         }
 
         @Override
-        public String loggerMethod() {
-            switch (message.format()) {
-                case MESSAGE_FORMAT:
-                    return "logv";
-                case NO_FORMAT:
-                    return "log";
-                case PRINTF:
-                    return "logf";
-                default:
-                    // Should never be hit
-                    return "log";
-            }
-        }
-
-        @Override
-        public String logLevel() {
-            final LogMessage logMessage = method.getAnnotation(LogMessage.class);
-            return (logMessage.level() == null ? Logger.Level.INFO.name() : logMessage.level().name());
-        }
-
-        @Override
         public int formatParameterCount() {
             return formatParameterCount;
-        }
-
-        @Override
-        public boolean isLoggerMethod() {
-            return isAnnotatedWith(LogMessage.class);
         }
 
         @Override
@@ -446,11 +429,6 @@ final class MessageMethodBuilder {
                     .add(name())
                     .add(parameters())
                     .add(returnType()).toHashCode();
-        }
-
-        @Override
-        public ExecutableElement getDelegate() {
-            return method;
         }
 
         @Override
@@ -472,8 +450,12 @@ final class MessageMethodBuilder {
             return ToStringBuilder.of(this)
                     .add("name", name())
                     .add("returnType", returnType())
-                    .add("parameters", parameters())
-                    .add("loggerMethod", loggerMethod()).toString();
+                    .add("parameters", parameters()).toString();
+        }
+
+        @Override
+        public ExecutableElement getDelegate() {
+            return method;
         }
 
         @Override
@@ -504,6 +486,63 @@ final class MessageMethodBuilder {
         @Override
         public String getComment() {
             return elements.getDocComment(method);
+        }
+    }
+
+    private static class AptLoggerMessageMethod extends AptMessageMethod implements LoggerMessageMethod {
+
+
+        /**
+         * Private constructor for the
+         *
+         * @param elements the elements utility.
+         * @param method   the method to describe.
+         */
+        AptLoggerMessageMethod(final Elements elements, final ExecutableElement method) {
+            super(elements, method);
+        }
+
+        @Override
+        public String loggerMethod() {
+            switch (message.format()) {
+                case MESSAGE_FORMAT:
+                    return "logv";
+                case NO_FORMAT:
+                    return "log";
+                case PRINTF:
+                    return "logf";
+                default:
+                    // Should never be hit
+                    return "log";
+            }
+        }
+
+        @Override
+        public String logLevel() {
+            final LogMessage logMessage = method.getAnnotation(LogMessage.class);
+            return logMessage.level().name();
+        }
+
+        @Override
+        public boolean wrapInEnabledCheck() {
+            if (!parametersAnnotatedWith(Transform.class).isEmpty()) {
+                return true;
+            }
+            for (Parameter parameter : parameters()) {
+                if (parameter.isSubtypeOf(Supplier.class)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.of(this)
+                    .add("name", name())
+                    .add("returnType", returnType())
+                    .add("parameters", parameters())
+                    .add("loggerMethod", loggerMethod()).toString();
         }
     }
 

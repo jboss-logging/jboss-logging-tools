@@ -25,6 +25,7 @@ package org.jboss.logging.processor.apt.report;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 
@@ -84,8 +85,8 @@ class AsciidocReportWriter extends ReportWriter {
         writer.newLine();
         writer.append('|').append(escape(msg.value()));
         writer.newLine();
-        if (messageMethod.isLoggerMethod()) {
-            writer.append('|').append(getLogLevel(messageMethod));
+        if (messageMethod instanceof LoggerMessageMethod) {
+            writer.append('|').append(getLogLevel((LoggerMessageMethod) messageMethod));
             writer.newLine();
             writer.append("|void");
         } else {

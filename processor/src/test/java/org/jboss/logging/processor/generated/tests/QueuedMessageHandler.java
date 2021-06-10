@@ -26,6 +26,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.logging.processor.util.Objects;
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
 
@@ -63,5 +64,12 @@ class QueuedMessageHandler extends ExtHandler {
     @Override
     public void close() throws SecurityException {
         messages.clear();
+    }
+
+    @Override
+    public String toString() {
+        return Objects.ToStringBuilder.of(this)
+                .add("messages", messages)
+                .toString();
     }
 }
