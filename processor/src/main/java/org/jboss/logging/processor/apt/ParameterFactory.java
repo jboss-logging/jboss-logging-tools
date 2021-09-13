@@ -43,6 +43,7 @@ import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Transform;
+import org.jboss.logging.annotations.TransformException;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.util.Comparison;
@@ -119,7 +120,8 @@ final class ParameterFactory {
             isFormatArg = param.getAnnotationMirrors().isEmpty() ||
                     ElementHelper.isAnnotatedWith(param, FormatWith.class) ||
                     ElementHelper.isAnnotatedWith(param, Transform.class) ||
-                    ElementHelper.isAnnotatedWith(param, Pos.class);
+                    ElementHelper.isAnnotatedWith(param, Pos.class) ||
+                    ElementHelper.isAnnotatedWith(param, TransformException.class);
         }
 
         @Override

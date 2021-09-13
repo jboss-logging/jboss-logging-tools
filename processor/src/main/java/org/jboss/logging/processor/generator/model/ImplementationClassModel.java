@@ -74,6 +74,7 @@ import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
+import org.jboss.logging.annotations.TransformException;
 import org.jboss.logging.processor.apt.ProcessingException;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -214,6 +215,10 @@ abstract class ImplementationClassModel extends ClassModel {
                             }
                         }
                     }
+                    added = true;
+                }
+                if (param.isAnnotatedWith(TransformException.class)) {
+                    args.add($v(var).call("getLocalizedMessage"));
                     added = true;
                 }
                 if (!added) {
@@ -381,47 +386,39 @@ abstract class ImplementationClassModel extends ClassModel {
     }
 
     private JExpr createReturnType(final JClassDef classDef, final MessageMethod messageMethod, final JBlock body, final JCall format, final Map<String, JParamDeclaration> fields, final Map<String, JParamDeclaration> properties) {
-        boolean callInitCause = false;
         final Set<Parameter> producers = messageMethod.parametersAnnotatedWith(Producer.class);
         final JType type;
         final JVarDeclaration resultField;
+        // There should only be one parameter annotated with TransformException
+        final Parameter teParameter = messageMethod.parametersAnnotatedWith(TransformException.class)
+                .stream()
+                .findFirst()
+                .orElse(null);
 
         // If there are no producers we need to construct a new return type
         if (producers.isEmpty()) {
             final ThrowableType returnType = messageMethod.returnType().throwableReturnType();
             type = JTypes.typeOf(returnType.asType());
-            // Import once more as the throwable return type may be different than the actual return type
+            // Import once more as the throwable return type may be different from the actual return type
             sourceFile._import(type);
-            final JCall result = type._new();
-            resultField = body.var(FINAL, type, "result", result);
-            if (returnType.useConstructionParameters()) {
-                for (Parameter param : returnType.constructionParameters()) {
-                    if (param.isMessageMethod()) {
-                        result.arg(format);
+            final Collection<ThrowableType> suggestions = returnType.suggestions();
+            if (teParameter == null || suggestions.isEmpty()) {
+                resultField = constructReturnType(messageMethod, returnType, format, body, null);
+            } else {
+                resultField = body.var(FINAL, type, "result");
+                JIf ifBody = null;
+                for (ThrowableType suggested : suggestions) {
+                    if (ifBody == null) {
+                        ifBody = body._if($v(teParameter.name())._instanceof(JTypes.typeOf(suggested.asType())));
                     } else {
-                        result.arg($v(param.name()));
+                        ifBody = ifBody.elseIf($v(teParameter.name())._instanceof(JTypes.typeOf(suggested.asType())));
                     }
+                    constructReturnType(messageMethod, suggested, format, ifBody, resultField);
                 }
-                callInitCause = messageMethod.hasCause() && !returnType.causeSetInConstructor();
-            } else if (returnType.hasStringAndThrowableConstructor() && messageMethod.hasCause()) {
-                result.arg(format).arg($v(messageMethod.cause().name()));
-            } else if (returnType.hasThrowableAndStringConstructor() && messageMethod.hasCause()) {
-                result.arg($v(messageMethod.cause().name())).arg(format);
-            } else if (returnType.hasStringConstructor()) {
-                result.arg(format);
-                if (messageMethod.hasCause()) {
-                    callInitCause = true;
-                }
-            } else if (returnType.hasThrowableConstructor() && messageMethod.hasCause()) {
-                result.arg($v(messageMethod.cause().name()));
-            } else if (returnType.hasStringAndThrowableConstructor() && !messageMethod.hasCause()) {
-                result.arg(format).arg(NULL);
-            } else if (returnType.hasThrowableAndStringConstructor() && !messageMethod.hasCause()) {
-                result.arg(NULL).arg(format);
-            } else if (messageMethod.hasCause()) {
-                callInitCause = true;
+                constructReturnType(messageMethod, returnType, format, ifBody._else(), resultField);
             }
         } else {
+            boolean callInitCause = false;
             final TypeMirror returnType = messageMethod.returnType().resolvedType();
             // Should only be one producer
             final Parameter producer = producers.iterator().next();
@@ -461,18 +458,24 @@ abstract class ImplementationClassModel extends ClassModel {
                 callInitCause = messageMethod.hasCause();
             }
             resultField = body.var(FINAL, type, "result", result);
-        }
-        // Assign the result field the result value
-        if (callInitCause) {
-            body.add($v(resultField).call("initCause").arg($v(messageMethod.cause().name())));
+            // Assign the result field the result value
+            if (callInitCause) {
+                body.add($v(resultField).call("initCause").arg($v(messageMethod.cause().name())));
+            }
         }
 
         // Get the @Property or @Properties annotation values
         addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Properties.class, Property.class), body, $v(resultField), false);
         addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Fields.class, Field.class), body, $v(resultField), true);
 
-        // Remove this caller from the stack trace
-        body.add(getCopyStackMethod(classDef).arg($v(resultField)));
+        // Determine how the stack trace should be copied. If annotated with TransformException and copyStackTrace() is
+        // true, then we copy the parameters stack trace.
+        if (teParameter != null && teParameter.getAnnotation(TransformException.class).copyStackTrace()) {
+            body.add($v(resultField).call("setStackTrace").arg($v(teParameter.name()).call("getStackTrace")));
+        } else {
+            // Remove this caller from the stack trace
+            body.add(getCopyStackMethod(classDef).arg($v(resultField)));
+        }
 
         // Add any suppressed messages
         final Set<Parameter> suppressed = messageMethod.parametersAnnotatedWith(Suppressed.class);
@@ -495,6 +498,53 @@ abstract class ImplementationClassModel extends ClassModel {
         fields.forEach((key, value) -> body.assign(resultExpr.field(key), $v(value)));
         properties.forEach((key, value) -> body.add(resultExpr.call(key).arg($v(value))));
         return resultExpr;
+    }
+
+    private JVarDeclaration constructReturnType(final MessageMethod messageMethod, final ThrowableType returnType, final JCall format,
+                                      final JBlock body, final JVarDeclaration resultField) {
+        final JType type = JTypes.typeOf(returnType.asType());
+        // Import once more as the throwable return type may be different from the actual return type
+        sourceFile._import(type);
+        boolean callInitCause = false;
+        final JCall result = type._new();
+        if (returnType.useConstructionParameters()) {
+            for (Parameter param : returnType.constructionParameters()) {
+                if (param.isMessageMethod()) {
+                    result.arg(format);
+                } else {
+                    result.arg($v(param.name()));
+                }
+            }
+            callInitCause = messageMethod.hasCause() && !returnType.causeSetInConstructor();
+        } else if (returnType.hasStringAndThrowableConstructor() && messageMethod.hasCause()) {
+            result.arg(format).arg($v(messageMethod.cause().name()));
+        } else if (returnType.hasThrowableAndStringConstructor() && messageMethod.hasCause()) {
+            result.arg($v(messageMethod.cause().name())).arg(format);
+        } else if (returnType.hasStringConstructor()) {
+            result.arg(format);
+            if (messageMethod.hasCause()) {
+                callInitCause = true;
+            }
+        } else if (returnType.hasThrowableConstructor() && messageMethod.hasCause()) {
+            result.arg($v(messageMethod.cause().name()));
+        } else if (returnType.hasStringAndThrowableConstructor() && !messageMethod.hasCause()) {
+            result.arg(format).arg(NULL);
+        } else if (returnType.hasThrowableAndStringConstructor() && !messageMethod.hasCause()) {
+            result.arg(NULL).arg(format);
+        } else if (messageMethod.hasCause()) {
+            callInitCause = true;
+        }
+        final JVarDeclaration returnField;
+        if (resultField == null) {
+            returnField = body.var(FINAL, type, "result", result);
+        } else {
+            returnField = resultField;
+            body.assign($v(returnField), result);
+        }
+        if (callInitCause) {
+            body.add($v(returnField).call("initCause").arg($v(messageMethod.cause().name())));
+        }
+        return returnField;
     }
 
     protected final void addThrownTypes(final MessageMethod messageMethod, final JMethodDef jMethod) {

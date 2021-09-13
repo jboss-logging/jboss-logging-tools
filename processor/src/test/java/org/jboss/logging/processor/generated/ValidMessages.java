@@ -22,6 +22,11 @@
 
 package org.jboss.logging.processor.generated;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.BindException;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -37,7 +42,9 @@ import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Producer;
 import org.jboss.logging.annotations.Property;
+import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Suppressed;
+import org.jboss.logging.annotations.TransformException;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -145,6 +152,16 @@ public interface ValidMessages {
 
     @Message(TEST_MSG)
     UncheckedException wrapped(@Cause Throwable cause);
+
+    @Message("Binding to %s failed: %s")
+    IOException bindFailed(SocketAddress address, @TransformException({BindException.class, SocketException.class}) IOException toCopy);
+
+    @Message("Binding to %s failed: %s")
+    IOException bindFailedNewStackTrace(SocketAddress address, @Cause @TransformException(copyStackTrace = false) IOException toCopy);
+
+    @Message("Unchecked IO: %s")
+    @Signature(value = {String.class, IOException.class}, causeIndex = 1)
+    UncheckedIOException uncheckedIO(@Cause @TransformException(copyStackTrace = false) IOException toCopy);
 
     @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
     class CustomException extends RuntimeException {

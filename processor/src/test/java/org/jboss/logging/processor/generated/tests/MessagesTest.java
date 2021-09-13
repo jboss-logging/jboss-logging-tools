@@ -23,6 +23,11 @@
 package org.jboss.logging.processor.generated.tests;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -230,6 +235,42 @@ public class MessagesTest {
         Assertions.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
         Assertions.assertEquals(cause, runtimeException.getCause());
 
+    }
+
+    @Test
+    public void testTransformException() {
+        final SocketAddress address = new InetSocketAddress("localhost", 9990);
+        IOException cause = new BindException("Address already in use");
+        IOException e = ValidMessages.MESSAGES.bindFailed(address, cause);
+        Assertions.assertTrue(e instanceof BindException);
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertArrayEquals(cause.getStackTrace(), e.getStackTrace());
+
+
+        cause = new SocketException("Address already in use");
+        e = ValidMessages.MESSAGES.bindFailed(address, cause);
+        Assertions.assertTrue(e instanceof SocketException);
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertArrayEquals(cause.getStackTrace(), e.getStackTrace());
+    }
+
+    @Test
+    public void testTransformExceptionNewStackTrace() {
+        final SocketAddress address = new InetSocketAddress("localhost", 9990);
+        final IOException cause = new BindException("Address already in use");
+        final IOException e = ValidMessages.MESSAGES.bindFailedNewStackTrace(address, cause);
+        Assertions.assertEquals(IOException.class, e.getClass());
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertFalse(Arrays.equals(cause.getStackTrace(), e.getStackTrace()), "The stack traces should not match.");
+        Assertions.assertEquals(cause, e.getCause());
+    }
+
+    @Test
+    public void testTransformSpecialException() {
+        final IOException cause = new BindException("Address already in use");
+        final UncheckedIOException e = ValidMessages.MESSAGES.uncheckedIO(cause);
+        Assertions.assertEquals(String.format("Unchecked IO: %s", cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertEquals(cause, e.getCause());
     }
 
     private <T> void compare(final T[] a1, final T[] a2) {

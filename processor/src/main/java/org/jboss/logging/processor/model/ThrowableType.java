@@ -22,6 +22,8 @@
 
 package org.jboss.logging.processor.model;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -111,4 +113,13 @@ public interface ThrowableType extends ClassType, Comparable<ThrowableType>, Del
      * @return the qualified class name fo the return type.
      */
     String name();
+
+    /**
+     * The suggested types to create for the throwable type created.
+     *
+     * @return the suggested types to be created, or an empty set if this type itself should be created
+     */
+    default Collection<ThrowableType> suggestions() {
+        return Collections.emptySet();
+    }
 }

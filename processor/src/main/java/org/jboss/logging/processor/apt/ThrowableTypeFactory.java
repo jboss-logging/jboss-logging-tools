@@ -26,10 +26,12 @@ import static org.jboss.logging.processor.util.Objects.HashCodeBuilder;
 import static org.jboss.logging.processor.util.Objects.areEqual;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -42,6 +44,7 @@ import javax.lang.model.util.ElementFilter;
 
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Signature;
+import org.jboss.logging.annotations.TransformException;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.model.Parameter;
 import org.jboss.logging.processor.model.ThrowableType;
@@ -259,6 +262,7 @@ final class ThrowableTypeFactory {
         private final MessageMethod messageMethod;
 
         private final Set<Parameter> constructionParameters;
+        private final Set<ThrowableType> suggestions;
 
         private boolean useConstructionParameters = false;
         private boolean causeSet = false;
@@ -274,6 +278,7 @@ final class ThrowableTypeFactory {
             super(processingEnv, type, (messageMethod.hasCause() ? messageMethod.cause().asType() : null));
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<>();
+            suggestions = new LinkedHashSet<>();
         }
 
         @Override
@@ -316,6 +321,17 @@ final class ThrowableTypeFactory {
 
             } else {
                 super.init();
+            }
+            final Optional<Parameter> parameter = messageMethod.parametersAnnotatedWith(TransformException.class)
+                    .stream()
+                    .findFirst();
+            if (parameter.isPresent()) {
+                final List<TypeMirror> suggestions = ElementHelper.getClassArrayAnnotationValue(parameter.get(), TransformException.class, "value");
+                for (TypeMirror suggestion : suggestions) {
+                    final AptThrowableType result = new AptThrowableType(processingEnv, suggestion, null);
+                    result.init();
+                    this.suggestions.add(result);
+                }
             }
         }
 
@@ -381,6 +397,11 @@ final class ThrowableTypeFactory {
         @Override
         public boolean causeSetInConstructor() {
             return causeSet;
+        }
+
+        @Override
+        public Collection<ThrowableType> suggestions() {
+            return suggestions;
         }
     }
 }

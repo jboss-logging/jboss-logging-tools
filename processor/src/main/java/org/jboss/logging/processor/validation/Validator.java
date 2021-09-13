@@ -61,6 +61,7 @@ import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Suppressed;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
+import org.jboss.logging.annotations.TransformException;
 import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
@@ -275,6 +276,7 @@ public final class Validator {
         final List<ValidationMessage> messages = new ArrayList<>();
         boolean foundCause = false;
         boolean producerFound = false;
+        boolean transformExceptionFound = false;
         for (Parameter parameter : messageMethod.parameters()) {
             if (parameter.isAnnotatedWith(Cause.class)) {
                 if (foundCause) {
@@ -362,6 +364,30 @@ public final class Validator {
                 }
                 producerFound = true;
             }
+
+            if (parameter.isAnnotatedWith(TransformException.class)) {
+                if (!messageMethod.returnType().isThrowable()) {
+                    messages.add(createError(messageMethod, "A parameter annotated with @%s can only be on bundle methods which return a Throwable type.", TransformException.class
+                            .getSimpleName()));
+                } else {
+                    if (transformExceptionFound) {
+                        messages.add(createError(messageMethod, "Only one parameter annotated with @%s can be used", TransformException.class
+                                .getSimpleName()));
+                    }
+                    transformExceptionFound = true;
+                    if (!isTypeAssignableFrom(parameter.asType(), Throwable.class)) {
+                        messages.add(createError(parameter, "The parameter annotated with @%s must be a subclass of Throwable", TransformException.class
+                                .getSimpleName()));
+                    }
+                    // Ensure the suggested exceptions are sub-types of the return type
+                    final List<TypeMirror> suggested = ElementHelper.getClassArrayAnnotationValue(parameter, TransformException.class, "value");
+                    for (TypeMirror suggestion : suggested) {
+                        if (!types.isAssignable(suggestion, parameter.asType())) {
+                            messages.add(createError(parameter, "The suggested return type of %s is not assignable to %s", suggestion, parameter.asType()));
+                        }
+                    }
+                }
+            }
         }
         return messages;
     }
@@ -432,7 +458,7 @@ public final class Validator {
                     }
                     final TypeMirror erasure = types.erasure(resolvedReturnType);
                     if (!isTypeAssignableFrom(erasure, Throwable.class)) {
-                        messages.add(createError(messageMethod, "The return type must be a subclass of a java.lang.Throwable"));
+                        messages.add(createError(messageMethod, "The return type must be a super class of a java.lang.Throwable"));
                     }
                 } else if (!usableConstructor) {
                     messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
