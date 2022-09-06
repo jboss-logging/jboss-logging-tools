@@ -119,15 +119,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
             final List<File> files = findTranslationFiles(messageInterface);
             final Map<File, Map<MessageMethod, String>> validTranslations = allInterfaceTranslations(messageInterface,
                                                                                                      files);
-            // if (files != null && messageInterface.isAnnotatedWith(MessageBundle.class)) {
-            //     for (File file : files) {
-                generateSourceFileFor(messageInterface, validTranslations);
-                // }
-            // } else {
-            //     for (File file : files) {
-            //         generateSourceFileFor(messageInterface, file, validTranslations.get(file));
-            //     }
-            // }
+            generateSourceFileFor(messageInterface, validTranslations);
         } catch (IOException e) {
             logger().error(e, "Cannot read %s package files", messageInterface.packageName());
         }
@@ -253,16 +245,10 @@ final class TranslationClassGenerator extends AbstractGenerator {
     private void generateSourceFileFor(final MessageInterface messageInterface,
                                        final Map<File, Map<MessageMethod, String>> translations) {
 
-        //Generate empty translation super class if needed
-        //Check if enclosing translation file exists, if not generate an empty super class
-        // final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
-        // final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
-        // if (!enclosingTranslationFileName.equals(translationFile.getName()) && !enclosingTranslationFile.exists()) {
-        //     generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<MessageMethod, String>emptyMap());
-        // }
         final Map<String, Map<MessageMethod, String>> finalTranslations = new LinkedHashMap<>();
         for (File file : translations.keySet()) {
-            finalTranslations.put(getTranslationClassNameSuffix(getEnclosingTranslationFileName(file)), translations.get(file));
+            finalTranslations.put(getTranslationClassNameSuffix(file.getName()),
+                                  translations.get(file));
         }
 
         //Create source file
