@@ -33,6 +33,10 @@ import org.jboss.logging.annotations.ValidIdRange;
 @ValidIdRange(min = 10000, max = 10050)
 public interface DefaultMessages {
 
+    default String language(){
+        return "zh_CN";
+    }
+
     @Message(id = 10000, value = "Hello %s.")
     String hello(String name);
 

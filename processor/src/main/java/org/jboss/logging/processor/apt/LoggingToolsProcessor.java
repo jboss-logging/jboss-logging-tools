@@ -155,8 +155,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
         logger = ToolLogger.getLogger(processingEnv);
 
         //Tools generator -  Note the order these are executed in.
-        generators.add(new ImplementationClassGenerator(processingEnv));
         generators.add(new TranslationClassGenerator(processingEnv));
+        generators.add(new ImplementationClassGenerator(processingEnv));
         generators.add(new TranslationFileGenerator(processingEnv));
         generators.add(new ReportFileGenerator(processingEnv));
     }

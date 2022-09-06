@@ -159,7 +159,7 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final String msgMethodName = messageMethod.messageMethodName();
         final JMethodDef method = classDef.method(JMod.PUBLIC | JMod.FINAL, messageMethod.returnType().name(), messageMethod.name());
         method.annotate(Override.class);
-        addMessageMethod(messageMethod);
+        // addMessageMethod(messageMethod);
         addThrownTypes(messageMethod, method);
         // Initialize the method parameters
         final Map<Parameter, JParamDeclaration> params = createParameters(messageMethod, method);

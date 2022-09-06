@@ -36,6 +36,10 @@ public interface ExpressionLogger {
 
     ExpressionLogger LOGGER = Logger.getMessageLogger(ExpressionLogger.class, TestConstants.CATEGORY);
 
+    default String language(){
+        return "zh_CN";
+    }
+
     @LogMessage(level = Level.INFO)
     @Message(value = "${test.property}")
     void logProperty();

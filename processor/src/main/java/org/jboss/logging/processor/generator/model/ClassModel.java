@@ -29,27 +29,11 @@ import static org.jboss.jdeparser.JTypes.typeOf;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
-import org.jboss.jdeparser.FormatPreferences;
-import org.jboss.jdeparser.JBlock;
-import org.jboss.jdeparser.JCall;
-import org.jboss.jdeparser.JClassDef;
-import org.jboss.jdeparser.JDeparser;
-import org.jboss.jdeparser.JExpr;
-import org.jboss.jdeparser.JExprs;
-import org.jboss.jdeparser.JFiler;
-import org.jboss.jdeparser.JMethodDef;
-import org.jboss.jdeparser.JMod;
-import org.jboss.jdeparser.JSourceFile;
-import org.jboss.jdeparser.JSources;
-import org.jboss.jdeparser.JType;
-import org.jboss.jdeparser.JVarDeclaration;
+import org.jboss.jdeparser.*;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.processor.apt.ProcessingException;
@@ -74,7 +58,7 @@ public abstract class ClassModel {
 
     private final MessageInterface messageInterface;
 
-    private final String className;
+    protected final String className;
     private final String superClassName;
 
     private final String format;
@@ -95,11 +79,12 @@ public abstract class ClassModel {
     ClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className, final String superClassName) {
         this.processingEnv = processingEnv;
         this.messageInterface = messageInterface;
-        this.className = messageInterface.packageName() + "." + className;
+        // this.className = messageInterface.packageName() + "." + className;
+        this.className = className;
         this.superClassName = superClassName;
         sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()), new FormatPreferences(new Properties()));
         sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
-        classDef = sourceFile._class(JMod.PUBLIC, className);
+        classDef = createClassDef();
         final int idLen = messageInterface.getIdLength();
         if (idLen > 0) {
             format = "%s%0" + messageInterface.getIdLength() + "d: %s";
@@ -127,6 +112,10 @@ public abstract class ClassModel {
         generateModel();
         sources.writeSources();
         JDeparser.dropCaches();
+    }
+
+    protected JClassDef createClassDef(){
+       return sourceFile._class(JMod.PUBLIC, className);
     }
 
     /**
@@ -157,7 +146,7 @@ public abstract class ClassModel {
         }
 
         // Always implement the interface
-        classDef._implements(typeOf(messageInterface.asType()));
+        classDef._implements(className+"i18n");
 
         //Add implements
         if (!messageInterface.extendedInterfaces().isEmpty()) {
@@ -233,6 +222,31 @@ public abstract class ClassModel {
             }
             body._return(JExprs.str(msg));
             messageMethods.put(messageMethod.messageMethodName(), method);
+        }
+
+        return method;
+    }
+
+    JMethodDef addMessageMethod(final MessageMethod messageMethod,final String messageMethodName, final String messageValue) {
+        // Values could be null and we shouldn't create message methods for null values.
+        if (messageValue == null) {
+            return null;
+        }
+
+        // Create the method that returns the string message for formatting
+        JMethodDef method = messageMethods.get(messageMethodName);
+        if (method == null) {
+            method = classDef.method(JMod.PROTECTED, String.class, messageMethodName);
+            final JBlock body = method.body();
+            final String msg;
+            if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
+                // Prefix the id to the string message
+                msg = String.format(format, messageInterface.projectCode(), messageMethod.message().id(), messageValue);
+            } else {
+                msg = messageValue;
+            }
+            body._return(JExprs.str(msg));
+            messageMethods.put(messageMethodName, method);
         }
 
         return method;

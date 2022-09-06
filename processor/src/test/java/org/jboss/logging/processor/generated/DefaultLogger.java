@@ -40,6 +40,10 @@ import org.jboss.logging.annotations.ValidIdRange;
 @ValidIdRange(min = 100, max = 150)
 public interface DefaultLogger extends BasicLogger {
 
+    default String language(){
+        return "zh_CN";
+    }
+
     String TEST_MSG = "No format%n";
 
     /**

@@ -94,4 +94,15 @@ public class ClassModelFactory {
         }
         throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
     }
+
+    public static InterfaceModel translationI18n(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final Map<String,Map<MessageMethod, String>>  translations) throws IllegalArgumentException {
+        final String generatedClassName = implementationClassName(messageInterface, "i18n");
+        if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
+            return new XMessageBundleTranslator(processingEnv, messageInterface, generatedClassName, translations);
+        }
+        if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
+            return new XMessageLoggerTranslator(processingEnv, messageInterface, generatedClassName, translations);
+        }
+        throw new IllegalArgumentException(String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
+    }
 }

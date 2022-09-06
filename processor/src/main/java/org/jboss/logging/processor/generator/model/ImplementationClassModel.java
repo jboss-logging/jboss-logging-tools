@@ -119,7 +119,7 @@ abstract class ImplementationClassModel extends ClassModel {
      */
     void createBundleMethod(final JClassDef classDef, final JCall localeGetter, final MessageMethod messageMethod) {
         // Add the message messageMethod.
-        addMessageMethod(messageMethod);
+        // addMessageMethod(messageMethod);
         final TypeMirror returnTypeMirror = messageMethod.returnType().asType();
         final JType returnType = JTypes.typeOf(returnTypeMirror);
         final JMethodDef method = classDef.method(JMod.PUBLIC | FINAL, returnType, messageMethod.name());

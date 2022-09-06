@@ -22,40 +22,29 @@
 
 package org.jboss.logging.processor.apt;
 
-import static org.jboss.logging.processor.util.TranslationHelper.getEnclosingTranslationFileName;
-import static org.jboss.logging.processor.util.TranslationHelper.getTranslationClassNameSuffix;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.TypeElement;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
-
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.processor.generator.model.ClassModel;
 import org.jboss.logging.processor.generator.model.ClassModelFactory;
+import org.jboss.logging.processor.generator.model.InterfaceModel;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
 import org.jboss.logging.processor.validation.FormatValidator;
 import org.jboss.logging.processor.validation.FormatValidatorFactory;
 import org.jboss.logging.processor.validation.StringFormatValidator;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.TypeElement;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+import java.io.*;
+import java.util.*;
+import java.util.regex.Pattern;
+
+import static org.jboss.logging.processor.util.TranslationHelper.getEnclosingTranslationFileName;
+import static org.jboss.logging.processor.util.TranslationHelper.getTranslationClassNameSuffix;
 
 /**
  * The translation class generator.
@@ -67,14 +56,9 @@ import org.jboss.logging.processor.validation.StringFormatValidator;
  *
  * @author Kevin Pollet - SERLI - (kevin.pollet@serli.com)
  */
-@SupportedOptions({
-        TranslationClassGenerator.TRANSLATION_FILES_PATH_OPTION,
-        TranslationClassGenerator.SKIP_TRANSLATIONS
-})
+@SupportedOptions(
+        {TranslationClassGenerator.TRANSLATION_FILES_PATH_OPTION, TranslationClassGenerator.SKIP_TRANSLATIONS})
 final class TranslationClassGenerator extends AbstractGenerator {
-
-    public static final String TRANSLATION_FILES_PATH_OPTION = "translationFilesPath";
-    public static final String SKIP_TRANSLATIONS = "skipTranslations";
 
     /**
      * The properties file pattern. The property file must
@@ -87,7 +71,12 @@ final class TranslationClassGenerator extends AbstractGenerator {
      */
     private static final String TRANSLATION_FILE_EXTENSION_PATTERN = ".i18n_[a-z]*(_[A-Z]*){0,2}\\.properties";
 
+    public static final String TRANSLATION_FILES_PATH_OPTION = "translationFilesPath";
+
+    public static final String SKIP_TRANSLATIONS = "skipTranslations";
+
     private final String translationFilesPath;
+
     private final boolean skipTranslations;
 
 
@@ -102,29 +91,50 @@ final class TranslationClassGenerator extends AbstractGenerator {
         Map<String, String> options = processingEnv.getOptions();
         this.translationFilesPath = options.get(TRANSLATION_FILES_PATH_OPTION);
         final String value = options.get(SKIP_TRANSLATIONS);
-        this.skipTranslations = (options.containsKey(SKIP_TRANSLATIONS) && (value == null ? true : Boolean.valueOf(value)));
+        this.skipTranslations = (options.containsKey(SKIP_TRANSLATIONS) &&
+                (value == null ? true : Boolean.valueOf(value)));
+    }
+
+    private static FormatValidator getValidatorFor(final MessageMethod messageMethod, final String translationMessage) {
+        FormatValidator result = FormatValidatorFactory.create(messageMethod.message()
+                                                                            .format(), translationMessage);
+        if (result.isValid()) {
+            if (messageMethod.message()
+                             .format() == Message.Format.PRINTF) {
+                result = StringFormatValidator.withTranslation(messageMethod.message()
+                                                                            .value(), translationMessage);
+            }
+        }
+        return result;
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
+                                   final MessageInterface messageInterface) {
         if (skipTranslations) {
             logger().debug(element, "Skipping processing of translation implementation");
             return;
         }
         try {
             final List<File> files = findTranslationFiles(messageInterface);
-            final Map<File, Map<MessageMethod, String>> validTranslations = allInterfaceTranslations(messageInterface, files);
-            if (files != null) {
-                for (File file : files) {
-                    generateSourceFileFor(messageInterface, file, validTranslations.get(file));
-                }
-            }
+            final Map<File, Map<MessageMethod, String>> validTranslations = allInterfaceTranslations(messageInterface,
+                                                                                                     files);
+            // if (files != null && messageInterface.isAnnotatedWith(MessageBundle.class)) {
+            //     for (File file : files) {
+                generateSourceFileFor(messageInterface, validTranslations);
+                // }
+            // } else {
+            //     for (File file : files) {
+            //         generateSourceFileFor(messageInterface, file, validTranslations.get(file));
+            //     }
+            // }
         } catch (IOException e) {
             logger().error(e, "Cannot read %s package files", messageInterface.packageName());
         }
     }
 
-    private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
+    private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface,
+                                                                           final List<File> files) throws IOException {
         final Map<File, Map<MessageMethod, String>> validTranslations = new LinkedHashMap<>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
@@ -149,8 +159,11 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
             //By default use the class output folder
         } else {
-            FileObject fObj = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-            classTranslationFilesPath = fObj.toUri().getPath().replace(interfaceName, "");
+            FileObject fObj = processingEnv.getFiler()
+                                           .getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
+            classTranslationFilesPath = fObj.toUri()
+                                            .getPath()
+                                            .replace(interfaceName, "");
         }
         final List<File> result;
         File[] files = new File(classTranslationFilesPath).listFiles(new TranslationFileFilter(interfaceName));
@@ -160,8 +173,11 @@ final class TranslationClassGenerator extends AbstractGenerator {
             result = Arrays.asList(files);
             Collections.sort(result, new Comparator<File>() {
                 public int compare(final File o1, final File o2) {
-                    int result = o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
-                    result = (result != 0 ? result : Integer.signum(o1.getName().length() - o2.getName().length()));
+                    int result = o1.getAbsolutePath()
+                                   .compareTo(o2.getAbsolutePath());
+                    result = (result != 0 ? result : Integer.signum(o1.getName()
+                                                                      .length() - o2.getName()
+                                                                                    .length()));
                     return result;
                 }
             });
@@ -178,10 +194,10 @@ final class TranslationClassGenerator extends AbstractGenerator {
      *
      * @param messageInterface the message interface.
      * @param file             the translation file
-     *
      * @return the valid translations messages
      */
-    private Map<MessageMethod, String> validateTranslationMessages(final MessageInterface messageInterface, final File file) {
+    private Map<MessageMethod, String> validateTranslationMessages(final MessageInterface messageInterface,
+                                                                   final File file) {
         Map<MessageMethod, String> validTranslations = new LinkedHashMap<>();
 
         try {
@@ -200,25 +216,30 @@ final class TranslationClassGenerator extends AbstractGenerator {
                 final String key = messageMethod.translationKey();
                 if (translations.containsKey(key)) {
                     final String translationMessage = translations.getProperty(key);
-                    if (!translationMessage.trim().isEmpty()) {
+                    if (!translationMessage.trim()
+                                           .isEmpty()) {
                         final FormatValidator validator = getValidatorFor(messageMethod, translationMessage);
                         if (validator.isValid()) {
                             if (validator.argumentCount() == messageMethod.formatParameterCount()) {
                                 validTranslations.put(messageMethod, translationMessage);
                             } else {
                                 logger().warn(messageMethod,
-                                        "The parameter count for the format (%d) and the number of format parameters (%d) do not match.",
-                                        validator.argumentCount(), messageMethod.formatParameterCount());
+                                              "The parameter count for the format (%d) and the number of format parameters (%d) do not match.",
+                                              validator.argumentCount(), messageMethod.formatParameterCount());
                             }
                         } else {
-                            logger().warn(messageMethod, "%s Resource Bundle: %s", validator.summaryMessage(), file.getAbsolutePath());
+                            logger().warn(messageMethod, "%s Resource Bundle: %s", validator.summaryMessage(),
+                                          file.getAbsolutePath());
                         }
                     } else {
-                        logger().warn(messageMethod, "The translation message with key %s is ignored because value is empty or contains only whitespace", key);
+                        logger().warn(messageMethod,
+                                      "The translation message with key %s is ignored because value is empty or contains only whitespace",
+                                      key);
                     }
 
                 } else {
-                    logger().warn(messageMethod, "The translation message with key %s have no corresponding messageMethod.", key);
+                    logger().warn(messageMethod,
+                                  "The translation message with key %s have no corresponding messageMethod.", key);
                 }
             }
 
@@ -229,25 +250,24 @@ final class TranslationClassGenerator extends AbstractGenerator {
         return validTranslations;
     }
 
-    /**
-     * Generate a class for the given translation file.
-     *
-     * @param messageInterface the message interface
-     * @param translationFile  the translation file
-     * @param translations     the translations message
-     */
-    private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<MessageMethod, String> translations) {
+    private void generateSourceFileFor(final MessageInterface messageInterface,
+                                       final Map<File, Map<MessageMethod, String>> translations) {
 
         //Generate empty translation super class if needed
         //Check if enclosing translation file exists, if not generate an empty super class
-        final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
-        final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
-        if (!enclosingTranslationFileName.equals(translationFile.getName()) && !enclosingTranslationFile.exists()) {
-            generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<MessageMethod, String>emptyMap());
+        // final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
+        // final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
+        // if (!enclosingTranslationFileName.equals(translationFile.getName()) && !enclosingTranslationFile.exists()) {
+        //     generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<MessageMethod, String>emptyMap());
+        // }
+        final Map<String, Map<MessageMethod, String>> finalTranslations = new LinkedHashMap<>();
+        for (File file : translations.keySet()) {
+            finalTranslations.put(getTranslationClassNameSuffix(getEnclosingTranslationFileName(file)), translations.get(file));
         }
 
         //Create source file
-        final ClassModel classModel = ClassModelFactory.translation(processingEnv, messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
+        final InterfaceModel classModel = ClassModelFactory.translationI18n(processingEnv, messageInterface,
+                                                                            finalTranslations);
 
         try {
             classModel.generateAndWrite();
@@ -256,14 +276,35 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
     }
 
-    private static FormatValidator getValidatorFor(final MessageMethod messageMethod, final String translationMessage) {
-        FormatValidator result = FormatValidatorFactory.create(messageMethod.message().format(), translationMessage);
-        if (result.isValid()) {
-            if (messageMethod.message().format() == Message.Format.PRINTF) {
-                result = StringFormatValidator.withTranslation(messageMethod.message().value(), translationMessage);
-            }
+    /**
+     * Generate a class for the given translation file.
+     *
+     * @param messageInterface the message interface
+     * @param translationFile  the translation file
+     * @param translations     the translations message
+     */
+    private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile,
+                                       final Map<MessageMethod, String> translations) {
+
+        //Generate empty translation super class if needed
+        //Check if enclosing translation file exists, if not generate an empty super class
+        final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
+        final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
+        if (!enclosingTranslationFileName.equals(translationFile.getName()) && !enclosingTranslationFile.exists()) {
+            generateSourceFileFor(messageInterface, enclosingTranslationFile,
+                                  Collections.<MessageMethod, String>emptyMap());
         }
-        return result;
+
+        //Create source file
+        final ClassModel classModel = ClassModelFactory.translation(processingEnv, messageInterface,
+                                                                    getTranslationClassNameSuffix(
+                                                                            translationFile.getName()), translations);
+
+        try {
+            classModel.generateAndWrite();
+        } catch (IllegalStateException | IOException e) {
+            logger().error(e, "Cannot generate %s source file", classModel.qualifiedClassName());
+        }
     }
 
     /**
@@ -290,6 +331,7 @@ final class TranslationClassGenerator extends AbstractGenerator {
 
             return !isGenerated && isTranslationFile;
         }
+
     }
 
 }
