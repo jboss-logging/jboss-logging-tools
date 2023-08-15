@@ -49,19 +49,19 @@ public interface TransformLogger {
     // getClass().hashCode();
     @LogMessage
     @Message(HASH_CODE_MSG)
-    void logClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) String s);
+    void logClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) String s);
 
     @LogMessage(useThreadContext = true)
-    void logClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) Collection<String> c);
+    void logClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) Collection<String> c);
 
     @LogMessage
-    void logClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) String... array);
+    void logClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) String... array);
 
     @LogMessage
-    void logClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) Object[] array);
+    void logClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) Object[] array);
 
     @LogMessage
-    void logClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) Map<String, String> map);
+    void logClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) Map<String, String> map);
 
     // hashCode()
     @LogMessage
@@ -83,19 +83,21 @@ public interface TransformLogger {
     // System.identityHashCode(getClass())
     @LogMessage
     @Message(IDENTITY_HASH_CODE_MSG)
-    void logClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) String s);
+    void logClassIdentityHashCode(@Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) String s);
 
     @LogMessage
-    void logClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) Collection<String> c);
+    void logClassIdentityHashCode(
+            @Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) Collection<String> c);
 
     @LogMessage
-    void logClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) String... array);
+    void logClassIdentityHashCode(@Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) String... array);
 
     @LogMessage
-    void logClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) Object[] array);
+    void logClassIdentityHashCode(@Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) Object[] array);
 
     @LogMessage
-    void logClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) Map<String, String> map);
+    void logClassIdentityHashCode(
+            @Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) Map<String, String> map);
 
     // System.identityHashCode()
     @LogMessage
@@ -118,7 +120,6 @@ public interface TransformLogger {
     @LogMessage
     @Message(GET_CLASS_MSG)
     void logObjectClass(@Transform(TransformType.GET_CLASS) String s);
-
 
     @LogMessage
     void logObjectClass(@Transform(TransformType.GET_CLASS) String... array);
@@ -145,12 +146,18 @@ public interface TransformLogger {
 
     // Position tests
     String POS_MSG_1 = "size %d hashCode %d identityHashCode %d";
+
     @LogMessage
     @Message(POS_MSG_1)
-    void posTest1(@Pos(value = {2, 3}, transform = {@Transform(TransformType.HASH_CODE), @Transform(TransformType.IDENTITY_HASH_CODE)}) String msg1, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg2);
+    void posTest1(
+            @Pos(value = { 2, 3 }, transform = { @Transform(TransformType.HASH_CODE),
+                    @Transform(TransformType.IDENTITY_HASH_CODE) }) String msg1,
+            @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg2);
 
     String POS_MSG_2 = "size %d s1=%s s2=%s getClass() %s";
+
     @LogMessage
     @Message(POS_MSG_2)
-    void posTest2(@Pos(value = 4, transform = @Transform(TransformType.GET_CLASS)) Object type, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg, @Pos(2) String s1, @Pos(3) String s2);
+    void posTest2(@Pos(value = 4, transform = @Transform(TransformType.GET_CLASS)) Object type,
+            @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg, @Pos(2) String s1, @Pos(3) String s2);
 }

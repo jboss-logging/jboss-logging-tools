@@ -27,7 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Indicate the given parameter should be transformed in each of the {@link org.jboss.logging.annotations.Transform.TransformType transform types}
+ * Indicate the given parameter should be transformed in each of the
+ * {@link org.jboss.logging.annotations.Transform.TransformType transform types}
  * provided. The parameter cannot be a primitive type.
  * <p/>
  * For the {@link TransformType#SIZE} type, the object must be a {@link String}, a {@link java.util.Collection}, a

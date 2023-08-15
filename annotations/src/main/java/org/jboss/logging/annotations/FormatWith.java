@@ -27,8 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Indicate that the given parameter should be wrapped with a formatting object of the given class.  The class
- * must have a one-argument constructor which unambiguously accepts a value of this parameter's type.  The resultant
+ * Indicate that the given parameter should be wrapped with a formatting object of the given class. The class
+ * must have a one-argument constructor which unambiguously accepts a value of this parameter's type. The resultant
  * object will be passed in as a parameter to the underlying format type; thus its {@link Object#toString() toString()}
  * method will be invoked (or, if the format style is {@link Message.Format#PRINTF PRINTF}, the object may implement
  * {@link java.util.Formattable Formattable} to get extra functionality).

@@ -62,7 +62,8 @@ public class ProcessingException extends RuntimeException {
      * @param annotationValue the annotation value
      * @param message         the message
      */
-    public ProcessingException(final Element element, final AnnotationMirror annotation, final AnnotationValue annotationValue, final String message) {
+    public ProcessingException(final Element element, final AnnotationMirror annotation, final AnnotationValue annotationValue,
+            final String message) {
         super(message);
         this.element = element;
         this.annotation = annotation;
@@ -88,7 +89,8 @@ public class ProcessingException extends RuntimeException {
      * @param format     the format for the message
      * @param args       the arguments for the format
      */
-    public ProcessingException(final Element element, final AnnotationMirror annotation, final String format, final Object... args) {
+    public ProcessingException(final Element element, final AnnotationMirror annotation, final String format,
+            final Object... args) {
         this(element, annotation, null, format, args);
     }
 
@@ -101,7 +103,8 @@ public class ProcessingException extends RuntimeException {
      * @param format          the format for the message
      * @param args            the arguments for the format
      */
-    public ProcessingException(final Element element, final AnnotationMirror annotation, final AnnotationValue annotationValue, final String format, final Object... args) {
+    public ProcessingException(final Element element, final AnnotationMirror annotation, final AnnotationValue annotationValue,
+            final String format, final Object... args) {
         super(String.format(format, args));
         this.element = element;
         this.annotation = annotation;

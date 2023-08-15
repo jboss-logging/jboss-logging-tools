@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -102,13 +103,14 @@ final class ParameterFactory {
         /**
          * Only allow construction from within the parent class.
          *
-         * @param processingEnv the annotation processing environment.
-         * @param qualifiedType         the qualified type name of the parameter.
-         * @param param                 the parameter.
-         * @param formatterClass        the formatter class, or {@code null} if none
-         * @param isVarArgs             {@code true} if this is a vararg parameter, otherwise {@code false}.
+         * @param processingEnv  the annotation processing environment.
+         * @param qualifiedType  the qualified type name of the parameter.
+         * @param param          the parameter.
+         * @param formatterClass the formatter class, or {@code null} if none
+         * @param isVarArgs      {@code true} if this is a vararg parameter, otherwise {@code false}.
          */
-        AptParameter(final ProcessingEnvironment processingEnv, final String qualifiedType, final VariableElement param, final String formatterClass, final boolean isVarArgs) {
+        AptParameter(final ProcessingEnvironment processingEnv, final String qualifiedType, final VariableElement param,
+                final String formatterClass, final boolean isVarArgs) {
             super(processingEnv, param);
             this.qualifiedType = qualifiedType;
             this.param = param;

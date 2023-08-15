@@ -60,7 +60,7 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         final String msg = "This is a test message";
         logger.formatWith(msg);
 
-        final String[] values = {"A", "B", "C", "D"};
+        final String[] values = { "A", "B", "C", "D" };
         logger.invalidSelection("G", values);
         logger.invalidSelection("A", "B", "C", "D");
 
@@ -124,7 +124,8 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         final String fileName = "StringFormatLogger.i18n%s.properties";
         final Properties en = findFile(String.format(fileName, ""));
         final Properties es = findFile(String.format(fileName, "_es"));
-        final StringFormatLogger logger = Logger.getMessageLogger(StringFormatLogger.class, TestConstants.CATEGORY, new Locale("es"));
+        final StringFormatLogger logger = Logger.getMessageLogger(StringFormatLogger.class, TestConstants.CATEGORY,
+                new Locale("es"));
         final Date date = new Date();
         logger.dukesBirthday(date);
         logger.dukesBirthdayFailure(date);
@@ -170,6 +171,5 @@ public class LoggerVerificationTest extends AbstractLoggerTest {
         properties.load(new InputStreamReader(in, StandardCharsets.UTF_8));
         return properties;
     }
-
 
 }

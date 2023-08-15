@@ -22,6 +22,7 @@ package org.jboss.logging.processor.apt.report;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
+
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.logging.annotations.BaseUrl;
@@ -70,7 +71,8 @@ public abstract class ReportWriter implements Closeable {
      * @throws IllegalStateException    if there was an error creating the report writer
      * @throws IllegalArgumentException if the {@code reportType} is invalid
      */
-    public static ReportWriter of(final ReportType reportType, final MessageInterface messageInterface, final BufferedWriter writer) {
+    public static ReportWriter of(final ReportType reportType, final MessageInterface messageInterface,
+            final BufferedWriter writer) {
         if (reportType == ReportType.ASCIIDOC) {
             return new AsciidocReportWriter(messageInterface, writer);
         } else if (reportType == ReportType.XML) {

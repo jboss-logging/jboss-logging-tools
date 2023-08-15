@@ -19,13 +19,13 @@
 
 package org.jboss.logging.processor.generator.model;
 
-
 import static org.jboss.jdeparser.JExprs.$v;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 
 import org.jboss.jdeparser.JBlock;
@@ -35,7 +35,6 @@ import org.jboss.jdeparser.JMod;
 import org.jboss.logging.Logger;
 import org.jboss.logging.processor.model.MessageInterface;
 import org.jboss.logging.processor.model.MessageMethod;
-
 
 /**
  * The java message logger translation class model.
@@ -65,7 +64,9 @@ class MessageLoggerTranslator extends ClassModel {
      * @param locale           the locale used to override the default locale
      * @param translations     the translation map.
      */
-    public MessageLoggerTranslator(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className, final String superClassName, final String locale, final Map<MessageMethod, String> translations) {
+    public MessageLoggerTranslator(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface,
+            final String className, final String superClassName, final String locale,
+            final Map<MessageMethod, String> translations) {
         super(processingEnv, messageInterface, className, superClassName);
         this.locale = locale;
         if (translations != null) {

@@ -32,7 +32,7 @@ import java.util.Objects;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings({ "unused", "WeakerAccess" })
 public class ContentWriter implements Closeable, Flushable {
 
     private final Object outputLock = new Object();

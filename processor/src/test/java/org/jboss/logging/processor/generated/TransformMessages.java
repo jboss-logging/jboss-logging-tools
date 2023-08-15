@@ -47,15 +47,15 @@ public interface TransformMessages {
 
     // getClass().hashCode();
     @Message(HASH_CODE_MSG)
-    String msgClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) String s);
+    String msgClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) String s);
 
-    String msgClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) Collection<String> c);
+    String msgClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) Collection<String> c);
 
-    String msgClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) String... array);
+    String msgClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) String... array);
 
-    String msgClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) Object[] array);
+    String msgClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) Object[] array);
 
-    String msgClassHashCode(@Transform({TransformType.GET_CLASS, TransformType.HASH_CODE}) Map<String, String> map);
+    String msgClassHashCode(@Transform({ TransformType.GET_CLASS, TransformType.HASH_CODE }) Map<String, String> map);
 
     // hashCode()
     @Message(HASH_CODE_MSG)
@@ -71,15 +71,17 @@ public interface TransformMessages {
 
     // System.identityHashCode(getClass())
     @Message(IDENTITY_HASH_CODE_MSG)
-    String msgClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) String s);
+    String msgClassIdentityHashCode(@Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) String s);
 
-    String msgClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) Collection<String> c);
+    String msgClassIdentityHashCode(
+            @Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) Collection<String> c);
 
-    String msgClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) String... array);
+    String msgClassIdentityHashCode(@Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) String... array);
 
-    String msgClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) Object[] array);
+    String msgClassIdentityHashCode(@Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) Object[] array);
 
-    String msgClassIdentityHashCode(@Transform({TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE}) Map<String, String> map);
+    String msgClassIdentityHashCode(
+            @Transform({ TransformType.GET_CLASS, TransformType.IDENTITY_HASH_CODE }) Map<String, String> map);
 
     // System.identityHashCode()
     @Message(IDENTITY_HASH_CODE_MSG)
@@ -96,7 +98,6 @@ public interface TransformMessages {
     // getClass()
     @Message(GET_CLASS_MSG)
     String msgObjectClass(@Transform(TransformType.GET_CLASS) String s);
-
 
     String msgObjectClass(@Transform(TransformType.GET_CLASS) String... array);
 
@@ -116,10 +117,16 @@ public interface TransformMessages {
 
     // Position tests
     String POS_MSG_1 = "size %d hashCode %d identityHashCode %d";
+
     @Message(POS_MSG_1)
-    String posTest1(@Pos(value = {2, 3}, transform = {@Transform(TransformType.HASH_CODE), @Transform(TransformType.IDENTITY_HASH_CODE)}) String msg1, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg2);
+    String posTest1(
+            @Pos(value = { 2, 3 }, transform = { @Transform(TransformType.HASH_CODE),
+                    @Transform(TransformType.IDENTITY_HASH_CODE) }) String msg1,
+            @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg2);
 
     String POS_MSG_2 = "size %d s1=%s s2=%s getClass() %s";
+
     @Message(POS_MSG_2)
-    String posTest2(@Pos(value = 4, transform = @Transform(TransformType.GET_CLASS)) Object type, @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg, @Pos(2) String s1, @Pos(3) String s2);
+    String posTest2(@Pos(value = 4, transform = @Transform(TransformType.GET_CLASS)) Object type,
+            @Pos(value = 1, transform = @Transform(TransformType.SIZE)) String msg, @Pos(2) String s1, @Pos(3) String s2);
 }

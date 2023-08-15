@@ -140,15 +140,23 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                 final StringFormatPart translationPart = translationIter.next();
                 if (initPart.conversion() != translationPart.conversion()) {
                     translationResult.valid = false;
-                    translationResult.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
-                    translationResult.setSummaryMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
+                    translationResult.setDetailMessage(
+                            "The translated message format (%s) does not match the initial message format (%s).",
+                            translationFormat, format);
+                    translationResult.setSummaryMessage(
+                            "The translated message format (%s) does not match the initial message format (%s).",
+                            translationFormat, format);
                     break;
                 }
             }
         } else {
             translationResult.valid = false;
-            translationResult.setDetailMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
-            translationResult.setSummaryMessage("The translated message format (%s) does not match the initial message format (%s).", translationFormat, format);
+            translationResult.setDetailMessage(
+                    "The translated message format (%s) does not match the initial message format (%s).", translationFormat,
+                    format);
+            translationResult.setSummaryMessage(
+                    "The translated message format (%s) does not match the initial message format (%s).", translationFormat,
+                    format);
         }
 
         return translationResult;
@@ -217,7 +225,9 @@ public final class StringFormatValidator extends AbstractFormatValidator {
         if (!format.equalsIgnoreCase(asFormat())) {
             valid = false;
             setSummaryMessage("Formats don't match. Internal error: %s Reconstructed: %s", format, asFormat());
-            setDetailMessage("The original is '%s' and the reconstructed format is '%s'. This is likely an internal error and should be reported.", format, asFormat());
+            setDetailMessage(
+                    "The original is '%s' and the reconstructed format is '%s'. This is likely an internal error and should be reported.",
+                    format, asFormat());
         } else {
             // Create a multimap to hold the parameter values for sorting
             final Map<Integer, List<Object>> paramMap = new TreeMap<>();
@@ -295,8 +305,10 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                     String.format(format, params.toArray());
                 } catch (final IllegalFormatException e) {
                     valid = false;
-                    setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, paramMap, e.getMessage());
-                    setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, paramMap, this);
+                    setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format,
+                            paramMap, e.getMessage());
+                    setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, paramMap,
+                            this);
                 }
             }
         }
@@ -309,7 +321,8 @@ public final class StringFormatValidator extends AbstractFormatValidator {
         final int paramCount = (parameters == null ? 0 : parameters.length);
         if (argumentCount != paramCount) {
             valid = false;
-            setSummaryMessage("Parameter lengths do not match. Format (%s) requires %d arguments, supplied %d.", format, argumentCount, paramCount);
+            setSummaryMessage("Parameter lengths do not match. Format (%s) requires %d arguments, supplied %d.", format,
+                    argumentCount, paramCount);
         }
         // Create a parameter list based on the parameters passed
         if (valid) {
@@ -317,8 +330,10 @@ public final class StringFormatValidator extends AbstractFormatValidator {
                 String.format(format, parameters);
             } catch (final IllegalFormatException e) {
                 valid = false;
-                setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format, Arrays.toString(parameters), e.getMessage());
-                setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format, Arrays.toString(parameters), this);
+                setSummaryMessage("Invalid format for '%s' with parameters '%s'. java.util.Formatter Error: %s", format,
+                        Arrays.toString(parameters), e.getMessage());
+                setDetailMessage("Format '%s' with parameters '%s' is invalid. StringFormatValidator: %s", format,
+                        Arrays.toString(parameters), this);
             }
         }
     }
@@ -409,7 +424,6 @@ public final class StringFormatValidator extends AbstractFormatValidator {
             }
         }
     }
-
 
     /**
      * Checks text to make sure we don't have extra garbage.

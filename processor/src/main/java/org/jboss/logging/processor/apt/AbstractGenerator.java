@@ -18,28 +18,15 @@
  */
 package org.jboss.logging.processor.apt;
 
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import javax.annotation.processing.Filer;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
-import org.jboss.logging.processor.model.DelegatingElement;
-import org.jboss.logging.processor.model.DelegatingTypeElement;
 import org.jboss.logging.processor.model.MessageInterface;
 
 /**
@@ -71,8 +58,8 @@ public abstract class AbstractGenerator {
      * @param element          the element that contains the methods.
      * @param messageInterface the message interface to implement.
      */
-    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface);
-
+    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element,
+            final MessageInterface messageInterface);
 
     /**
      * Returns the logger to log messages with.

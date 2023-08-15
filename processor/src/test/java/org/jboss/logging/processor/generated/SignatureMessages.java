@@ -44,7 +44,7 @@ public interface SignatureMessages {
 
     RedirectException redirect(@Cause Throwable cause, @Param int responseCode, @Param String location);
 
-    @Signature({String.class, String.class})
+    @Signature({ String.class, String.class })
     RedirectException redirect(@Cause Throwable cause, @Param String location);
 
     @Message(TEST_MSG)
@@ -57,7 +57,7 @@ public interface SignatureMessages {
 
     InvalidTextException invalidText(@Cause Throwable cause, @Param String text);
 
-    @Signature(causeIndex = 1, messageIndex = 3, value = {int.class, Throwable.class, String.class, String.class})
+    @Signature(causeIndex = 1, messageIndex = 3, value = { int.class, Throwable.class, String.class, String.class })
     InvalidTextException invalidText(@Param int position, @Cause Throwable cause, @Param String text);
 
     @SuppressWarnings("unused")

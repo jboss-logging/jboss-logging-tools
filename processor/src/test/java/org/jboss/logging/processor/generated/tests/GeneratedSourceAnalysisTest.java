@@ -140,7 +140,8 @@ public class GeneratedSourceAnalysisTest {
         final Optional<MethodSource<JavaClassSource>> constructor = findConstructor(implementationMethods);
         Assertions.assertTrue(constructor.isPresent(), "No constructor found for " + implementationSource.getName());
         final List<ParameterSource<JavaClassSource>> parameters = constructor.get().getParameters();
-        Assertions.assertEquals(1, parameters.size(), "Found more than one parameter for " + implementationSource.getName() + ": " + parameters);
+        Assertions.assertEquals(1, parameters.size(),
+                "Found more than one parameter for " + implementationSource.getName() + ": " + parameters);
         final ParameterSource<JavaClassSource> parameter = parameters.get(0);
         final Type<JavaClassSource> type = parameter.getType();
         Assertions.assertEquals(Logger.class.getName(), type.getQualifiedName());
@@ -149,7 +150,8 @@ public class GeneratedSourceAnalysisTest {
         if (!DelegatingBasicLogger.class.getName().equals(implementationSource.getSuperType())) {
             final FieldSource<JavaClassSource> log = implementationSource.getField("log");
             Assertions.assertNotNull(log, "Expected a log field in " + implementationSource.getName());
-            Assertions.assertTrue(log.isProtected() && log.isFinal(), "Expected the log field to be protected and final in " + implementationSource.getName());
+            Assertions.assertTrue(log.isProtected() && log.isFinal(),
+                    "Expected the log field to be protected and final in " + implementationSource.getName());
         }
 
         // Check the interface for log messages that should wrap the TCCL
@@ -160,16 +162,20 @@ public class GeneratedSourceAnalysisTest {
                 final String value = annotation.getStringValue("useThreadContext");
                 if (Boolean.parseBoolean(value)) {
                     // Find the implementation method
-                    final MethodSource<JavaClassSource> implementationMethod = findImplementationMethod(method, implementationMethods);
+                    final MethodSource<JavaClassSource> implementationMethod = findImplementationMethod(method,
+                            implementationMethods);
                     Assertions.assertNotNull(implementationMethod, "Could not find implementation method for " + method);
                     final String body = implementationMethod.getBody();
                     String[] lines = body.split("[\n\f\r]");
-                    Assertions.assertTrue((lines.length > 5), String.format("Expected at least 5 lines found %d: %s", lines.length, body));
+                    Assertions.assertTrue((lines.length > 5),
+                            String.format("Expected at least 5 lines found %d: %s", lines.length, body));
 
                     // First line should be getting the current TCCL
-                    Assertions.assertEquals("final ClassLoader currentTccl=Thread.currentThread().getContextClassLoader();", lines[0].trim());
+                    Assertions.assertEquals("final ClassLoader currentTccl=Thread.currentThread().getContextClassLoader();",
+                            lines[0].trim());
                     // The third line should be setting the log context
-                    Assertions.assertEquals("Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());", lines[2].trim());
+                    Assertions.assertEquals("Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());",
+                            lines[2].trim());
 
                     lines = Arrays.copyOfRange(lines, 3, lines.length);
                     boolean finallyFound = false;
@@ -205,8 +211,10 @@ public class GeneratedSourceAnalysisTest {
         final Optional<MethodSource<JavaClassSource>> constructor = findConstructor(implementationSource.getMethods());
         Assertions.assertTrue(constructor.isPresent(), "No constructor found for " + implementationSource.getName());
         final MethodSource<JavaClassSource> c = constructor.get();
-        Assertions.assertTrue(c.getParameters().isEmpty(), "Expected the constructor parameters to be empty for " + implementationSource.getName());
-        Assertions.assertTrue(c.isProtected(), "Expected the constructor to be protected for " + implementationSource.getName());
+        Assertions.assertTrue(c.getParameters().isEmpty(),
+                "Expected the constructor parameters to be empty for " + implementationSource.getName());
+        Assertions.assertTrue(c.isProtected(),
+                "Expected the constructor to be protected for " + implementationSource.getName());
     }
 
     private void compareCommon(final JavaInterfaceSource interfaceSource, final JavaClassSource implementationSource) {
@@ -217,17 +225,21 @@ public class GeneratedSourceAnalysisTest {
         final Collection<String> interfaceMethodNames = toNames(interfaceMethods);
         final Collection<String> implementationMethodNames = toNames(implementationMethods);
         Assertions.assertTrue(implementationMethodNames.containsAll(interfaceMethodNames),
-                String.format("Implementation is missing methods from the interface:%n\timplementation: %s%n\tinterface:%s", implementationMethodNames, interfaceMethodNames));
+                String.format("Implementation is missing methods from the interface:%n\timplementation: %s%n\tinterface:%s",
+                        implementationMethodNames, interfaceMethodNames));
 
         // The generates source files should have a serialVersionUID with a value of one
-        Assertions.assertTrue(implementationSource.hasField("serialVersionUID"), "Expected a serialVersionUID field in " + implementationSource.getName());
+        Assertions.assertTrue(implementationSource.hasField("serialVersionUID"),
+                "Expected a serialVersionUID field in " + implementationSource.getName());
         final FieldSource<JavaClassSource> serialVersionUID = implementationSource.getField("serialVersionUID");
-        Assertions.assertEquals("1L", serialVersionUID.getLiteralInitializer(), "Expected serialVersionUID  to be set to 1L in " + implementationSource.getName());
+        Assertions.assertEquals("1L", serialVersionUID.getLiteralInitializer(),
+                "Expected serialVersionUID  to be set to 1L in " + implementationSource.getName());
 
         // All bundles should have a getLoggingLocale()
         final MethodSource<JavaClassSource> getLoggingLocale = implementationSource.getMethod("getLoggingLocale");
         Assertions.assertNotNull(getLoggingLocale, "Expected a getLoggingLocale() method in " + implementationSource.getName());
-        Assertions.assertTrue(getLoggingLocale.isProtected(), "Expected the getLoggingLocale() to be protected in " + implementationSource.getName());
+        Assertions.assertTrue(getLoggingLocale.isProtected(),
+                "Expected the getLoggingLocale() to be protected in " + implementationSource.getName());
     }
 
     private void compareTranslations(final Class<?> intf) throws IOException {
@@ -241,7 +253,7 @@ public class GeneratedSourceAnalysisTest {
     }
 
     private void compareTranslations(final JavaInterfaceSource interfaceSource, final JavaClassSource superImplementationSource,
-                                     final JavaClassSource implementationSource) {
+            final JavaClassSource implementationSource) {
         // The implementations should not contain any methods from the interface
         final List<String> interfaceMethods = interfaceSource.getMethods()
                 .stream()
@@ -253,11 +265,13 @@ public class GeneratedSourceAnalysisTest {
                 found.add(method.getName());
             }
         }
-        Assertions.assertTrue(found.isEmpty(), "Found methods in implementation that were in the interface " + implementationSource.getName() + " : " + found);
+        Assertions.assertTrue(found.isEmpty(),
+                "Found methods in implementation that were in the interface " + implementationSource.getName() + " : " + found);
 
         // The getLoggerLocale() should be overridden
         final MethodSource<JavaClassSource> getLoggerLocale = implementationSource.getMethod("getLoggingLocale");
-        Assertions.assertNotNull(getLoggerLocale, "Missing overridden getLoggingLocale() method " + implementationSource.getName());
+        Assertions.assertNotNull(getLoggerLocale,
+                "Missing overridden getLoggingLocale() method " + implementationSource.getName());
 
         // If the file should have a locale constant, validate the constant is one of the Locale constants
         LOCALE_CONSTANTS.forEach((locale, constant) -> {
@@ -280,22 +294,25 @@ public class GeneratedSourceAnalysisTest {
         // All methods in the translation implementation should be overrides of methods in the super class
         implementationSource.getMethods().forEach(method -> {
             if (!method.isConstructor()) {
-                Assertions.assertTrue(method.hasAnnotation(Override.class), String.format("Expected method %s to be overridden in %s.",
-                        method.getName(), implementationSource.getName()));
-                Assertions.assertTrue(superMethods.contains(method.getName()), String.format("Expected method %s to override the super (%s) method in %s.",
-                        method.getName(), superImplementationSource.getName(), implementationSource.getName()));
+                Assertions.assertTrue(method.hasAnnotation(Override.class),
+                        String.format("Expected method %s to be overridden in %s.",
+                                method.getName(), implementationSource.getName()));
+                Assertions.assertTrue(superMethods.contains(method.getName()),
+                        String.format("Expected method %s to override the super (%s) method in %s.",
+                                method.getName(), superImplementationSource.getName(), implementationSource.getName()));
             }
         });
     }
 
-    private Optional<MethodSource<JavaClassSource>> findConstructor(final List<MethodSource<JavaClassSource>> implementationMethods) {
+    private Optional<MethodSource<JavaClassSource>> findConstructor(
+            final List<MethodSource<JavaClassSource>> implementationMethods) {
         return implementationMethods.stream()
                 .filter(Method::isConstructor)
                 .findFirst();
     }
 
     private MethodSource<JavaClassSource> findImplementationMethod(final MethodSource<JavaInterfaceSource> interfaceMethod,
-                                                                   final List<MethodSource<JavaClassSource>> implementationMethods) {
+            final List<MethodSource<JavaClassSource>> implementationMethods) {
         for (MethodSource<JavaClassSource> method : implementationMethods) {
             if (interfaceMethod.getName().equals(method.getName())) {
                 final List<ParameterSource<JavaInterfaceSource>> interfaceParams = interfaceMethod.getParameters();
@@ -305,7 +322,8 @@ public class GeneratedSourceAnalysisTest {
                     for (int i = 0; i < interfaceParams.size(); i++) {
                         final ParameterSource<JavaInterfaceSource> param1 = interfaceParams.get(i);
                         final ParameterSource<JavaClassSource> param2 = parameters.get(i);
-                        if (!param1.getType().getQualifiedNameWithGenerics().equals(param2.getType().getQualifiedNameWithGenerics())) {
+                        if (!param1.getType().getQualifiedNameWithGenerics()
+                                .equals(param2.getType().getQualifiedNameWithGenerics())) {
                             matched = false;
                         }
                     }
@@ -340,7 +358,8 @@ public class GeneratedSourceAnalysisTest {
         final File[] files = dir.listFiles(filter);
         // There should only be one file
         Assertions.assertNotNull(files, "Did not find any implementation files for interface " + intf.getName());
-        Assertions.assertEquals(1, files.length, "Found more than one implementation for interface " + intf.getName() + " " + Arrays.asList(files));
+        Assertions.assertEquals(1, files.length,
+                "Found more than one implementation for interface " + intf.getName() + " " + Arrays.asList(files));
 
         return Roaster.parse(JavaClassSource.class, files[0]);
     }

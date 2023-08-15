@@ -130,37 +130,43 @@ public interface ValidMessages {
     @Message(TEST_OP_FAILED_MSG)
     <T extends Throwable> T operationFailed(@Producer Function<String, T> function, String op);
 
-    <T extends Throwable> T operationFailed(@Producer BiFunction<String, Throwable, T> function, @Cause Throwable cause, String op);
+    <T extends Throwable> T operationFailed(@Producer BiFunction<String, Throwable, T> function, @Cause Throwable cause,
+            String op);
 
     @Message(TEST_MSG)
     <T extends RuntimeException> Supplier<T> supplierFunction(@Producer Function<String, T> function);
 
     @Message(TEST_MSG)
-    <T extends CustomException> T fieldMessageFunction(@Producer Function<String, T> function, @Field(name = "value") int value);
+    <T extends CustomException> T fieldMessageFunction(@Producer Function<String, T> function,
+            @Field(name = "value") int value);
 
     @Message(TEST_MSG)
     <T extends CustomException> T propertyMessageFunction(@Producer Function<String, T> function, @Property int value);
 
     @Message(TEST_MSG)
-    LoggingException throwableStringBiFunction(@Producer BiFunction<Exception, String, LoggingException> function, @Cause Exception cause);
+    LoggingException throwableStringBiFunction(@Producer BiFunction<Exception, String, LoggingException> function,
+            @Cause Exception cause);
 
     @Message(TEST_MSG)
-    <T extends RuntimeException> Supplier<T> throwableStringBiFunctionSupplier(@Producer BiFunction<String, Exception, T> function, @Cause Exception cause);
+    <T extends RuntimeException> Supplier<T> throwableStringBiFunctionSupplier(
+            @Producer BiFunction<String, Exception, T> function, @Cause Exception cause);
 
     @Message(TEST_MSG)
     UncheckedException wrapped(@Cause Throwable cause);
 
     @Message("Binding to %s failed: %s")
-    IOException bindFailed(SocketAddress address, @TransformException({BindException.class, SocketException.class}) IOException toCopy);
+    IOException bindFailed(SocketAddress address,
+            @TransformException({ BindException.class, SocketException.class }) IOException toCopy);
 
     @Message("Binding to %s failed: %s")
-    IOException bindFailedNewStackTrace(SocketAddress address, @Cause @TransformException(copyStackTrace = false) IOException toCopy);
+    IOException bindFailedNewStackTrace(SocketAddress address,
+            @Cause @TransformException(copyStackTrace = false) IOException toCopy);
 
     @Message("Unchecked IO: %s")
-    @Signature(value = {String.class, IOException.class}, causeIndex = 1)
+    @Signature(value = { String.class, IOException.class }, causeIndex = 1)
     UncheckedIOException uncheckedIO(@Cause @TransformException(copyStackTrace = false) IOException toCopy);
 
-    @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
+    @SuppressWarnings({ "InstanceVariableMayNotBeInitialized", "unused" })
     class CustomException extends RuntimeException {
         public int value;
 

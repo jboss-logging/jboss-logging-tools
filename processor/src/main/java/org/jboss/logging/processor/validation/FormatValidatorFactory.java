@@ -56,7 +56,6 @@ public final class FormatValidatorFactory {
         return InvalidFormatValidator.of(String.format("Format %s is invalid.", format));
     }
 
-
     private static final class InvalidFormatValidator extends AbstractFormatValidator {
 
         private InvalidFormatValidator() {
@@ -92,4 +91,3 @@ public final class FormatValidatorFactory {
         }
     }
 }
-

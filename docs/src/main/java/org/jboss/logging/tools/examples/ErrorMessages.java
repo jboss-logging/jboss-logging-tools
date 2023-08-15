@@ -131,7 +131,7 @@ public interface ErrorMessages {
      * Uses the producer function to create the returned exception indicating the operation has failed.
      * <p>
      * The formatted value of the message will be the first parameter for the functions
-     * {@linkplain BiFunction#apply(Object, Object)}  apply} method. The second parameter will be the cause.
+     * {@linkplain BiFunction#apply(Object, Object)} apply} method. The second parameter will be the cause.
      * </p>
      *
      * @param fn    the function to produce the returned exception
@@ -141,5 +141,6 @@ public interface ErrorMessages {
      *
      * @return the produced exception for the error
      */
-    <T extends RuntimeException> T operationFailed(@Producer BiFunction<String, IOException, T> fn, @Cause IOException cause, String name);
+    <T extends RuntimeException> T operationFailed(@Producer BiFunction<String, IOException, T> fn, @Cause IOException cause,
+            String name);
 }

@@ -33,7 +33,8 @@ public class Expressions {
     private static final int DEFAULT = 4;
 
     public static String resolve(final Properties props, final String expression) {
-        if (expression == null) return null;
+        if (expression == null)
+            return null;
         final StringBuilder builder = new StringBuilder();
         final char[] chars = expression.toCharArray();
         final int len = chars.length;

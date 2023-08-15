@@ -21,7 +21,6 @@ package org.jboss.logging.processor.validation;
 
 import static org.jboss.logging.processor.validation.ValidationMessageFactory.createError;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,14 +43,16 @@ public class IdRangeValidator {
         final List<ValidationMessage> messages = new LinkedList<>();
         for (ValidIdRange validIdRange : messageInterface.validIdRanges()) {
             if (validIdRange.min() > validIdRange.max()) {
-                messages.add(createError(messageInterface, "Minimum id value (%d) cannot be greater than the maximum value (%d).",
-                        validIdRange.min(), validIdRange.max()));
+                messages.add(
+                        createError(messageInterface, "Minimum id value (%d) cannot be greater than the maximum value (%d).",
+                                validIdRange.min(), validIdRange.max()));
             } else {
                 final Map<ValidIdRange, MessageInterface> processed = getProcessed(messageInterface);
                 for (Entry<ValidIdRange, MessageInterface> entry : processed.entrySet()) {
                     final ValidIdRange vid = entry.getKey();
                     if (overlap(validIdRange, vid)) {
-                        messages.add(createError(messageInterface, "@ValidIdRange min/max (%d/%d) overlap the range (%d/%d) on '%s'.",
+                        messages.add(createError(messageInterface,
+                                "@ValidIdRange min/max (%d/%d) overlap the range (%d/%d) on '%s'.",
                                 validIdRange.min(), validIdRange.max(), vid.min(), vid.max(), entry.getValue().name()));
                     }
                 }

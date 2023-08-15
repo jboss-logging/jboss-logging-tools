@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -197,7 +198,8 @@ abstract class ImplementationClassModel extends ClassModel {
                         for (int i = 0; i < positions.length; i++) {
                             final int index = positions[i] - 1;
                             if (transform != null && transform.length > 0) {
-                                final JAssignableExpr tVar = createTransformVar(parameterNames, method.body(), param, transform[i], $v(var));
+                                final JAssignableExpr tVar = createTransformVar(parameterNames, method.body(), param,
+                                        transform[i], $v(var));
                                 if (index < args.size()) {
                                     args.add(index, tVar);
                                 } else {
@@ -221,7 +223,8 @@ abstract class ImplementationClassModel extends ClassModel {
                 if (!added) {
                     if (formatterCall == null) {
                         // This should never happen, but let's safe guard against it
-                        throw new ProcessingException(messageMethod, "No format parameters are allowed when NO_FORMAT is specified.");
+                        throw new ProcessingException(messageMethod,
+                                "No format parameters are allowed when NO_FORMAT is specified.");
                     } else {
                         if (formatterClass == null) {
                             if (param.isArray() || param.isVarArgs()) {
@@ -272,11 +275,13 @@ abstract class ImplementationClassModel extends ClassModel {
         body._return(result);
     }
 
-    JAssignableExpr createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final JExpr var) {
+    JAssignableExpr createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param,
+            final JExpr var) {
         return createTransformVar(parameterNames, methodBody, param, param.getAnnotation(Transform.class), var);
     }
 
-    JAssignableExpr createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param, final Transform transform, final JExpr var) {
+    JAssignableExpr createTransformVar(final List<String> parameterNames, final JBlock methodBody, final Parameter param,
+            final Transform transform, final JExpr var) {
         final List<TransformType> transformTypes = Arrays.asList(transform.value());
         // GET_CLASS should always be processed first
         final JAssignableExpr result;
@@ -382,7 +387,8 @@ abstract class ImplementationClassModel extends ClassModel {
         }
     }
 
-    private JExpr createReturnType(final JClassDef classDef, final MessageMethod messageMethod, final JBlock body, final JCall format, final Map<String, JParamDeclaration> fields, final Map<String, JParamDeclaration> properties) {
+    private JExpr createReturnType(final JClassDef classDef, final MessageMethod messageMethod, final JBlock body,
+            final JCall format, final Map<String, JParamDeclaration> fields, final Map<String, JParamDeclaration> properties) {
         final Set<Parameter> producers = messageMethod.parametersAnnotatedWith(Producer.class);
         final JType type;
         final JVarDeclaration resultField;
@@ -462,8 +468,10 @@ abstract class ImplementationClassModel extends ClassModel {
         }
 
         // Get the @Property or @Properties annotation values
-        addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Properties.class, Property.class), body, $v(resultField), false);
-        addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Fields.class, Field.class), body, $v(resultField), true);
+        addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Properties.class, Property.class), body,
+                $v(resultField), false);
+        addDefultProperties(messageMethod, ElementHelper.getAnnotations(messageMethod, Fields.class, Field.class), body,
+                $v(resultField), true);
 
         // Determine how the stack trace should be copied. If annotated with TransformException and copyStackTrace() is
         // true, then we copy the parameters stack trace.
@@ -485,7 +493,8 @@ abstract class ImplementationClassModel extends ClassModel {
                         .add($v(resultField).call("addSuppressed").arg($v(name)));
             } else if (p.isAssignableFrom(Collection.class)) {
                 final String name = String.format("$%sVar", p.name());
-                body.add($v(p.name()).call("forEach").arg(JExprs.lambda().param(name).body($v(resultField).call("addSuppressed").arg($v(name)))));
+                body.add($v(p.name()).call("forEach")
+                        .arg(JExprs.lambda().param(name).body($v(resultField).call("addSuppressed").arg($v(name)))));
             } else {
                 body.add($v(resultField).call("addSuppressed").arg($v(p.name())));
             }
@@ -497,8 +506,9 @@ abstract class ImplementationClassModel extends ClassModel {
         return resultExpr;
     }
 
-    private JVarDeclaration constructReturnType(final MessageMethod messageMethod, final ThrowableType returnType, final JCall format,
-                                      final JBlock body, final JVarDeclaration resultField) {
+    private JVarDeclaration constructReturnType(final MessageMethod messageMethod, final ThrowableType returnType,
+            final JCall format,
+            final JBlock body, final JVarDeclaration resultField) {
         final JType type = JTypes.typeOf(returnType.asType());
         // Import once more as the throwable return type may be different from the actual return type
         sourceFile._import(type);
@@ -569,11 +579,13 @@ abstract class ImplementationClassModel extends ClassModel {
         return method.param(FINAL, paramType, param.name());
     }
 
-    private void addDefultProperties(final MessageMethod messageMethod, final Collection<AnnotationMirror> annotations, final JBlock body, final JAssignableExpr resultField, final boolean field) {
+    private void addDefultProperties(final MessageMethod messageMethod, final Collection<AnnotationMirror> annotations,
+            final JBlock body, final JAssignableExpr resultField, final boolean field) {
         for (AnnotationMirror propertyAnnotation : annotations) {
             String name = null;
             AnnotationValue annotationValue = null;
-            for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : propertyAnnotation.getElementValues().entrySet()) {
+            for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : propertyAnnotation.getElementValues()
+                    .entrySet()) {
                 final ExecutableElement attribute = entry.getKey();
                 final AnnotationValue attributeValue = entry.getValue();
                 if ("name".contentEquals(attribute.getSimpleName())) {
@@ -583,15 +595,18 @@ abstract class ImplementationClassModel extends ClassModel {
                 }
             }
             if (name == null) {
-                throw new ProcessingException(messageMethod, propertyAnnotation, "The name attribute is required for the annotation.");
+                throw new ProcessingException(messageMethod, propertyAnnotation,
+                        "The name attribute is required for the annotation.");
             }
             if (annotationValue == null || annotationValue.getValue() == null) {
-                throw new ProcessingException(messageMethod, propertyAnnotation, "A value for one of the default attributes is required.");
+                throw new ProcessingException(messageMethod, propertyAnnotation,
+                        "A value for one of the default attributes is required.");
             }
             final JExpr resultValue = annotationValue.accept(JExprAnnotationValueVisitor.INSTANCE, null);
             if (resultValue == null) {
                 final Object value = annotationValue.getValue();
-                throw new ProcessingException(messageMethod, propertyAnnotation, annotationValue, "Could not resolve value type for %s (%s)", value, value.getClass());
+                throw new ProcessingException(messageMethod, propertyAnnotation, annotationValue,
+                        "Could not resolve value type for %s (%s)", value, value.getClass());
             }
             if (field) {
                 body.add(resultField.field(name).assign(resultValue));
@@ -603,6 +618,7 @@ abstract class ImplementationClassModel extends ClassModel {
 
     /**
      * Creates a method for formatting {@link MessageFormat} messages. The method should look something like:
+     *
      * <pre>
      *     <code>
      *
@@ -644,10 +660,8 @@ abstract class ImplementationClassModel extends ClassModel {
                             .arg($v(args))
                             .arg($t(StringBuffer.class)._new())
                             .arg($t(FieldPosition.class)._new()
-                                    .arg(JExpr.ZERO)
-                            )
-                            .call("toString")
-            );
+                                    .arg(JExpr.ZERO))
+                            .call("toString"));
         }
 
         return JExprs.call(methodName);
@@ -665,7 +679,8 @@ abstract class ImplementationClassModel extends ClassModel {
             sourceFile._import(arrays);
             final JExpr e = $v(param);
             final JVarDeclaration st = body.var(FINAL, $t(StackTraceElement.class).array(), "st", e.call("getStackTrace"));
-            body.add(e.call("setStackTrace").arg(arrays.call("copyOfRange").arg($v(st)).arg(JExpr.ONE).arg($v(st).field("length"))));
+            body.add(e.call("setStackTrace")
+                    .arg(arrays.call("copyOfRange").arg($v(st)).arg(JExpr.ONE).arg($v(st).field("length"))));
         }
         return JExprs.call(methodName);
     }

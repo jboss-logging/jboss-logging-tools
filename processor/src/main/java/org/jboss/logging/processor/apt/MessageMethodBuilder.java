@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -106,7 +107,8 @@ final class MessageMethodBuilder {
             }
             // Check to see if the method is overloaded
             if (resultMethod.isOverloaded()) {
-                resultMethod.messageMethodName = resultMethod.name() + resultMethod.formatParameterCount() + MESSAGE_METHOD_SUFFIX;
+                resultMethod.messageMethodName = resultMethod.name() + resultMethod.formatParameterCount()
+                        + MESSAGE_METHOD_SUFFIX;
                 resultMethod.translationKey = resultMethod.name() + "." + resultMethod.formatParameterCount();
             } else {
                 resultMethod.messageMethodName = resultMethod.name() + MESSAGE_METHOD_SUFFIX;
@@ -175,7 +177,8 @@ final class MessageMethodBuilder {
         return message != null && (message.id() != Message.NONE && message.id() != Message.INHERIT);
     }
 
-    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods,
+            final ExecutableElement method) {
         final Name methodName = method.getSimpleName();
         final List<ExecutableElement> result = new ArrayList<>();
         final int paramCount = parameterCount(method.getParameters());
@@ -186,7 +189,6 @@ final class MessageMethodBuilder {
         }
         return result;
     }
-
 
     /**
      * Returns a collection of methods with the same name.
@@ -243,7 +245,8 @@ final class MessageMethodBuilder {
     private boolean isOverloaded(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
-            if (method.getSimpleName().equals(m.getSimpleName()) && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
+            if (method.getSimpleName().equals(m.getSimpleName())
+                    && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
                 return true;
             }
         }
@@ -367,7 +370,8 @@ final class MessageMethodBuilder {
         @Override
         public Set<Parameter> parametersAnnotatedWith(final Class<? extends Annotation> annotation) {
             final TypeElement type = ElementHelper.toTypeElement(elements, annotation);
-            return parameters.containsKey(type.asType()) ? Collections.unmodifiableSet(parameters.get(type.asType())) : Collections.emptySet();
+            return parameters.containsKey(type.asType()) ? Collections.unmodifiableSet(parameters.get(type.asType()))
+                    : Collections.emptySet();
         }
 
         @Override
@@ -474,7 +478,8 @@ final class MessageMethodBuilder {
                         result = Comparison.GREATER;
                     }
                     // Short circuit
-                    if (result != Comparison.EQUAL) break;
+                    if (result != Comparison.EQUAL)
+                        break;
                 }
             }
             return result;
@@ -487,7 +492,6 @@ final class MessageMethodBuilder {
     }
 
     private static class AptLoggerMessageMethod extends AptMessageMethod implements LoggerMessageMethod {
-
 
         /**
          * Private constructor for the

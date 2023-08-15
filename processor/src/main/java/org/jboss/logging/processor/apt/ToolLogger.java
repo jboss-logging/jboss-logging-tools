@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -290,7 +291,6 @@ public final class ToolLogger {
         }
     }
 
-
     private void log(final Kind kind, final Element element, final String messageFormat, final Object... args) {
         try {
             String message = ((args == null || args.length == 0) ? messageFormat : String.format(messageFormat, args));
@@ -310,7 +310,8 @@ public final class ToolLogger {
         }
     }
 
-    private void log(final Kind kind, final Element element, final Throwable cause, final String messageFormat, final Object... args) {
+    private void log(final Kind kind, final Element element, final Throwable cause, final String messageFormat,
+            final Object... args) {
 
         String stringCause = stackTraceToString(cause);
 

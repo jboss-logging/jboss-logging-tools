@@ -49,7 +49,7 @@ public class LoggerTest extends AbstractLoggerTest {
     @Test
     public void testSupplierLogger() throws Exception {
         ValidLogger.LOGGER.expensiveLog(() -> "supplier value");
-        ValidLogger.LOGGER.expensiveLogArray(() -> new String[]{"value1", "value2"});
+        ValidLogger.LOGGER.expensiveLogArray(() -> new String[] { "value1", "value2" });
         ValidLogger.LOGGER.expectedValues("value1", "value2", "value3");
 
         // Check the expected logs
@@ -60,7 +60,7 @@ public class LoggerTest extends AbstractLoggerTest {
         Logger.getLogger(TestConstants.CATEGORY).setLevel(Level.INFO);
         ValidLogger.LOGGER.debugValues(() -> {
             Assertions.fail("This should not be invoked.");
-           return  "debug values";
+            return "debug values";
         });
         // The message should not exist
         Assertions.assertEquals(0, HANDLER.size(), () -> String.format("More than one message was found: %s", HANDLER));

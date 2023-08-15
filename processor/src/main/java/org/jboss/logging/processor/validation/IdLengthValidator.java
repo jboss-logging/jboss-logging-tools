@@ -40,14 +40,16 @@ public class IdLengthValidator {
         final String projectCode = messageInterface.projectCode();
         final int idLength = messageInterface.getIdLength();
         if ((idLength > 0 && idLength < 3) || idLength > 8) {
-            messages.add(createError(messageInterface, "The length of the message id padding must be between 3 and 8. The value %d is invalid.", idLength));
+            messages.add(createError(messageInterface,
+                    "The length of the message id padding must be between 3 and 8. The value %d is invalid.", idLength));
         } else {
             synchronized (this) {
                 // Check the length id's
                 if (lengths.containsKey(projectCode)) {
                     final int len = lengths.get(projectCode);
                     if (len != idLength) {
-                        messages.add(createError(messageInterface, "A length of %d was already used for project code '%s'.", len, projectCode));
+                        messages.add(createError(messageInterface, "A length of %d was already used for project code '%s'.",
+                                len, projectCode));
                     }
                 } else {
                     lengths.put(projectCode, idLength);

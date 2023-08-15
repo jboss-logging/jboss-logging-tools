@@ -22,7 +22,8 @@ package org.jboss.logging.processor.validation;
 import org.jboss.logging.processor.util.Comparison;
 
 /**
- * Abstract class that only implements Comparable for convenience. Uses the {@link org.jboss.logging.processor.validation.FormatPart#position()} for
+ * Abstract class that only implements Comparable for convenience. Uses the
+ * {@link org.jboss.logging.processor.validation.FormatPart#position()} for
  * the comparison.
  * <p/>
  * Date: 13.06.2011
@@ -33,8 +34,7 @@ abstract class AbstractFormatPart implements FormatPart {
 
     @Override
     public int compareTo(final FormatPart other) {
-        return Comparison.begin().
-                compare(position(), other.position()).result();
+        return Comparison.begin().compare(position(), other.position()).result();
     }
 
     @Override

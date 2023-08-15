@@ -41,7 +41,7 @@ import org.jboss.logging.Logger;
 public @interface LogMessage {
 
     /**
-     * The log level at which this message should be logged.  Defaults to {@code INFO}.
+     * The log level at which this message should be logged. Defaults to {@code INFO}.
      *
      * @return the log level
      */

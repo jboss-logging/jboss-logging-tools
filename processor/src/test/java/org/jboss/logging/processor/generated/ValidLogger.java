@@ -104,7 +104,7 @@ public interface ValidLogger {
     void expensiveLog(Supplier<String> error);
 
     @LogMessage(level = Level.ERROR)
-    @Message( "Error: %s")
+    @Message("Error: %s")
     void expensiveLogArray(Supplier<Object[]> error);
 
     @LogMessage(level = Level.WARN)

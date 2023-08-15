@@ -73,7 +73,8 @@ public final class MessageIdValidator {
                                 ranges.append(", ");
                             }
                         }
-                        messages.add(createError(messageMethod, "Message id %d on method %s is not within the valid range: %s", id, messageMethod.name(), ranges.toString()));
+                        messages.add(createError(messageMethod, "Message id %d on method %s is not within the valid range: %s",
+                                id, messageMethod.name(), ranges.toString()));
                     }
                 }
                 final String projectCode = messageInterface.projectCode();
@@ -83,8 +84,12 @@ public final class MessageIdValidator {
                         final MessageMethod previousMethod = usedMessageIds.get(key);
                         // Allow methods with the same name to use the same id, like INHERIT does
                         if (!previousMethod.name().equals(messageMethod.name())) {
-                            messages.add(createError(previousMethod, "Message id %s is not unique for messageMethod %s with project code %s.", id, previousMethod.name(), projectCode));
-                            messages.add(createError(messageMethod, "Message id %s is not unique for messageMethod %s with project code %s.", id, messageMethod.name(), projectCode));
+                            messages.add(createError(previousMethod,
+                                    "Message id %s is not unique for messageMethod %s with project code %s.", id,
+                                    previousMethod.name(), projectCode));
+                            messages.add(createError(messageMethod,
+                                    "Message id %s is not unique for messageMethod %s with project code %s.", id,
+                                    messageMethod.name(), projectCode));
                         }
                     } else {
                         usedMessageIds.put(key, messageMethod);

@@ -48,7 +48,7 @@ public interface LoggerMessageMethod extends MessageMethod {
      * checked before any logging, or an expensive operation, is done.
      *
      * @return {@code true} if the statement should be wrapped in an {@code if (logger.isEnabled(level))} block,
-     * otherwise {@code false}
+     *         otherwise {@code false}
      */
     default boolean wrapInEnabledCheck() {
         return !parametersAnnotatedWith(Transform.class).isEmpty();

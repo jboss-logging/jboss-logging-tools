@@ -25,7 +25,6 @@ import java.util.Date;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.util.ElementHelper;
 
 /**
  * Utilities for the code model.
@@ -80,7 +79,8 @@ public final class ClassModelHelper {
         } else if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
             result.append("_$logger");
         } else {
-            throw new IllegalArgumentException(String.format("Message interface %s is not a message bundle or message logger.", messageInterface));
+            throw new IllegalArgumentException(
+                    String.format("Message interface %s is not a message bundle or message logger.", messageInterface));
         }
         return result.toString();
     }
@@ -95,7 +95,8 @@ public final class ClassModelHelper {
      *
      * @throws IllegalArgumentException if the message interface is not a message bundle or a message logger.
      */
-    public static String implementationClassName(final MessageInterface messageInterface, final String translationSuffix) throws IllegalArgumentException {
+    public static String implementationClassName(final MessageInterface messageInterface, final String translationSuffix)
+            throws IllegalArgumentException {
         return implementationClassName(messageInterface) + translationSuffix;
     }
 }

@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -86,7 +87,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
     public static final String DEBUG_OPTION = "debug";
     static final String EXPRESSION_PROPERTIES = "org.jboss.logging.tools.expressionProperties";
     static final String ADD_GENERATED_ANNOTATION = "org.jboss.logging.tools.addGeneratedAnnotation";
-    private final List<String> interfaceAnnotations = Arrays.asList(MessageBundle.class.getName(), MessageLogger.class.getName());
+    private final List<String> interfaceAnnotations = Arrays.asList(MessageBundle.class.getName(),
+            MessageLogger.class.getName());
     private final List<AbstractGenerator> generators;
     private final Set<String> supportedAnnotations;
     private ToolLogger logger;
@@ -113,8 +115,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 Signature.class,
                 Transform.class,
                 ValidIdRange.class,
-                ValidIdRanges.class
-        );
+                ValidIdRanges.class);
     }
 
     @Override
@@ -183,7 +184,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 }
             }
         }
-        final boolean addGeneratedAnnotation = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_GENERATED_ANNOTATION, "true"));
+        final boolean addGeneratedAnnotation = Boolean
+                .parseBoolean(processingEnv.getOptions().getOrDefault(ADD_GENERATED_ANNOTATION, "true"));
         boolean generate = true;
         final Validator validator = new Validator(processingEnv);
 
@@ -195,7 +197,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                     final Set<? extends TypeElement> interfaces = typesIn(roundEnv.getElementsAnnotatedWith(annotation));
                     for (TypeElement interfaceElement : interfaces) {
                         try {
-                            final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv, interfaceElement, expressionProperties, addGeneratedAnnotation);
+                            final MessageInterface messageInterface = MessageInterfaceFactory.of(processingEnv,
+                                    interfaceElement, expressionProperties, addGeneratedAnnotation);
                             final Collection<ValidationMessage> validationMessages = validator.validate(messageInterface);
                             for (ValidationMessage message : validationMessages) {
                                 if (message.printMessage(processingEnv.getMessager())) {
@@ -220,7 +223,8 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                             } else if (value == null) {
                                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element, a);
                             } else {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element, a, value);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage(), element, a,
+                                        value);
                             }
                         }
                     }

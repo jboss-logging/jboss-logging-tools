@@ -24,6 +24,7 @@ import static org.jboss.logging.processor.util.Objects.areEqual;
 
 import java.util.List;
 import java.util.function.Supplier;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -51,8 +52,8 @@ final class ReturnTypeFactory {
     private ReturnTypeFactory() {
     }
 
-
-    public static ReturnType of(final ProcessingEnvironment processingEnv, final TypeMirror returnType, final MessageMethod method) {
+    public static ReturnType of(final ProcessingEnvironment processingEnv, final TypeMirror returnType,
+            final MessageMethod method) {
         if (returnType.getKind() == TypeKind.VOID) {
             return VoidReturnType.getInstance(processingEnv.getTypeUtils());
         }
@@ -133,7 +134,8 @@ final class ReturnTypeFactory {
                     }
                     throwableReturnType = constructTypeValue.asType();
                     if (!types.isAssignable(throwableReturnType, resolvedType)) {
-                        throw new ProcessingException(method, "The requested type %s can not be assigned to %s.", throwableReturnType, resolvedType);
+                        throw new ProcessingException(method, "The requested type %s can not be assigned to %s.",
+                                throwableReturnType, resolvedType);
                     }
                 }
                 throwableType = ThrowableTypeFactory.forReturnType(processingEnv, throwableReturnType, method);

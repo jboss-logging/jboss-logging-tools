@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
@@ -87,7 +88,6 @@ final class TranslationClassGenerator extends AbstractGenerator {
     private final String translationFilesPath;
     private final boolean skipTranslations;
 
-
     /**
      * Construct an instance of the Translation
      * Class Generator.
@@ -103,7 +103,8 @@ final class TranslationClassGenerator extends AbstractGenerator {
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
+            final MessageInterface messageInterface) {
         if (skipTranslations) {
             logger().debug(element, "Skipping processing of translation implementation");
             return;
@@ -121,7 +122,8 @@ final class TranslationClassGenerator extends AbstractGenerator {
         }
     }
 
-    private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface, final List<File> files) throws IOException {
+    private Map<File, Map<MessageMethod, String>> allInterfaceTranslations(final MessageInterface messageInterface,
+            final List<File> files) throws IOException {
         final Map<File, Map<MessageMethod, String>> validTranslations = new LinkedHashMap<>();
         for (MessageInterface superInterface : messageInterface.extendedInterfaces()) {
             validTranslations.putAll(allInterfaceTranslations(superInterface, findTranslationFiles(superInterface)));
@@ -208,14 +210,18 @@ final class TranslationClassGenerator extends AbstractGenerator {
                                         validator.argumentCount(), messageMethod.formatParameterCount());
                             }
                         } else {
-                            logger().warn(messageMethod, "%s Resource Bundle: %s", validator.summaryMessage(), file.getAbsolutePath());
+                            logger().warn(messageMethod, "%s Resource Bundle: %s", validator.summaryMessage(),
+                                    file.getAbsolutePath());
                         }
                     } else {
-                        logger().warn(messageMethod, "The translation message with key %s is ignored because value is empty or contains only whitespace", key);
+                        logger().warn(messageMethod,
+                                "The translation message with key %s is ignored because value is empty or contains only whitespace",
+                                key);
                     }
 
                 } else {
-                    logger().warn(messageMethod, "The translation message with key %s have no corresponding messageMethod.", key);
+                    logger().warn(messageMethod, "The translation message with key %s have no corresponding messageMethod.",
+                            key);
                 }
             }
 
@@ -233,18 +239,20 @@ final class TranslationClassGenerator extends AbstractGenerator {
      * @param translationFile  the translation file
      * @param translations     the translations message
      */
-    private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile, final Map<MessageMethod, String> translations) {
+    private void generateSourceFileFor(final MessageInterface messageInterface, final File translationFile,
+            final Map<MessageMethod, String> translations) {
 
         //Generate empty translation super class if needed
         //Check if enclosing translation file exists, if not generate an empty super class
         final String enclosingTranslationFileName = getEnclosingTranslationFileName(translationFile);
         final File enclosingTranslationFile = new File(translationFile.getParent(), enclosingTranslationFileName);
         if (!enclosingTranslationFileName.equals(translationFile.getName()) && !enclosingTranslationFile.exists()) {
-            generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<MessageMethod, String>emptyMap());
+            generateSourceFileFor(messageInterface, enclosingTranslationFile, Collections.<MessageMethod, String> emptyMap());
         }
 
         //Create source file
-        final ClassModel classModel = ClassModelFactory.translation(processingEnv, messageInterface, getTranslationClassNameSuffix(translationFile.getName()), translations);
+        final ClassModel classModel = ClassModelFactory.translation(processingEnv, messageInterface,
+                getTranslationClassNameSuffix(translationFile.getName()), translations);
 
         try {
             classModel.generateAndWrite();

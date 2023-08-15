@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-
 package org.jboss.logging.annotations;
 
 import static java.lang.annotation.ElementType.METHOD;

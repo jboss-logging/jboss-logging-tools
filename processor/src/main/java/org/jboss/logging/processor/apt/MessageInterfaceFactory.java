@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.annotation.processing.Generated;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
@@ -78,9 +79,10 @@ public final class MessageInterfaceFactory {
      * @return a message interface for the interface element.
      */
     public static MessageInterface of(final ProcessingEnvironment processingEnv, final TypeElement interfaceElement,
-                                      final Properties expressionProperties, final boolean addGeneratedAnnotation) {
+            final Properties expressionProperties, final boolean addGeneratedAnnotation) {
         final Types types = processingEnv.getTypeUtils();
-        if (types.isSameType(interfaceElement.asType(), ElementHelper.toType(processingEnv.getElementUtils(), BasicLogger.class))) {
+        if (types.isSameType(interfaceElement.asType(),
+                ElementHelper.toType(processingEnv.getElementUtils(), BasicLogger.class))) {
             MessageInterface result = LOGGER_INTERFACE;
             if (result == null) {
                 synchronized (LOCK) {
@@ -93,10 +95,12 @@ public final class MessageInterfaceFactory {
             }
             return result;
         }
-        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv, expressionProperties, addGeneratedAnnotation);
+        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv, expressionProperties,
+                addGeneratedAnnotation);
         result.init();
         for (TypeMirror typeMirror : interfaceElement.getInterfaces()) {
-            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv, (TypeElement) types.asElement(typeMirror),
+            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv,
+                    (TypeElement) types.asElement(typeMirror),
                     expressionProperties, addGeneratedAnnotation);
             result.extendedInterfaces.add(extended);
             result.extendedInterfaces.addAll(extended.extendedInterfaces());
@@ -122,7 +126,7 @@ public final class MessageInterfaceFactory {
         private int idLen;
 
         private AptMessageInterface(final TypeElement interfaceElement, final ProcessingEnvironment processingEnv,
-                                    final Properties expressionProperties, final boolean addGeneratedAnnotation) {
+                final Properties expressionProperties, final boolean addGeneratedAnnotation) {
             super(processingEnv, interfaceElement);
             this.interfaceElement = interfaceElement;
             this.expressionProperties = expressionProperties;
@@ -136,7 +140,8 @@ public final class MessageInterfaceFactory {
                 validIdRanges = Collections.emptyList();
             }
             // Determine the type for the generated annotation
-            final ModuleElement moduleElement = processingEnv.getElementUtils().getModuleElement(Generated.class.getModule().getName());
+            final ModuleElement moduleElement = processingEnv.getElementUtils()
+                    .getModuleElement(Generated.class.getModule().getName());
             this.generatedAnnotation = processingEnv.getElementUtils().getTypeElement(moduleElement, Generated.class.getName());
         }
 
@@ -189,7 +194,8 @@ public final class MessageInterfaceFactory {
                 projectCode = messageLogger.projectCode();
                 idLen = messageLogger.length();
             } else {
-                throw new ProcessingException(interfaceElement, "Interface is not annotated with @MessageBundle or @MessageLogger");
+                throw new ProcessingException(interfaceElement,
+                        "Interface is not annotated with @MessageBundle or @MessageLogger");
             }
             qualifiedName = elements.getBinaryName(interfaceElement).toString();
             final int lastDot = qualifiedName.lastIndexOf(".");
@@ -201,7 +207,8 @@ public final class MessageInterfaceFactory {
                 simpleName = qualifiedName;
             }
             // Get the FQCN
-            final TypeElement loggingClass = ElementHelper.getClassAnnotationValue(interfaceElement, MessageLogger.class, "loggingClass");
+            final TypeElement loggingClass = ElementHelper.getClassAnnotationValue(interfaceElement, MessageLogger.class,
+                    "loggingClass");
             if (loggingClass != null) {
                 final String value = loggingClass.getQualifiedName().toString();
                 if (!value.equals(Void.class.getName())) {
@@ -240,7 +247,6 @@ public final class MessageInterfaceFactory {
             return idLen;
         }
 
-
         @Override
         public TypeElement getDelegate() {
             return interfaceElement;
@@ -268,12 +274,10 @@ public final class MessageInterfaceFactory {
             return areEqual(name(), other.name());
         }
 
-
         @Override
         public String toString() {
             return ToStringBuilder.of(this).add(qualifiedName).toString();
         }
-
 
     }
 
@@ -295,7 +299,8 @@ public final class MessageInterfaceFactory {
         }
 
         static LoggerInterface of(final ProcessingEnvironment processingEnv) {
-            final LoggerInterface result = new LoggerInterface(processingEnv, ElementHelper.toTypeElement(processingEnv, BasicLogger.class));
+            final LoggerInterface result = new LoggerInterface(processingEnv,
+                    ElementHelper.toTypeElement(processingEnv, BasicLogger.class));
             result.init();
             return result;
         }

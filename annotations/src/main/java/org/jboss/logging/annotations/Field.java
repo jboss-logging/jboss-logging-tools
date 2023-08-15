@@ -40,13 +40,13 @@ import java.lang.annotation.Target;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @Retention(CLASS)
-@Target({PARAMETER, METHOD})
+@Target({ PARAMETER, METHOD })
 @Repeatable(Fields.class)
 @Documented
 public @interface Field {
 
     /**
-     * The field name.  If not specified, the parameter name is assumed to be the field name.
+     * The field name. If not specified, the parameter name is assumed to be the field name.
      * <p>
      * This becomes a required attrubyte if this annotation is present on a method.
      * </p>

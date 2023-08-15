@@ -21,6 +21,7 @@ package org.jboss.logging.processor.apt.report;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -101,7 +102,8 @@ class XmlReportWriter extends ReportWriter {
     @Override
     public void close() throws IOException {
         try {
-            if (xmlWriter != null) xmlWriter.close();
+            if (xmlWriter != null)
+                xmlWriter.close();
         } catch (XMLStreamException ignore) {
         }
     }

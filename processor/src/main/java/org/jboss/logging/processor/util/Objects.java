@@ -37,7 +37,6 @@ public final class Objects {
 
     }
 
-
     /**
      * Checks to see if two booleans are equal.
      *

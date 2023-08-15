@@ -67,7 +67,7 @@ import java.lang.annotation.Target;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 1.2
  */
-@Target({METHOD, TYPE})
+@Target({ METHOD, TYPE })
 @Retention(CLASS)
 @Documented
 public @interface ResolutionDoc {

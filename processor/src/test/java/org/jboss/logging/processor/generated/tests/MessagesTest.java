@@ -50,7 +50,8 @@ public class MessagesTest {
     public void testFormats() {
         Assertions.assertEquals(FORMATTED_TEST_MSG, ValidMessages.MESSAGES.testWithNewLine());
         Assertions.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormat());
-        Assertions.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage());
+        Assertions.assertEquals(ValidMessages.TEST_MSG,
+                ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage());
 
         final int value = 10;
         Assertions.assertEquals(value, ValidMessages.MESSAGES.fieldMessage(value).value);
@@ -61,13 +62,15 @@ public class MessagesTest {
         Assertions.assertEquals(FORMATTED_TEST_MSG, e.getMessage());
         Assertions.assertNotNull(e.getCause());
 
-        Assertions.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException, "Incorrect type constructed");
+        Assertions.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException,
+                "Incorrect type constructed");
 
         final String arg1 = "value-1";
         final String arg2 = "value-2";
         final String messageFormatMessage = MessageFormat.format(ValidMessages.TEST_MESSAGE_FORMAT, arg1, arg2);
         Assertions.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormat(arg1, arg2));
-        Assertions.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormatException(arg1, arg2).getMessage());
+        Assertions.assertEquals(messageFormatMessage,
+                ValidMessages.MESSAGES.testMessageFormatException(arg1, arg2).getMessage());
     }
 
     @Test
@@ -108,7 +111,6 @@ public class MessagesTest {
 
         actual = ValidMessages.MESSAGES.suppressedErrors(e1, e2);
         compare(expected.getSuppressed(), actual.getSuppressed());
-
 
     }
 
@@ -217,7 +219,8 @@ public class MessagesTest {
     @Test
     public void testBiFunctionProducerMessages() {
         final RuntimeException cause = new RuntimeException("This is the cause");
-        RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, cause, "start");
+        RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, cause,
+                "start");
         Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
         Assertions.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
         Assertions.assertEquals(cause, runtimeException.getCause());
@@ -226,7 +229,8 @@ public class MessagesTest {
         Assertions.assertEquals(LoggingException.class, runtimeException.getClass());
         Assertions.assertEquals(cause, runtimeException.getCause());
 
-        final Supplier<RuntimeException> supplier = ValidMessages.MESSAGES.throwableStringBiFunctionSupplier(IllegalArgumentException::new, cause);
+        final Supplier<RuntimeException> supplier = ValidMessages.MESSAGES
+                .throwableStringBiFunctionSupplier(IllegalArgumentException::new, cause);
         runtimeException = supplier.get();
         Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
         Assertions.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
@@ -240,14 +244,15 @@ public class MessagesTest {
         IOException cause = new BindException("Address already in use");
         IOException e = ValidMessages.MESSAGES.bindFailed(address, cause);
         Assertions.assertTrue(e instanceof BindException);
-        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()),
+                e.getMessage());
         Assertions.assertArrayEquals(cause.getStackTrace(), e.getStackTrace());
-
 
         cause = new SocketException("Address already in use");
         e = ValidMessages.MESSAGES.bindFailed(address, cause);
         Assertions.assertTrue(e instanceof SocketException);
-        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()),
+                e.getMessage());
         Assertions.assertArrayEquals(cause.getStackTrace(), e.getStackTrace());
     }
 
@@ -257,7 +262,8 @@ public class MessagesTest {
         final IOException cause = new BindException("Address already in use");
         final IOException e = ValidMessages.MESSAGES.bindFailedNewStackTrace(address, cause);
         Assertions.assertEquals(IOException.class, e.getClass());
-        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()),
+                e.getMessage());
         Assertions.assertFalse(Arrays.equals(cause.getStackTrace(), e.getStackTrace()), "The stack traces should not match.");
         Assertions.assertEquals(cause, e.getCause());
     }
@@ -271,7 +277,8 @@ public class MessagesTest {
     }
 
     private <T> void compare(final T[] a1, final T[] a2) {
-        Assertions.assertTrue(equalsIgnoreOrder(a1, a2), String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)));
+        Assertions.assertTrue(equalsIgnoreOrder(a1, a2),
+                String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)));
     }
 
     private <T> boolean equalsIgnoreOrder(final T[] a1, final T[] a2) {

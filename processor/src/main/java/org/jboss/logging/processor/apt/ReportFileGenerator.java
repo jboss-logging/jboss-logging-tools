@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
@@ -84,7 +85,8 @@ public class ReportFileGenerator extends AbstractGenerator {
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
+            final MessageInterface messageInterface) {
         if (reportType != null) {
             try {
                 // Don't generate empty interfaces
@@ -97,8 +99,7 @@ public class ReportFileGenerator extends AbstractGenerator {
                 final String fileName = messageInterface.simpleName() + reportType.getExtension();
                 try (
                         final BufferedWriter writer = createWriter(messageInterface.packageName(), fileName);
-                        final ReportWriter reportWriter = ReportWriter.of(reportType, messageInterface, writer)
-                ) {
+                        final ReportWriter reportWriter = ReportWriter.of(reportType, messageInterface, writer)) {
                     reportWriter.writeHeader(reportTitle);
                     // Process the methods
                     for (MessageMethod messageMethod : getSortedMessageMethods(messageInterface)) {
@@ -114,9 +115,11 @@ public class ReportFileGenerator extends AbstractGenerator {
 
     private BufferedWriter createWriter(final String packageName, final String fileName) throws IOException {
         if (reportPath == null) {
-            return new BufferedWriter(processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, packageName, fileName).openWriter());
+            return new BufferedWriter(processingEnv.getFiler()
+                    .createResource(StandardLocation.SOURCE_OUTPUT, packageName, fileName).openWriter());
         }
-        final Path outputPath = Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()), fileName);
+        final Path outputPath = Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()),
+                fileName);
         Files.createDirectories(outputPath.getParent());
         return Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
     }

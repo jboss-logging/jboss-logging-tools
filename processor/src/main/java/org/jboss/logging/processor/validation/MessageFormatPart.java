@@ -70,18 +70,19 @@ class MessageFormatPart extends AbstractFormatPart {
     @Override
     public String part() {
         return originalFormat;
-        /** Should use something like this when
-         final StringBuilder result = new StringBuilder("{");
-         if (index >= 0) {
-         result.append(index);
-         }
-         if (formatType != null) {
-         result.append(",").append(formatType);
-         }
-         if (formatStyle != null) {
-         result.append(",").append(formatStyle);
-         }
-         return result.append("}").toString();
+        /**
+         * Should use something like this when
+         * final StringBuilder result = new StringBuilder("{");
+         * if (index >= 0) {
+         * result.append(index);
+         * }
+         * if (formatType != null) {
+         * result.append(",").append(formatType);
+         * }
+         * if (formatStyle != null) {
+         * result.append(",").append(formatStyle);
+         * }
+         * return result.append("}").toString();
          **/
     }
 

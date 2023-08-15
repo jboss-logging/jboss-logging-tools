@@ -20,6 +20,7 @@
 package org.jboss.logging.processor.model;
 
 import java.util.List;
+
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 

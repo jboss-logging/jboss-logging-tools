@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
@@ -78,7 +79,6 @@ public abstract class ClassModel {
 
     private final Map<String, JMethodDef> messageMethods;
 
-
     final JSourceFile sourceFile;
     final ProcessingEnvironment processingEnv;
 
@@ -89,12 +89,14 @@ public abstract class ClassModel {
      * @param messageInterface the message interface to implement.
      * @param superClassName   the super class used for the translation implementations.
      */
-    ClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className, final String superClassName) {
+    ClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className,
+            final String superClassName) {
         this.processingEnv = processingEnv;
         this.messageInterface = messageInterface;
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
-        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()), new FormatPreferences(new Properties()));
+        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()),
+                new FormatPreferences(new Properties()));
         sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
         classDef = sourceFile._class(JMod.PUBLIC, className);
         final int idLen = messageInterface.getIdLength();
@@ -222,7 +224,8 @@ public abstract class ClassModel {
             method = classDef.method(JMod.PROTECTED, String.class, messageMethod.messageMethodName());
             final JBlock body = method.body();
             final String msg;
-            if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
+            if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty()
+                    && messageMethod.message().hasId()) {
                 // Prefix the id to the string message
                 msg = String.format(format, messageInterface.projectCode(), messageMethod.message().id(), messageValue);
             } else {
@@ -244,7 +247,6 @@ public abstract class ClassModel {
         return className;
     }
 
-
     /**
      * Creates the read resolve method and instance field.
      *
@@ -252,7 +254,8 @@ public abstract class ClassModel {
      */
     protected JMethodDef createReadResolveMethod() {
         final JType type = typeOf(classDef);
-        final JVarDeclaration instance = classDef.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, type, INSTANCE_FIELD_NAME, type._new());
+        final JVarDeclaration instance = classDef.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, type, INSTANCE_FIELD_NAME,
+                type._new());
         final JMethodDef readResolveMethod = classDef.method(JMod.PROTECTED, Object.class, GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return($v(instance));
         return readResolveMethod;
@@ -275,7 +278,8 @@ public abstract class ClassModel {
         // Create the type and import it
         final JType localeType = typeOf(Locale.class);
         sourceFile._import(localeType);
-        final JVarDeclaration defaultInstance = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, localeType, "LOCALE", determineLocale(locale, localeType));
+        final JVarDeclaration defaultInstance = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, localeType, "LOCALE",
+                determineLocale(locale, localeType));
 
         // Create the method
         final JMethodDef method = classDef.method(JMod.PROTECTED, localeType, methodName);

@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.Element;
@@ -60,11 +61,13 @@ import org.jboss.logging.processor.validation.StringFormatValidator;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SuppressWarnings("MagicNumber")
-@SupportedOptions({TranslationFileGenerator.GENERATED_FILES_PATH_OPTION, TranslationFileGenerator.LEVEL_OPTION, TranslationFileGenerator.SKIP_INDEX})
+@SupportedOptions({ TranslationFileGenerator.GENERATED_FILES_PATH_OPTION, TranslationFileGenerator.LEVEL_OPTION,
+        TranslationFileGenerator.SKIP_INDEX })
 final class TranslationFileGenerator extends AbstractGenerator {
     private static final Map<String, Integer> levels = new HashMap<>();
 
-    private static final Pattern PATTERN = Pattern.compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
+    private static final Pattern PATTERN = Pattern
+            .compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
 
     private static final String EMPTY_STRING = "";
     private static final String JAVA_DOC_PARAM = "@param";
@@ -134,7 +137,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
+            final MessageInterface messageInterface) {
         if (generatedFilesPath != null) {
             if (element.getKind().isInterface()) {
                 String packageName = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString();
@@ -156,7 +160,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
      * @param fileName         the file name
      * @param messageInterface the message interface
      */
-    private void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MessageInterface messageInterface) {
+    private void generateSkeletalTranslationFile(final String relativePath, final String fileName,
+            final MessageInterface messageInterface) {
         if (messageInterface == null) {
             throw new IllegalArgumentException("The translations parameter cannot be null");
         }
@@ -192,7 +197,6 @@ final class TranslationFileGenerator extends AbstractGenerator {
             }
         }
 
-
     }
 
     /**
@@ -206,7 +210,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
         try {
             if (generatedFilesPath == null) {
-                final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
+                final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
+                        messageInterface.packageName(), fileName);
                 // Note the FileObject#openWriter() is used here. The FileObject#openOutputStream() returns an output stream
                 // that writes each byte separately which results in poor performance.
                 writer = new BufferedWriter(fileObject.openWriter());
@@ -248,7 +253,6 @@ final class TranslationFileGenerator extends AbstractGenerator {
                 logger().error(e, "Cannot write generated default translation file %s", fileName);
             }
         }
-
 
     }
 

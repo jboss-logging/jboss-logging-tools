@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-
 package org.jboss.logging.annotations;
 
 import static java.lang.annotation.ElementType.METHOD;
@@ -42,13 +41,13 @@ import java.lang.annotation.Target;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @Retention(CLASS)
-@Target({PARAMETER, METHOD})
+@Target({ PARAMETER, METHOD })
 @Repeatable(Properties.class)
 @Documented
 public @interface Property {
 
     /**
-     * The property name.  If not specified, the parameter name is assumed to be the property name.
+     * The property name. If not specified, the parameter name is assumed to be the property name.
      * <p>
      * This becomes a required attribute if this annotation is present on a method.
      * </p>

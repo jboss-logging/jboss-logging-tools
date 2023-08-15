@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.AnnotatedConstruct;
 import javax.lang.model.element.AnnotationMirror;
@@ -103,7 +104,8 @@ public final class ElementHelper {
      *
      * @throws IllegalArgumentException if element parameter is null
      */
-    public static boolean isAnnotatedWith(final AnnotatedConstruct annotatedConstruct, final Class<? extends Annotation> clazz) {
+    public static boolean isAnnotatedWith(final AnnotatedConstruct annotatedConstruct,
+            final Class<? extends Annotation> clazz) {
         if (annotatedConstruct == null) {
             throw new IllegalArgumentException("The element parameter is null");
         }
@@ -119,7 +121,7 @@ public final class ElementHelper {
      * @param annotation the annotation to get the value from
      *
      * @return a {@link TypeElement} representing the value for the first annotation attribute or {@code null} if no
-     * attributes were found
+     *         attributes were found
      */
     public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
@@ -140,10 +142,11 @@ public final class ElementHelper {
      * @param attributeName the name of the attribute to retrieve the class value for
      *
      * @return a {@link TypeElement} representing the value for the annotation attribute or {@code null} if the
-     * attribute was not found
+     *         attribute was not found
      */
-    @SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "SameParameterValue"})
-    public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
+    @SuppressWarnings({ "StaticMethodOnlyUsedInOneClass", "SameParameterValue" })
+    public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation,
+            final String attributeName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
             final DeclaredType annotationType = mirror.getAnnotationType();
             if (annotationType.toString().equals(annotation.getName())) {
@@ -167,7 +170,8 @@ public final class ElementHelper {
      *
      * @return a list of {@link TypeMirror} representing the value for the annotation attribute or an empty list
      */
-    public static List<TypeMirror> getClassArrayAnnotationValue(final Element element, final Class<? extends Annotation> annotation, @SuppressWarnings("SameParameterValue") final String attributeName) {
+    public static List<TypeMirror> getClassArrayAnnotationValue(final Element element,
+            final Class<? extends Annotation> annotation, @SuppressWarnings("SameParameterValue") final String attributeName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
             final DeclaredType annotationType = mirror.getAnnotationType();
             if (annotationType.toString().equals(annotation.getName())) {
@@ -199,12 +203,14 @@ public final class ElementHelper {
      * </p>
      *
      * @param element           the element to search for annotations
-     * @param groupedAnnotation the grouped annotation, e.g. collector for repeatable annotations, or {@code null} if not a repeatable annotation
+     * @param groupedAnnotation the grouped annotation, e.g. collector for repeatable annotations, or {@code null} if not a
+     *                          repeatable annotation
      * @param annotation        the annotation to search for
      *
      * @return a collection matched annotations
      */
-    public static Collection<AnnotationMirror> getAnnotations(final Element element, final Class<? extends Annotation> groupedAnnotation, final Class<? extends Annotation> annotation) {
+    public static Collection<AnnotationMirror> getAnnotations(final Element element,
+            final Class<? extends Annotation> groupedAnnotation, final Class<? extends Annotation> annotation) {
         final Collection<AnnotationMirror> result = new ArrayList<>();
         final List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
         for (AnnotationMirror annotationMirror : annotations) {
@@ -308,19 +314,20 @@ public final class ElementHelper {
         final Collection<AnnotationMirror> result = new ArrayList<>();
         // Return any child annotations
         final Map<? extends ExecutableElement, ? extends AnnotationValue> childAnnotations = annotation.getElementValues();
-        childAnnotations.entrySet().stream().filter(entry -> entry.getKey().getSimpleName().contentEquals("value")).forEach(entry -> {
-            final Object value = entry.getValue().getValue();
-            if (value instanceof List) {
-                final List<? extends AnnotationValue> values = (List<? extends AnnotationValue>) value;
-                for (AnnotationValue subValue : values) {
-                    if (subValue instanceof AnnotationMirror) {
-                        result.add((AnnotationMirror) subValue);
-                    } else {
-                        result.add((AnnotationMirror) subValue.getValue());
+        childAnnotations.entrySet().stream().filter(entry -> entry.getKey().getSimpleName().contentEquals("value"))
+                .forEach(entry -> {
+                    final Object value = entry.getValue().getValue();
+                    if (value instanceof List) {
+                        final List<? extends AnnotationValue> values = (List<? extends AnnotationValue>) value;
+                        for (AnnotationValue subValue : values) {
+                            if (subValue instanceof AnnotationMirror) {
+                                result.add((AnnotationMirror) subValue);
+                            } else {
+                                result.add((AnnotationMirror) subValue.getValue());
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
 
         return result;
     }

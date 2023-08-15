@@ -21,13 +21,13 @@ package org.jboss.logging.processor.apt;
 
 import java.io.IOException;
 import java.util.Map;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.logging.processor.generator.model.ClassModel;
 import org.jboss.logging.processor.generator.model.ClassModelFactory;
 import org.jboss.logging.processor.model.MessageInterface;
-import org.jboss.logging.processor.util.VersionComparator;
 
 /**
  * A generator for creating implementations of message bundle and logging
@@ -51,7 +51,8 @@ final class ImplementationClassGenerator extends AbstractGenerator {
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
+            final MessageInterface messageInterface) {
         try {
             final ClassModel classModel = ClassModelFactory.implementation(processingEnv, messageInterface);
             classModel.generateAndWrite();

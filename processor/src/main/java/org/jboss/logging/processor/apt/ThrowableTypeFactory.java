@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -66,7 +67,8 @@ final class ThrowableTypeFactory {
      *
      * @return the return type descriptor.
      */
-    public static ThrowableType forReturnType(final ProcessingEnvironment processingEnv, final TypeMirror type, final MessageMethod messageMethod) {
+    public static ThrowableType forReturnType(final ProcessingEnvironment processingEnv, final TypeMirror type,
+            final MessageMethod messageMethod) {
         final AptReturnThrowableType result = new AptReturnThrowableType(processingEnv, messageMethod, type);
         result.init();
         return result;
@@ -271,7 +273,8 @@ final class ThrowableTypeFactory {
          * @param messageMethod the message method.
          * @param type          the class name of the return type.
          */
-        private AptReturnThrowableType(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod, final TypeMirror type) {
+        private AptReturnThrowableType(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod,
+                final TypeMirror type) {
             super(processingEnv, type, (messageMethod.hasCause() ? messageMethod.cause().asType() : null));
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<>();
@@ -287,15 +290,18 @@ final class ThrowableTypeFactory {
                 final List<TypeMirror> args = ElementHelper.getClassArrayAnnotationValue(method, Signature.class, "value");
                 // Validate the constructor exists
                 if (!ElementHelper.hasConstructor(types, this, args)) {
-                    throw new ProcessingException(method, "Constructor of type %s could not be found with arguments %s", this.asType(), args);
+                    throw new ProcessingException(method, "Constructor of type %s could not be found with arguments %s",
+                            this.asType(), args);
                 }
                 final int causeIndex = signature.causeIndex();
                 final int messageIndex = signature.messageIndex();
                 // Note that the messageIndex is required and must be 0 or greater
                 if (messageIndex < 0) {
-                    throw new ProcessingException(method, "A messageIndex of 0 or greater is required. Value %d is invalid.", messageIndex);
+                    throw new ProcessingException(method, "A messageIndex of 0 or greater is required. Value %d is invalid.",
+                            messageIndex);
                 }
-                final List<Parameter> methodConstructorParameters = new ArrayList<>(messageMethod.parametersAnnotatedWith(Param.class));
+                final List<Parameter> methodConstructorParameters = new ArrayList<>(
+                        messageMethod.parametersAnnotatedWith(Param.class));
 
                 constructionParameters.clear();
                 useConstructionParameters = true;
@@ -323,7 +329,8 @@ final class ThrowableTypeFactory {
                     .stream()
                     .findFirst();
             if (parameter.isPresent()) {
-                final List<TypeMirror> suggestions = ElementHelper.getClassArrayAnnotationValue(parameter.get(), TransformException.class, "value");
+                final List<TypeMirror> suggestions = ElementHelper.getClassArrayAnnotationValue(parameter.get(),
+                        TransformException.class, "value");
                 for (TypeMirror suggestion : suggestions) {
                     final AptThrowableType result = new AptThrowableType(processingEnv, suggestion, null);
                     result.init();
@@ -369,7 +376,8 @@ final class ThrowableTypeFactory {
                         }
                     }
                     // Short circuit
-                    if (!match) break;
+                    if (!match)
+                        break;
                 }
 
                 if (match) {

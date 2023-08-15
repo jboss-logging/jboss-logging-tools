@@ -47,5 +47,4 @@ public class LevelIdCheckTest extends AbstractLoggerTest {
         Assertions.assertEquals(203, parseLoggerId(HANDLER.getMessage()));
     }
 
-
 }

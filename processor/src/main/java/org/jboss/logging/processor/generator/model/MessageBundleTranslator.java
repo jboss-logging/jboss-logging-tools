@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 
 import org.jboss.jdeparser.JClassDef;
@@ -54,7 +55,9 @@ class MessageBundleTranslator extends ClassModel {
      * @param locale           the locale used to override the default locale
      * @param translations     the translation map.
      */
-    public MessageBundleTranslator(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className, final String superClassName, final String locale, final Map<MessageMethod, String> translations) {
+    public MessageBundleTranslator(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface,
+            final String className, final String superClassName, final String locale,
+            final Map<MessageMethod, String> translations) {
         super(processingEnv, messageInterface, className, superClassName);
         this.locale = locale;
         if (translations != null) {

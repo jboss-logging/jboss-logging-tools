@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.logging.annotations.MessageBundle;
@@ -63,7 +64,7 @@ public interface MessageInterface extends Comparable<MessageInterface>, ClassTyp
      * {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}.
      *
      * @return the project code or {@code null} if not annotated with
-     * {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}
+     *         {@link MessageBundle @MessageBundle} or {@link MessageLogger @MessageLogger}
      */
     String projectCode();
 

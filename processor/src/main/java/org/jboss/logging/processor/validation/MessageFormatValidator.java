@@ -43,7 +43,6 @@ class MessageFormatValidator extends AbstractFormatValidator {
     private boolean valid;
     private final String format;
 
-
     private MessageFormatValidator(final String format) {
         super();
         this.format = format;
@@ -118,8 +117,10 @@ class MessageFormatValidator extends AbstractFormatValidator {
     private void parameterCheck(final int parameterCount) {
         if (argumentCount != parameterCount) {
             valid = false;
-            setSummaryMessage("Invalid parameter count. Required: %d provided %d for format '%s'.", argumentCount, parameterCount, format);
-            setDetailMessage("Required %d parameters, but %d were provided for format %s.", argumentCount, parameterCount, format);
+            setSummaryMessage("Invalid parameter count. Required: %d provided %d for format '%s'.", argumentCount,
+                    parameterCount, format);
+            setDetailMessage("Required %d parameters, but %d were provided for format %s.", argumentCount, parameterCount,
+                    format);
         }
 
     }

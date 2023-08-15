@@ -31,6 +31,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.SchemaFactory;
@@ -94,7 +95,8 @@ public class ReportGenerationTest {
                 }
 
                 private void fail(final SAXParseException exception) {
-                    Assertions.fail(String.format("%s - Line: %d Column: %d%nPath: %s", exception.getMessage(), exception.getLineNumber(), exception.getColumnNumber(), path));
+                    Assertions.fail(String.format("%s - Line: %d Column: %d%nPath: %s", exception.getMessage(),
+                            exception.getLineNumber(), exception.getColumnNumber(), path));
                 }
             });
             try (final Reader fileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {

@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -115,7 +116,8 @@ public final class Validator {
             messages.addAll(validateLogger(messageMethods));
             locale = messageInterface.getAnnotation(MessageLogger.class).rootLocale();
         } else {
-            messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.", messageInterface.name()));
+            messages.add(createError(messageInterface, "Message interface %s is not a message bundle or message logger.",
+                    messageInterface.name()));
         }
 
         // Check the locale is in the list of available locales
@@ -135,7 +137,8 @@ public final class Validator {
      *
      * @return a collection of validation messages.
      */
-    private Collection<ValidationMessage> validateCommon(final MessageInterface messageInterface, final Set<MessageMethod> messageMethods) {
+    private Collection<ValidationMessage> validateCommon(final MessageInterface messageInterface,
+            final Set<MessageMethod> messageMethods) {
         final List<ValidationMessage> messages = new ArrayList<>();
         final Map<String, MessageMethod> methodNames = new HashMap<>();
 
@@ -151,14 +154,16 @@ public final class Validator {
             }
             final MessageMethod.Message message = messageMethod.message();
             if (message == null) {
-                messages.add(createError(messageMethod, "All message bundles and message logger message methods must have or inherit a message."));
+                messages.add(createError(messageMethod,
+                        "All message bundles and message logger message methods must have or inherit a message."));
                 continue;
             }
             // Check the message id
             if (message.hasId()) {
                 // Make sure the message id is greater than 0
                 if (message.id() < 0) {
-                    messages.add(createError(messageMethod, "Message id %d is invalid. Must be greater than 0 or inherit another valid id.", message.id()));
+                    messages.add(createError(messageMethod,
+                            "Message id %d is invalid. Must be greater than 0 or inherit another valid id.", message.id()));
                 } else {
                     messages.addAll(messageIdValidator.validate(messageInterface, messageMethod));
                 }
@@ -167,7 +172,9 @@ public final class Validator {
             if (formatValidator.isValid()) {
                 final int paramCount = messageMethod.formatParameterCount();
                 if (messageMethod.formatParameterCount() != formatValidator.argumentCount()) {
-                    messages.add(createError(messageMethod, "Parameter count does not match for format '%s'. Required: %d Provided: %d", formatValidator.format(), formatValidator.argumentCount(), paramCount));
+                    messages.add(createError(messageMethod,
+                            "Parameter count does not match for format '%s'. Required: %d Provided: %d",
+                            formatValidator.format(), formatValidator.argumentCount(), paramCount));
                 }
                 final Map<Integer, Parameter> positions = new TreeMap<>();
                 boolean validatePositions = false;
@@ -183,7 +190,8 @@ public final class Validator {
                         final Transform[] transforms = pos.transform();
                         if (transforms != null && transforms.length > 0) {
                             if (pos.value().length != transforms.length) {
-                                messages.add(createError(parameter, "Positional parameters with transforms must have an equal number of positions and transforms."));
+                                messages.add(createError(parameter,
+                                        "Positional parameters with transforms must have an equal number of positions and transforms."));
                             } else {
                                 for (Transform transform : transforms) {
                                     validateTransform(messages, parameter, transform);
@@ -194,12 +202,14 @@ public final class Validator {
                         final Set<Integer> usedPositions = new HashSet<>();
                         for (int position : pos.value()) {
                             if (usedPositions.contains(position)) {
-                                messages.add(createError(parameter, "Position '%d' already used for this parameter.", position));
+                                messages.add(
+                                        createError(parameter, "Position '%d' already used for this parameter.", position));
                             } else {
                                 usedPositions.add(position);
                             }
                             if (positions.containsKey(position)) {
-                                messages.add(createError(parameter, "Position '%d' already defined on parameter '%s'", position, positions.get(position).name()));
+                                messages.add(createError(parameter, "Position '%d' already defined on parameter '%s'", position,
+                                        positions.get(position).name()));
                             } else {
                                 positions.put(position, parameter);
                             }
@@ -209,10 +219,12 @@ public final class Validator {
                     // Validate the @Suppressed parameter is on a message bundle, the return type is an exception and the parameter is an exception
                     if (parameter.isAnnotatedWith(Suppressed.class)) {
                         if (!messageMethod.returnType().isThrowable()) {
-                            messages.add(createError(messageMethod, "The @Suppressed parameter annotation can only be used with message bundle methods that return an exception."));
+                            messages.add(createError(messageMethod,
+                                    "The @Suppressed parameter annotation can only be used with message bundle methods that return an exception."));
                         }
                         if (!isTypeAssignableFrom(parameter, Throwable.class)) {
-                            messages.add(createError(parameter, "The parameter annotated with @Suppressed must be assignable to a Throwable type."));
+                            messages.add(createError(parameter,
+                                    "The parameter annotated with @Suppressed must be assignable to a Throwable type."));
                         }
                     }
                 }
@@ -221,7 +233,8 @@ public final class Validator {
                     for (int i = 0; i < messageMethod.formatParameterCount(); i++) {
                         final int positionIndex = i + 1;
                         if (!positions.containsKey(positionIndex)) {
-                            messages.add(createError(messageMethod, "Missing parameter with position '%d' defined.", positionIndex));
+                            messages.add(
+                                    createError(messageMethod, "Missing parameter with position '%d' defined.", positionIndex));
                         }
                     }
                 }
@@ -247,23 +260,30 @@ public final class Validator {
         return messages;
     }
 
-    private void validateTransform(final List<ValidationMessage> messages, final Parameter parameter, final Transform transform) {
+    private void validateTransform(final List<ValidationMessage> messages, final Parameter parameter,
+            final Transform transform) {
         final List<TransformType> transformTypes = Arrays.asList(transform.value());
         // If annotated with @Transform, must be an Object, primitives are not allowed
         if (parameter.isPrimitive()) {
             messages.add(createError(parameter, "Parameters annotated with @Transform cannot be primitives."));
         } else if (transformTypes.contains(TransformType.GET_CLASS) && transformTypes.contains(TransformType.SIZE)) {
-            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.GET_CLASS, TransformType.SIZE));
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.GET_CLASS,
+                    TransformType.SIZE));
         } else if (transformTypes.contains(TransformType.HASH_CODE) && transformTypes.contains(TransformType.SIZE)) {
-            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.HASH_CODE, TransformType.SIZE));
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.HASH_CODE,
+                    TransformType.SIZE));
         } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE) && transformTypes.contains(TransformType.SIZE)) {
-            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.IDENTITY_HASH_CODE, TransformType.SIZE));
-        } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE) && transformTypes.contains(TransformType.HASH_CODE)) {
-            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'", TransformType.IDENTITY_HASH_CODE, TransformType.HASH_CODE));
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'",
+                    TransformType.IDENTITY_HASH_CODE, TransformType.SIZE));
+        } else if (transformTypes.contains(TransformType.IDENTITY_HASH_CODE)
+                && transformTypes.contains(TransformType.HASH_CODE)) {
+            messages.add(createError(parameter, "Transform type '%s' not allowed with type '%s'",
+                    TransformType.IDENTITY_HASH_CODE, TransformType.HASH_CODE));
         } else if (transformTypes.contains(TransformType.SIZE)) {
             if (!(parameter.isArray() || parameter.isVarArgs() || parameter.isSubtypeOf(Map.class) ||
                     parameter.isSubtypeOf(Collection.class) || parameter.isSubtypeOf(CharSequence.class))) {
-                messages.add(createError(parameter, "Invalid type (%s) for %s. Must be an array, %s, %s or %s.", parameter.asType(),
+                messages.add(createError(parameter, "Invalid type (%s) for %s. Must be an array, %s, %s or %s.",
+                        parameter.asType(),
                         TransformType.SIZE, Collection.class.getName(), Map.class.getName(), CharSequence.class.getName()));
             }
         }
@@ -284,7 +304,9 @@ public final class Validator {
             }
             if (parameter.isAnnotatedWith(LoggingClass.class)) {
                 if (!parameter.isSameAs(Class.class)) {
-                    messages.add(createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.", parameter.name(), messageMethod.name(), Class.class.getName()));
+                    messages.add(
+                            createError(parameter, "Parameter %s annotated with @LoggingClass on method %s must be of type %s.",
+                                    parameter.name(), messageMethod.name(), Class.class.getName()));
                 }
             }
             if (parameter.isAnnotatedWith(Producer.class)) {
@@ -317,11 +339,13 @@ public final class Validator {
                         final TypeMirror returnType = typeArgs.get(2);
                         final TypeMirror first = typeArgs.get(0);
                         final TypeMirror second = typeArgs.get(1);
-                        if (!isTypeAssignableFrom(first, String.class) && !types.isSubtype(first, ElementHelper.toType(elements, Throwable.class))) {
+                        if (!isTypeAssignableFrom(first, String.class)
+                                && !types.isSubtype(first, ElementHelper.toType(elements, Throwable.class))) {
                             messages.add(createError(parameter, "The first type type parameter for %s " +
                                     "must be assignable to a String or a super type of a Throwable.", parameter.asType()));
                         }
-                        if (!isTypeAssignableFrom(second, String.class) && !types.isSubtype(second, ElementHelper.toType(elements, Throwable.class))) {
+                        if (!isTypeAssignableFrom(second, String.class)
+                                && !types.isSubtype(second, ElementHelper.toType(elements, Throwable.class))) {
                             messages.add(createError(parameter, "The second type parameter for %s " +
                                     "must be assignable to a String or a super type of a Throwable.", parameter.asType()));
                         }
@@ -331,12 +355,16 @@ public final class Validator {
                         }
                         if (messageMethod.hasCause()) {
                             // Make sure the cause parameter can be assigned to the cause parameter for the BiFunction
-                            if (types.isSubtype(first, ElementHelper.toType(elements, Throwable.class)) && !isTypeAssignableFrom(messageMethod.cause().asType(), first)) {
-                                messages.add(createError(parameter, "The first parameter type, %s, of the BiFunction must be assignable to the cause %s.",
+                            if (types.isSubtype(first, ElementHelper.toType(elements, Throwable.class))
+                                    && !isTypeAssignableFrom(messageMethod.cause().asType(), first)) {
+                                messages.add(createError(parameter,
+                                        "The first parameter type, %s, of the BiFunction must be assignable to the cause %s.",
                                         first, messageMethod.cause().asType()));
                             }
-                            if (types.isSubtype(second, ElementHelper.toType(elements, Throwable.class)) && !isTypeAssignableFrom(messageMethod.cause().asType(), second)) {
-                                messages.add(createError(parameter, "The second parameter type, %s, of the BiFunction must be assignable to the cause %s.",
+                            if (types.isSubtype(second, ElementHelper.toType(elements, Throwable.class))
+                                    && !isTypeAssignableFrom(messageMethod.cause().asType(), second)) {
+                                messages.add(createError(parameter,
+                                        "The second parameter type, %s, of the BiFunction must be assignable to the cause %s.",
                                         second, messageMethod.cause().asType()));
                             }
                         } else {
@@ -345,9 +373,9 @@ public final class Validator {
                         }
                     } else {
                         messages.add(createError(parameter, "The type parameters could not be validated for the " +
-                                        "function. The first and second type arguments of the function must be a String " +
-                                        "or a super type of Throwable. The third type parameter must be the same as or " +
-                                        "a super type of %s.",
+                                "function. The first and second type arguments of the function must be a String " +
+                                "or a super type of Throwable. The third type parameter must be the same as or " +
+                                "a super type of %s.",
                                 requiredReturnType));
                     }
                 } else {
@@ -364,23 +392,29 @@ public final class Validator {
 
             if (parameter.isAnnotatedWith(TransformException.class)) {
                 if (!messageMethod.returnType().isThrowable()) {
-                    messages.add(createError(messageMethod, "A parameter annotated with @%s can only be on bundle methods which return a Throwable type.", TransformException.class
-                            .getSimpleName()));
+                    messages.add(createError(messageMethod,
+                            "A parameter annotated with @%s can only be on bundle methods which return a Throwable type.",
+                            TransformException.class
+                                    .getSimpleName()));
                 } else {
                     if (transformExceptionFound) {
-                        messages.add(createError(messageMethod, "Only one parameter annotated with @%s can be used", TransformException.class
-                                .getSimpleName()));
+                        messages.add(createError(messageMethod, "Only one parameter annotated with @%s can be used",
+                                TransformException.class
+                                        .getSimpleName()));
                     }
                     transformExceptionFound = true;
                     if (!isTypeAssignableFrom(parameter.asType(), Throwable.class)) {
-                        messages.add(createError(parameter, "The parameter annotated with @%s must be a subclass of Throwable", TransformException.class
-                                .getSimpleName()));
+                        messages.add(createError(parameter, "The parameter annotated with @%s must be a subclass of Throwable",
+                                TransformException.class
+                                        .getSimpleName()));
                     }
                     // Ensure the suggested exceptions are sub-types of the return type
-                    final List<TypeMirror> suggested = ElementHelper.getClassArrayAnnotationValue(parameter, TransformException.class, "value");
+                    final List<TypeMirror> suggested = ElementHelper.getClassArrayAnnotationValue(parameter,
+                            TransformException.class, "value");
                     for (TypeMirror suggestion : suggested) {
                         if (!types.isAssignable(suggestion, parameter.asType())) {
-                            messages.add(createError(parameter, "The suggested return type of %s is not assignable to %s", suggestion, parameter.asType()));
+                            messages.add(createError(parameter, "The suggested return type of %s is not assignable to %s",
+                                    suggestion, parameter.asType()));
                         }
                     }
                 }
@@ -411,56 +445,72 @@ public final class Validator {
         final TypeMirror returnTypeMirror = returnType.asType();
         final TypeMirror resolvedReturnType = returnType.resolvedType();
         if (returnTypeMirror.getKind() == TypeKind.VOID || returnTypeMirror.getKind().isPrimitive()) {
-            messages.add(createError(messageMethod, "Message bundle messageMethod %s has an invalid return type. Cannot be void or a primitive.", messageMethod.name()));
+            messages.add(createError(messageMethod,
+                    "Message bundle messageMethod %s has an invalid return type. Cannot be void or a primitive.",
+                    messageMethod.name()));
         } else if (returnType.isThrowable()) {
             final ThrowableType throwableReturnType = returnType.throwableReturnType();
             if (throwableReturnType.useConstructionParameters()) {
                 // Check for a matching constructor
                 final Signature signature = messageMethod.getAnnotation(Signature.class);
                 if (signature != null) {
-                    final List<TypeMirror> args = ElementHelper.getClassArrayAnnotationValue(messageMethod, Signature.class, "value");
+                    final List<TypeMirror> args = ElementHelper.getClassArrayAnnotationValue(messageMethod, Signature.class,
+                            "value");
                     // Validate the constructor exists
                     if (!ElementHelper.hasConstructor(types, returnType, args)) {
-                        messages.add(createError(messageMethod, "Could not find constructor for %s with arguments %s", messageMethod.asType(), args));
+                        messages.add(createError(messageMethod, "Could not find constructor for %s with arguments %s",
+                                messageMethod.asType(), args));
                     }
                     final int messageIndex = signature.messageIndex();
                     // Note that the messageIndex is required and must be 0 or greater
                     if (messageIndex < 0) {
-                        messages.add(createError(messageMethod, "A messageIndex of 0 or greater is required. Value %d is invalid.", messageIndex));
+                        messages.add(createError(messageMethod,
+                                "A messageIndex of 0 or greater is required. Value %d is invalid.", messageIndex));
                     }
                 }
                 // Validate the construct type is valid
                 if (messageMethod.isAnnotatedWith(ConstructType.class)) {
-                    final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(messageMethod, ConstructType.class);
+                    final TypeElement constructTypeValue = ElementHelper.getClassAnnotationValue(messageMethod,
+                            ConstructType.class);
                     // Shouldn't be null
                     if (constructTypeValue == null) {
                         messages.add(createError(messageMethod, "Class not defined for the ConstructType"));
                     } else {
                         if (!types.isAssignable(constructTypeValue.asType(), returnType.asType())) {
-                            messages.add(createError(messageMethod, "The requested type %s can not be assigned to %s.", constructTypeValue.asType(), returnType.asType()));
+                            messages.add(createError(messageMethod, "The requested type %s can not be assigned to %s.",
+                                    constructTypeValue.asType(), returnType.asType()));
                         }
                     }
                 }
-            } else if (!throwableReturnType.useConstructionParameters() && !messageMethod.parametersAnnotatedWith(Param.class).isEmpty()) {
-                messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
+            } else if (!throwableReturnType.useConstructionParameters()
+                    && !messageMethod.parametersAnnotatedWith(Param.class).isEmpty()) {
+                messages.add(createError(messageMethod,
+                        "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
             } else {
-                final boolean hasMessageConstructor = (throwableReturnType.hasStringAndThrowableConstructor() || throwableReturnType.hasThrowableAndStringConstructor() ||
+                final boolean hasMessageConstructor = (throwableReturnType.hasStringAndThrowableConstructor()
+                        || throwableReturnType.hasThrowableAndStringConstructor() ||
                         throwableReturnType.hasStringConstructor());
-                final boolean usableConstructor = (throwableReturnType.hasDefaultConstructor() || throwableReturnType.hasStringAndThrowableConstructor() ||
-                        throwableReturnType.hasStringConstructor() || throwableReturnType.hasThrowableAndStringConstructor() || throwableReturnType.hasThrowableConstructor());
+                final boolean usableConstructor = (throwableReturnType.hasDefaultConstructor()
+                        || throwableReturnType.hasStringAndThrowableConstructor() ||
+                        throwableReturnType.hasStringConstructor() || throwableReturnType.hasThrowableAndStringConstructor()
+                        || throwableReturnType.hasThrowableConstructor());
                 if (!messageMethod.parametersAnnotatedWith(Producer.class).isEmpty()) {
                     if (messageMethod.isAnnotatedWith(ConstructType.class)) {
-                        messages.add(createError(messageMethod, "Method annotated with %s cannot have a parameter annotated with %s.",
+                        messages.add(createError(messageMethod,
+                                "Method annotated with %s cannot have a parameter annotated with %s.",
                                 ConstructType.class.getName(), Producer.class.getName()));
                     }
                     final TypeMirror erasure = types.erasure(resolvedReturnType);
                     if (!isTypeAssignableFrom(erasure, Throwable.class)) {
-                        messages.add(createError(messageMethod, "The return type must be a super class of a java.lang.Throwable"));
+                        messages.add(
+                                createError(messageMethod, "The return type must be a super class of a java.lang.Throwable"));
                     }
                 } else if (!usableConstructor) {
-                    messages.add(createError(messageMethod, "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
+                    messages.add(createError(messageMethod,
+                            "MessageMethod does not have an usable constructor for the return type %s.", returnType.name()));
                 } else if (!hasMessageConstructor) { // Check to see if there is no message constructor
-                    messages.add(createWarning(messageMethod, "The message cannot be set via the throwable constructor and will be ignored."));
+                    messages.add(createWarning(messageMethod,
+                            "The message cannot be set via the throwable constructor and will be ignored."));
                 }
             }
         } else {
@@ -470,7 +520,8 @@ public final class Validator {
                         "returns a String or a subtype of Throwable.", messageMethod.name(), returnTypeMirror));
             }
             if (messageMethod.isAnnotatedWith(ConstructType.class)) {
-                messages.add(createError(messageMethod, "ConstructType annotation requires a throwable or supplier which produces a throwable return type"));
+                messages.add(createError(messageMethod,
+                        "ConstructType annotation requires a throwable or supplier which produces a throwable return type"));
             }
         }
         return messages;

@@ -20,6 +20,7 @@
 package org.jboss.logging.processor.model;
 
 import java.util.List;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;

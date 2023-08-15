@@ -27,6 +27,7 @@ package org.jboss.logging.processor.apt.report;
 public enum ReportType {
     ASCIIDOC(".adoc"),
     XML(".xml");
+
     private final String extension;
 
     ReportType(final String extension) {

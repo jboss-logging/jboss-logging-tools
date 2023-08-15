@@ -20,6 +20,7 @@
 package org.jboss.logging.processor.model;
 
 import java.util.List;
+
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;

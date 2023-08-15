@@ -38,7 +38,7 @@ import java.util.Locale;
 public @interface MessageBundle {
 
     /**
-     * Get the project code for messages that have an associated code.  If no project code is associated
+     * Get the project code for messages that have an associated code. If no project code is associated
      * with this bundle, specify {@code ""} (the empty string).
      *
      * @return the project code

@@ -147,7 +147,7 @@ public interface MethodMessageConstants {
     })
     TypeException multiField();
 
-    @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
+    @SuppressWarnings({ "InstanceVariableMayNotBeInitialized", "unused" })
     class TypeException extends RuntimeException {
         public Class<?> type;
         public Object value;

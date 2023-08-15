@@ -45,19 +45,23 @@ public final class ValidationMessageFactory {
         return new ValidationErrorMessage(element, String.format(format, args), null, null);
     }
 
-    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror, final String message) {
+    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror,
+            final String message) {
         return new ValidationErrorMessage(element, message, annotationMirror, null);
     }
 
-    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror, final String format, final Object... args) {
+    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror,
+            final String format, final Object... args) {
         return new ValidationErrorMessage(element, String.format(format, args), annotationMirror, null);
     }
 
-    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror, final AnnotationValue annotationValue, final String message) {
+    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror,
+            final AnnotationValue annotationValue, final String message) {
         return new ValidationErrorMessage(element, message, annotationMirror, annotationValue);
     }
 
-    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror, final AnnotationValue annotationValue, final String format, final Object... args) {
+    public static ValidationMessage createError(final Element element, final AnnotationMirror annotationMirror,
+            final AnnotationValue annotationValue, final String format, final Object... args) {
         return new ValidationErrorMessage(element, String.format(format, args), annotationMirror, annotationValue);
     }
 
@@ -75,7 +79,8 @@ public final class ValidationMessageFactory {
         private final AnnotationMirror annotationMirror;
         private final AnnotationValue annotationValue;
 
-        AbstractValidationMessage(final Element element, final String message, final AnnotationMirror annotationMirror, final AnnotationValue annotationValue) {
+        AbstractValidationMessage(final Element element, final String message, final AnnotationMirror annotationMirror,
+                final AnnotationValue annotationValue) {
             this.element = element;
             this.message = message;
             this.annotationMirror = annotationMirror;
@@ -105,7 +110,8 @@ public final class ValidationMessageFactory {
 
     private static class ValidationErrorMessage extends AbstractValidationMessage {
 
-        private ValidationErrorMessage(final Element element, final String message, final AnnotationMirror annotationMirror, final AnnotationValue annotationValue) {
+        private ValidationErrorMessage(final Element element, final String message, final AnnotationMirror annotationMirror,
+                final AnnotationValue annotationValue) {
             super(element, message, annotationMirror, annotationValue);
         }
 
@@ -117,7 +123,8 @@ public final class ValidationMessageFactory {
 
     private static class ValidationWarningMessage extends AbstractValidationMessage {
 
-        private ValidationWarningMessage(final Element element, final String message, final AnnotationMirror annotationMirror, final AnnotationValue annotationValue) {
+        private ValidationWarningMessage(final Element element, final String message, final AnnotationMirror annotationMirror,
+                final AnnotationValue annotationValue) {
             super(element, message, annotationMirror, annotationValue);
         }
 

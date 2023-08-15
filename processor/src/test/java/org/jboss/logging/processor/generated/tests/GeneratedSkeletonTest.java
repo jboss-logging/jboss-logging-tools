@@ -67,7 +67,8 @@ public class GeneratedSkeletonTest {
 
         foundFormat = properties.getProperty("twoMixedIndexes");
         test("Second %2$s first %1$s", foundFormat, "second", "first");
-        Assertions.assertEquals(StringFormatMessages.MESSAGES.twoMixedIndexes("second", "first"), String.format(foundFormat, "second", "first"));
+        Assertions.assertEquals(StringFormatMessages.MESSAGES.twoMixedIndexes("second", "first"),
+                String.format(foundFormat, "second", "first"));
 
         foundFormat = properties.getProperty("threeMixedIndexes");
         test("Third %3$s first %1$s second %2$s", foundFormat, 3, 1, 2);
@@ -91,6 +92,7 @@ public class GeneratedSkeletonTest {
         }
         return properties;
     }
+
     private static Path findFile(final Class<?> type) {
         final String filePath = type.getName().replace('.', File.separatorChar) + ".i18n.properties";
         Assertions.assertNotNull(DIR, "Could not find the test.skeleton.file.path");

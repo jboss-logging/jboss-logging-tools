@@ -30,7 +30,8 @@ import java.lang.annotation.Target;
  * Specifies the exact signature to use when creating a {@link Throwable} return type.
  *
  * <p>
- * Given the following exception and message bundle interface method the {@code InvalidIntValueException(final RuntimeException cause, final String msg, final int value)}
+ * Given the following exception and message bundle interface method the
+ * {@code InvalidIntValueException(final RuntimeException cause, final String msg, final int value)}
  * constructor would be used.
  *
  * <code>

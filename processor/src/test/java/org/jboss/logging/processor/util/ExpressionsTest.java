@@ -41,7 +41,8 @@ public class ExpressionsTest {
     @Test
     public void testEnvironmentVariables() {
         Assertions.assertEquals("envValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_VAR}"));
-        Assertions.assertEquals("defaultValue", Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_INVALID:defaultValue}"));
+        Assertions.assertEquals("defaultValue",
+                Expressions.resolve(PROPERTIES, "${env.JBOSS_LOGGING_TEST_INVALID:defaultValue}"));
     }
 
     @Test

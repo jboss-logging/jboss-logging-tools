@@ -26,6 +26,7 @@ import org.jboss.logging.annotations.ResolutionDoc;
 
 /**
  * Used for validating the XML for a {@code resolutionUrl} attribute.
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SuppressWarnings("unused")

@@ -80,7 +80,7 @@ public interface ThrowableType extends ClassType, Comparable<ThrowableType>, Del
      * Indicates whether or not the {@linkplain org.jboss.logging.annotations.Cause cause} was set in the constructor.
      *
      * @return {@code true} if the cause was set in the constructor, {@code false} if the
-     * {@link Throwable#initCause(Throwable)} should be executed
+     *         {@link Throwable#initCause(Throwable)} should be executed
      */
     default boolean causeSetInConstructor() {
         return false;
