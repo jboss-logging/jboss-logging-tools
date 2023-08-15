@@ -14,3 +14,7 @@ Standard Maven build:
 To generate the site use the `-Pgenerate-site` profile or `-Dgenerate-site` system property when building.
 
   mvn clean install -Dgenerate-site
+
+== Contributing
+
+See the link:CONTRIBUTING.adoc[contributing guide].
