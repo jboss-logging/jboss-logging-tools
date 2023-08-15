@@ -33,9 +33,11 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.processing.Generated;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -134,15 +136,8 @@ public final class MessageInterfaceFactory {
                 validIdRanges = Collections.emptyList();
             }
             // Determine the type for the generated annotation
-            TypeElement generatedAnnotation = null;
-            if (addGeneratedAnnotation) {
-                generatedAnnotation = processingEnv.getElementUtils().getTypeElement("javax.annotation.Generated");
-                if (generatedAnnotation == null) {
-                    // As of Java 9 the annotation has been moved to the javax.annotation.processing package
-                    generatedAnnotation = processingEnv.getElementUtils().getTypeElement("javax.annotation.processing.Generated");
-                }
-            }
-            this.generatedAnnotation = generatedAnnotation;
+            final ModuleElement moduleElement = processingEnv.getElementUtils().getModuleElement(Generated.class.getModule().getName());
+            this.generatedAnnotation = processingEnv.getElementUtils().getTypeElement(moduleElement, Generated.class.getName());
         }
 
         @Override

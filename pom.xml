@@ -23,9 +23,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-parent</artifactId>
-        <version>38</version>
+        <groupId>org.jboss.logging</groupId>
+        <artifactId>logging-parent</artifactId>
+        <version>1.0.1.Final</version>
     </parent>
 
     <groupId>org.jboss.logging</groupId>
@@ -121,9 +121,6 @@
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
-                        <links>
-                            <link>http://docs.oracle.com/javase/8/docs/api</link>
-                        </links>
                         <show>public</show>
                         <header>JBoss Logging Tools, ${project.version}</header>
                         <footer>JBoss Logging Tools, ${project.version}</footer>
