@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2015 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,7 @@ import java.util.Locale;
 public @interface MessageBundle {
 
     /**
-     * Get the project code for messages that have an associated code.  If no project code is associated
+     * Get the project code for messages that have an associated code. If no project code is associated
      * with this bundle, specify {@code ""} (the empty string).
      *
      * @return the project code

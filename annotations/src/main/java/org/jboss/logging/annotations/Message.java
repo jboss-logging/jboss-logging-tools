@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2015 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Assigns a message string to a resource method.  The method arguments are used to supply the positional parameter
+ * Assigns a message string to a resource method. The method arguments are used to supply the positional parameter
  * values for the method.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -47,7 +47,7 @@ public @interface Message {
     int INHERIT = -1;
 
     /**
-     * The message ID number.  Only one message with a given name may specify an ID other than {@link #INHERIT}.
+     * The message ID number. Only one message with a given name may specify an ID other than {@link #INHERIT}.
      *
      * @return the message ID number
      */

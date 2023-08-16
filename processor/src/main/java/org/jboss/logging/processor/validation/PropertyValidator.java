@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.validation;
@@ -34,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -71,14 +69,16 @@ import org.jboss.logging.processor.util.ElementHelper;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class PropertyValidator {
-    private static final List<Class<? extends Annotation>> VALIDATING_ANNOTATIONS = Arrays.asList(Properties.class, Property.class, Fields.class, Field.class);
+    private static final List<Class<? extends Annotation>> VALIDATING_ANNOTATIONS = Arrays.asList(Properties.class,
+            Property.class, Fields.class, Field.class);
     private final Elements elements;
     private final Types types;
     private final MessageMethod method;
     private final TypeMirror resultType;
     private final Collection<ValidationMessage> messages;
 
-    private PropertyValidator(final ProcessingEnvironment processingEnv, final MessageMethod method, final TypeMirror resultType, final Collection<ValidationMessage> messages) {
+    private PropertyValidator(final ProcessingEnvironment processingEnv, final MessageMethod method,
+            final TypeMirror resultType, final Collection<ValidationMessage> messages) {
         elements = processingEnv.getElementUtils();
         types = processingEnv.getTypeUtils();
         this.method = method;
@@ -94,8 +94,10 @@ class PropertyValidator {
      *
      * @return a collection of validation messages
      */
-    static Collection<ValidationMessage> validate(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod) {
-        boolean continueValidation = !(messageMethod.parametersAnnotatedWith(Field.class).isEmpty() && messageMethod.parametersAnnotatedWith(Property.class).isEmpty());
+    static Collection<ValidationMessage> validate(final ProcessingEnvironment processingEnv,
+            final MessageMethod messageMethod) {
+        boolean continueValidation = !(messageMethod.parametersAnnotatedWith(Field.class).isEmpty()
+                && messageMethod.parametersAnnotatedWith(Property.class).isEmpty());
         for (Class<? extends Annotation> annotation : VALIDATING_ANNOTATIONS) {
             if (messageMethod.isAnnotatedWith(annotation)) {
                 continueValidation = true;
@@ -134,7 +136,8 @@ class PropertyValidator {
         }
         for (Element element : ElementFilter.fieldsIn(elements.getAllMembers(e))) {
             if (element.getModifiers().contains(Modifier.PUBLIC) && !element.getModifiers().contains(Modifier.FINAL)) {
-                final Set<TypeMirror> types = fields.computeIfAbsent(element.getSimpleName().toString(), (key -> new HashSet<>()));
+                final Set<TypeMirror> types = fields.computeIfAbsent(element.getSimpleName().toString(),
+                        (key -> new HashSet<>()));
                 types.add(element.asType());
             }
         }
@@ -147,7 +150,8 @@ class PropertyValidator {
             final Set<TypeMirror> propertyTypes = fields.get(resolveFieldName(parameter));
             final TypeMirror valueType = parameter.asType();
             if (!assignablePropertyFound(valueType, propertyTypes)) {
-                messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", resultType, parameter.targetName(), valueType));
+                messages.add(createError(parameter, "No target field found in %s with name %s with type %s.", resultType,
+                        parameter.targetName(), valueType));
             }
             validateCommonAnnotation(parameter, Field.class);
         }
@@ -156,7 +160,8 @@ class PropertyValidator {
             final Set<TypeMirror> propertyTypes = methods.get(resolveSetterName(parameter));
             final TypeMirror valueType = parameter.asType();
             if (!assignablePropertyFound(valueType, propertyTypes)) {
-                messages.add(createError(parameter, "No method found in %s with signature %s(%s).", resultType, parameter.targetName(), valueType));
+                messages.add(createError(parameter, "No method found in %s with signature %s(%s).", resultType,
+                        parameter.targetName(), valueType));
             }
             validateCommonAnnotation(parameter, Property.class);
         }
@@ -178,7 +183,8 @@ class PropertyValidator {
                     final AnnotationValue attributeValue = entry.getValue();
                     if (!"name".contentEquals(attribute.getSimpleName())) {
                         messages.add(createError(parameter, annotationMirror, attributeValue,
-                                "Default values are not allowed for parameters annotated with @%s. %s", annotation.getName(), annotationMirror));
+                                "Default values are not allowed for parameters annotated with @%s. %s", annotation.getName(),
+                                annotationMirror));
                     }
                 }
             }
@@ -190,9 +196,11 @@ class PropertyValidator {
         final Map<? extends ExecutableElement, ? extends AnnotationValue> map = annotationMirror.getElementValues();
         final int size = map.size();
         if (size < 2) {
-            messages.add(createError(method, annotationMirror, "The name attribute and at least one default value are required: %s", annotationMirror));
+            messages.add(createError(method, annotationMirror,
+                    "The name attribute and at least one default value are required: %s", annotationMirror));
         } else if (size > 2) {
-            messages.add(createError(method, annotationMirror, "Only the name attribute and one default attribute are allowed to be defined: %s", annotationMirror));
+            messages.add(createError(method, annotationMirror,
+                    "Only the name attribute and one default attribute are allowed to be defined: %s", annotationMirror));
         } else {
             // Look for the name attribute and a single value
             String name = null;
@@ -213,11 +221,13 @@ class PropertyValidator {
             } else {
                 final Set<TypeMirror> propertyTypes = properties.get(name);
                 if (propertyTypes == null) {
-                    messages.add(createError(method, annotationMirror, value, "Could not find property %s on %s.", name, resultType));
+                    messages.add(createError(method, annotationMirror, value, "Could not find property %s on %s.", name,
+                            resultType));
                 } else {
                     final TypeMirror defaultValueType = value.accept(ValueTypeAnnotationValueVisitor.INSTANCE, elements);
                     if (!assignablePropertyFound(defaultValueType, propertyTypes)) {
-                        messages.add(createError(method, annotationMirror, value, "Expected property with type %s found with type %s",
+                        messages.add(createError(method, annotationMirror, value,
+                                "Expected property with type %s found with type %s",
                                 defaultValueType, propertyTypes));
                     }
                 }

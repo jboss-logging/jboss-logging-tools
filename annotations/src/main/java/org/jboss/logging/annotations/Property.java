@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2015 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 
 package org.jboss.logging.annotations;
 
@@ -42,13 +41,13 @@ import java.lang.annotation.Target;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @Retention(CLASS)
-@Target({PARAMETER, METHOD})
+@Target({ PARAMETER, METHOD })
 @Repeatable(Properties.class)
 @Documented
 public @interface Property {
 
     /**
-     * The property name.  If not specified, the parameter name is assumed to be the property name.
+     * The property name. If not specified, the parameter name is assumed to be the property name.
      * <p>
      * This becomes a required attribute if this annotation is present on a method.
      * </p>

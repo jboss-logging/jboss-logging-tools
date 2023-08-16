@@ -2,7 +2,7 @@
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~
-  ~ Copyright 2015 Red Hat, Inc., and individual contributors
+  ~ Copyright 2023 Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@
     <parent>
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging-tools-parent</artifactId>
-        <version>2.3.0.Beta1-SNAPSHOT</version>
+        <version>3.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,8 +36,8 @@
 
     <licenses>
         <license>
-            <name>Apache License, version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>Apache License 2.0</name>
+            <url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>

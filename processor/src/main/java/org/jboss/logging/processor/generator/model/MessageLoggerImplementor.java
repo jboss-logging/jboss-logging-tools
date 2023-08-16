@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.generator.model;
@@ -38,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -103,9 +101,11 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         // Add FQCN
         if (messageInterface().loggingFQCN() == null) {
-            classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME, $t(classDef)._class().call("getName"));
+            classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME,
+                    $t(classDef)._class().call("getName"));
         } else {
-            classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME, $t(messageInterface().loggingFQCN())._class().call("getName"));
+            classDef.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, String.class, FQCN_FIELD_NAME,
+                    $t(messageInterface().loggingFQCN())._class().call("getName"));
         }
 
         // Add default constructor
@@ -132,7 +132,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
         final Set<MessageMethod> messageMethods = new LinkedHashSet<>();
         messageMethods.addAll(messageInterface().methods());
         for (MessageInterface messageInterface : messageInterface().extendedInterfaces()) {
-            if (messageInterface.isAnnotatedWith(MessageBundle.class) || messageInterface.isAnnotatedWith(MessageLogger.class)) {
+            if (messageInterface.isAnnotatedWith(MessageBundle.class)
+                    || messageInterface.isAnnotatedWith(MessageLogger.class)) {
                 messageMethods.addAll(messageInterface.methods());
             }
         }
@@ -155,9 +156,11 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
      * @param classDef      the class definition used to create the method on
      * @param logger        the logger to use.
      */
-    private void createLoggerMethod(final LoggerMessageMethod messageMethod, final JClassDef classDef, final JAssignableExpr logger) {
+    private void createLoggerMethod(final LoggerMessageMethod messageMethod, final JClassDef classDef,
+            final JAssignableExpr logger) {
         final String msgMethodName = messageMethod.messageMethodName();
-        final JMethodDef method = classDef.method(JMod.PUBLIC | JMod.FINAL, messageMethod.returnType().name(), messageMethod.name());
+        final JMethodDef method = classDef.method(JMod.PUBLIC | JMod.FINAL, messageMethod.returnType().name(),
+                messageMethod.name());
         method.annotate(Override.class);
         addMessageMethod(messageMethod);
         addThrownTypes(messageMethod, method);
@@ -190,7 +193,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             if (logOnceVars.containsKey(varName)) {
                 var = logOnceVars.get(varName);
             } else {
-                var = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, atomicBoolean, varName, atomicBoolean._new().arg(JExpr.FALSE));
+                var = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, atomicBoolean, varName,
+                        atomicBoolean._new().arg(JExpr.FALSE));
                 logOnceVars.put(varName, var);
             }
             body = baseBody._if(
@@ -263,7 +267,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                         for (int i = 0; i < positions.length; i++) {
                             final int index = positions[i] - 1;
                             if (transform.length > 0) {
-                                final JAssignableExpr tVar = createTransformVar(parameterNames, body, param, transform[i], $v(var));
+                                final JAssignableExpr tVar = createTransformVar(parameterNames, body, param, transform[i],
+                                        $v(var));
                                 if (index < args.size()) {
                                     args.add(index, tVar);
                                 } else {
@@ -342,7 +347,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
 
         final JTry tryBlock = body._try();
         // Set the new TCCL then log the message
-        tryBlock.add(JExprs.callStatic(thread, "currentThread").call("setContextClassLoader").arg(classExpression.call("getClassLoader")));
+        tryBlock.add(JExprs.callStatic(thread, "currentThread").call("setContextClassLoader")
+                .arg(classExpression.call("getClassLoader")));
 
         final JBlock finallyBlock = tryBlock._finally();
         // Reset the TCCL

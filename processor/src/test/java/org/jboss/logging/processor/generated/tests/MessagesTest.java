@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.generated.tests;
@@ -53,7 +50,8 @@ public class MessagesTest {
     public void testFormats() {
         Assertions.assertEquals(FORMATTED_TEST_MSG, ValidMessages.MESSAGES.testWithNewLine());
         Assertions.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormat());
-        Assertions.assertEquals(ValidMessages.TEST_MSG, ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage());
+        Assertions.assertEquals(ValidMessages.TEST_MSG,
+                ValidMessages.MESSAGES.noFormatException(new IllegalArgumentException()).getLocalizedMessage());
 
         final int value = 10;
         Assertions.assertEquals(value, ValidMessages.MESSAGES.fieldMessage(value).value);
@@ -64,13 +62,15 @@ public class MessagesTest {
         Assertions.assertEquals(FORMATTED_TEST_MSG, e.getMessage());
         Assertions.assertNotNull(e.getCause());
 
-        Assertions.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException, "Incorrect type constructed");
+        Assertions.assertTrue(ValidMessages.MESSAGES.invalidCredentials() instanceof IllegalArgumentException,
+                "Incorrect type constructed");
 
         final String arg1 = "value-1";
         final String arg2 = "value-2";
         final String messageFormatMessage = MessageFormat.format(ValidMessages.TEST_MESSAGE_FORMAT, arg1, arg2);
         Assertions.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormat(arg1, arg2));
-        Assertions.assertEquals(messageFormatMessage, ValidMessages.MESSAGES.testMessageFormatException(arg1, arg2).getMessage());
+        Assertions.assertEquals(messageFormatMessage,
+                ValidMessages.MESSAGES.testMessageFormatException(arg1, arg2).getMessage());
     }
 
     @Test
@@ -111,7 +111,6 @@ public class MessagesTest {
 
         actual = ValidMessages.MESSAGES.suppressedErrors(e1, e2);
         compare(expected.getSuppressed(), actual.getSuppressed());
-
 
     }
 
@@ -220,7 +219,8 @@ public class MessagesTest {
     @Test
     public void testBiFunctionProducerMessages() {
         final RuntimeException cause = new RuntimeException("This is the cause");
-        RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, cause, "start");
+        RuntimeException runtimeException = ValidMessages.MESSAGES.operationFailed(IllegalArgumentException::new, cause,
+                "start");
         Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
         Assertions.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
         Assertions.assertEquals(cause, runtimeException.getCause());
@@ -229,7 +229,8 @@ public class MessagesTest {
         Assertions.assertEquals(LoggingException.class, runtimeException.getClass());
         Assertions.assertEquals(cause, runtimeException.getCause());
 
-        final Supplier<RuntimeException> supplier = ValidMessages.MESSAGES.throwableStringBiFunctionSupplier(IllegalArgumentException::new, cause);
+        final Supplier<RuntimeException> supplier = ValidMessages.MESSAGES
+                .throwableStringBiFunctionSupplier(IllegalArgumentException::new, cause);
         runtimeException = supplier.get();
         Assertions.assertEquals(IllegalArgumentException.class, runtimeException.getClass());
         Assertions.assertEquals(FORMATTED_TEST_MSG, runtimeException.getMessage());
@@ -243,14 +244,15 @@ public class MessagesTest {
         IOException cause = new BindException("Address already in use");
         IOException e = ValidMessages.MESSAGES.bindFailed(address, cause);
         Assertions.assertTrue(e instanceof BindException);
-        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()),
+                e.getMessage());
         Assertions.assertArrayEquals(cause.getStackTrace(), e.getStackTrace());
-
 
         cause = new SocketException("Address already in use");
         e = ValidMessages.MESSAGES.bindFailed(address, cause);
         Assertions.assertTrue(e instanceof SocketException);
-        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()),
+                e.getMessage());
         Assertions.assertArrayEquals(cause.getStackTrace(), e.getStackTrace());
     }
 
@@ -260,7 +262,8 @@ public class MessagesTest {
         final IOException cause = new BindException("Address already in use");
         final IOException e = ValidMessages.MESSAGES.bindFailedNewStackTrace(address, cause);
         Assertions.assertEquals(IOException.class, e.getClass());
-        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()), e.getMessage());
+        Assertions.assertEquals(String.format("Binding to %s failed: %s", address, cause.getLocalizedMessage()),
+                e.getMessage());
         Assertions.assertFalse(Arrays.equals(cause.getStackTrace(), e.getStackTrace()), "The stack traces should not match.");
         Assertions.assertEquals(cause, e.getCause());
     }
@@ -274,7 +277,8 @@ public class MessagesTest {
     }
 
     private <T> void compare(final T[] a1, final T[] a2) {
-        Assertions.assertTrue(equalsIgnoreOrder(a1, a2), String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)));
+        Assertions.assertTrue(equalsIgnoreOrder(a1, a2),
+                String.format("Expected: %s%n Actual: %s", Arrays.toString(a1), Arrays.toString(a2)));
     }
 
     private <T> boolean equalsIgnoreOrder(final T[] a1, final T[] a2) {

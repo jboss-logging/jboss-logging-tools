@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2021 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,10 +35,14 @@ import java.lang.annotation.Target;
  * </p>
  *
  * <p>
- * <pre>{@code
- * @Message("Binding to %s failed: %s")
- * IOException bindFailed(SocketAddress address, @TransformException({BindException.class, SocketException.class}) IOException toCopy);
- * }</pre>
+ *
+ * <pre>
+ * {@code
+ * &#64;Message("Binding to %s failed: %s")
+ * IOException bindFailed(SocketAddress address,
+ *         @TransformException({ BindException.class, SocketException.class }) IOException toCopy);
+ * }
+ * </pre>
  *
  * In the above example an exception is created based on the {@code toCopy} parameter. If the {@code toCopy} parameter
  * is a {@link java.net.BindException} then a {@link java.net.BindException} is created and the stack trace from the

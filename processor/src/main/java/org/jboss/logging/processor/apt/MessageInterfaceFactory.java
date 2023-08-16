@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.apt;
@@ -36,9 +33,12 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.processing.Generated;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -79,9 +79,10 @@ public final class MessageInterfaceFactory {
      * @return a message interface for the interface element.
      */
     public static MessageInterface of(final ProcessingEnvironment processingEnv, final TypeElement interfaceElement,
-                                      final Properties expressionProperties, final boolean addGeneratedAnnotation) {
+            final Properties expressionProperties, final boolean addGeneratedAnnotation) {
         final Types types = processingEnv.getTypeUtils();
-        if (types.isSameType(interfaceElement.asType(), ElementHelper.toType(processingEnv.getElementUtils(), BasicLogger.class))) {
+        if (types.isSameType(interfaceElement.asType(),
+                ElementHelper.toType(processingEnv.getElementUtils(), BasicLogger.class))) {
             MessageInterface result = LOGGER_INTERFACE;
             if (result == null) {
                 synchronized (LOCK) {
@@ -94,10 +95,12 @@ public final class MessageInterfaceFactory {
             }
             return result;
         }
-        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv, expressionProperties, addGeneratedAnnotation);
+        final AptMessageInterface result = new AptMessageInterface(interfaceElement, processingEnv, expressionProperties,
+                addGeneratedAnnotation);
         result.init();
         for (TypeMirror typeMirror : interfaceElement.getInterfaces()) {
-            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv, (TypeElement) types.asElement(typeMirror),
+            final MessageInterface extended = MessageInterfaceFactory.of(processingEnv,
+                    (TypeElement) types.asElement(typeMirror),
                     expressionProperties, addGeneratedAnnotation);
             result.extendedInterfaces.add(extended);
             result.extendedInterfaces.addAll(extended.extendedInterfaces());
@@ -123,7 +126,7 @@ public final class MessageInterfaceFactory {
         private int idLen;
 
         private AptMessageInterface(final TypeElement interfaceElement, final ProcessingEnvironment processingEnv,
-                                    final Properties expressionProperties, final boolean addGeneratedAnnotation) {
+                final Properties expressionProperties, final boolean addGeneratedAnnotation) {
             super(processingEnv, interfaceElement);
             this.interfaceElement = interfaceElement;
             this.expressionProperties = expressionProperties;
@@ -137,15 +140,9 @@ public final class MessageInterfaceFactory {
                 validIdRanges = Collections.emptyList();
             }
             // Determine the type for the generated annotation
-            TypeElement generatedAnnotation = null;
-            if (addGeneratedAnnotation) {
-                generatedAnnotation = processingEnv.getElementUtils().getTypeElement("javax.annotation.Generated");
-                if (generatedAnnotation == null) {
-                    // As of Java 9 the annotation has been moved to the javax.annotation.processing package
-                    generatedAnnotation = processingEnv.getElementUtils().getTypeElement("javax.annotation.processing.Generated");
-                }
-            }
-            this.generatedAnnotation = generatedAnnotation;
+            final ModuleElement moduleElement = processingEnv.getElementUtils()
+                    .getModuleElement(Generated.class.getModule().getName());
+            this.generatedAnnotation = processingEnv.getElementUtils().getTypeElement(moduleElement, Generated.class.getName());
         }
 
         @Override
@@ -197,7 +194,8 @@ public final class MessageInterfaceFactory {
                 projectCode = messageLogger.projectCode();
                 idLen = messageLogger.length();
             } else {
-                throw new ProcessingException(interfaceElement, "Interface is not annotated with @MessageBundle or @MessageLogger");
+                throw new ProcessingException(interfaceElement,
+                        "Interface is not annotated with @MessageBundle or @MessageLogger");
             }
             qualifiedName = elements.getBinaryName(interfaceElement).toString();
             final int lastDot = qualifiedName.lastIndexOf(".");
@@ -209,7 +207,8 @@ public final class MessageInterfaceFactory {
                 simpleName = qualifiedName;
             }
             // Get the FQCN
-            final TypeElement loggingClass = ElementHelper.getClassAnnotationValue(interfaceElement, MessageLogger.class, "loggingClass");
+            final TypeElement loggingClass = ElementHelper.getClassAnnotationValue(interfaceElement, MessageLogger.class,
+                    "loggingClass");
             if (loggingClass != null) {
                 final String value = loggingClass.getQualifiedName().toString();
                 if (!value.equals(Void.class.getName())) {
@@ -248,7 +247,6 @@ public final class MessageInterfaceFactory {
             return idLen;
         }
 
-
         @Override
         public TypeElement getDelegate() {
             return interfaceElement;
@@ -276,12 +274,10 @@ public final class MessageInterfaceFactory {
             return areEqual(name(), other.name());
         }
 
-
         @Override
         public String toString() {
             return ToStringBuilder.of(this).add(qualifiedName).toString();
         }
-
 
     }
 
@@ -303,7 +299,8 @@ public final class MessageInterfaceFactory {
         }
 
         static LoggerInterface of(final ProcessingEnvironment processingEnv) {
-            final LoggerInterface result = new LoggerInterface(processingEnv, ElementHelper.toTypeElement(processingEnv, BasicLogger.class));
+            final LoggerInterface result = new LoggerInterface(processingEnv,
+                    ElementHelper.toTypeElement(processingEnv, BasicLogger.class));
             result.init();
             return result;
         }

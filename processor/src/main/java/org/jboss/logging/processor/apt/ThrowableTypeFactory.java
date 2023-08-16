@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.apt;
@@ -33,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -69,7 +67,8 @@ final class ThrowableTypeFactory {
      *
      * @return the return type descriptor.
      */
-    public static ThrowableType forReturnType(final ProcessingEnvironment processingEnv, final TypeMirror type, final MessageMethod messageMethod) {
+    public static ThrowableType forReturnType(final ProcessingEnvironment processingEnv, final TypeMirror type,
+            final MessageMethod messageMethod) {
         final AptReturnThrowableType result = new AptReturnThrowableType(processingEnv, messageMethod, type);
         result.init();
         return result;
@@ -274,7 +273,8 @@ final class ThrowableTypeFactory {
          * @param messageMethod the message method.
          * @param type          the class name of the return type.
          */
-        private AptReturnThrowableType(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod, final TypeMirror type) {
+        private AptReturnThrowableType(final ProcessingEnvironment processingEnv, final MessageMethod messageMethod,
+                final TypeMirror type) {
             super(processingEnv, type, (messageMethod.hasCause() ? messageMethod.cause().asType() : null));
             this.messageMethod = messageMethod;
             constructionParameters = new LinkedHashSet<>();
@@ -290,15 +290,18 @@ final class ThrowableTypeFactory {
                 final List<TypeMirror> args = ElementHelper.getClassArrayAnnotationValue(method, Signature.class, "value");
                 // Validate the constructor exists
                 if (!ElementHelper.hasConstructor(types, this, args)) {
-                    throw new ProcessingException(method, "Constructor of type %s could not be found with arguments %s", this.asType(), args);
+                    throw new ProcessingException(method, "Constructor of type %s could not be found with arguments %s",
+                            this.asType(), args);
                 }
                 final int causeIndex = signature.causeIndex();
                 final int messageIndex = signature.messageIndex();
                 // Note that the messageIndex is required and must be 0 or greater
                 if (messageIndex < 0) {
-                    throw new ProcessingException(method, "A messageIndex of 0 or greater is required. Value %d is invalid.", messageIndex);
+                    throw new ProcessingException(method, "A messageIndex of 0 or greater is required. Value %d is invalid.",
+                            messageIndex);
                 }
-                final List<Parameter> methodConstructorParameters = new ArrayList<>(messageMethod.parametersAnnotatedWith(Param.class));
+                final List<Parameter> methodConstructorParameters = new ArrayList<>(
+                        messageMethod.parametersAnnotatedWith(Param.class));
 
                 constructionParameters.clear();
                 useConstructionParameters = true;
@@ -326,7 +329,8 @@ final class ThrowableTypeFactory {
                     .stream()
                     .findFirst();
             if (parameter.isPresent()) {
-                final List<TypeMirror> suggestions = ElementHelper.getClassArrayAnnotationValue(parameter.get(), TransformException.class, "value");
+                final List<TypeMirror> suggestions = ElementHelper.getClassArrayAnnotationValue(parameter.get(),
+                        TransformException.class, "value");
                 for (TypeMirror suggestion : suggestions) {
                     final AptThrowableType result = new AptThrowableType(processingEnv, suggestion, null);
                     result.init();
@@ -372,7 +376,8 @@ final class ThrowableTypeFactory {
                         }
                     }
                     // Short circuit
-                    if (!match) break;
+                    if (!match)
+                        break;
                 }
 
                 if (match) {

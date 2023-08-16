@@ -38,7 +38,7 @@ import org.jboss.logging.annotations.Transform;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@SuppressWarnings({"unused", "SameParameterValue"})
+@SuppressWarnings({ "unused", "SameParameterValue" })
 @MessageLogger(projectCode = "CW")
 @ResolutionDoc(url = "errors", suffix = ".html")
 public interface AppLogger extends BasicLogger {

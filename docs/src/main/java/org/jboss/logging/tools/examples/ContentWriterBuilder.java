@@ -41,7 +41,6 @@ public class ContentWriterBuilder {
     private boolean append = true;
     private String encoding = null;
 
-
     private ContentWriterBuilder(final Path path) {
         this.path = path;
     }
@@ -95,9 +94,9 @@ public class ContentWriterBuilder {
     public ContentWriter build() throws IOException {
         final OpenOption[] options;
         if (append) {
-            options = new OpenOption[] {StandardOpenOption.CREATE, StandardOpenOption.APPEND};
+            options = new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.APPEND };
         } else {
-            options = new OpenOption[] {StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
+            options = new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING };
         }
         Charset charset = StandardCharsets.UTF_8;
         if (encoding != null) {

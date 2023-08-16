@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2015 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ import org.jboss.logging.Logger;
 public @interface LogMessage {
 
     /**
-     * The log level at which this message should be logged.  Defaults to {@code INFO}.
+     * The log level at which this message should be logged. Defaults to {@code INFO}.
      *
      * @return the log level
      */

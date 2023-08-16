@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2016 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,8 @@ import java.lang.annotation.Target;
  * Specifies the exact signature to use when creating a {@link Throwable} return type.
  *
  * <p>
- * Given the following exception and message bundle interface method the {@code InvalidIntValueException(final RuntimeException cause, final String msg, final int value)}
+ * Given the following exception and message bundle interface method the
+ * {@code InvalidIntValueException(final RuntimeException cause, final String msg, final int value)}
  * constructor would be used.
  *
  * <code>

@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.generator.model;
@@ -33,6 +30,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
@@ -81,7 +79,6 @@ public abstract class ClassModel {
 
     private final Map<String, JMethodDef> messageMethods;
 
-
     final JSourceFile sourceFile;
     final ProcessingEnvironment processingEnv;
 
@@ -92,12 +89,14 @@ public abstract class ClassModel {
      * @param messageInterface the message interface to implement.
      * @param superClassName   the super class used for the translation implementations.
      */
-    ClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className, final String superClassName) {
+    ClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className,
+            final String superClassName) {
         this.processingEnv = processingEnv;
         this.messageInterface = messageInterface;
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
-        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()), new FormatPreferences(new Properties()));
+        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()),
+                new FormatPreferences(new Properties()));
         sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
         classDef = sourceFile._class(JMod.PUBLIC, className);
         final int idLen = messageInterface.getIdLength();
@@ -225,7 +224,8 @@ public abstract class ClassModel {
             method = classDef.method(JMod.PROTECTED, String.class, messageMethod.messageMethodName());
             final JBlock body = method.body();
             final String msg;
-            if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty() && messageMethod.message().hasId()) {
+            if (messageInterface.projectCode() != null && !messageInterface.projectCode().isEmpty()
+                    && messageMethod.message().hasId()) {
                 // Prefix the id to the string message
                 msg = String.format(format, messageInterface.projectCode(), messageMethod.message().id(), messageValue);
             } else {
@@ -247,7 +247,6 @@ public abstract class ClassModel {
         return className;
     }
 
-
     /**
      * Creates the read resolve method and instance field.
      *
@@ -255,7 +254,8 @@ public abstract class ClassModel {
      */
     protected JMethodDef createReadResolveMethod() {
         final JType type = typeOf(classDef);
-        final JVarDeclaration instance = classDef.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, type, INSTANCE_FIELD_NAME, type._new());
+        final JVarDeclaration instance = classDef.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, type, INSTANCE_FIELD_NAME,
+                type._new());
         final JMethodDef readResolveMethod = classDef.method(JMod.PROTECTED, Object.class, GET_INSTANCE_METHOD_NAME);
         readResolveMethod.body()._return($v(instance));
         return readResolveMethod;
@@ -278,7 +278,8 @@ public abstract class ClassModel {
         // Create the type and import it
         final JType localeType = typeOf(Locale.class);
         sourceFile._import(localeType);
-        final JVarDeclaration defaultInstance = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, localeType, "LOCALE", determineLocale(locale, localeType));
+        final JVarDeclaration defaultInstance = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, localeType, "LOCALE",
+                determineLocale(locale, localeType));
 
         // Create the method
         final JMethodDef method = classDef.method(JMod.PROTECTED, localeType, methodName);

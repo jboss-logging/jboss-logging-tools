@@ -1,5 +1,6 @@
 #Ignore Maven target folder
 target/
+.cache
 
 #Ignore Eclipse files
 .settings/

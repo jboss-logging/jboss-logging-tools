@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.apt;
@@ -39,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.Element;
@@ -63,11 +61,13 @@ import org.jboss.logging.processor.validation.StringFormatValidator;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SuppressWarnings("MagicNumber")
-@SupportedOptions({TranslationFileGenerator.GENERATED_FILES_PATH_OPTION, TranslationFileGenerator.LEVEL_OPTION, TranslationFileGenerator.SKIP_INDEX})
+@SupportedOptions({ TranslationFileGenerator.GENERATED_FILES_PATH_OPTION, TranslationFileGenerator.LEVEL_OPTION,
+        TranslationFileGenerator.SKIP_INDEX })
 final class TranslationFileGenerator extends AbstractGenerator {
     private static final Map<String, Integer> levels = new HashMap<>();
 
-    private static final Pattern PATTERN = Pattern.compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
+    private static final Pattern PATTERN = Pattern
+            .compile("((@[a-zA-Z_0-9]+)\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s+([a-zA-Z_][a-zA-Z_0-9].*)\\s*)");
 
     private static final String EMPTY_STRING = "";
     private static final String JAVA_DOC_PARAM = "@param";
@@ -137,7 +137,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element,
+            final MessageInterface messageInterface) {
         if (generatedFilesPath != null) {
             if (element.getKind().isInterface()) {
                 String packageName = processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString();
@@ -159,7 +160,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
      * @param fileName         the file name
      * @param messageInterface the message interface
      */
-    private void generateSkeletalTranslationFile(final String relativePath, final String fileName, final MessageInterface messageInterface) {
+    private void generateSkeletalTranslationFile(final String relativePath, final String fileName,
+            final MessageInterface messageInterface) {
         if (messageInterface == null) {
             throw new IllegalArgumentException("The translations parameter cannot be null");
         }
@@ -195,7 +197,6 @@ final class TranslationFileGenerator extends AbstractGenerator {
             }
         }
 
-
     }
 
     /**
@@ -209,7 +210,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
 
         try {
             if (generatedFilesPath == null) {
-                final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, messageInterface.packageName(), fileName);
+                final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
+                        messageInterface.packageName(), fileName);
                 // Note the FileObject#openWriter() is used here. The FileObject#openOutputStream() returns an output stream
                 // that writes each byte separately which results in poor performance.
                 writer = new BufferedWriter(fileObject.openWriter());
@@ -251,7 +253,6 @@ final class TranslationFileGenerator extends AbstractGenerator {
                 logger().error(e, "Cannot write generated default translation file %s", fileName);
             }
         }
-
 
     }
 

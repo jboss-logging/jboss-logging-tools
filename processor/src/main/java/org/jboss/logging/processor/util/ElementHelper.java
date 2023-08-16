@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.util;
@@ -29,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.AnnotatedConstruct;
 import javax.lang.model.element.AnnotationMirror;
@@ -106,7 +104,8 @@ public final class ElementHelper {
      *
      * @throws IllegalArgumentException if element parameter is null
      */
-    public static boolean isAnnotatedWith(final AnnotatedConstruct annotatedConstruct, final Class<? extends Annotation> clazz) {
+    public static boolean isAnnotatedWith(final AnnotatedConstruct annotatedConstruct,
+            final Class<? extends Annotation> clazz) {
         if (annotatedConstruct == null) {
             throw new IllegalArgumentException("The element parameter is null");
         }
@@ -122,7 +121,7 @@ public final class ElementHelper {
      * @param annotation the annotation to get the value from
      *
      * @return a {@link TypeElement} representing the value for the first annotation attribute or {@code null} if no
-     * attributes were found
+     *         attributes were found
      */
     public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
@@ -143,10 +142,11 @@ public final class ElementHelper {
      * @param attributeName the name of the attribute to retrieve the class value for
      *
      * @return a {@link TypeElement} representing the value for the annotation attribute or {@code null} if the
-     * attribute was not found
+     *         attribute was not found
      */
-    @SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "SameParameterValue"})
-    public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation, final String attributeName) {
+    @SuppressWarnings({ "StaticMethodOnlyUsedInOneClass", "SameParameterValue" })
+    public static TypeElement getClassAnnotationValue(final Element element, final Class<? extends Annotation> annotation,
+            final String attributeName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
             final DeclaredType annotationType = mirror.getAnnotationType();
             if (annotationType.toString().equals(annotation.getName())) {
@@ -170,7 +170,8 @@ public final class ElementHelper {
      *
      * @return a list of {@link TypeMirror} representing the value for the annotation attribute or an empty list
      */
-    public static List<TypeMirror> getClassArrayAnnotationValue(final Element element, final Class<? extends Annotation> annotation, @SuppressWarnings("SameParameterValue") final String attributeName) {
+    public static List<TypeMirror> getClassArrayAnnotationValue(final Element element,
+            final Class<? extends Annotation> annotation, @SuppressWarnings("SameParameterValue") final String attributeName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
             final DeclaredType annotationType = mirror.getAnnotationType();
             if (annotationType.toString().equals(annotation.getName())) {
@@ -202,12 +203,14 @@ public final class ElementHelper {
      * </p>
      *
      * @param element           the element to search for annotations
-     * @param groupedAnnotation the grouped annotation, e.g. collector for repeatable annotations, or {@code null} if not a repeatable annotation
+     * @param groupedAnnotation the grouped annotation, e.g. collector for repeatable annotations, or {@code null} if not a
+     *                          repeatable annotation
      * @param annotation        the annotation to search for
      *
      * @return a collection matched annotations
      */
-    public static Collection<AnnotationMirror> getAnnotations(final Element element, final Class<? extends Annotation> groupedAnnotation, final Class<? extends Annotation> annotation) {
+    public static Collection<AnnotationMirror> getAnnotations(final Element element,
+            final Class<? extends Annotation> groupedAnnotation, final Class<? extends Annotation> annotation) {
         final Collection<AnnotationMirror> result = new ArrayList<>();
         final List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
         for (AnnotationMirror annotationMirror : annotations) {
@@ -311,19 +314,20 @@ public final class ElementHelper {
         final Collection<AnnotationMirror> result = new ArrayList<>();
         // Return any child annotations
         final Map<? extends ExecutableElement, ? extends AnnotationValue> childAnnotations = annotation.getElementValues();
-        childAnnotations.entrySet().stream().filter(entry -> entry.getKey().getSimpleName().contentEquals("value")).forEach(entry -> {
-            final Object value = entry.getValue().getValue();
-            if (value instanceof List) {
-                final List<? extends AnnotationValue> values = (List<? extends AnnotationValue>) value;
-                for (AnnotationValue subValue : values) {
-                    if (subValue instanceof AnnotationMirror) {
-                        result.add((AnnotationMirror) subValue);
-                    } else {
-                        result.add((AnnotationMirror) subValue.getValue());
+        childAnnotations.entrySet().stream().filter(entry -> entry.getKey().getSimpleName().contentEquals("value"))
+                .forEach(entry -> {
+                    final Object value = entry.getValue().getValue();
+                    if (value instanceof List) {
+                        final List<? extends AnnotationValue> values = (List<? extends AnnotationValue>) value;
+                        for (AnnotationValue subValue : values) {
+                            if (subValue instanceof AnnotationMirror) {
+                                result.add((AnnotationMirror) subValue);
+                            } else {
+                                result.add((AnnotationMirror) subValue.getValue());
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
 
         return result;
     }

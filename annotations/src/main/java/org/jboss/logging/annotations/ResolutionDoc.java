@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2017 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,7 +67,7 @@ import java.lang.annotation.Target;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 1.2
  */
-@Target({METHOD, TYPE})
+@Target({ METHOD, TYPE })
 @Retention(CLASS)
 @Documented
 public @interface ResolutionDoc {

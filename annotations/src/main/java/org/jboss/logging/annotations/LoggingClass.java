@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2015 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Mark a parameter as specifying the name of the logging class to use.  The parameter
+ * Mark a parameter as specifying the name of the logging class to use. The parameter
  * may have a type of {@link Class}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2015 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Indicate the given parameter should be transformed in each of the {@link org.jboss.logging.annotations.Transform.TransformType transform types}
+ * Indicate the given parameter should be transformed in each of the
+ * {@link org.jboss.logging.annotations.Transform.TransformType transform types}
  * provided. The parameter cannot be a primitive type.
  * <p/>
  * For the {@link TransformType#SIZE} type, the object must be a {@link String}, a {@link java.util.Collection}, a

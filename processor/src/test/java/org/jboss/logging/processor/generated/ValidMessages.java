@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.generated;
@@ -133,37 +130,43 @@ public interface ValidMessages {
     @Message(TEST_OP_FAILED_MSG)
     <T extends Throwable> T operationFailed(@Producer Function<String, T> function, String op);
 
-    <T extends Throwable> T operationFailed(@Producer BiFunction<String, Throwable, T> function, @Cause Throwable cause, String op);
+    <T extends Throwable> T operationFailed(@Producer BiFunction<String, Throwable, T> function, @Cause Throwable cause,
+            String op);
 
     @Message(TEST_MSG)
     <T extends RuntimeException> Supplier<T> supplierFunction(@Producer Function<String, T> function);
 
     @Message(TEST_MSG)
-    <T extends CustomException> T fieldMessageFunction(@Producer Function<String, T> function, @Field(name = "value") int value);
+    <T extends CustomException> T fieldMessageFunction(@Producer Function<String, T> function,
+            @Field(name = "value") int value);
 
     @Message(TEST_MSG)
     <T extends CustomException> T propertyMessageFunction(@Producer Function<String, T> function, @Property int value);
 
     @Message(TEST_MSG)
-    LoggingException throwableStringBiFunction(@Producer BiFunction<Exception, String, LoggingException> function, @Cause Exception cause);
+    LoggingException throwableStringBiFunction(@Producer BiFunction<Exception, String, LoggingException> function,
+            @Cause Exception cause);
 
     @Message(TEST_MSG)
-    <T extends RuntimeException> Supplier<T> throwableStringBiFunctionSupplier(@Producer BiFunction<String, Exception, T> function, @Cause Exception cause);
+    <T extends RuntimeException> Supplier<T> throwableStringBiFunctionSupplier(
+            @Producer BiFunction<String, Exception, T> function, @Cause Exception cause);
 
     @Message(TEST_MSG)
     UncheckedException wrapped(@Cause Throwable cause);
 
     @Message("Binding to %s failed: %s")
-    IOException bindFailed(SocketAddress address, @TransformException({BindException.class, SocketException.class}) IOException toCopy);
+    IOException bindFailed(SocketAddress address,
+            @TransformException({ BindException.class, SocketException.class }) IOException toCopy);
 
     @Message("Binding to %s failed: %s")
-    IOException bindFailedNewStackTrace(SocketAddress address, @Cause @TransformException(copyStackTrace = false) IOException toCopy);
+    IOException bindFailedNewStackTrace(SocketAddress address,
+            @Cause @TransformException(copyStackTrace = false) IOException toCopy);
 
     @Message("Unchecked IO: %s")
-    @Signature(value = {String.class, IOException.class}, causeIndex = 1)
+    @Signature(value = { String.class, IOException.class }, causeIndex = 1)
     UncheckedIOException uncheckedIO(@Cause @TransformException(copyStackTrace = false) IOException toCopy);
 
-    @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
+    @SuppressWarnings({ "InstanceVariableMayNotBeInitialized", "unused" })
     class CustomException extends RuntimeException {
         public int value;
 

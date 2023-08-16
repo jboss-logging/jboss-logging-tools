@@ -1,23 +1,20 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * Copyright 2023 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.jboss.logging.processor.apt;
@@ -40,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -109,7 +107,8 @@ final class MessageMethodBuilder {
             }
             // Check to see if the method is overloaded
             if (resultMethod.isOverloaded()) {
-                resultMethod.messageMethodName = resultMethod.name() + resultMethod.formatParameterCount() + MESSAGE_METHOD_SUFFIX;
+                resultMethod.messageMethodName = resultMethod.name() + resultMethod.formatParameterCount()
+                        + MESSAGE_METHOD_SUFFIX;
                 resultMethod.translationKey = resultMethod.name() + "." + resultMethod.formatParameterCount();
             } else {
                 resultMethod.messageMethodName = resultMethod.name() + MESSAGE_METHOD_SUFFIX;
@@ -178,7 +177,8 @@ final class MessageMethodBuilder {
         return message != null && (message.id() != Message.NONE && message.id() != Message.INHERIT);
     }
 
-    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods, final ExecutableElement method) {
+    private Collection<ExecutableElement> findByName(final Collection<ExecutableElement> methods,
+            final ExecutableElement method) {
         final Name methodName = method.getSimpleName();
         final List<ExecutableElement> result = new ArrayList<>();
         final int paramCount = parameterCount(method.getParameters());
@@ -189,7 +189,6 @@ final class MessageMethodBuilder {
         }
         return result;
     }
-
 
     /**
      * Returns a collection of methods with the same name.
@@ -246,7 +245,8 @@ final class MessageMethodBuilder {
     private boolean isOverloaded(final Collection<ExecutableElement> methods, final ExecutableElement method) {
         final Collection<ExecutableElement> allMethods = findByName(methods, method.getSimpleName());
         for (ExecutableElement m : allMethods) {
-            if (method.getSimpleName().equals(m.getSimpleName()) && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
+            if (method.getSimpleName().equals(m.getSimpleName())
+                    && parameterCount(method.getParameters()) != parameterCount(m.getParameters())) {
                 return true;
             }
         }
@@ -370,7 +370,8 @@ final class MessageMethodBuilder {
         @Override
         public Set<Parameter> parametersAnnotatedWith(final Class<? extends Annotation> annotation) {
             final TypeElement type = ElementHelper.toTypeElement(elements, annotation);
-            return parameters.containsKey(type.asType()) ? Collections.unmodifiableSet(parameters.get(type.asType())) : Collections.emptySet();
+            return parameters.containsKey(type.asType()) ? Collections.unmodifiableSet(parameters.get(type.asType()))
+                    : Collections.emptySet();
         }
 
         @Override
@@ -477,7 +478,8 @@ final class MessageMethodBuilder {
                         result = Comparison.GREATER;
                     }
                     // Short circuit
-                    if (result != Comparison.EQUAL) break;
+                    if (result != Comparison.EQUAL)
+                        break;
                 }
             }
             return result;
@@ -490,7 +492,6 @@ final class MessageMethodBuilder {
     }
 
     private static class AptLoggerMessageMethod extends AptMessageMethod implements LoggerMessageMethod {
-
 
         /**
          * Private constructor for the
