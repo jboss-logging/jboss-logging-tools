@@ -25,6 +25,7 @@ import static org.jboss.logging.processor.util.TranslationHelper.getEnclosingTra
 import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
@@ -56,13 +57,12 @@ public class ClassModelFactory {
      * @throws IllegalArgumentException if interface is not annotated with {@link MessageBundle @MessageBundle} or
      *                                  {@link MessageLogger @MessageLogger}
      */
-    public static ClassModel implementation(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface)
-            throws IllegalArgumentException {
+    public static ClassModel implementation(final ProcessingEnvironment processingEnv, final RoundEnvironment roundEnv, final MessageInterface messageInterface) throws IllegalArgumentException {
         if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
-            return new MessageBundleImplementor(processingEnv, messageInterface);
+            return new MessageBundleImplementor(processingEnv, roundEnv, messageInterface);
         }
         if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
-            return new MessageLoggerImplementor(processingEnv, messageInterface);
+            return new MessageLoggerImplementor(processingEnv, roundEnv, messageInterface);
         }
         throw new IllegalArgumentException(
                 String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));
@@ -83,19 +83,16 @@ public class ClassModelFactory {
      * @throws IllegalArgumentException if interface is not annotated with {@link MessageBundle @MessageBundle} or
      *                                  {@link MessageLogger @MessageLogger}
      */
-    public static ClassModel translation(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface,
-            final String translationSuffix, final Map<MessageMethod, String> translations) throws IllegalArgumentException {
+    public static ClassModel translation(final ProcessingEnvironment processingEnv, final RoundEnvironment roundEnv, final MessageInterface messageInterface, final String translationSuffix, final Map<MessageMethod, String> translations) throws IllegalArgumentException {
         final String generatedClassName = implementationClassName(messageInterface, translationSuffix);
         final String superClassName = getEnclosingTranslationClassName(generatedClassName);
         // The locale should be the same as the translationsSuffix minus the leading _
         final String locale = translationSuffix.substring(1);
         if (messageInterface.isAnnotatedWith(MessageBundle.class)) {
-            return new MessageBundleTranslator(processingEnv, messageInterface, generatedClassName, superClassName, locale,
-                    translations);
+            return new MessageBundleTranslator(processingEnv, roundEnv, messageInterface, generatedClassName, superClassName, locale, translations);
         }
         if (messageInterface.isAnnotatedWith(MessageLogger.class)) {
-            return new MessageLoggerTranslator(processingEnv, messageInterface, generatedClassName, superClassName, locale,
-                    translations);
+            return new MessageLoggerTranslator(processingEnv, roundEnv, messageInterface, generatedClassName, superClassName, locale, translations);
         }
         throw new IllegalArgumentException(
                 String.format("Message interface %s is not a valid message logger or message bundle.", messageInterface));

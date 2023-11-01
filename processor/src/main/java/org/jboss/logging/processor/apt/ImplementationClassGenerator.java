@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.logging.processor.generator.model.ClassModel;
@@ -51,10 +52,9 @@ final class ImplementationClassGenerator extends AbstractGenerator {
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element,
-            final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface, final RoundEnvironment roundEnv) {
         try {
-            final ClassModel classModel = ClassModelFactory.implementation(processingEnv, messageInterface);
+            final ClassModel classModel = ClassModelFactory.implementation(processingEnv, roundEnv, messageInterface);
             classModel.generateAndWrite();
         } catch (IllegalStateException | IOException e) {
             logger().error(element, e);

@@ -210,7 +210,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                                         && !interfaceElement.getModifiers().contains(Modifier.PRIVATE)) {
                                     for (AbstractGenerator processor : generators) {
                                         logger.debug("Executing processor %s", processor.getName());
-                                        processor.processTypeElement(annotation, interfaceElement, messageInterface);
+                                        processor.processTypeElement(annotation, interfaceElement, messageInterface, roundEnv);
                                     }
                                 }
                             }

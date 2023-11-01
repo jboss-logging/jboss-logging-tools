@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
 
@@ -58,8 +59,7 @@ public abstract class AbstractGenerator {
      * @param element          the element that contains the methods.
      * @param messageInterface the message interface to implement.
      */
-    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element,
-            final MessageInterface messageInterface);
+    public abstract void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface, final RoundEnvironment roundEnv);
 
     /**
      * Returns the logger to log messages with.

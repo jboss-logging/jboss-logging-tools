@@ -21,19 +21,29 @@ package org.jboss.logging.processor.generator.model;
 
 import static org.jboss.jdeparser.JExprs.$v;
 import static org.jboss.jdeparser.JMod.FINAL;
+import static org.jboss.jdeparser.JMod.PRIVATE;
 import static org.jboss.jdeparser.JTypes.$t;
 import static org.jboss.jdeparser.JTypes.typeOf;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+<<<<<<< HEAD
 
+=======
+import java.util.Set;
+>>>>>>> 03e0727 (Generate same classes packages)
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
+import com.sun.tools.javac.code.Symbol;
 import org.jboss.jdeparser.FormatPreferences;
 import org.jboss.jdeparser.JBlock;
 import org.jboss.jdeparser.JCall;
@@ -82,6 +92,8 @@ public abstract class ClassModel {
     final JSourceFile sourceFile;
     final ProcessingEnvironment processingEnv;
 
+    final RoundEnvironment roundEnv;
+
     /**
      * Construct a class model.
      *
@@ -89,15 +101,14 @@ public abstract class ClassModel {
      * @param messageInterface the message interface to implement.
      * @param superClassName   the super class used for the translation implementations.
      */
-    ClassModel(final ProcessingEnvironment processingEnv, final MessageInterface messageInterface, final String className,
-            final String superClassName) {
+    ClassModel(final ProcessingEnvironment processingEnv, final RoundEnvironment roundEnv, final MessageInterface messageInterface, final String className, final String superClassName) {
         this.processingEnv = processingEnv;
+        this.roundEnv = roundEnv;
         this.messageInterface = messageInterface;
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
-        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()),
-                new FormatPreferences(new Properties()));
-        sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
+        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()), new FormatPreferences(new Properties()));
+        sourceFile = sources.createSourceFile(messageInterface.packageName(), className, calculateSamePackageClasses(messageInterface.getSimpleName().toString(), messageInterface.packageName(), roundEnv));
         classDef = sourceFile._class(JMod.PUBLIC, className);
         final int idLen = messageInterface.getIdLength();
         if (idLen > 0) {
@@ -106,6 +117,31 @@ public abstract class ClassModel {
             format = "%s%d: %s";
         }
         messageMethods = new HashMap<>();
+    }
+
+    private Set<String> calculateSamePackageClasses(final String className, final String currentPackage, final RoundEnvironment roundEnv) {
+        /**
+         * we need this list so that we could optimize imports in generated classes
+         */
+        final Set<String> result = new HashSet<>();
+        for (Element e : roundEnv.getRootElements()) {
+            if (e.getEnclosingElement().toString().equals(currentPackage)) {
+                if (!e.getSimpleName().toString().equals(className)) {
+                    result.add(e.getSimpleName().toString());
+                } else {
+                    /**
+                     *  we don't want to add class that is a base for the generation
+                     *  but we need to look for it's subclasses
+                     */
+                    for (Element es : e.getEnclosedElements()) {
+                        if (es.getKind().isClass()) {
+                            result.add(es.getSimpleName().toString());
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**

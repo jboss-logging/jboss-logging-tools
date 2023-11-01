@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.TypeElement;
 import javax.tools.StandardLocation;
@@ -85,8 +86,7 @@ public class ReportFileGenerator extends AbstractGenerator {
     }
 
     @Override
-    public void processTypeElement(final TypeElement annotation, final TypeElement element,
-            final MessageInterface messageInterface) {
+    public void processTypeElement(final TypeElement annotation, final TypeElement element, final MessageInterface messageInterface, final RoundEnvironment roundEnv) {
         if (reportType != null) {
             try {
                 // Don't generate empty interfaces
