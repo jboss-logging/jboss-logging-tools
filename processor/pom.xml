@@ -101,6 +101,27 @@
                             <compilerArgument>-proc:none</compilerArgument>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                </path>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging</artifactId>
+                                    <version>${version.org.jboss.logging}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
                     <!-- Define that asciidoc reports should be generated -->
                     <execution>
                         <id>test-compile-adoc</id>
@@ -115,6 +136,18 @@
                                 <arg>-Aorg.jboss.logging.tools.report.title=Test Title</arg>
                                 <arg>-Aorg.jboss.logging.tools.expressionProperties=${expression.properties.path}</arg>
                             </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                </path>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging</artifactId>
+                                    <version>${version.org.jboss.logging}</version>
+                                </path>
+                            </annotationProcessorPaths>
                         </configuration>
                     </execution>
                     <!-- Define that XML reports should be generated -->
@@ -131,6 +164,18 @@
                                 <arg>-Aorg.jboss.logging.tools.report.title=Test Title</arg>
                                 <arg>-Aorg.jboss.logging.tools.expressionProperties=${expression.properties.path}</arg>
                             </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                </path>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging</artifactId>
+                                    <version>${version.org.jboss.logging}</version>
+                                </path>
+                            </annotationProcessorPaths>
                         </configuration>
                     </execution>
                 </executions>
