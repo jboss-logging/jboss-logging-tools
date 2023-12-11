@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: ['11', '17', '21-ea']
+        java: ['11', '17', '21', '22-ea']
 
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Build and Test on ${{ matrix.java }}
-        run: mvn clean -U -B install
+        run: mvn clean -U -B install -fae
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
