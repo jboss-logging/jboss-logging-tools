@@ -57,7 +57,7 @@
         <version.org.jboss.jdeparser>2.0.3.Final</version.org.jboss.jdeparser>
         <version.org.jboss.logging>3.5.3.Final</version.org.jboss.logging>
         <version.org.jboss.logmanager>3.0.4.Final</version.org.jboss.logmanager>
-        <verion.org.jboss.forge.roaster>2.22.3.Final</verion.org.jboss.forge.roaster>
+        <verion.org.jboss.forge.roaster>2.29.0.Final</verion.org.jboss.forge.roaster>
         <version.org.junit>5.10.1</version.org.junit>
     </properties>
 
