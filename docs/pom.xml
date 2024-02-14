@@ -43,7 +43,7 @@
     </licenses>
 
     <properties>
-        <version.asciidoctor>2.2.6</version.asciidoctor>
+        <version.asciidoctor>3.0.0</version.asciidoctor>
         <java.docs.dir>apidocs</java.docs.dir>
         <java.docs.output.directory>${project.build.directory}/site/${java.docs.dir}</java.docs.output.directory>
     </properties>
