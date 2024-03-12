@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -146,10 +147,18 @@ final class TranslationClassGenerator extends AbstractGenerator {
         if (translationFilesPath != null) {
             classTranslationFilesPath = translationFilesPath + packageName.replace('.', File.separatorChar);
 
-            //By default use the class output folder
+            //By default, use the class output folder
         } else {
-            FileObject fObj = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, packageName, interfaceName);
-            classTranslationFilesPath = fObj.toUri().getPath().replace(interfaceName, "");
+            // Create some random name:
+            String relativeName = interfaceName + UUID.randomUUID();
+            // Eclipse compiler will throw an exception on processingEnv.getFiler().getResource(..)
+            //  when the resource is missing, while the regular javac will just  return a file object that points to
+            //  a non-existent file.
+            //  Since we only care about the path here ... we are going to create a dummy resource file
+            //  that that will be cleaned up right after:
+            FileObject fObj = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, packageName, relativeName);
+            classTranslationFilesPath = fObj.toUri().getPath().replace(relativeName, "");
+            fObj.delete();
         }
         final List<File> result;
         File[] files = new File(classTranslationFilesPath).listFiles(new TranslationFileFilter(interfaceName));
