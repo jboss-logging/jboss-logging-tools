@@ -30,10 +30,12 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 
 import org.jboss.logging.processor.generated.MethodMessageConstants;
+import org.jboss.logging.processor.generated.MethodMessageConstantsTypeException;
 import org.jboss.logging.processor.generated.ValidMessages;
-import org.jboss.logging.processor.generated.ValidMessages.CustomException;
-import org.jboss.logging.processor.generated.ValidMessages.LoggingException;
-import org.jboss.logging.processor.generated.ValidMessages.StringOnlyException;
+import org.jboss.logging.processor.generated.ValidMessagesCustomException;
+import org.jboss.logging.processor.generated.ValidMessagesLoggingException;
+import org.jboss.logging.processor.generated.ValidMessagesStringOnlyException;
+import org.jboss.logging.processor.generated.ValidMessagesUncheckedException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +60,7 @@ public class MessagesTest {
         Assertions.assertEquals(value, ValidMessages.MESSAGES.paramMessage(value).value);
         Assertions.assertEquals(value, ValidMessages.MESSAGES.propertyMessage(value).value);
 
-        final StringOnlyException e = ValidMessages.MESSAGES.stringOnlyException(new RuntimeException());
+        final ValidMessagesStringOnlyException e = ValidMessages.MESSAGES.stringOnlyException(new RuntimeException());
         Assertions.assertEquals(FORMATTED_TEST_MSG, e.getMessage());
         Assertions.assertNotNull(e.getCause());
 
@@ -76,7 +78,7 @@ public class MessagesTest {
     @Test
     public void testCauseInitialized() {
         final IOException exception = new IOException("Write failure");
-        final ValidMessages.UncheckedException wrapped = ValidMessages.MESSAGES.wrapped(exception);
+        final ValidMessagesUncheckedException wrapped = ValidMessages.MESSAGES.wrapped(exception);
         Assertions.assertEquals(FORMATTED_TEST_MSG, wrapped.getMessage());
         Assertions.assertTrue((wrapped.getCause() instanceof IOException),
                 "Expected the cause to be an IOException but was " + wrapped.getCause());
@@ -126,7 +128,7 @@ public class MessagesTest {
         Assertions.assertEquals(Long.MAX_VALUE, MethodMessageConstants.MESSAGES.longProperty().value);
         Assertions.assertEquals(Short.MAX_VALUE, MethodMessageConstants.MESSAGES.shortProperty().value);
         Assertions.assertEquals(MethodMessageConstants.stringTest, MethodMessageConstants.MESSAGES.stringProperty().value);
-        MethodMessageConstants.TypeException exception = MethodMessageConstants.MESSAGES.multiProperty();
+        MethodMessageConstantsTypeException exception = MethodMessageConstants.MESSAGES.multiProperty();
         Assertions.assertEquals(String.class, exception.type);
         Assertions.assertEquals(MethodMessageConstants.stringTest, exception.value);
         exception = MethodMessageConstants.MESSAGES.repeatableProperty();
@@ -146,7 +148,7 @@ public class MessagesTest {
         Assertions.assertEquals(Long.MAX_VALUE, MethodMessageConstants.MESSAGES.longField().value);
         Assertions.assertEquals(Short.MAX_VALUE, MethodMessageConstants.MESSAGES.shortField().value);
         Assertions.assertEquals(MethodMessageConstants.stringTest, MethodMessageConstants.MESSAGES.stringField().value);
-        MethodMessageConstants.TypeException exception = MethodMessageConstants.MESSAGES.multiField();
+        MethodMessageConstantsTypeException exception = MethodMessageConstants.MESSAGES.multiField();
         Assertions.assertEquals(String.class, exception.type);
         Assertions.assertEquals(MethodMessageConstants.stringTest, exception.value);
         exception = MethodMessageConstants.MESSAGES.repeatableField();
@@ -171,11 +173,11 @@ public class MessagesTest {
 
         // Test suppliers with fields/properties
         int value = 5;
-        Supplier<CustomException> customExceptionSupplier = ValidMessages.MESSAGES.fieldMessageSupplier(value);
+        Supplier<ValidMessagesCustomException> customExceptionSupplier = ValidMessages.MESSAGES.fieldMessageSupplier(value);
         Assertions.assertNotNull(customExceptionSupplier);
-        CustomException customException = customExceptionSupplier.get();
+        ValidMessagesCustomException customException = customExceptionSupplier.get();
         Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(ValidMessagesCustomException.class, customException.getClass());
         Assertions.assertEquals(value, customException.value);
 
         value = 20;
@@ -183,7 +185,7 @@ public class MessagesTest {
         Assertions.assertNotNull(customExceptionSupplier);
         customException = customExceptionSupplier.get();
         Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(ValidMessagesCustomException.class, customException.getClass());
         Assertions.assertEquals(value, customException.value);
 
     }
@@ -204,15 +206,16 @@ public class MessagesTest {
 
         // Test functions with fields/properties
         int value = 5;
-        CustomException customException = ValidMessages.MESSAGES.fieldMessageFunction(CustomException::new, value);
+        ValidMessagesCustomException customException = ValidMessages.MESSAGES
+                .fieldMessageFunction(ValidMessagesCustomException::new, value);
         Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(ValidMessagesCustomException.class, customException.getClass());
         Assertions.assertEquals(customException.value, value);
 
         value = 20;
-        customException = ValidMessages.MESSAGES.propertyMessageFunction(CustomException::new, value);
+        customException = ValidMessages.MESSAGES.propertyMessageFunction(ValidMessagesCustomException::new, value);
         Assertions.assertEquals(FORMATTED_TEST_MSG, customException.getMessage());
-        Assertions.assertEquals(CustomException.class, customException.getClass());
+        Assertions.assertEquals(ValidMessagesCustomException.class, customException.getClass());
         Assertions.assertEquals(value, customException.value);
     }
 
@@ -225,8 +228,8 @@ public class MessagesTest {
         Assertions.assertEquals(String.format(ValidMessages.TEST_OP_FAILED_MSG, "start"), runtimeException.getMessage());
         Assertions.assertEquals(cause, runtimeException.getCause());
 
-        runtimeException = ValidMessages.MESSAGES.throwableStringBiFunction(LoggingException::new, cause);
-        Assertions.assertEquals(LoggingException.class, runtimeException.getClass());
+        runtimeException = ValidMessages.MESSAGES.throwableStringBiFunction(ValidMessagesLoggingException::new, cause);
+        Assertions.assertEquals(ValidMessagesLoggingException.class, runtimeException.getClass());
         Assertions.assertEquals(cause, runtimeException.getCause());
 
         final Supplier<RuntimeException> supplier = ValidMessages.MESSAGES
