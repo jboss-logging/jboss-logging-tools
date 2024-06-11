@@ -139,10 +139,15 @@ public final class MessageInterfaceFactory {
             } else {
                 validIdRanges = Collections.emptyList();
             }
-            // Determine the type for the generated annotation
-            final ModuleElement moduleElement = processingEnv.getElementUtils()
-                    .getModuleElement(Generated.class.getModule().getName());
-            this.generatedAnnotation = processingEnv.getElementUtils().getTypeElement(moduleElement, Generated.class.getName());
+            if (addGeneratedAnnotation) {
+                // Determine the type for the generated annotation
+                final ModuleElement moduleElement = processingEnv.getElementUtils()
+                        .getModuleElement(Generated.class.getModule().getName());
+                this.generatedAnnotation = processingEnv.getElementUtils().getTypeElement(moduleElement,
+                        Generated.class.getName());
+            } else {
+                this.generatedAnnotation = null;
+            }
         }
 
         @Override
