@@ -81,12 +81,17 @@ import org.jboss.logging.processor.validation.Validator;
         LoggingToolsProcessor.DEBUG_OPTION,
         LoggingToolsProcessor.EXPRESSION_PROPERTIES,
         LoggingToolsProcessor.ADD_GENERATED_ANNOTATION,
+        LoggingToolsProcessor.GENERATED_DATE_VALUE_PROVIDER,
+        LoggingToolsProcessor.GENERATED_DATE_VALUE_PROVIDER_DATE
 })
 public class LoggingToolsProcessor extends AbstractProcessor {
 
     public static final String DEBUG_OPTION = "debug";
     static final String EXPRESSION_PROPERTIES = "org.jboss.logging.tools.expressionProperties";
     static final String ADD_GENERATED_ANNOTATION = "org.jboss.logging.tools.addGeneratedAnnotation";
+    public static final String GENERATED_DATE_VALUE_PROVIDER = "org.jboss.logging.tools.generatedDateValueProvider";
+    public static final String GENERATED_DATE_VALUE_PROVIDER_DATE = "org.jboss.logging.tools.generatedDateValueProvider.date";
+
     private final List<String> interfaceAnnotations = Arrays.asList(MessageBundle.class.getName(),
             MessageLogger.class.getName());
     private final List<AbstractGenerator> generators;
