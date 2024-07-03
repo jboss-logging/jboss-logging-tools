@@ -370,7 +370,8 @@ final class MessageMethodBuilder {
         @Override
         public Set<Parameter> parametersAnnotatedWith(final Class<? extends Annotation> annotation) {
             final TypeElement type = ElementHelper.toTypeElement(elements, annotation);
-            return parameters.containsKey(type.asType()) ? Collections.unmodifiableSet(parameters.get(type.asType()))
+            return (type != null && parameters.containsKey(type.asType()))
+                    ? Collections.unmodifiableSet(parameters.get(type.asType()))
                     : Collections.emptySet();
         }
 
