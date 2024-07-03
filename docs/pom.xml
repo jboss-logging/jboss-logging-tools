@@ -30,7 +30,7 @@
     </parent>
 
     <artifactId>jboss-logging-tools-docs</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>JBoss Logging I18n Documentation</name>
 
@@ -160,7 +160,6 @@
                         <version>${version.asciidoctor}</version>
                         <configuration>
                             <backend>html5</backend>
-                            <sourceHighlighter>coderay</sourceHighlighter>
                             <attributes>
                                 <icons>font</icons>
                                 <sectanchors>true</sectanchors>
@@ -168,11 +167,12 @@
                                 <idprefix/>
                                 <idseparator>-</idseparator>
                                 <docinfo1>true</docinfo1>
-                                <javadocsdir>${java.docs.dir}</javadocsdir>
+                                <javadocsdir>${java.docs.dir}/org.jboss.logging.annotations</javadocsdir>
                                 <version>${project.version}</version>
                                 <nofooter/>
                                 <revnumber>${project.version}</revnumber>
                                 <organization>${project.organization.name}</organization>
+                                <source-highlighter>coderay</source-highlighter>
                             </attributes>
                             <outputDirectory>${project.basedir}</outputDirectory>
                         </configuration>

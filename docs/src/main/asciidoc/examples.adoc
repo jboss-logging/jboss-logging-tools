@@ -1,6 +1,6 @@
 
 :sourcedir: java/org/jboss/logging/tools/examples
-:projecturl: https://github.com/jboss-logging/jboss-logging-tools/docs/src/main
+:projecturl: https://github.com/jboss-logging/jboss-logging-tools/tree/main/docs/src/main
 
 == Example Use Cases
 
