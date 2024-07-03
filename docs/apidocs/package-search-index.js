@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"m":"org.jboss.logging.annotations","l":"org.jboss.logging.annotations"}]
