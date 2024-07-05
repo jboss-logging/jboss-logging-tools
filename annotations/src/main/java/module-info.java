@@ -1,4 +1,4 @@
 module org.jboss.logging.annotations {
-    requires static org.jboss.logging;
+    requires org.jboss.logging;
     exports org.jboss.logging.annotations;
 }
