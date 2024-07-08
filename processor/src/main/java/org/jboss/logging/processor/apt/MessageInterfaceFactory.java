@@ -143,8 +143,9 @@ public final class MessageInterfaceFactory {
                 // Determine the type for the generated annotation
                 final ModuleElement moduleElement = processingEnv.getElementUtils()
                         .getModuleElement(Generated.class.getModule().getName());
-                this.generatedAnnotation = processingEnv.getElementUtils().getTypeElement(moduleElement,
-                        Generated.class.getName());
+                this.generatedAnnotation = moduleElement == null
+                        ? processingEnv.getElementUtils().getTypeElement(Generated.class.getName())
+                        : processingEnv.getElementUtils().getTypeElement(moduleElement, Generated.class.getName());
             } else {
                 this.generatedAnnotation = null;
             }
