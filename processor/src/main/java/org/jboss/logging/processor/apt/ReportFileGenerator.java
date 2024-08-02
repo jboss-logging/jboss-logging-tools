@@ -35,6 +35,7 @@ import java.util.TreeSet;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.StandardLocation;
 
@@ -98,7 +99,8 @@ public class ReportFileGenerator extends AbstractGenerator {
 
                 final String fileName = messageInterface.simpleName() + reportType.getExtension();
                 try (
-                        final BufferedWriter writer = createWriter(messageInterface.packageName(), fileName);
+                        final BufferedWriter writer = createWriter(messageInterface.packageName(), fileName,
+                                processingEnv.getElementUtils().getTypeElement(messageInterface.name()));
                         final ReportWriter reportWriter = ReportWriter.of(reportType, messageInterface, writer)) {
                     reportWriter.writeHeader(reportTitle);
                     // Process the methods
@@ -113,10 +115,11 @@ public class ReportFileGenerator extends AbstractGenerator {
         }
     }
 
-    private BufferedWriter createWriter(final String packageName, final String fileName) throws IOException {
+    private BufferedWriter createWriter(final String packageName, final String fileName, Element originatingElement)
+            throws IOException {
         if (reportPath == null) {
             return new BufferedWriter(processingEnv.getFiler()
-                    .createResource(StandardLocation.SOURCE_OUTPUT, packageName, fileName).openWriter());
+                    .createResource(StandardLocation.SOURCE_OUTPUT, packageName, fileName, originatingElement).openWriter());
         }
         final Path outputPath = Paths.get(reportPath, packageName.replace(".", FileSystems.getDefault().getSeparator()),
                 fileName);
