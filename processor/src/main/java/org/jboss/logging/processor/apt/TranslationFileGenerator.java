@@ -211,7 +211,8 @@ final class TranslationFileGenerator extends AbstractGenerator {
         try {
             if (generatedFilesPath == null) {
                 final FileObject fileObject = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
-                        messageInterface.packageName(), fileName);
+                        messageInterface.packageName(), fileName,
+                        processingEnv.getElementUtils().getTypeElement(messageInterface.name()));
                 // Note the FileObject#openWriter() is used here. The FileObject#openOutputStream() returns an output stream
                 // that writes each byte separately which results in poor performance.
                 writer = new BufferedWriter(fileObject.openWriter());

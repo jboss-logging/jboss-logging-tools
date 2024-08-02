@@ -25,13 +25,16 @@ import static org.jboss.jdeparser.JTypes.$t;
 import static org.jboss.jdeparser.JTypes.typeOf;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.jdeparser.FormatPreferences;
@@ -95,7 +98,10 @@ public abstract class ClassModel {
         this.messageInterface = messageInterface;
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
-        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()),
+        sources = JDeparser.createSources(
+                new JFilerOriginatingElementAware(
+                        processingEnv.getElementUtils().getTypeElement(messageInterface.name()),
+                        processingEnv.getFiler()),
                 new FormatPreferences(new Properties()));
         sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
         classDef = sourceFile._class(JMod.PUBLIC, className);
@@ -361,5 +367,27 @@ public abstract class ClassModel {
         }
 
         return initializer;
+    }
+
+    private static class JFilerOriginatingElementAware extends JFiler {
+
+        private final Element originatingElement;
+        private final Filer filer;
+
+        private JFilerOriginatingElementAware(Element originatingElement, Filer filer) {
+            this.originatingElement = originatingElement;
+            this.filer = filer;
+        }
+
+        @Override
+        public OutputStream openStream(String packageName, String fileName) throws IOException {
+            // Create the FQCN
+            final StringBuilder sb = new StringBuilder(packageName);
+            if (sb.charAt(sb.length() - 1) != '.') {
+                sb.append('.');
+            }
+            sb.append(fileName);
+            return filer.createSourceFile(sb, originatingElement).openOutputStream();
+        }
     }
 }
