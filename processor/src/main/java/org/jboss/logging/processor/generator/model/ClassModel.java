@@ -25,13 +25,16 @@ import static org.jboss.jdeparser.JTypes.$t;
 import static org.jboss.jdeparser.JTypes.typeOf;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.jboss.jdeparser.FormatPreferences;
@@ -95,7 +98,10 @@ public abstract class ClassModel {
         this.messageInterface = messageInterface;
         this.className = messageInterface.packageName() + "." + className;
         this.superClassName = superClassName;
-        sources = JDeparser.createSources(JFiler.newInstance(processingEnv.getFiler()),
+        sources = JDeparser.createSources(
+                new JFilerOriginatingElementAware(
+                        processingEnv.getElementUtils().getTypeElement(messageInterface.name()),
+                        processingEnv.getFiler()),
                 new FormatPreferences(new Properties()));
         sourceFile = sources.createSourceFile(messageInterface.packageName(), className);
         classDef = sourceFile._class(JMod.PUBLIC, className);
@@ -361,5 +367,44 @@ public abstract class ClassModel {
         }
 
         return initializer;
+    }
+
+    /**
+     * This version of the {@link JFiler} passes an originating element to the underlying {@link Filer}.
+     * It allows building tools, like Gradle, to figure out a better incremental compilation plan.
+     * In contrast, a full recompilation will most likely be required without an originating element.
+     * <p>
+     * Other than passing the originating element this {@link JFiler} should behave exactly
+     * as the one created with {@link JFiler#newInstance(Filer)}
+     */
+    private static class JFilerOriginatingElementAware extends JFiler {
+
+        private final Element originatingElement;
+        private final Filer filer;
+
+        private JFilerOriginatingElementAware(Element originatingElement, Filer filer) {
+            if (originatingElement == null) {
+                throw new ProcessingException(null,
+                        "Creating an instance of a %s without an originating element is not allowed.", getClass().getName());
+            }
+            if (filer == null) {
+                throw new ProcessingException(originatingElement,
+                        "Creating an instance of a %s without a non-null %s value is not allowed.", getClass().getName(),
+                        Filer.class.getName());
+            }
+            this.originatingElement = originatingElement;
+            this.filer = filer;
+        }
+
+        @Override
+        public OutputStream openStream(String packageName, String fileName) throws IOException {
+            // Create the FQCN
+            final StringBuilder sb = new StringBuilder(packageName);
+            if (sb.charAt(sb.length() - 1) != '.') {
+                sb.append('.');
+            }
+            sb.append(fileName);
+            return filer.createSourceFile(sb, originatingElement).openOutputStream();
+        }
     }
 }
