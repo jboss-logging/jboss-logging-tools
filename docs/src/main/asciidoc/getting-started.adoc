@@ -15,33 +15,45 @@ If you're using maven here is an example `pom.xml` snippet:
 
 [source,xml,subs="attributes+"]
 ----
-<dependencies>
-    <!-- Required by the annotation processor and will be used at runtime -->
-    <dependency>
-        <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging</artifactId>
-    </dependency>
+<project>
+    <dependencies>
+        <!-- Required by the annotation processor and will be used at runtime -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
 
-    <dependency>
-        <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging-annotations</artifactId>
-        <version>{version}</version>
-        <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-              projects that depend on this project.-->
-        <scope>provided</scope>
-        <optional>true</optional>
-    </dependency>
-
-    <dependency>
-        <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging-processor</artifactId>
-        <version>{version}</version>
-        <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-              projects that depend on this project.-->
-        <scope>provided</scope>
-        <optional>true</optional>
-    </dependency>
-</dependencies>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <version>{version}</version>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <!-- Define the annotation processor path. This is required on Java 22+. The other option is to
+                             pass the -proc:full javac argument. -->
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.jboss.logging</groupId>
+                                <artifactId>jboss-logging-processor</artifactId>
+                                <version>{version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
 ----
 
 Once your project is configured you can create either a <<Message Bundle Interfaces,message bundle interface>> or a <<Message Logger Interfaces,message logger interface>>. For detailed information see the link:{javadocsdir}/index.html[JavaDocs] for the annotations.
