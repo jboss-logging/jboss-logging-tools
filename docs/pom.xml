@@ -167,7 +167,7 @@
                                 <idprefix/>
                                 <idseparator>-</idseparator>
                                 <docinfo1>true</docinfo1>
-                                <javadocsdir>${java.docs.dir}/org.jboss.logging.annotations</javadocsdir>
+                                <javadocsdir>${java.docs.dir}</javadocsdir>
                                 <version>${project.version}</version>
                                 <nofooter/>
                                 <revnumber>${project.version}</revnumber>
