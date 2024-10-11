@@ -530,7 +530,7 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 <div class="details">
 <span id="author" class="author">James R. Perkins</span><br>
 <span id="email" class="email">&lt;<a href="mailto:jperkins@redhat.com">jperkins@redhat.com</a>&gt;</span><br>
-<span id="revnumber">version 3.0.1.Final</span>
+<span id="revnumber">version 3.0.2.Final</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -604,37 +604,49 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependencies&gt;</span>
-    <span class="comment">&lt;!-- Required by the annotation processor and will be used at runtime --&gt;</span>
-    <span class="tag">&lt;dependency&gt;</span>
-        <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
-        <span class="tag">&lt;artifactId&gt;</span>jboss-logging<span class="tag">&lt;/artifactId&gt;</span>
-    <span class="tag">&lt;/dependency&gt;</span>
+<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;project&gt;</span>
+    <span class="tag">&lt;dependencies&gt;</span>
+        <span class="comment">&lt;!-- Required by the annotation processor and will be used at runtime --&gt;</span>
+        <span class="tag">&lt;dependency&gt;</span>
+            <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
+            <span class="tag">&lt;artifactId&gt;</span>jboss-logging<span class="tag">&lt;/artifactId&gt;</span>
+        <span class="tag">&lt;/dependency&gt;</span>
 
-    <span class="tag">&lt;dependency&gt;</span>
-        <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
-        <span class="tag">&lt;artifactId&gt;</span>jboss-logging-annotations<span class="tag">&lt;/artifactId&gt;</span>
-        <span class="tag">&lt;version&gt;</span>3.0.1.Final<span class="tag">&lt;/version&gt;</span>
-        <span class="comment">&lt;!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-              projects that depend on this project.--&gt;</span>
-        <span class="tag">&lt;scope&gt;</span>provided<span class="tag">&lt;/scope&gt;</span>
-        <span class="tag">&lt;optional&gt;</span>true<span class="tag">&lt;/optional&gt;</span>
-    <span class="tag">&lt;/dependency&gt;</span>
-
-    <span class="tag">&lt;dependency&gt;</span>
-        <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
-        <span class="tag">&lt;artifactId&gt;</span>jboss-logging-processor<span class="tag">&lt;/artifactId&gt;</span>
-        <span class="tag">&lt;version&gt;</span>3.0.1.Final<span class="tag">&lt;/version&gt;</span>
-        <span class="comment">&lt;!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-              projects that depend on this project.--&gt;</span>
-        <span class="tag">&lt;scope&gt;</span>provided<span class="tag">&lt;/scope&gt;</span>
-        <span class="tag">&lt;optional&gt;</span>true<span class="tag">&lt;/optional&gt;</span>
-    <span class="tag">&lt;/dependency&gt;</span>
-<span class="tag">&lt;/dependencies&gt;</span></code></pre>
+        <span class="tag">&lt;dependency&gt;</span>
+            <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
+            <span class="tag">&lt;artifactId&gt;</span>jboss-logging-annotations<span class="tag">&lt;/artifactId&gt;</span>
+            <span class="tag">&lt;version&gt;</span>3.0.2.Final<span class="tag">&lt;/version&gt;</span>
+            <span class="comment">&lt;!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.--&gt;</span>
+            <span class="tag">&lt;scope&gt;</span>provided<span class="tag">&lt;/scope&gt;</span>
+            <span class="tag">&lt;optional&gt;</span>true<span class="tag">&lt;/optional&gt;</span>
+        <span class="tag">&lt;/dependency&gt;</span>
+    <span class="tag">&lt;/dependencies&gt;</span>
+    <span class="tag">&lt;build&gt;</span>
+        <span class="tag">&lt;pluginManagement&gt;</span>
+            <span class="tag">&lt;plugins&gt;</span>
+                <span class="tag">&lt;plugin&gt;</span>
+                    <span class="tag">&lt;artifactId&gt;</span>maven-compiler-plugin<span class="tag">&lt;/artifactId&gt;</span>
+                    <span class="tag">&lt;configuration&gt;</span>
+                        <span class="comment">&lt;!-- Define the annotation processor path. This is required on Java 22+. The other option is to
+                             pass the -proc:full javac argument. --&gt;</span>
+                        <span class="tag">&lt;annotationProcessorPaths&gt;</span>
+                            <span class="tag">&lt;path&gt;</span>
+                                <span class="tag">&lt;groupId&gt;</span>org.jboss.logging<span class="tag">&lt;/groupId&gt;</span>
+                                <span class="tag">&lt;artifactId&gt;</span>jboss-logging-processor<span class="tag">&lt;/artifactId&gt;</span>
+                                <span class="tag">&lt;version&gt;</span>3.0.2.Final<span class="tag">&lt;/version&gt;</span>
+                            <span class="tag">&lt;/path&gt;</span>
+                        <span class="tag">&lt;/annotationProcessorPaths&gt;</span>
+                    <span class="tag">&lt;/configuration&gt;</span>
+                <span class="tag">&lt;/plugin&gt;</span>
+            <span class="tag">&lt;/plugins&gt;</span>
+        <span class="tag">&lt;/pluginManagement&gt;</span>
+    <span class="tag">&lt;/build&gt;</span>
+<span class="tag">&lt;/project&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Once your project is configured you can create either a <a href="#message-bundle-interfaces">message bundle interface</a> or a <a href="#message-logger-interfaces">message logger interface</a>. For detailed information see the <a href="apidocs/org.jboss.logging.annotations/index.html">JavaDocs</a> for the annotations.</p>
+<p>Once your project is configured you can create either a <a href="#message-bundle-interfaces">message bundle interface</a> or a <a href="#message-logger-interfaces">message logger interface</a>. For detailed information see the <a href="apidocs/index.html">JavaDocs</a> for the annotations.</p>
 </div>
 </div>
 </div>
@@ -643,12 +655,12 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 <div class="sectionbody">
 <div class="paragraph">
 <p>Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is
-annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a>
+annotated with <a href="apidocs"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a>
 which will be used to determine the String used for either the return type or the message for the exception being
 returned.</p>
 </div>
 <div class="paragraph">
-<p>The value for a <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> may contain an expression.</p>
+<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -699,13 +711,13 @@ Expressions are processed at compile time. The values will be hard-coded in the 
 </div>
 </li>
 <li>
-<p>The method must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> or a message must be inheritable.</p>
+<p>The method must be annotated with <a href="apidocs"><code>@Message</code></a> or a message must be inheritable.</p>
 </li>
 <li>
-<p>A method can have only one <a href="apidocs/org.jboss.logging.annotations"><code>@Cause</code></a> parameter.</p>
+<p>A method can have only one <a href="apidocs"><code>@Cause</code></a> parameter.</p>
 </li>
 <li>
-<p>A method can only have one <a href="apidocs/org.jboss.logging.annotations"><code>@Producer</code></a> parameter.</p>
+<p>A method can only have one <a href="apidocs"><code>@Producer</code></a> parameter.</p>
 </li>
 </ul>
 </div>
@@ -728,7 +740,7 @@ A message is inheritable if the two methods have the same name and same number o
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs/org.jboss.logging.annotations"><code>@FormatWith</code></a>, <a href="apidocs/org.jboss.logging.annotations"><code>@Pos</code></a> or <a href="apidocs/org.jboss.logging.annotations"><code>@Transform</code></a>.
+A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs"><code>@FormatWith</code></a>, <a href="apidocs"><code>@Pos</code></a> or <a href="apidocs"><code>@Transform</code></a>.
 </td>
 </tr>
 </table>
@@ -802,11 +814,11 @@ Message bundle interfaces can also contain valid <a href="#message-logger-interf
 <div class="sectionbody">
 <div class="paragraph">
 <p>Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with
-<a href="apidocs/org.jboss.logging.annotations"><code>@MessageLogger</code></a>. Each method in must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> which will
+<a href="apidocs"><code>@MessageLogger</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a> which will
 be used to determine the message to be logged.</p>
 </div>
 <div class="paragraph">
-<p>The value for a <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> may contain an expression.</p>
+<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -844,13 +856,13 @@ Expressions are processed at compile time. The values will be hard-coded in the 
 <p>The method must have a <code>void</code> return type</p>
 </li>
 <li>
-<p>The method must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@LogMessage</code></a></p>
+<p>The method must be annotated with <a href="apidocs"><code>@LogMessage</code></a></p>
 </li>
 <li>
-<p>The method must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> or a message must be inheritable.</p>
+<p>The method must be annotated with <a href="apidocs"><code>@Message</code></a> or a message must be inheritable.</p>
 </li>
 <li>
-<p>A method can have only one <a href="apidocs/org.jboss.logging.annotations"><code>@Cause</code></a> parameter.</p>
+<p>A method can have only one <a href="apidocs"><code>@Cause</code></a> parameter.</p>
 </li>
 </ul>
 </div>
@@ -873,7 +885,7 @@ A message is inheritable if the two methods have the same name and same number o
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs/org.jboss.logging.annotations"><code>@FormatWith</code></a>, <a href="apidocs/org.jboss.logging.annotations"><code>@Pos</code></a> or <a href="apidocs/org.jboss.logging.annotations"><code>@Transform</code></a>.
+A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs"><code>@FormatWith</code></a>, <a href="apidocs"><code>@Pos</code></a> or <a href="apidocs"><code>@Transform</code></a>.
 </td>
 </tr>
 </table>
@@ -974,7 +986,7 @@ A format parameter is a parameter that has no annotations or is annotated with o
 <div class="ulist">
 <ul>
 <li>
-<p><a href="apidocs/org.jboss.logging.annotations"><code>@BaseUrl</code></a></p>
+<p><a href="apidocs"><code>@BaseUrl</code></a></p>
 <div class="ulist">
 <ul>
 <li>
@@ -985,7 +997,7 @@ not required for links to be created on reports.</p>
 </div>
 </li>
 <li>
-<p><a href="apidocs/org.jboss.logging.annotations"><code>@ResolutionDoc</code></a></p>
+<p><a href="apidocs"><code>@ResolutionDoc</code></a></p>
 <div class="ulist">
 <ul>
 <li>
@@ -1078,7 +1090,7 @@ the method to only generate links for specific id&#8217;s.</p>
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Logs the application version. Note this uses the <a href="apidocs/org.jboss.logging.annotations">@Once</a> annotation to indicate this should only be logged once regardless of which <code>write</code> method is used.</td>
+<td>Logs the application version. Note this uses the <a href="apidocs">@Once</a> annotation to indicate this should only be logged once regardless of which <code>write</code> method is used.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>

@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"m":"org.jboss.logging.annotations","l":"org.jboss.logging.annotations"}]
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"org.jboss.logging.annotations","l":"org.jboss.logging.annotations"}];updateSearchResults();

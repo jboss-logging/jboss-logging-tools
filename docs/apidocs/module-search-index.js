@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"org.jboss.logging.annotations"}]
+moduleSearchIndex = [{"l":"org.jboss.logging.annotations"}];updateSearchResults();

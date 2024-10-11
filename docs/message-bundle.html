@@ -532,12 +532,12 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 <div class="sectionbody">
 <div class="paragraph">
 <p>Message bundle interfaces provide a way to internationalize exceptions or strings. A message bundle interface is
-annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a>
+annotated with <a href="apidocs"><code>@MessageBundle</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a>
 which will be used to determine the String used for either the return type or the message for the exception being
 returned.</p>
 </div>
 <div class="paragraph">
-<p>The value for a <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> may contain an expression.</p>
+<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -588,13 +588,13 @@ Expressions are processed at compile time. The values will be hard-coded in the 
 </div>
 </li>
 <li>
-<p>The method must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> or a message must be inheritable.</p>
+<p>The method must be annotated with <a href="apidocs"><code>@Message</code></a> or a message must be inheritable.</p>
 </li>
 <li>
-<p>A method can have only one <a href="apidocs/org.jboss.logging.annotations"><code>@Cause</code></a> parameter.</p>
+<p>A method can have only one <a href="apidocs"><code>@Cause</code></a> parameter.</p>
 </li>
 <li>
-<p>A method can only have one <a href="apidocs/org.jboss.logging.annotations"><code>@Producer</code></a> parameter.</p>
+<p>A method can only have one <a href="apidocs"><code>@Producer</code></a> parameter.</p>
 </li>
 </ul>
 </div>
@@ -617,7 +617,7 @@ A message is inheritable if the two methods have the same name and same number o
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs/org.jboss.logging.annotations"><code>@FormatWith</code></a>, <a href="apidocs/org.jboss.logging.annotations"><code>@Pos</code></a> or <a href="apidocs/org.jboss.logging.annotations"><code>@Transform</code></a>.
+A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs"><code>@FormatWith</code></a>, <a href="apidocs"><code>@Pos</code></a> or <a href="apidocs"><code>@Transform</code></a>.
 </td>
 </tr>
 </table>

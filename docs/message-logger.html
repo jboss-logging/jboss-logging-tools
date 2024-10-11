@@ -532,11 +532,11 @@ table.CodeRay td.code{padding:0 0 0 .75em}
 <div class="sectionbody">
 <div class="paragraph">
 <p>Logger interfaces provide a way to internationalize log messages. A logger interface is an interface annotated with
-<a href="apidocs/org.jboss.logging.annotations"><code>@MessageLogger</code></a>. Each method in must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> which will
+<a href="apidocs"><code>@MessageLogger</code></a>. Each method in must be annotated with <a href="apidocs"><code>@Message</code></a> which will
 be used to determine the message to be logged.</p>
 </div>
 <div class="paragraph">
-<p>The value for a <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> may contain an expression.</p>
+<p>The value for a <a href="apidocs"><code>@Message</code></a> may contain an expression.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -574,13 +574,13 @@ Expressions are processed at compile time. The values will be hard-coded in the 
 <p>The method must have a <code>void</code> return type</p>
 </li>
 <li>
-<p>The method must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@LogMessage</code></a></p>
+<p>The method must be annotated with <a href="apidocs"><code>@LogMessage</code></a></p>
 </li>
 <li>
-<p>The method must be annotated with <a href="apidocs/org.jboss.logging.annotations"><code>@Message</code></a> or a message must be inheritable.</p>
+<p>The method must be annotated with <a href="apidocs"><code>@Message</code></a> or a message must be inheritable.</p>
 </li>
 <li>
-<p>A method can have only one <a href="apidocs/org.jboss.logging.annotations"><code>@Cause</code></a> parameter.</p>
+<p>A method can have only one <a href="apidocs"><code>@Cause</code></a> parameter.</p>
 </li>
 </ul>
 </div>
@@ -603,7 +603,7 @@ A message is inheritable if the two methods have the same name and same number o
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs/org.jboss.logging.annotations"><code>@FormatWith</code></a>, <a href="apidocs/org.jboss.logging.annotations"><code>@Pos</code></a> or <a href="apidocs/org.jboss.logging.annotations"><code>@Transform</code></a>.
+A format parameter is a parameter that has no annotations or is annotated with one of the following annotations; <a href="apidocs"><code>@FormatWith</code></a>, <a href="apidocs"><code>@Pos</code></a> or <a href="apidocs"><code>@Transform</code></a>.
 </td>
 </tr>
 </table>
