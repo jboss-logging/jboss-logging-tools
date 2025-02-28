@@ -679,7 +679,8 @@ abstract class ImplementationClassModel extends ClassModel {
             sourceFile._import(arrays);
             final JExpr e = $v(param);
             final JVarDeclaration st = body.var(FINAL, $t(StackTraceElement.class).array(), "st", e.call("getStackTrace"));
-            body.add(e.call("setStackTrace")
+            // Check if the stack trace is an empty array, if not copy the stack trace minus 1
+            body._if($v(st).field("length").gt(JExpr.ZERO)).add(e.call("setStackTrace")
                     .arg(arrays.call("copyOfRange").arg($v(st)).arg(JExpr.ONE).arg($v(st).field("length"))));
         }
         return JExprs.call(methodName);

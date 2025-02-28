@@ -24,16 +24,17 @@ import org.jboss.logging.processor.generated.SignatureMessages.InvalidTextExcept
 import org.jboss.logging.processor.generated.SignatureMessages.RedirectException;
 import org.jboss.logging.processor.generated.SignatureMessages.TestException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@Tag("NoStackTrace")
 public class ThrowableSignatureTest {
 
     @Test
     public void testSignatures() {
-        @SuppressWarnings("RedundantStringFormatCall")
         final String formattedMessage = String.format(SignatureMessages.TEST_MSG);
         final RuntimeException cause = new RuntimeException("This was the cause");
 
