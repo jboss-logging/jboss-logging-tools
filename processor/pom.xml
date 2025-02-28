@@ -196,6 +196,19 @@
                         <expressionPropertiesPath>${expression.properties.path}</expressionPropertiesPath>
                     </systemPropertyVariables>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>no-stack-trace</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <argLine>-XX:-StackTraceInThrowable</argLine>
+                            <groups>NoStackTrace</groups>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
