@@ -81,6 +81,7 @@ public abstract class ClassModel {
     private final String format;
 
     private final Map<String, JMethodDef> messageMethods;
+    private final GeneratedDateValueProvider generatedDateValueProvider;
 
     final JSourceFile sourceFile;
     final ProcessingEnvironment processingEnv;
@@ -112,6 +113,7 @@ public abstract class ClassModel {
             format = "%s%d: %s";
         }
         messageMethods = new HashMap<>();
+        generatedDateValueProvider = GeneratedDateValueProvider.of(processingEnv.getOptions());
     }
 
     /**
@@ -150,7 +152,7 @@ public abstract class ClassModel {
             sourceFile._import(generatedType);
             classDef.annotate(generatedType)
                     .value("value", getClass().getName())
-                    .value("date", JExprs.str(ClassModelHelper.generatedDateValue()));
+                    .value("date", JExprs.str(generatedDateValueProvider.date()));
         }
 
         // Create the default JavaDoc
