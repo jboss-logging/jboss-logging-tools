@@ -33,7 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -62,6 +64,7 @@ import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.Pos;
+import org.jboss.logging.annotations.Throttled;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.processor.model.LoggerMessageMethod;
 import org.jboss.logging.processor.model.MessageInterface;
@@ -84,6 +87,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
     private static final String FQCN_FIELD_NAME = "FQCN";
 
     private final Map<String, JVarDeclaration> logOnceVars = new HashMap<>();
+    private final Map<String, JVarDeclaration> throttleCountVars = new HashMap<>();
+    private final Map<String, JVarDeclaration> throttleTimeVars = new HashMap<>();
 
     /**
      * Creates a new message logger code model.
@@ -201,6 +206,8 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
                     logger.call("isEnabled").arg($v(messageMethod.logLevel())).and(
                             $v(var).call("compareAndSet").arg(JExpr.FALSE).arg(JExpr.TRUE)))
                     .block(Braces.REQUIRED);
+        } else if (messageMethod.isAnnotatedWith(Throttled.class)) {
+            body = createThrottledBody(messageMethod, classDef, logger, baseBody);
         } else if (messageMethod.wrapInEnabledCheck()) {
             body = baseBody._if(logger.call("isEnabled").arg($v(messageMethod.logLevel()))).block(Braces.REQUIRED);
         } else {
@@ -325,6 +332,77 @@ final class MessageLoggerImplementor extends ImplementationClassModel {
             }
         }
         body.add(logCaller);
+    }
+
+    private JBlock createThrottledBody(final LoggerMessageMethod messageMethod, final JClassDef classDef,
+            final JAssignableExpr logger, final JBlock baseBody) {
+        final Throttled throttled = messageMethod.getAnnotation(Throttled.class);
+        final long count = throttled.count();
+        final long period = throttled.period();
+        final TimeUnit unit = throttled.unit();
+
+        final JType atomicLong = $t(AtomicLong.class);
+        sourceFile._import(atomicLong);
+
+        final String baseName = messageMethod.name();
+        final JExpr enabledCheck = logger.call("isEnabled").arg($v(messageMethod.logLevel()));
+
+        if (count > 0 && period <= 0) {
+            // Count-based only
+            final String varName = baseName + "_$throttleCount";
+            final JVarDeclaration countVar = getOrCreateThrottleVar(classDef, throttleCountVars, atomicLong, varName);
+            return baseBody._if(
+                    enabledCheck.and(
+                            $v(countVar).call("getAndIncrement").mod(JExprs.decimal(count)).eq(JExpr.ZERO).paren()))
+                    .block(Braces.REQUIRED);
+        } else if (count <= 0 && period > 0) {
+            // Time-based only
+            final long periodNanos = unit.toNanos(period);
+            final String varName = baseName + "_$throttleTime";
+            final JVarDeclaration timeVar = getOrCreateThrottleVar(classDef, throttleTimeVars, atomicLong, varName);
+            sourceFile._import($t(System.class));
+            final JBlock enabledBlock = baseBody._if(enabledCheck).block(Braces.REQUIRED);
+            final JVarDeclaration now = enabledBlock.var(JMod.FINAL, long.class, "now",
+                    JExprs.callStatic($t(System.class), "nanoTime"));
+            final JVarDeclaration last = enabledBlock.var(JMod.FINAL, long.class, "last",
+                    $v(timeVar).call("get"));
+            return enabledBlock._if(
+                    $v(now).minus($v(last)).ge(JExprs.decimal(periodNanos))
+                            .and($v(timeVar).call("compareAndSet").arg($v(last)).arg($v(now))))
+                    .block(Braces.REQUIRED);
+        } else {
+            // Combined: both count and period
+            final long periodNanos = unit.toNanos(period);
+            final String countVarName = baseName + "_$throttleCount";
+            final String timeVarName = baseName + "_$throttleTime";
+            final JVarDeclaration countVar = getOrCreateThrottleVar(classDef, throttleCountVars, atomicLong,
+                    countVarName);
+            final JVarDeclaration timeVar = getOrCreateThrottleVar(classDef, throttleTimeVars, atomicLong, timeVarName);
+            sourceFile._import($t(System.class));
+            final JBlock enabledBlock = baseBody._if(enabledCheck).block(Braces.REQUIRED);
+            final JBlock countBlock = enabledBlock._if(
+                    $v(countVar).call("getAndIncrement").mod(JExprs.decimal(count)).eq(JExpr.ZERO).paren())
+                    .block(Braces.REQUIRED);
+            final JVarDeclaration now = countBlock.var(JMod.FINAL, long.class, "now",
+                    JExprs.callStatic($t(System.class), "nanoTime"));
+            final JVarDeclaration last = countBlock.var(JMod.FINAL, long.class, "last",
+                    $v(timeVar).call("get"));
+            return countBlock._if(
+                    $v(now).minus($v(last)).ge(JExprs.decimal(periodNanos))
+                            .and($v(timeVar).call("compareAndSet").arg($v(last)).arg($v(now))))
+                    .block(Braces.REQUIRED);
+        }
+    }
+
+    private JVarDeclaration getOrCreateThrottleVar(final JClassDef classDef,
+            final Map<String, JVarDeclaration> varMap, final JType atomicLong, final String varName) {
+        if (varMap.containsKey(varName)) {
+            return varMap.get(varName);
+        }
+        final JVarDeclaration var = classDef.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, atomicLong, varName,
+                atomicLong._new().arg(JExpr.ZERO));
+        varMap.put(varName, var);
+        return var;
     }
 
     private Map<Parameter, JParamDeclaration> createParameters(final MessageMethod messageMethod, final JMethodDef method) {

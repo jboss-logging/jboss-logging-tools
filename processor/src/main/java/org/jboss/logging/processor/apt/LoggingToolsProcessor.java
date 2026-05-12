@@ -63,6 +63,7 @@ import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Property;
 import org.jboss.logging.annotations.Signature;
+import org.jboss.logging.annotations.Throttled;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.ValidIdRange;
 import org.jboss.logging.annotations.ValidIdRanges;
@@ -113,6 +114,7 @@ public class LoggingToolsProcessor extends AbstractProcessor {
                 Pos.class,
                 Property.class,
                 Signature.class,
+                Throttled.class,
                 Transform.class,
                 ValidIdRange.class,
                 ValidIdRanges.class);
