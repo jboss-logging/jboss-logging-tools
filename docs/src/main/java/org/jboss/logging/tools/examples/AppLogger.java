@@ -22,6 +22,7 @@ package org.jboss.logging.tools.examples;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -31,6 +32,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Once;
 import org.jboss.logging.annotations.ResolutionDoc;
+import org.jboss.logging.annotations.Throttled;
 import org.jboss.logging.annotations.Transform;
 
 /**
@@ -106,4 +108,15 @@ public interface AppLogger extends BasicLogger {
     @LogMessage
     @ResolutionDoc(skip = true)
     void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) Map<String, Object> map);
+
+    /**
+     * Logs a warning message at most once every 30 seconds indicating a connection retry.
+     *
+     * @param host the host being connected to
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Throttled(period = 30, unit = TimeUnit.SECONDS)
+    @Message(id = 103, value = "Retrying connection to %s")
+    @ResolutionDoc(skip = true)
+    void retryingConnection(String host);
 }

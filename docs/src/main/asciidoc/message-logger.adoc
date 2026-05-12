@@ -51,9 +51,15 @@ public interface AppLogger extends BasicLogger {
 
     @LogMessage
     void cacheSizeChanged(@Transform(Transform.TransformType.SIZE) Map<String, Object> map);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Throttled(period = 30, unit = TimeUnit.SECONDS) <5>
+    @Message(id = 103, value = "Retrying connection to %s")
+    void retryingConnection(String host);
 }
 ----
 <1> The `projectCode` will be prepended to messages which have an `id` specified. For example with `id = 100` the message will be prepended with `CW000100`. You can control the number padding with the `length` property on the annotation.
 <2> Ensures the log message is only written once.
 <3> No `id` is specified for this message which means no id will be prepended on this message.
 <4> Overrides the default level to `ERROR` to indicate an error message should be logged.
+<5> Throttles the log message to at most once every 30 seconds. Supports count-based throttling (`count`), time-based throttling (`period` and `unit`), or both combined.

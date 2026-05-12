@@ -57,6 +57,7 @@ import org.jboss.logging.annotations.Pos;
 import org.jboss.logging.annotations.Producer;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.logging.annotations.Suppressed;
+import org.jboss.logging.annotations.Throttled;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logging.annotations.TransformException;
@@ -544,6 +545,10 @@ public final class Validator {
                 if (messageMethod.isAnnotatedWith(Once.class)) {
                     messages.add(createError(messageMethod, "Only @LogMessage method can be annoted with @Once"));
                 }
+                if (messageMethod.isAnnotatedWith(Throttled.class)) {
+                    messages.add(
+                            createError(messageMethod, "Only @LogMessage method can be annotated with @Throttled"));
+                }
             }
         }
         return messages;
@@ -554,6 +559,16 @@ public final class Validator {
         // The return type must be void
         if (messageMethod.returnType().asType().getKind() != TypeKind.VOID) {
             messages.add(createError(messageMethod, "Message logger methods can only have a void return type."));
+        }
+        if (messageMethod.isAnnotatedWith(Throttled.class)) {
+            if (messageMethod.isAnnotatedWith(Once.class)) {
+                messages.add(createError(messageMethod, "@Throttled and @Once are mutually exclusive."));
+            }
+            final Throttled throttled = messageMethod.getAnnotation(Throttled.class);
+            if (throttled.count() <= 0 && throttled.period() <= 0) {
+                messages.add(createError(messageMethod,
+                        "At least one of count or period must be greater than 0 on @Throttled."));
+            }
         }
         return messages;
     }
